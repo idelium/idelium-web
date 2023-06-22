@@ -1,0 +1,34 @@
+/**
+ * Customized version of bootstrap using variables from _variables.scss.
+ * This file is loaded via separate loader thus allowing to use original bootstrap classes (e.g. .btn-default) through out the app.
+ */
+@import 'bootstrap/scss/functions';
+@import 'variables';
+@import 'bootstrap/scss/variables';
+@import 'bootstrap/scss/mixins';
+@import 'mixins';
+
+$theme-colors: map-merge(
+  $theme-colors,
+  (
+    'primary': $blue,
+    'secondary': rgba(#f4f4f5, 0.9),
+    'success': $green,
+    'info': $teal,
+    'warning': $orange,
+    'danger': $red,
+    'dark': $dark,
+    'inverse': #30314e,
+    'gray': $gray-300,
+    'light': $gray-100,
+    'default': $default,
+    'primary-light': #dee4ee,
+    'success-light': #ecfaec,
+    'info-light': #f2fafa,
+    'warning-light': #fdf7e6,
+    'danger-light': #fff2ef,
+    'progress-bg': $progress-bg
+  )
+);
+$theme-colors-rgb: map-loop($theme-colors, to-rgb, '$value');
+@import 'bootstrap/scss/bootstrap';

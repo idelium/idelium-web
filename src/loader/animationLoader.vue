@@ -1,0 +1,79 @@
+<template>
+  <div class="bodyLoader">
+    <div class="box">
+      <span class="loader"></span>
+      <br />
+      <br />
+      <br />
+      <br />
+      <br />
+      <br />
+      <br />
+      <br />
+      <br />
+      <br />
+      <span class="loaderText">{{ language[config.currentLanguage].Loader.waitMessage }}</span>
+    </div>
+  </div>
+</template>
+
+<style>
+.loaderText {
+  color: white;
+  align-content: center;
+  font-size: 15px;
+  font-family: 'Arial Bold', sans-serif;
+  margin-left: 5rem;
+}
+.box {
+  margin: 120px auto 0;
+}
+.loader {
+  width: 16px;
+  height: 16px;
+  box-shadow: 0 30px, 0 -30px;
+  border-radius: 4px;
+  background: currentColor;
+  display: block;
+  margin: auto;
+  position: relative;
+  color: #fff;
+  transform: translateY(30px);
+  box-sizing: border-box;
+  animation: animloader 2s ease infinite;
+}
+.loader::after,
+.loader::before {
+  content: '';
+  box-sizing: border-box;
+  width: 16px;
+  height: 16px;
+  box-shadow: 0 30px, 0 -30px;
+  border-radius: 4px;
+  background: currentColor;
+  color: #fff;
+  position: absolute;
+  left: 30px;
+  top: 0;
+  animation: animloader 2s 0.2s ease infinite;
+}
+.loader::before {
+  animation-delay: 0.4s;
+  left: 60px;
+}
+
+@keyframes animloader {
+  0% {
+    top: 0;
+    color: white;
+  }
+  50% {
+    top: 30px;
+    color: rgba(255, 255, 255, 0.2);
+  }
+  100% {
+    top: 0;
+    color: white;
+  }
+}
+</style>

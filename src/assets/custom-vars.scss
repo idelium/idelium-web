@@ -1,0 +1,323 @@
+@import url(https://fonts.googleapis.com/css?family=Concert+One|Roboto+Slab|Open+Sans:400italic,700italic,400,700);
+//@import '~vue-context/dist/css/vue-context.css';
+//@import '~vue-cool-select/dist/themes/bootstrap.css';
+@import '../styles/app.scss';
+@import "../../node_modules/vue-select/dist/vue-select.css";
+.vs__dropdown-option {
+  color: black!important;
+}
+
+$font-stack: 'Roboto Slab', serif;
+
+.personal {
+  background: rgb(212, 211, 211);
+}
+.list-group-item {
+  border: 0px;
+  border-color: unset !important;
+  background: unset !important;
+  color: white !important;
+}
+.list-group-item[aria-expanded='true'] {
+  background-color: black !important;
+  border-color: #aed248;
+}
+.list-group-item.active {
+  z-index: 2;
+  color: #fff !important;
+  background-color: rgb(82, 82, 82) !important;
+  border-color: rgb(82, 82, 82) !important;
+}
+
+.btn-link {
+  color: unset !important;
+  text-decoration: none !important;
+}
+.btn-secondary {
+  color: red !important;
+}
+
+.col-form-label {
+  font-family: 'Arial', sans-serif;
+  font-size: 10px !important;
+  letter-spacing: 2px !important;
+}
+.card-title {
+  font-family: 'Arial', sans-serif;
+  font-size: 10px !important;
+  letter-spacing: 2px !important;
+}
+
+.costum * {
+  font-family: 'Arial', sans-serif;
+  font-size: 10px !important;
+  letter-spacing: 2px;
+}
+optgroup {
+  font-family: 'Arial', sans-serif;
+  font-size: 14px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+.nav-tabs .nav-link {
+  font-family: 'Arial', sans-serif;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+.bodyLoader {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  background-color: #333867;
+  padding: 0;
+  margin: 0;
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.9;
+  z-index: 99;
+}
+
+@mixin placeholder {
+  ::-webkit-input-placeholder {
+    @content;
+  }
+  :-moz-placeholder {
+    @content;
+  }
+  ::-moz-placeholder {
+    @content;
+  }
+  :-ms-input-placeholder {
+    @content;
+  }
+}
+
+@include placeholder {
+  text-transform: uppercase;
+  font-size: 10px !important;
+}
+hr {
+  border: none;
+  height: 1px;
+}
+
+/*
+table {
+  border-collapse: collapse;
+  border-radius: 5px;
+  border-style: hidden; 
+}  */
+
+#table,
+th {
+  text-transform: uppercase;
+  text-align: center;
+}
+table > tr > td:first-child {
+  padding-right: 10px;
+}
+#select {
+  font-size: 10px !important;
+}
+
+#wrapper {
+  overflow-x: hidden;
+}
+
+#sidebar-wrapper {
+  min-height: 100vh;
+  margin-left: -15rem;
+  -webkit-transition: margin 0.25s ease-out;
+  -moz-transition: margin 0.25s ease-out;
+  -o-transition: margin 0.25s ease-out;
+  transition: margin 0.25s ease-out;
+}
+
+#sidebar-wrapper .sidebar-heading {
+  padding: 0rem 0rem;
+  font: 'Arial Bold', sans-serif;
+  font-size: 1.2rem;
+  text-transform: uppercase;
+  text-align: center;
+  margin-top: 25px;
+  margin-bottom: 28px;
+}
+
+.btn {
+  color: white !important;
+  padding: 5px 10px !important;
+  font-size: 10px !important;
+  border-radius: 5px;
+  text-transform: uppercase !important;
+}
+
+#btn-group-sm > .btn,
+.btn-sm {
+  padding: 5px 10px !important;
+  font-size: 10px !important;
+  border-radius: 5px;
+  text-transform: uppercase !important;
+}
+
+#sidebar-wrapper .list-group {
+  width: 12rem;
+}
+
+#page-content-wrapper {
+  min-width: 100vw;
+}
+
+#wrapper.toggled #sidebar-wrapper {
+  margin-left: 0;
+}
+
+@media (min-width: 768px) {
+  #sidebar-wrapper {
+    margin-left: 0;
+  }
+
+  #page-content-wrapper {
+    min-width: 0;
+    width: 100%;
+  }
+
+  #wrapper.toggled #sidebar-wrapper {
+    margin-left: -10rem;
+  }
+}
+#parent {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+#child {
+  width: 100%;
+  height: 100%;
+  overflow-y: scroll;
+  padding-right: 12px; /* Increase/decrease this value for cross-browser compatibility */
+  box-sizing: content-box; /* So the width will be 100% + 17px */
+}
+
+/* width 
+::-webkit-scrollbar {
+  width: 10px;
+} */
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #888;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+.scroll-area {
+  width: 100%;
+  height: 75vh;
+  float: left;
+  overflow-y: scroll;
+  margin-bottom: 20px;
+}
+.scroll-area2 {
+  width: 100%;
+  height: 95vh;
+  float: left;
+  overflow-y: scroll;
+  margin-bottom: 20px;
+}
+.scroll-area90 {
+  width: 100%;
+  height: 85vh;
+  float: left;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  margin-bottom: 20px;
+}
+.form-control {
+  background-color: #b4b9c5 !important;
+  color: black !important;
+}
+.form-control:disabled,
+.form-control[readonly] {
+  background-color: #345779 !important;
+  opacity: 1;
+}
+.form-select:disabled,
+.form-select[readonly] {
+  background-color: #345779 !important;
+  opacity: 1;
+}
+/* v-select */
+.vs__search {
+  background-color: #fff;
+}
+.vs__dropdown-toggle {
+  background: #fff;
+}
+
+.paneColumn {
+  display: inline-block;
+  overflow-y: auto;
+  max-height: 70vh;
+  width: 100%;
+}
+
+.trust_logo_bottom {
+  position: fixed;
+  bottom: 0px;
+  left: 0px;
+}
+
+@media (max-width: 768px) {
+  .trust_logo_bottom {
+    display: none;
+  }
+}
+
+@-webkit-keyframes rotating /* Safari and Chrome */ {
+  from {
+    -webkit-transform: rotate(0deg);
+    -o-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  to {
+    -webkit-transform: rotate(360deg);
+    -o-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+@keyframes rotating {
+  from {
+    -ms-transform: rotate(0deg);
+    -moz-transform: rotate(0deg);
+    -webkit-transform: rotate(0deg);
+    -o-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  to {
+    -ms-transform: rotate(360deg);
+    -moz-transform: rotate(360deg);
+    -webkit-transform: rotate(360deg);
+    -o-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+.rotating {
+  -webkit-animation: rotating 2s linear infinite;
+  -moz-animation: rotating 2s linear infinite;
+  -ms-animation: rotating 2s linear infinite;
+  -o-animation: rotating 2s linear infinite;
+  animation: rotating 2s linear infinite;
+}
