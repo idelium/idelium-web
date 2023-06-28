@@ -20,9 +20,11 @@ npm install
 
 ### Config environment
 
-With Idelium ASP you can configure 
+To configure the gTag for tracking your website with Google Analytics and enable reCAPTCHA using Idelium ASP, please follow these instructions:
 
-
+```sh
+cp .env.example .env
+```
 
 
 ### Compile and Hot-Reload for Development
