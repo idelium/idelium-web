@@ -260,9 +260,12 @@ export default {
       this.error = null
       this.showError = false
       await this.csrf()
-      await this.$recaptchaLoaded()
-
-      const token = await this.$recaptcha('login')
+      let token=null
+      if (import.meta.env.VITE_GOOGLE_SITE_KEY) {
+        await this.$recaptchaLoaded()
+        token = await this.$recaptcha('login')
+      }
+      
       this.emitter.emit('showLoader', true)
       axios
         .post(
