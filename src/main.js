@@ -103,9 +103,9 @@ app.use(ElementPlus)
 app.use(Toast, { verticalPosition: 'bottom', horizontalPosition: 'right', duration: 1500 })
 app.use(appKonva)
 app.use(appFullscreen)
-app.use(VueReCaptcha, { siteKey: '6LeYnBYdAAAAAOcHJs9HCzT12QMwh3rhqWoO4AmN' })
+app.use(VueReCaptcha, { siteKey: import.meta.env.VITE_GOOGLE_SITE_KEY })
 app.use(appGtag, {
-  config: { id: 'G-XK6NPR75TT' }
+  config: { id: import.meta.env.VITE_GOOGLE_TAG_ID }
 })
 app.component('v-select', vSelect)
 
@@ -113,13 +113,9 @@ app.component('v-select', vSelect)
 app.component("font-awesome-icon", FontAwesomeIcon);
 
 app.config.globalProperties.config = {
-  version: '1.0.0',
+  version: __APP_VERSION__,
   productName: 'Idelium',
   timeCheck: 5000,
-  recaptchaId: '<captha id>',
-  //serviceBaseUrl: "http://localhost/api/",
-  //serviceBaseUrl: "https://service.idelium.io/api/",
-  //serviceBaseUrl:'/api/',
   url: {
     header: 'menu/header',
     sidebar: 'menu/sidebar',

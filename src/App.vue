@@ -14,7 +14,7 @@ export default {
     loader
   },
   created() {
-    console.log('app')
+    console.log('idelium app: v' + this.config.version)
     console.log(window.location.hostname)
     if (window.location.hostname == 'localhost') {
       this.config.serviceBaseUrl = 'https://localhost/api/'
