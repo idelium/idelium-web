@@ -18,6 +18,13 @@ See [Vite Configuration Reference](https://vitejs.dev/config/).
 npm install
 ```
 
+### Config environment
+
+With Idelium ASP you can configure 
+
+
+
+
 ### Compile and Hot-Reload for Development
 
 ```sh
