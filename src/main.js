@@ -145,7 +145,7 @@ app.config.globalProperties.config = {
   currentLanguage: 'gb',
   projectId: null,
   pluginTemplate:
-    'from idelium.wrappers.ideliumSelenium import ideliumSelenium\nfrom idelium.wrappers.ideliumAppium import ideliumAppium\nfrom idelium.commons.resultEnum import result\nfrom idelium.commons.ideliumPrinter import initPrinter\n\ndef init(driver,json_config,param=None):\n      wrapper=ideliumSelenium()\n      printer=initPrinter()\n      value= result.OK#0 is ok, 1 is ko\n      print ("Hello, this is the skeleton")\n      """ please put your code here """\n      return value'
+    'from idelium._internal.wrappers.ideliumSelenium import ideliumSelenium\nfrom idelium._internal.wrappers.ideliumAppium import ideliumAppium\nfrom idelium._internal.commons.resultEnum import result\nfrom idelium._internal.commons.ideliumPrinter import initPrinter\n\ndef init(driver,json_config,param=None):\n      wrapper=ideliumSelenium()\n      printer=initPrinter()\n      value= result.OK#0 is ok, 1 is ko\n      print ("Hello, this is the skeleton")\n      """ please put your code here """\n      return value'
 }
 app.config.globalProperties.language = {
   gb: english,
