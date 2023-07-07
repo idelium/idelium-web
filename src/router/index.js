@@ -1,21 +1,21 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import container from '@/components/container.vue'
-import pages from '@/components/pages.vue'
-import profile from '@/view/profile.vue'
-import apikey from '@/view/apikey.vue'
-import accounts from '@/view/accounts.vue'
-import costumers from '@/view/costumers.vue'
-import projects from '@/view/projects.vue'
+const container = () => import('@/components/container.vue')
+const pages = () => import('@/components/pages.vue')
+const profile = () => import('@/view/profile.vue')
+const apikey = () => import('@/view/apikey.vue')
+const accounts = () => import('@/view/accounts.vue')
+const costumers = () => import('@/view/costumers.vue')
+const projects = () => import('@/view/projects.vue')
 import steps from '@/view/steps.vue'
-import environments from '@/view/environments.vue'
+const environments = () => import('@/view/environments.vue')
 import plugins from '@/view/plugins.vue'
-import tests from '@/view/tests.vue'
-import testcycles from '@/view/testcycles.vue'
-import testsperformed from '@/view/testsperformed.vue'
-import postman from '@/view/testperformed/showPostmanCollection.vue'
-import page404 from '@/view/pages/404.vue'
-import testlauncher from '@/view/testlauncher.vue'
-import platforms from '@/view/platforms.vue'
+const tests = () => import('@/view/tests.vue')
+const testcycles = () => import('@/view/testcycles.vue')
+const testsperformed = () => import('@/view/testsperformed.vue')
+const postman = () => import('@/view/testperformed/showPostmanCollection.vue')
+const page404 = () => import('@/view/pages/404.vue')
+const testlauncher = () => import('@/view/testlauncher.vue')
+const platforms = () => import('@/view/platforms.vue')
 
 const router = createRouter({
   linkActiveClass: 'active',
@@ -26,6 +26,7 @@ const router = createRouter({
       name: 'Container',
       component: container,
       meta: { requiresAuth: true },
+      redirect: { path: "/projects" },
       children: [
         {
           path: 'testsperformed',
