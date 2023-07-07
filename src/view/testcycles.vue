@@ -322,7 +322,7 @@ export default {
     },
     setCommandLine() {
       this.commandLine =
-        'python ideliumcl.py --idCycle=' +
+        'idelium --idCycle=' +
         this.testCycleSelected.id +
         ' --idProject=' +
         localStorage.projectIdSelected +
