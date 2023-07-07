@@ -14,6 +14,9 @@ import appKonva from 'vue-konva'
 import appFullscreen from 'vue-fullscreen'
 import { VueReCaptcha } from 'vue-recaptcha-v3'
 import appGtag from 'vue-gtag'
+import 'ace-builds/src-noconflict/mode-python'
+import 'ace-builds/src-noconflict/theme-chrome'
+
 
 //import appGtag from 'vue-gtag'
 import mitt from 'mitt'

@@ -8,7 +8,7 @@ const costumers = () => import('@/view/costumers.vue')
 const projects = () => import('@/view/projects.vue')
 import steps from '@/view/steps.vue'
 const environments = () => import('@/view/environments.vue')
-import plugins from '@/view/plugins.vue'
+const plugins = ()  => import('@/view/plugins.vue')
 const tests = () => import('@/view/tests.vue')
 const testcycles = () => import('@/view/testcycles.vue')
 const testsperformed = () => import('@/view/testsperformed.vue')

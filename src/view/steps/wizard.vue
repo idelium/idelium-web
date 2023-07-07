@@ -473,8 +473,6 @@ import axios from 'axios'
 
 import JsonEditor from '../../components/JsonEditor.vue'
 import FileUpload from 'vue-upload-component'
-import 'ace-builds/src-noconflict/mode-python'
-import 'ace-builds/src-noconflict/theme-chrome'
 import draggable from 'vuedraggable'
 
 export default {

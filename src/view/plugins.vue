@@ -261,8 +261,6 @@
 import axios from 'axios'
 import { Modal } from 'bootstrap'
 import { VAceEditor } from 'vue3-ace-editor'
-import 'ace-builds/src-noconflict/mode-python'
-import 'ace-builds/src-noconflict/theme-chrome'
 
 import importplugin from './plugin/importPlugin.vue'
 import download from '@/shared/download'
