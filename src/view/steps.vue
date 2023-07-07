@@ -40,46 +40,30 @@
           <div class="col-sm-1" />
           <div class="col">
             <div class="paneColumn">
-              <table
-                class="table table-striped costum"
-                style="margin-left: 10px; margin-right: 10px"
-              >
-                <thead>
-                  <tr>
-                    <th scope="col">
+                    <div class="row">
+                       <div class="col col col-lg-1">
                       {{ language[config.currentLanguage].Steps.colId }}
-                    </th>
-                    <th scope="col">
+                       </div>
+                       <div class="col col col-lg-4">
                       {{ language[config.currentLanguage].Steps.colName }}
-                    </th>
-                    <th scope="col">
+                       </div>
+                       <div class="col col col-lg-4">
                       {{ language[config.currentLanguage].Steps.colDescription }}
-                    </th>
-                    <th scope="col"></th>
-                    <th scope="col"></th>
-                    <th scope="col"></th>
-                    <th scope="col"></th>
-                  </tr>
-                </thead>
+                       </div>
+                       <div class="col col-lg-3"></div>
+                    </div>
                 <draggable
                   v-model="listSteps"
-                  tag="transition-group"
                   @change="moveElement"
                   :component-data="{ name: 'fade' }"
                   item-key="id"
                 >
                   <template #item="{ element }">
-                    <tr style="cursor: move">
-                      <td>
-                        <button
-                          type="button"
-                          class="btn btn-link btn-sm"
-                          v-on:click="getJson(element.id)"
-                        >
-                          {{ element.id }}
-                        </button>
-                      </td>
-                      <td>
+                    <div class="row">
+                       <div class="col col-lg-1">
+                        {{element.id}}
+                        </div>
+                       <div class="col col col-lg-4">
                         <button
                           type="button"
                           class="btn btn-link btn-sm"
@@ -87,8 +71,8 @@
                         >
                           {{ element.name }}
                         </button>
-                      </td>
-                      <td>
+                       </div>
+                       <div class="col col col-lg-4">
                         <button
                           type="button"
                           class="btn btn-link btn-sm"
@@ -96,8 +80,8 @@
                         >
                           {{ element.description }}
                         </button>
-                      </td>
-                      <td>
+                       </div>
+                       <div class="col col-lg-1">
                         <span
                           id="clone"
                           class="text-success"
@@ -105,28 +89,26 @@
                           style="cursor: pointer"
                           ><font-awesome-icon icon="clone" style="font-size: 1rem"
                         /></span>
-                      </td>
-                      <td>
-                        <span
-                          class="text-danger"
-                          v-on:click="deleteStep(element)"
-                          style="cursor: pointer"
-                          ><font-awesome-icon icon="trash" style="font-size: 1rem"
-                        /></span>
-                      </td>
-                      <td>
+                       </div>
+                       <div class="col col-lg-1">
                         <span
                           class="text-primary"
                           v-on:click="downloadStep(element)"
                           style="cursor: pointer"
                           ><font-awesome-icon icon="download" style="font-size: 1rem"
                         /></span>
-                      </td>
-                      <td width="5px"></td>
-                    </tr>
+                       </div>
+                       <div class="col col-lg-1">
+                        <span
+                          class="text-danger"
+                          v-on:click="deleteStep(element)"
+                          style="cursor: pointer"
+                          ><font-awesome-icon icon="trash" style="font-size: 1rem"
+                        /></span>
+                       </div>
+                    </div>
                   </template>
                 </draggable>
-              </table>
             </div>
             <button
               type="button"
@@ -372,6 +354,7 @@ let templateJson = {
 }
 
 export default {
+  // eslint-disable-next-line vue/multi-word-component-names
   name: 'steps',
   inheritAttrs: false,
   data: () => {
