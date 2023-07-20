@@ -335,7 +335,7 @@ import draggable from 'vuedraggable'
 import importSelenium from './tests/importSelenium.vue'
 
 export default {
-  name: 'tests',
+  name: 'Tests',
   components: {
     draggable,
     importSelenium
@@ -369,6 +369,7 @@ export default {
     this.emitter.on('refreshTest', (msg) => {
       if (msg == true) this.getSteps()
       else this.$forceUpdate()
+      
     })
   },
   watch: {

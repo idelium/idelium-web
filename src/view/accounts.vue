@@ -137,10 +137,6 @@ export default {
       this.rolesToModify = name
     },
     deleteAccount(id) {
-      if (this.config.demo == true) {
-        alert('is a demo')
-        return false
-      }
       this.$confirm(
         this.language[this.config.currentLanguage].Accounts.confirmDeleteAccount,
         '',
@@ -216,10 +212,6 @@ export default {
         })
     },
     insertAccount(data) {
-      if (this.config.demo == true) {
-        alert('is a demo')
-        return false
-      }
       axios
         .post(
           this.config.serviceBaseUrl + this.config.url.accounts,
@@ -244,10 +236,6 @@ export default {
         })
     },
     updateAccount(data) {
-      if (this.config.demo == true) {
-        alert('is a demo')
-        return false
-      }
       this.emitter.emit('showLoader', true)
       axios
         .put(

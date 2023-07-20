@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import steps from '@/view/steps.vue'
 const container = () => import('@/components/container.vue')
 const pages = () => import('@/components/pages.vue')
 const profile = () => import('@/view/profile.vue')
@@ -6,7 +7,6 @@ const apikey = () => import('@/view/apikey.vue')
 const accounts = () => import('@/view/accounts.vue')
 const costumers = () => import('@/view/costumers.vue')
 const projects = () => import('@/view/projects.vue')
-import steps from '@/view/steps.vue'
 const environments = () => import('@/view/environments.vue')
 const plugins = ()  => import('@/view/plugins.vue')
 const tests = () => import('@/view/tests.vue')
@@ -130,7 +130,8 @@ const router = createRouter({
           path: '404',
           name: 'Page404',
           component: page404
-        }
+        },
+
       ]
     },
     {

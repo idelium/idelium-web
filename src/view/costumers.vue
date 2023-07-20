@@ -17,17 +17,18 @@
     <div class="row">
       <div class="col-sm-1" />
       <div class="col">
-        <table width="50%" class="table table-striped costum">
+        <table class="table table-striped costum">
+            <caption>{{language[config.currentLanguage].Costumers.costumer}}</caption>
           <thead>
             <tr>
-              <th scope="col">{{ language[config.currentLanguage].Costumers.id }}</th>
-              <th scope="col">{{ language[config.currentLanguage].Costumers.costumer }}</th>
-              <th scope="col">{{ language[config.currentLanguage].Costumers.description }}</th>
-              <th scope="col">{{ language[config.currentLanguage].Costumers.apiKey }}</th>
-              <th scope="col">
+              <th>{{ language[config.currentLanguage].Costumers.id }}</th>
+              <th>{{ language[config.currentLanguage].Costumers.costumer }}</th>
+              <th>{{ language[config.currentLanguage].Costumers.description }}</th>
+              <th>{{ language[config.currentLanguage].Costumers.apiKey }}</th>
+              <th>
                 {{ language[config.currentLanguage].Costumers.licenseExpiration }}
               </th>
-              <th scope="col"></th>
+              <th></th>
             </tr>
           </thead>
           <tbody>
@@ -54,14 +55,14 @@
                 </button>
               </td>
               <td>
-                <span v-on:click="copyClipboard(costumer.apiKey, costumer.costumer)" class="key">
+                <button v-on:click="copyClipboard(costumer.apiKey, costumer.costumer)" class="btn btn-link btn-sm">
                   {{ costumer.apiKey.substring(0, 10) + '..' }}
                   <font-awesome-icon
                     class="text-success"
                     icon="copy"
                     style="margin-left: 5px; font-size: 20px; float: right"
                   />
-                </span>
+                </button>
               </td>
               <td>
                 <button
@@ -147,10 +148,6 @@ export default {
     },
 
     deleteCostumer(id) {
-      if (this.config.demo == true) {
-        alert('is a demo')
-        return false
-      }
       this.$confirm(
         this.language[this.config.currentLanguage].Costumers.textDelete,
         '',
@@ -190,10 +187,6 @@ export default {
         })
     },
     insertCostumer(data) {
-      if (this.config.demo == true) {
-        alert('is a demo')
-        return false
-      }
       axios
         .post(
           this.config.serviceBaseUrl + this.config.url.costumers,
@@ -216,10 +209,6 @@ export default {
         })
     },
     updateCostumer(data) {
-      if (this.config.demo == true) {
-        alert('is a demo')
-        return false
-      }
       this.emitter.emit('showLoader', true)
       axios
         .put(

@@ -113,10 +113,6 @@ export default {
     },
 
     deleteProject(id) {
-      if (this.config.demo == true) {
-        alert('is a demo')
-        return false
-      }
       this.$confirm(
         this.language[this.config.currentLanguage].Projects.textDelete,
         '',
@@ -141,6 +137,23 @@ export default {
           this.error = e
         })
     },
+    getCostumers() {
+      axios
+        .get(this.config.serviceBaseUrl + this.config.url.costumers, {
+          headers: this.setHeaders()
+        })
+        .then((response) => {
+          this.emitter.emit('showLoader', false)
+          if (response.data.length == 0) {
+            this.showModal(null, 'new')
+          }
+        })
+        .catch((e) => {
+          this.Logout(this, e)
+          this.error = e
+        })
+    },
+
     getProjects(isAutomaticLoad = false) {
       this.emitter.emit('showLoader', true)
       axios
@@ -151,9 +164,10 @@ export default {
           this.emitter.emit('showLoader', false)
           this.arrayProjects = response.data
           if (this.arrayProjects.length == 0) {
-            this.showModal(null, 'new')
+            this.getCostumers()
+          } else {
+            if (isAutomaticLoad == false) this.emitter.emit('updateListProject', this.arrayProjects)
           }
-          if (isAutomaticLoad == false) this.emitter.emit('updateListProject', this.arrayProjects)
         })
         .catch((e) => {
           this.Logout(this, e)
@@ -161,10 +175,6 @@ export default {
         })
     },
     insertProject(data) {
-      if (this.config.demo == true) {
-        alert('is a demo')
-        return false
-      }
       axios
         .post(
           this.config.serviceBaseUrl + this.config.url.projects,
@@ -187,10 +197,6 @@ export default {
         })
     },
     updateProject(data) {
-      if (this.config.demo == true) {
-        alert('is a demo')
-        return false
-      }
       this.emitter.emit('showLoader', true)
       axios
         .put(

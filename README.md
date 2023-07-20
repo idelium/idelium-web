@@ -12,6 +12,10 @@ Idelium Web is the FE SPA (Single Page Application) tool that allows you to mana
 
 See [Vite Configuration Reference](https://vitejs.dev/config/).
 
+## Prerequisite
+
+Node 18.x
+
 ## Project Setup
 
 ```sh
