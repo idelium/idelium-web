@@ -202,9 +202,15 @@ export default {
           let target = getTarget.target
           let findBy = getTarget.findBy
           let obj = null
+          let name = null
           if (commandObj.command == 'open') {
+            if (commandObj.comment.length==0) {
+              name=jsonSel.name + ' open browser'
+            } else {
+              name=commandObj.comment
+            }
             obj = {
-              name: jsonSel.name + ' open browser',
+              name: name,
               failedExit: true,
               attachScreenshot: true,
               steps: [
@@ -217,8 +223,13 @@ export default {
               ]
             }
           } else if (commandObj.command == 'click') {
+            if (commandObj.comment.length==0) {
+              name=jsonSel.name + ' (click)'
+            } else {
+              name=commandObj.comment
+            }
             obj = {
-              name: jsonSel.name + ' (click)',
+              name: name,
               failedExit: true,
               attachScreenshot: true,
               steps: [
@@ -239,6 +250,11 @@ export default {
           } else if (commandObj.command == 'select') {
             let selectValue = commandObj.value.substring(commandObj.value.indexOf('=') + 1)
             let selectType = commandObj.value.substring(0, commandObj.value.indexOf('='))
+            if (commandObj.comment.length==0) {
+              name=jsonSel.name + ' (select)'
+            } else {
+              name=commandObj.comment
+            }
             obj = {
               name: jsonSel.name + ' (select)',
               failedExit: true,
@@ -261,8 +277,13 @@ export default {
               ]
             }
           } else if (commandObj.command == 'type' && commandObj.value != '') {
+            if (commandObj.comment.length==0) {
+              name=jsonSel.name + ' (write)'
+            } else {
+              name=commandObj.comment
+            }
             obj = {
-              name: jsonSel.name + ' (write)',
+              name: name,
               failedExit: true,
               attachScreenshot: true,
               steps: [
