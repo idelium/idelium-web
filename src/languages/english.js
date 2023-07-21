@@ -157,7 +157,7 @@ export default {
     btnModifyTest: 'Modify',
     btnImportTest: 'Import Test',
     btnCancel: 'Cancel',
-    placeholderFilterStep: 'cerca test',
+    placeholderFilterStep: 'search test',
     placeholderNameTest: ' test',
     placeholderDescriptionTest: 'descrizone del test',
     steps: 'Steps available',
