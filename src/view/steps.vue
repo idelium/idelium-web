@@ -40,7 +40,7 @@
           <div class="col-sm-1" />
           <div class="col">
             <div class="paneColumn">
-                    <div class="row costum">
+                    <div class="row">
                        <div class="col col col-lg-1">
                       {{ language[config.currentLanguage].Steps.colId }}
                        </div>
