@@ -256,7 +256,7 @@ export default {
               name=commandObj.comment
             }
             obj = {
-              name: jsonSel.name + ' (select)',
+              name: name,
               failedExit: true,
               attachScreenshot: true,
               steps: [
