@@ -30,8 +30,8 @@
 
 .list-group-item.active {
   z-index: 2;
-  color: #fff;
-  background-color: rgb(82, 82, 82);
+  color: black !important;
+  background-color: rgb(255, 255, 255)!important;
   border-color: rgb(82, 82, 82);
 }
 .iconClass {
