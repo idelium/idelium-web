@@ -140,7 +140,7 @@
               </option>
             </select>
           </div>
-          <div class="col">
+          <div class="col-7">
             <input
               v-model="stepDescription"
               type="text"
@@ -148,7 +148,7 @@
               :placeholder="language[config.currentLanguage].Steps.placeholderDescriptionStep"
             />
           </div>
-          <div class="col">
+          <!--div class="col">
             <input
               v-model="stepNameFile"
               type="text"
@@ -157,7 +157,7 @@
               v-on:keypress="isLetter($event, false)"
               :disabled="stepDescription.length == 0"
             />
-          </div>
+          </div-->
           <div class="col">
             <button
               type="button"

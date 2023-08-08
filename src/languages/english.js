@@ -73,7 +73,7 @@ export default {
     tabNewStep: 'New Step',
     placeholderDescriptionStep: 'step description',
     placeholderFileName: 'File name (without extension)',
-    btnSaveStep: 'Add Step',
+    btnSaveStep: 'Save Step',
     errorMessageInputEmpty: 'Attention! Fields cannot be empty',
     confirmationDelete: 'Are you sure you want to delete the file: ',
     titleErrorModal: 'Attention',

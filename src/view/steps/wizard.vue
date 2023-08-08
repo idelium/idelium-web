@@ -585,7 +585,7 @@ export default {
   },
   methods: {
     inputFilter(newFile) {
-      console.log('---------')
+      console.log('-----inputFilter----')
       this.errortext = ''
       var fileExt = newFile.name.split('.').pop()
       if (fileExt != 'json') {
@@ -601,19 +601,20 @@ export default {
           responseType: 'text'
         })
         .then((response) => {
-          if (!response.data.info && !response.data.name) {
+          let jsonResponse=JSON.parse(response.data)
+          if (!jsonResponse.info && !jsonResponse.name) {
             this.errortext =
               this.language[
                 this.config.currentLanguage
               ].Steps.wizard.importPostman.isNotCollectionFile
             return false
           }
-          if (response.data.name != undefined) {
-            this.postmanJson.environment = response.data
+          if (jsonResponse.name != undefined) {
+            this.postmanJson.environment = jsonResponse
             this.showOverriteLabel = true
           } else {
-            this.postmanJson.collection = response.data
-            this.note = response.data.info.name
+            this.postmanJson.collection = jsonResponse
+            this.note = jsonResponse.data.info.name
             this.addEditTypeStep(true, this.postmanJson)
           }
           console.log(this.postmanJson)

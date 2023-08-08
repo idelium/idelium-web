@@ -1,6 +1,6 @@
 {
   "name": "idelium-web-vue3.7.1",
-  "version": "0.8.5",
+  "version": "0.8.4",
   "private": true,
   "scripts": {
     "dev": "vite",
