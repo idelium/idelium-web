@@ -133,6 +133,15 @@ export default {
       importPluginFile: 'Importa plugin di Idelium'
     }
   },
+  Postman: {
+    id: '#',
+    status: 'status',
+    method: 'method',
+    url: 'url',
+    response: 'response',
+    showResponse: ' visualizza response',
+    time: 'time'
+  },
   Projects: {
     btnNewProject: 'nuovo progetto',
     id: '#',

@@ -18,6 +18,9 @@
                 {{ language[config.currentLanguage].Postman.url }}
               </th>
               <th scope="col">
+                {{ language[config.currentLanguage].Postman.time }}
+              </th>
+              <th scope="col">
                 {{ language[config.currentLanguage].Postman.response }}
               </th>
             </tr>
@@ -28,6 +31,7 @@
                   <td><span :class="'badge text-bg-' +  getStatusCode(connection.status)" >{{connection.status}}</span></td>
                   <td>{{connection.method}}</td>
                   <td>{{connection.url}}</td>
+                  <td>{{connection.time}}</td>
                   <td>
                 <button
                   type="button"

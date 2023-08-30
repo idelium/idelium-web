@@ -138,7 +138,8 @@ export default {
     method: 'method',
     url: 'url',
     response: 'response',
-    showResponse: ' show response'
+    showResponse: ' show response',
+    time: 'time'
   },
   Projects: {
     btnNewProject: 'new project',
