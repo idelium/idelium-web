@@ -1,47 +1,50 @@
 <template>
   <div class="">
-    <div class="title">Postman Collection</div>
+    <div class="title">{{nameTest}}</div>
     <div class="contentCollection">
-      <div v-for="(test, index) in keyCollections" v-bind:key="test">
-        <div class="card" style="margin-top: 10px">
-          <div class="card-header" :id="'heading' + index">
-            <button
-              class="btn btn-link collapsed"
-              data-bs-toggle="collapse"
-              :data-bs-target="'#collapse' + index"
-              aria-expanded="true"
-              :aria-controls="'collapse' + index"
-            >
-              <span
-                class="badge"
-                :style="
-                  'margin-right:10px;background-color:' +
-                  getStatusCode(postmanCollection[test]['status_code'])
-                "
-                >{{ postmanCollection[test]['status_code'] }}</span
-              >
-              <span
-                >{{ test }} |
-                {{ postmanCollection[test]['reason'] }}
-              </span>
-            </button>
-          </div>
-          <div
-            :id="'collapse' + index"
-            class="collapse dataWindow"
-            :aria-labelledby="'heading' + index"
-            data-parent="#accordion"
-          >
-            <div class="row" v-for="attr in arrayAttributes" v-bind:key="attr">
-              <div class="col-sm-2">
-                <span style="margin-left: 10px">{{ attr }}</span>
-              </div>
-              <div class="col">{{ postmanCollection[test][attr] }}</div>
-            </div>
-          </div>
-        </div>
+        <table class="table table-striped costum">
+          <thead>
+            <tr>
+              <th scope="col">
+                {{ language[config.currentLanguage].Postman.id }}
+              </th>
+              <th scope="col">
+                {{ language[config.currentLanguage].Postman.status }}
+              </th>
+              <th scope="col">
+                {{ language[config.currentLanguage].Postman.method }}
+              </th>
+              <th scope="col">
+                {{ language[config.currentLanguage].Postman.url }}
+              </th>
+              <th scope="col">
+                {{ language[config.currentLanguage].Postman.response }}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(connection,index) in dataTest" v-bind:key="connection">
+                  <td>{{index + 1}}</td>
+                  <td><span :class="'badge text-bg-' +  getStatusCode(connection.status)" >{{connection.status}}</span></td>
+                  <td>{{connection.method}}</td>
+                  <td>{{connection.url}}</td>
+                  <td>
+                <button
+                  type="button"
+                  class="btn btn-primary"
+                  v-on:click="showModal(index)"
+                >
+                  {{ language[config.currentLanguage].Postman.showResponse }}
+                </button>
+
+                  </td>
+            </tr>
+          </tbody>
+        </table>
+        <modalPostmanResponse
+         ref="modalPostmanResponseShow"
+        />
       </div>
-    </div>
   </div>
 </template>
 <style>
@@ -93,11 +96,18 @@ body {
 }
 </style>
 <script>
+import modalPostmanResponse from './modalPostmanResponse.vue'
+import axios from 'axios'
 export default {
+  components: {
+    modalPostmanResponse,
+  },
   data() {
     return {
       postmanCollection: null,
       keyCollections: [],
+      dataTest: {},
+      nameTest: null,     
       arrayAttributes: [
         'url',
         'apparent_encoding',
@@ -121,24 +131,44 @@ export default {
     }
   },
   created() {
-    console.log('postman')
-    if (this.$route.params.data == undefined)
-      this.$router.push({
-        path: '/testsperformed'
-      })
-    else this.getCollections(this.$route.params.data)
+    console.log('show postman')
+    this.getStep(this.$route.params.id)
   },
   methods: {
+    getStep(id) {
+
+      this.emitter.emit('showLoader', true)
+      axios
+        .get(this.config.serviceBaseUrl + this.config.url.getStepPerformed + '/' + id, {
+          headers: this.setHeaders()
+        })
+        .then((response) => {
+          console.log('getStep: ' +  id)
+          this.emitter.emit('showLoader', false)
+          this.dataTest=JSON.parse(response.data[0].data)
+          this.nameTest=response.data[0].name
+        })
+        .catch((e) => {
+          this.error = e
+          console.log(e)
+          this.Logout(this, e)
+        })
+    },
     getCollections(collections) {
       this.postmanCollection = JSON.parse(collections)
       this.keyCollections = Object.keys(this.postmanCollection)
       console.log(this.postmanCollection)
     },
+    showModal(index) {
+        console.log('modalPostmanResponseShow: ' +  index)
+        this.$refs.modalPostmanResponseShow.showModal(this.dataTest[index].response)
+    },
     getStatusCode(code) {
       let httpCode = parseInt(code)
       let color = 'red'
-      if (httpCode > 399 && httpCode < 500) color = '#ffc107'
-      else if (httpCode > 199 && httpCode < 300) color = 'green'
+      if (httpCode > 499) color = 'danger'
+      else if (httpCode > 199 && httpCode < 300) color = 'success'
+      else if (httpCode > 301 && httpCode < 500) color = 'warning'
 
       return color
     }

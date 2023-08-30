@@ -614,7 +614,7 @@ export default {
             this.showOverriteLabel = true
           } else {
             this.postmanJson.collection = jsonResponse
-            this.note = jsonResponse.data.info.name
+            this.note = jsonResponse.info.name
             this.addEditTypeStep(true, this.postmanJson)
           }
           console.log(this.postmanJson)

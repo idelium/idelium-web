@@ -94,7 +94,7 @@ export default {
           this.menu = response.data
         })
         .catch((e) => {
-          this.Logout(this, e)
+          this.$router.push({ name: 'Login' })
           this.error = e
         })
     }

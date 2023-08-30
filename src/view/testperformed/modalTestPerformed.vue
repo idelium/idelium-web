@@ -75,7 +75,6 @@
             <img :src="screenFull" class="imgFull" />
           </div>
         </div>
-        <showPostmanCollection ref="collection" v-if="showCollectionWindow == true" />
       </div>
     </div>
   </div>
@@ -104,12 +103,10 @@
 
 <script>
 import timeline from './timeLine.vue'
-import showPostmanCollection from './showPostmanCollection.vue'
 import { Modal } from 'bootstrap'
 export default {
   components: {
     timeline,
-    showPostmanCollection
   },
   created() {
     console.log('modal testcycle')
@@ -132,20 +129,7 @@ export default {
     showPostmanCollection(index) {
       console.log(index)
       this.modalElem.hide()
-
-      setTimeout(
-        function () {
-          console.log('send')
-          console.log(this.arrayStep[index].data)
-          this.$router.push({
-            name: 'postman',
-            params: {
-              data: this.arrayStep[index].data
-            }
-          })
-        }.bind(this),
-        100
-      )
+      this.$router.push({ path: '/postman/' + this.arrayStep[index].testDoneId })
     },
     getVariant(status) {
       let variant = 'success'

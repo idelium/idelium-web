@@ -107,7 +107,7 @@ const router = createRouter({
           meta: { requiresAuth: true }
         },
         {
-          path: 'postman',
+          path: 'postman/:id',
           name: 'postman',
           component: postman,
           meta: { requiresAuth: true }
