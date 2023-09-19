@@ -476,7 +476,7 @@ import FileUpload from 'vue-upload-component'
 import draggable from 'vuedraggable'
 
 export default {
-  name: 'wizard',
+  name: 'WizardTool',
   components: {
     JsonEditor,
     draggable,
