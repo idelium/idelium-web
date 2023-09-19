@@ -1,5 +1,5 @@
 <template>
-  <div class="border-right info costum" id="sidebar-wrapper" ref="sidebarWrapper">
+  <div class="border-right info costum sidebar" id="sidebar-wrapper" ref="sidebarWrapper">
     <div class="sidebar-heading">Menu</div>
     <hr />
     <div class="list-group">
@@ -22,6 +22,9 @@
   </div>
 </template>
 <style scoped>
+.sidebar {
+  background-color: rgb(14, 14, 14);
+}
 .list-group-item {
   border: 0px;
   border-color: #f8f9fa !important;

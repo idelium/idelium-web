@@ -1,5 +1,5 @@
 <template>
-  <div class="titleLogo info costum">
+  <div class="titleLogo info costum header">
     <span class="burger" v-on:click="sideBar()"
       ><font-awesome-icon icon="bars" style="font-size: 24px"
     /></span>
@@ -91,6 +91,10 @@
   </div>
 </template>
 <style scoped>
+.header {
+  background-color: rgb(14, 14, 14);
+}
+
 .sub-menu {
   position: absolute;
   min-width: 10rem;

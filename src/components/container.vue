@@ -9,11 +9,6 @@
     <Loader v-if="showLoader == true" />
   </div>
 </template>
-<!--style lang="scss">
-  @import '../styles/app.scss'; 
-  @import '../assets/custom-vars.scss';
-  @import '~bootstrap/scss/bootstrap.scss'; 
-</style-->
 <style>
 @media only screen and (max-width: 600px) {
   .info {
@@ -35,7 +30,7 @@ import headerComponent from './header.vue'
 import sidebar from './sidebar.vue'
 
 export default {
-  name: 'Container',
+  name: 'ContainerTemplate',
   components: {
     Loader,
     headerComponent,
