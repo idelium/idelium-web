@@ -102,6 +102,7 @@ import axios from 'axios'
 import modalModifyAccount from './account/modalModifyAccount.vue'
 
 export default {
+  name: 'AccountsComponent',
   created() {
     console.log('accounts')
     this.getAccounts()

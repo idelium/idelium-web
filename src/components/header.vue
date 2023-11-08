@@ -149,6 +149,7 @@ import axios from 'axios'
 import CountryFlag from 'vue-country-flag-next'
 
 export default {
+  name: 'HeaderComponent',
   components: {
     CountryFlag
   },

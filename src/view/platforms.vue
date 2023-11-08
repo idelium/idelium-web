@@ -184,6 +184,7 @@ import location from './platforms/location.vue'
 import managePlatform from './platforms/managePlatform.vue'
 
 export default {
+  name: 'PlatformsComponent',
   components: {
     os,
     osVersion,

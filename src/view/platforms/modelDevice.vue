@@ -91,7 +91,7 @@
 <script>
 import commonCalls from './commonCalls'
 export default {
-  name: 'brand',
+  name: 'ModelDeviceComponent',
   data() {
     return {
       typeSelected: null,

@@ -78,7 +78,7 @@
 <script>
 import commonCalls from './commonCalls'
 export default {
-  name: 'brand',
+  name: 'LocationComponent',
   data() {
     return {
       typeSelected: null,

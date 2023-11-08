@@ -114,6 +114,7 @@ import { Splitpanes, Pane } from 'splitpanes'
 import axios from 'axios'
 
 export default {
+  name: 'TestsPerformedComponent',
   components: {
     Splitpanes,
     Pane,

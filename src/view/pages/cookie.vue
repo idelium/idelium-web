@@ -17,6 +17,7 @@
 
 <script>
 export default {
+  name: 'CookieComponent',
   methods: {
     goHome() {
       this.$router.push({ name: 'Survey' })

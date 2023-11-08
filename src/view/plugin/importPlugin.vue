@@ -51,7 +51,7 @@
 import axios from 'axios'
 import FileUpload from 'vue-upload-component'
 export default {
-  name: 'selenium',
+  name: 'SeleniumComponent',
   props: {},
   components: {
     FileUpload

@@ -87,7 +87,7 @@
 <script>
 import param from './environmentsParameter'
 export default {
-  name: 'wizard',
+  name: 'EnvironmentsComponent',
   components: {},
   props: {
     json: Object,

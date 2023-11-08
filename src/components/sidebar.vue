@@ -58,6 +58,7 @@
 import axios from 'axios'
 
 export default {
+  name: 'SidebarComponent',
   watch: {
     $route() {
       this.$forceUpdate()

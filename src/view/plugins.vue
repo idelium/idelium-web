@@ -266,7 +266,7 @@ import importplugin from './plugin/importPlugin.vue'
 import download from '@/shared/download'
 
 export default {
-  name: 'plugins',
+  name: 'PluginsComponent',
   inheritAttrs: false,
   data: () => {
     return {

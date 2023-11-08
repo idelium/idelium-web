@@ -293,7 +293,7 @@ import wizard from './environments/wizard.vue'
 import param from './environments/environmentsParameter'
 
 export default {
-  name: 'environments',
+  name: 'EnvironmentsComponent',
   inheritAttrs: false,
   data: () => {
     return {

@@ -113,6 +113,7 @@ import modalModifyCostumer from './costumer/modalModifyCostumer.vue'
 import copy from 'copy-to-clipboard'
 
 export default {
+  name: 'CostumersComponent',
   created() {
     this.getCostumers()
     this.$gtag.event('idelium-builder', { method: 'costumer' })

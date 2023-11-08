@@ -82,6 +82,7 @@ import axios from 'axios'
 import modalModifyProject from './project/modalModifyProject.vue'
 
 export default {
+  name: 'ProjectsComponent',
   created() {
     this.getProjects()
     this.$gtag.event('idelium-builder', { method: 'project' })

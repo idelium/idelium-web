@@ -92,6 +92,7 @@ import copy from 'copy-to-clipboard'
 import download from '@/shared/download'
 
 export default {
+  name: 'ApikeyComponent',
   data() {
     return {
       status: 'not_accepted',

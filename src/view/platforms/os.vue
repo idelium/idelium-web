@@ -83,7 +83,7 @@
 <script>
 import commonCalls from './commonCalls'
 export default {
-  name: 'os',
+  name: 'OsComponent',
   props: {
     arrayTypes: Array
   },

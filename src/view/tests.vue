@@ -335,7 +335,7 @@ import draggable from 'vuedraggable'
 import importSelenium from './tests/importSelenium.vue'
 
 export default {
-  name: 'Tests',
+  name: 'TestsComponent',
   components: {
     draggable,
     importSelenium

@@ -41,6 +41,7 @@
 </style>
 <script>
 export default {
+  name: 'InfoComponent',
   methods: {
     goIdelium() {
       window.open('https://idelium.io', '_blank')

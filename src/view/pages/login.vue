@@ -217,6 +217,7 @@ import validateEmail from '@/shared/validateEmail'
 axios.defaults.withCredentials = true
 axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest'
 export default {
+  name: 'LoginComponent',
   data() {
     return {
       email: '',

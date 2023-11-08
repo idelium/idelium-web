@@ -95,7 +95,7 @@ import axios from 'axios'
 import validatePassword from '@/shared/validatePassword'
 
 export default {
-  name: 'profile',
+  name: 'ProfileComponent',
   data() {
     return {
       user: {

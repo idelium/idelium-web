@@ -115,7 +115,7 @@ import DatePicker from 'vue2-datepicker'
 import { ModelSelect } from 'vue-search-select'
 
 export default {
-  name: 'createCycleModal',
+  name: 'CreateCycleModal',
   created() {
     // Using the service bus
     this.emitter.on('openCreateCycleModal', (msg) => {
@@ -309,6 +309,7 @@ export default {
           cycleId: cycleId
         })
         .then((response) => {
+          console.log(response)
           this.emitter.emit('showLoader', false)
           this.$refs.createCycleModal.show()
         })

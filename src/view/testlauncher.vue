@@ -75,6 +75,7 @@ import axios from 'axios'
 import platformLauncher from './platformlauncher/modalListPlatform.vue'
 
 export default {
+  name: 'TestLauncherComponent',
   components: {
     platformLauncher
   },

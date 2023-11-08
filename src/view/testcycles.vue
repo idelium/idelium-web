@@ -211,7 +211,7 @@ import draggable from 'vuedraggable'
 import copy from 'copy-to-clipboard'
 
 export default {
-  name: 'testCycles',
+  name: 'TestCyclesComponent',
   components: {
     draggable
   },

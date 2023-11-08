@@ -48,8 +48,6 @@
 }
 </style>
 <script>
-import idelium from '../../../shared/idelium'
-
 export default {
   name: 'showIssueModal',
   created() {
