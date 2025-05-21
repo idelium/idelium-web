@@ -1,3 +1,4 @@
+@use 'sass:color';
 /**            UTILS              **/
 
 // Util Components
@@ -449,16 +450,16 @@ $z-index-variants: (
 .input-transparent {
   color: $text-color;
   background: $widget-bg;
-  border-color: transparentize($widget-bg, 0.15);
+  border-color: color.adjust($widget-bg, $alpha: -0.15);
 
   &:focus {
     color: $text-color;
-    background-color: opacify($widget-bg, 0.05);
+    background-color: color.adjust($widget-bg, $alpha: 0.05);
     border-color: $widget-bg;
   }
 
   &:disabled {
-    background-color: opacify($widget-bg, 0.05);
+    background-color: color.adjust($widget-bg, $alpha: 0.05);
   }
 }
 
@@ -500,14 +501,14 @@ $z-index-variants: (
 
   .input-group-text {
     background-color: $widget-bg;
-    border-color: transparentize($widget-bg, 0.15);
+    border-color: color.adjust($widget-bg, $alpha: -0.15);
     border-right: none;
     border-left: none;
   }
 
   .input-transparent:focus {
     background-color: $widget-bg;
-    border-color: transparentize($widget-bg, 0.15);
+    border-color: color.adjust($widget-bg, $alpha: -0.15);
   }
 
   .input-group-prepend {

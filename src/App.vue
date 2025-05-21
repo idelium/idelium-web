@@ -3,7 +3,8 @@
   <router-view v-else></router-view>
 </template>
 <style lang="scss">
-@import '@/assets/custom-vars.scss';
+//@import '@/assets/custom-vars.scss';
+@use '@/assets/custom-vars.scss' as *;
 </style>
 
 <script>

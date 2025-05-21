@@ -4,20 +4,20 @@
  */
 @import url('https://fonts.googleapis.com/css?family=Open+Sans:300,400,400i,600,700');
 
-@import 'bootstrap/scss/functions';
-@import 'variables';
-@import 'bootstrap/scss/bootstrap';
-@import 'bootstrap-vue/src/index';
-@import 'glyphicons-halflings/scss/glyphicons-halflings';
-@import 'font-awesome/css/font-awesome.css';
-@import 'line-awesome/dist/line-awesome/css/line-awesome.css';
-@import '../fonts/flaticon/flaticon';
-@import 'animate.css/animate';
-@import 'awesome-bootstrap-checkbox/awesome-bootstrap-checkbox';
-@import 'mixins';
-@import 'base';
-@import 'auth';
-@import 'overrides';
-@import 'general';
-@import 'utils';
-@import 'icons';
+@use 'bootstrap/scss/functions' as *;
+@use 'variables' as *;
+@use 'bootstrap/scss/bootstrap' as *;
+@use 'bootstrap-vue/src/index' as *;
+@use 'glyphicons-halflings/scss/glyphicons-halflings' as *;
+@use 'font-awesome/css/font-awesome.css' as *;
+@use 'line-awesome/dist/line-awesome/css/line-awesome.css' as *;
+@use '../fonts/flaticon/flaticon' as *;
+@use 'animate.css/animate' as *;
+@use 'awesome-bootstrap-checkbox/awesome-bootstrap-checkbox' as *;
+@use 'mixins' as *;
+@use 'base' as *;
+@use 'auth' as *;
+@use 'overrides' as *;
+@use 'general' as *;
+@use 'utils' as *;
+@use 'icons' as *;

@@ -1,3 +1,4 @@
+@use 'sass:color';
 .container-fluid {
   padding-left: 30px;
   padding-right: 30px;
@@ -550,7 +551,7 @@ h6,
   padding: 0;
 
   .nav-link {
-    color: transparentize($text-color, 0.3);
+    color: color.adjust($text-color, $alpha: -0.3);
 
     &:hover {
       color: $nav-pills-link-active-color;

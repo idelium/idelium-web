@@ -34,7 +34,7 @@
 .list-group-item.active {
   z-index: 2;
   color: black !important;
-  background-color: rgb(255, 255, 255)!important;
+  background-color: rgb(249, 128, 8)!important;
   border-color: rgb(82, 82, 82);
 }
 .iconClass {

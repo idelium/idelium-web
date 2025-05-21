@@ -2,11 +2,17 @@
  * Customized version of bootstrap using variables from _variables.scss.
  * This file is loaded via separate loader thus allowing to use original bootstrap classes (e.g. .btn-default) through out the app.
  */
+//@use 'bootstrap/scss/functions' as *;
+@use 'variables' as *;
+//@use 'bootstrap/scss/variables' as *;
+//@use 'bootstrap/scss/mixins' as *;
+@use 'mixins' as *;
+
 @import 'bootstrap/scss/functions';
-@import 'variables';
+//@import 'variables';
 @import 'bootstrap/scss/variables';
 @import 'bootstrap/scss/mixins';
-@import 'mixins';
+//@import 'mixins';
 
 $theme-colors: map-merge(
   $theme-colors,

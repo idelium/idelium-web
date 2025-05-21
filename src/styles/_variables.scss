@@ -1,3 +1,4 @@
+@use 'sass:color';
 // Meta
 
 $enable-shadows: true !default;
@@ -73,7 +74,7 @@ $addition-bg: rgba($white, 0.1) !default;
 $body-bg: $violet !default;
 $body-bg-gradient-start: $violet;
 $body-bg-gradient-end: #17193b;
-$body-bg-light: lighten($body-bg, 3%);
+$body-bg-light: color.adjust($body-bg, $lightness: 3%);
 $default-bg: radial-gradient(
   farthest-side ellipse at 10% 0,
   $body-bg-gradient-start,
@@ -110,14 +111,14 @@ $sidebar-item-active-color: #fff !default;
 // -------------------------
 $widget-bg: rgba(0, 0, 0, 0.24);
 $widget-title-color: #fff;
-$widget-shadow: 0 23px 20px -20px rgba(darken($body-bg, 25%), 0.1),
-  0 0 15px rgba(darken($body-bg, 25%), 0.06);
+$widget-shadow: 0 23px 20px -20px rgba(color.adjust($body-bg, $lightness: -25%), 0.1),
+  0 0 15px rgba(color.adjust($body-bg, $lightness: -25%), 0.06);
 $widget-shadow-designated: -1px 0 8px rgba(0, 0, 0, 0.2);
 $widget-border-radius: 10px;
 $widget-padding-vertical: 1rem !default;
 $widget-padding-horizontal: 1.5rem !default;
 
-$text-transparent: opacify($widget-bg, 0.07);
+$text-transparent: color.adjust($widget-bg, $alpha: 0.07);
 
 $input-btn-line-height: 1.5;
 
@@ -155,7 +156,7 @@ $dropdown-link-hover-bg: $text-color;
 $nav-tabs-active-link-hover-bg: $widget-bg !default;
 $nav-tabs-active-link-hover-color: $text-color !default;
 
-$nav-pills-link-active-color: transparentize($text-color, 0.7);
+$nav-pills-link-active-color: color.adjust($text-color, $alpha: -0.7);
 $nav-pills-link-active-color: $text-color;
 $nav-pills-link-active-bg: $widget-bg;
 
@@ -236,7 +237,7 @@ $card-border-width: 0;
 // == Modals
 
 //$modal-content-color: $gray-700;
-$modal-content-bg: darken($default, 20%) !default;
+$modal-content-bg: color.adjust($default, $lightness: -20%) !default;
 $close-color: $text-color !default;
 
 // == Code
