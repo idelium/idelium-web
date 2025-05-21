@@ -52,10 +52,6 @@
         </option>
       </select>
     </div>
-    <!--button class="btn btn-primary mt-5" style="width:100%;" type="button" v-on:click="testIssue()" :disabled="checkJira == true">
-                <span class="spinner-border spinner-border-sm" role="status" v-if="checkJira == true"></span>
-                    {{language[config.currentLanguage].TemplateTest.modalTemplate.btnTest}}
-                </button-->
     <div>
       <br />
       <div class="table-responsive">

@@ -808,7 +808,6 @@ export default {
       } else if (wrapperName == 'appium') {
         for (const element of appium.stepsFile) this.stepsType.push(element)
       } else if (wrapperName == 'webservice') {
-        console.log('eccomi')
         for (const element of webservices.stepsFile) this.stepsType.push(element)
       } else if (wrapperName == 'plugin') {
         this.stepsType = this.arrayPlugins

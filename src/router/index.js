@@ -144,7 +144,6 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   //read cookie
   let check = false
-  console.log('eccomi')
   console.log(to)
   console.log('storage: ' + localStorage.isFirstProject)
   if (localStorage.token) check = true

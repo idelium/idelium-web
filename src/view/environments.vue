@@ -369,7 +369,6 @@ export default {
   watch: {
     $route() {
       this.page = 0
-      console.log('eccomi qua')
       this.$forceUpdate()
     }
   },

@@ -124,6 +124,7 @@ legend {
 .table-no-border {
   margin-left: -$table-cell-padding;
   margin-right: -$table-cell-padding;
+  color: white;
 
   > thead > tr > th,
   > thead > tr > td,
@@ -137,7 +138,7 @@ legend {
 
 .table-sm {
   font-size: $font-size-sm;
-
+  color: white;
   > thead > tr > th,
   > thead > tr > td,
   > tbody > tr > th,
