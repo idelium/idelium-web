@@ -68,6 +68,7 @@
               placeholder="password"
               v-model="password"
               style="margin-top: 5px"
+              type="password"
             />
             <input
               class="form-control"
@@ -76,6 +77,7 @@
               placeholder="confirm password"
               v-model="confirmPassword"
               style="margin-top: 5px"
+              type="password"
             />
             <select
               class="form-select form-select-sm"
