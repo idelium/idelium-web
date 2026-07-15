@@ -78,7 +78,7 @@
   </div>
 </template>
 <script>
-import axios from 'axios'
+import apiClient from '@/services/apiClient'
 import modalModifyProject from './project/modalModifyProject.vue'
 
 export default {
@@ -86,7 +86,6 @@ export default {
   created() {
     this.getProjects()
     this.$gtag.event('idelium-builder', { method: 'project' })
-    console.log('projects')
     this.emitter.on('refreshProject', (msg) => {
       if (msg == true) this.getProjects(true)
       else this.$forceUpdate()
@@ -121,7 +120,7 @@ export default {
       ).then(() => this.deleteAction(id))
     },
     deleteAction(id) {
-      axios
+      apiClient
         .delete(this.config.serviceBaseUrl + this.config.url.projects + '/' + id, {
           headers: this.setHeaders()
         })
@@ -139,7 +138,7 @@ export default {
         })
     },
     getCostumers() {
-      axios
+      apiClient
         .get(this.config.serviceBaseUrl + this.config.url.costumers, {
           headers: this.setHeaders()
         })
@@ -157,7 +156,7 @@ export default {
 
     getProjects(isAutomaticLoad = false) {
       this.emitter.emit('showLoader', true)
-      axios
+      apiClient
         .get(this.config.serviceBaseUrl + this.config.url.projects, {
           headers: this.setHeaders()
         })
@@ -176,7 +175,7 @@ export default {
         })
     },
     insertProject(data) {
-      axios
+      apiClient
         .post(
           this.config.serviceBaseUrl + this.config.url.projects,
           {
@@ -199,7 +198,7 @@ export default {
     },
     updateProject(data) {
       this.emitter.emit('showLoader', true)
-      axios
+      apiClient
         .put(
           this.config.serviceBaseUrl + this.config.url.projects + '/' + data.id,
           {
@@ -229,8 +228,6 @@ export default {
       }
     },
     updateData(data) {
-      console.log('updateData:')
-      console.log(data)
       if (data.type == 'new') {
         this.insertProject(data)
       } else {

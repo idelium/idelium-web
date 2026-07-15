@@ -91,7 +91,7 @@
 }
 </style>
 <script>
-import axios from 'axios'
+import apiClient from '@/services/apiClient'
 import validatePassword from '@/shared/validatePassword'
 
 export default {
@@ -131,7 +131,7 @@ export default {
   methods: {
     getUser() {
       this.emitter.emit('showLoader', true)
-      axios
+      apiClient
         .get(this.config.serviceBaseUrl + this.config.url.profile, {
           headers: this.setHeaders()
         })
@@ -145,7 +145,7 @@ export default {
     },
     updatePassword() {
       this.emitter.emit('showLoader', true)
-      axios
+      apiClient
         .put(
           this.config.serviceBaseUrl + this.config.url.profile,
           {

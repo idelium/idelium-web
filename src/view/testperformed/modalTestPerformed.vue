@@ -16,22 +16,36 @@
             </h5>
           </div>
           <div v-if="fullscreen == false">
-            <timeline ref="timeline" :steps="arrayStep" v-on:showImage="showImage" />
+            <timeline
+              ref="timeline"
+              :steps="arrayStep"
+              v-on:showImage="showImage"
+            />
             <div class="stepTable">
               <table class="table table-striped costum">
                 <thead>
                   <tr>
                     <th scope="col">
-                      {{ language[config.currentLanguage].TestsPerformed.stepId }}
+                      {{
+                        language[config.currentLanguage].TestsPerformed.stepId
+                      }}
                     </th>
                     <th scope="col">
-                      {{ language[config.currentLanguage].TestsPerformed.stepName }}
+                      {{
+                        language[config.currentLanguage].TestsPerformed.stepName
+                      }}
                     </th>
                     <th scope="col">
-                      {{ language[config.currentLanguage].TestsPerformed.stepStatus }}
+                      {{
+                        language[config.currentLanguage].TestsPerformed
+                          .stepStatus
+                      }}
                     </th>
                     <th scope="col">
-                      {{ language[config.currentLanguage].TestsPerformed.screenshots }}
+                      {{
+                        language[config.currentLanguage].TestsPerformed
+                          .screenshots
+                      }}
                     </th>
                     <th scope="col"></th>
                     <th scope="col"></th>
@@ -46,7 +60,9 @@
                     <td>
                       <button
                         type="button"
-                        :class="'btn btn-' + getVariant(step.status) + ' buttonTest'"
+                        :class="
+                          'btn btn-' + getVariant(step.status) + ' buttonTest'
+                        "
                       >
                         {{ getStatusText(step.status) }}
                       </button>
@@ -62,7 +78,11 @@
                       </span>
                     </td>
                     <td v-if="step.type == 'postman'">
-                      <button type="button" :class="btn" v-on:click="showPostmanCollection(index)">
+                      <button
+                        type="button"
+                        :class="btn"
+                        v-on:click="showPostmanCollection(index)"
+                      >
                         Postman Collection Details
                       </button>
                     </td>
@@ -102,79 +122,77 @@
 </style>
 
 <script>
-import timeline from './timeLine.vue'
-import { Modal } from 'bootstrap'
+import timeline from "./timeLine.vue";
+import { Modal } from "bootstrap";
 export default {
   components: {
     timeline,
   },
-  created() {
-    console.log('modal testcycle')
-  },
+  created() {},
   data() {
     return {
-      testName: '',
+      testName: "",
       arrayStep: [],
       fullscreen: false,
       screenFull: null,
       postmanCollection: null,
       showCollectionWindow: false,
-      showMe: true
-    }
+      showMe: true,
+    };
   },
   mounted() {
-    this.modalElem = new Modal(document.getElementById('myModal'))
+    this.modalElem = new Modal(document.getElementById("myModal"));
   },
   methods: {
     showPostmanCollection(index) {
-      console.log(index)
-      this.modalElem.hide()
-      this.$router.push({ path: '/postman/' + this.arrayStep[index].testDoneId })
+      this.modalElem.hide();
+      this.$router.push({
+        path: "/postman/" + this.arrayStep[index].testDoneId,
+      });
     },
     getVariant(status) {
-      let variant = 'success'
+      let variant = "success";
       if (status != 1) {
-        variant = 'danger'
+        variant = "danger";
       }
-      return variant
+      return variant;
     },
     getStatusText(status) {
-      let variant = 'success'
+      let variant = "success";
       if (status != 1) {
-        variant = 'failed'
+        variant = "failed";
       }
-      return variant
+      return variant;
     },
     showModal(arrayStep, name) {
-      this.arrayStep = arrayStep
-      this.testName = name
-      this.fullscreen = false
-      this.modalElem.show()
-      this.showCollectionWindow = false
+      this.arrayStep = arrayStep;
+      this.testName = name;
+      this.fullscreen = false;
+      this.modalElem.show();
+      this.showCollectionWindow = false;
       setTimeout(
         function () {
-          this.$refs.timeline.calc()
+          this.$refs.timeline.calc();
         }.bind(this),
-        100
-      )
+        100,
+      );
     },
     fullscreenImage(screen) {
-      this.fullscreen = !this.fullscreen
-      this.screenFull = screen
-      this.showCollectionWindow = false
+      this.fullscreen = !this.fullscreen;
+      this.screenFull = screen;
+      this.showCollectionWindow = false;
       if (this.fullscreen == false) {
         setTimeout(
           function () {
-            this.$refs.timeline.calc()
+            this.$refs.timeline.calc();
           }.bind(this),
-          100
-        )
+          100,
+        );
       }
     },
     showImage(index) {
-      console.log('showImage')
-      this.fullscreenImage(JSON.parse(this.arrayStep[index].screenshots)[0])
-    }
-  }
-}
+      this.fullscreenImage(JSON.parse(this.arrayStep[index].screenshots)[0]);
+    },
+  },
+};
 </script>

@@ -53,7 +53,6 @@ export default {
   created() {
     // Using the service bus
     this.emitter.on('openShowIssueModal', (msg) => {
-      console.log(msg)
       this.issue = msg
       this.$refs.showIssueModal.show()
     })

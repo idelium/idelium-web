@@ -116,7 +116,6 @@ export default {
   },
   methods: {
     setTypeEnvironment() {
-      console.log(this.environmentType)
       if (this.environmentType == 'web') {
         this.parameters = param.selenium
       } else if (this.environmentType == 'app') {
@@ -136,23 +135,16 @@ export default {
       })
     },
     deleteEnv(index) {
-      console.log('delete env:' + index)
       this.environments.splice(index, 1)
     },
     putJson(json) {
-      console.log('putJson')
-      console.log(json)
       this.values = []
       let keys = Object.keys(json)
       for (let i in keys) {
-        console.log(keys[i])
-        console.log(this.parameters.findIndex(({ typeName }) => typeName === keys[i]))
-        console.log(json[keys[i]])
         this.values.push(json[keys[i]])
       }
     },
     generateJson(isAuto = null) {
-      console.log('generate json' + isAuto)
       let jsonToSend = {}
       let subParameter = false
       let jsonSub = {}
@@ -188,7 +180,6 @@ export default {
         jsonToSend[this.environments[i].name] = this.environments[i].value
       }
       if (isAuto == false) this.$emit('changeWizardJson', jsonToSend)
-      console.log(jsonToSend)
     }
   }
 }

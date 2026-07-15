@@ -108,7 +108,6 @@ export default {
       }
     },
     showModal(dataProject, type) {
-      console.log('show Modal:' + type)
       this.type = type
       this.projectDescription = ''
       this.confirmPassword = ''

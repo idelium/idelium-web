@@ -208,14 +208,11 @@ export default {
   },
   methods: {
     start() {
-      console.log('Start')
       if (this.arrayTypes.length > 0) this.typeSelected = this.arrayTypes[0].id
-      console.log(this.arrayTypes)
       this.getPlatforms()
       this.getBrand()
     },
     async getBrand() {
-      console.log('getBrand' + this.typeSelected)
       this.arrayBrands = []
       if (this.typeSelected == null) return false
       this.emitter.emit('showLoader', true)
@@ -237,7 +234,6 @@ export default {
       this.filterPlatform()
     },
     async getBrowser() {
-      console.log('getBrowser')
       let response = await commonCalls.getBrowser(this, this.osSelected).catch((e) => {
         this.Logout(this, e)
       })
@@ -263,7 +259,6 @@ export default {
     },
     filterPlatform() {
       this.arrayPlatformsToShow = this.arrayPlatforms
-      console.log('filterPlatform')
       if (this.brandSelected != 'all') {
         let dummyArray = []
         for (let i = 0; i < this.arrayPlatformsToShow.length > 0; i++) {
@@ -285,7 +280,6 @@ export default {
         for (let i = 0; i < this.arrayPlatformsToShow.length > 0; i++) {
           if (this.arrayPlatformsToShow[i].browser == this.browserSelected)
             dummyArray.push(this.arrayPlatformsToShow[i])
-          console.log(this.arrayPlatformsToShow[i].browser + '=' + this.browserSelected)
         }
         this.arrayPlatformsToShow = dummyArray
       }
@@ -311,7 +305,6 @@ export default {
     },
     async savePlatform(json) {
       this.emitter.emit('showLoader', true)
-      console.log('savePlatform')
       let response = await commonCalls.savePlatform(this, json).catch((e) => {
         this.Logout(this, e)
       })
@@ -320,7 +313,6 @@ export default {
     },
     async setStatusPlatform(id) {
       this.emitter.emit('showLoader', true)
-      console.log('savePlatform')
       let response = await commonCalls
         .updateStatusPlatform(this, id, this.typeSelected, this.elementToEdit)
         .catch((e) => {

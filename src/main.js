@@ -1,9 +1,11 @@
 //import './assets/main.css'
 
 import { createApp } from 'vue'
-import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
+import { pinia } from './stores/pinia'
+import { useSessionStore } from './stores/session'
+import { setUnauthorizedHandler } from './services/apiClient'
 import 'bootstrap'
 import ElementPlus from 'element-plus'
 import 'element-plus/theme-chalk/index.css'
@@ -100,7 +102,7 @@ const emitter = mitt()
 const app = createApp(App)
 app.config.globalProperties.emitter = emitter
 
-app.use(createPinia())
+app.use(pinia)
 app.use(router)
 app.use(ElementPlus)
 app.use(Toast, { verticalPosition: 'bottom', horizontalPosition: 'right', duration: 1500 })
@@ -158,40 +160,26 @@ app.config.globalProperties.$isAuthenticated = { value: false }
 
 app.config.globalProperties.config.productionTip = false
 app.config.globalProperties.Logout = (object, e = null) => {
-  console.log('logout')
-  let status = 401
   object.emitter.emit('showLoader', false)
-
-  if (e != null) status = e.response.status
-  if (localStorage.token && status == 401) {
-    object.$router.push({ name: 'Login', query: { back: object.$route.name } })
-    localStorage.removeItem('token')
-    localStorage.removeItem('session')
-    localStorage.removeItem('isFirstProject')
-  } else {
-    if (status != 401) alert(status + ':' + e.config.url)
-    /*this.$bvToast.toast(status + ":" + e.config.url, {
-                //title: 'Idelium',
-        variant: 'primary',
-        solid:true,
-        //autoHideDelay: 5000,
-        appendToast: true,
-        noCloseButton: false,
-        }) */
+  const status = e?.response?.status || 401
+  if (status === 401) {
+    useSessionStore(pinia).clear()
+    if (object.$route.name !== 'Login') {
+      object.$router.push({ name: 'Login', query: { back: object.$route.name } })
+    }
   }
-
-  console.log('logout commented')
 }
 app.config.globalProperties.setHeaders = () => {
   return {
     'Content-Type': 'application/json',
-    Accept: 'application/json',
-    Authorization: 'Bearer ' + localStorage.token,
-    Session: localStorage.session
+    Accept: 'application/json'
   }
 }
-router.beforeEach((to, from, next) => {
-  next()
+setUnauthorizedHandler(() => {
+  const currentRoute = router.currentRoute.value
+  if (currentRoute.name !== 'Login') {
+    return router.push({ name: 'Login', query: { back: currentRoute.name } })
+  }
 })
 
 

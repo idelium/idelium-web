@@ -145,13 +145,17 @@
 </style>
 
 <script>
-import axios from 'axios'
+import apiClient from '@/services/apiClient'
+import { useSessionStore } from '@/stores/session'
 import CountryFlag from 'vue-country-flag-next'
 
 export default {
   name: 'HeaderComponent',
   components: {
     CountryFlag
+  },
+  setup() {
+    return { session: useSessionStore() }
   },
   data() {
     return {
@@ -163,7 +167,6 @@ export default {
     }
   },
   created() {
-    console.log('header')
     this.getHeaders()
     this.emitter.on('updateListProject', (msg) => {
       this.arrayProjects = msg
@@ -173,8 +176,7 @@ export default {
   },
   watch: {
     projectSelected() {
-      console.log('changeProjectSelected: ' + this.projectSelected)
-      localStorage.projectIdSelected = this.projectSelected
+      this.session.selectProject(this.projectSelected)
       this.refreshComponents(true)
     },
     costumerSelected() {
@@ -183,8 +185,6 @@ export default {
   },
   methods: {
     changeLang(lang) {
-      console.log('Before language: ' + this.config.currentLanguage)
-      console.log('Current language: ' + lang)
       this.config.currentLanguage = lang
       localStorage.langSelected = lang
       this.emitter.emit('refreshSideBar')
@@ -207,7 +207,6 @@ export default {
       this.refreshComponents()
     },
     refreshComponents(isProjectChange = false) {
-      console.log('refresh --->' + this.$route.name)
       if (this.$route.name == 'plugins') this.emitter.emit('refreshPlugin', true)
       if (this.$route.name == 'steps') this.emitter.emit('refreshStep', true)
       if (this.$route.name == 'environments') this.emitter.emit('refreshEnvironment', true)
@@ -222,7 +221,7 @@ export default {
       if (this.$route.name == 'testlauncher') this.emitter.emit('refreshTestLauncher', true)
     },
     changeCostumer(id) {
-      axios
+      apiClient
         .put(
           this.config.serviceBaseUrl + this.config.url.header + '/' + id,
           {},
@@ -231,11 +230,10 @@ export default {
           }
         )
         .then((response) => {
-          console.log('change')
           this.emitter.emit('showLoader', false)
           this.projectSelected = null
-          localStorage.session = response.data.session
-          console.log('changeCostuemerSelected: ' + id)
+          this.session.selectCustomer(id)
+          this.session.updateSessionId(response.data.session)
           this.refreshComponents()
           this.getProjects()
         })
@@ -245,15 +243,14 @@ export default {
         })
     },
     getProjects() {
-      console.log('----------------------------')
-      axios
+      apiClient
         .get(this.config.serviceBaseUrl + this.config.url.projects, {
           headers: this.setHeaders()
         })
         .then((response) => {
           this.emitter.emit('showLoader', false)
           this.arrayProjects = response.data
-          localStorage.isFirstProject = this.arrayProjects.length == 0 ? 'true' : 'false'
+          this.session.setProjectAvailability(this.arrayProjects)
           if (this.projectSelected == null && this.arrayProjects.length > 0)
             this.projectSelected = this.arrayProjects[0].id
         })
@@ -265,14 +262,14 @@ export default {
 
     getHeaders() {
       this.emitter.emit('showLoader', true)
-      axios
+      apiClient
         .get(this.config.serviceBaseUrl + this.config.url.header, {
           headers: this.setHeaders()
         })
         .then((response) => {
           this.emitter.emit('showLoader', false)
           this.arrayProjects = response.data.projects
-          localStorage.isFirstProject = this.arrayProjects.length == 0 ? 'true' : 'false'
+          this.session.setProjectAvailability(this.arrayProjects)
           if (this.projectSelected == null && this.arrayProjects.length > 0)
             this.projectSelected = this.arrayProjects[0].id
           if (response.data.costumers) this.arrayCostumers = response.data.costumers
@@ -296,16 +293,14 @@ export default {
       ).then(() => this.actionLogout())
     },
     actionLogout() {
-      axios
+      apiClient
         .get(this.config.serviceBaseUrl + this.config.url.logout, {
           headers: this.setHeaders()
         })
-        .then((response) => {
-          console.log(response)
+        .then(() => {
           this.Logout(this)
         })
-        .catch((e) => {
-          console.log(e)
+        .catch(() => {
           this.Logout(this)
         })
     }

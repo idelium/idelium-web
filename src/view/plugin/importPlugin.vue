@@ -48,7 +48,7 @@
 }
 </style>
 <script>
-import axios from 'axios'
+import apiClient from '@/services/apiClient'
 import FileUpload from 'vue-upload-component'
 export default {
   name: 'SeleniumComponent',
@@ -66,7 +66,6 @@ export default {
   },
 
   created() {
-    console.log('import selenium')
   },
   watch: {
     testName() {
@@ -78,7 +77,6 @@ export default {
   },
   methods: {
     inputFilter(newFile) {
-      console.log('---------')
       this.errortext = ''
       var fileExt = newFile.name.split('.').pop()
       if (fileExt != 'py') {
@@ -86,9 +84,8 @@ export default {
           this.language[this.config.currentLanguage].Plugins.importPlugin.extensionIsWrong
         return false
       }
-      //console.log( this.blobToString(newFile.file))
       let url = URL.createObjectURL(newFile.file)
-      axios
+      apiClient
         .get(url, {
           responseType: 'text'
         })

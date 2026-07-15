@@ -120,7 +120,6 @@ export default {
     }
   },
   created() {
-    console.log('browsers')
   },
   watch: {},
   methods: {
@@ -129,7 +128,6 @@ export default {
       this.getOs()
     },
     async getOs() {
-      console.log('getOs')
       this.emitter.emit('showLoader', true)
       let response = await commonCalls.getOs(this, this.typeSelected).catch((e) => {
         this.Logout(this, e)
@@ -142,7 +140,6 @@ export default {
       this.emitter.emit('showLoader', false)
     },
     async getBrowser() {
-      console.log('getOs')
       this.emitter.emit('showLoader', true)
       let response = await commonCalls.getBrowser(this, this.osSelected).catch((e) => {
         this.Logout(this, e)

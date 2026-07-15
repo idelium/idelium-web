@@ -108,7 +108,7 @@
 }
 </style>
 <script>
-import axios from 'axios'
+import apiClient from '@/services/apiClient'
 
 import idelium from '../../../shared/idelium'
 import DatePicker from 'vue2-datepicker'
@@ -195,9 +195,7 @@ export default {
         'zapi/latest/util/versionBoard-list?projectId=' +
         this.$route.params.id
       idelium.jira(this.config.url.jiraProxy, 'get', url).then((returnVal) => {
-        console.log(returnVal.http_code)
         if (returnVal.http_code == 200) {
-          console.log(returnVal)
           this.versionResponse = returnVal.responseJira
         } else {
           this.alertMessage =
@@ -218,7 +216,6 @@ export default {
           }
           this.listVersion.push(objectOption)
         }
-        console.log(this.listVersion)
         this.showVersion = true
       } else {
         this.showName = false
@@ -227,7 +224,6 @@ export default {
       }
     },
     changeVersion(id) {
-      console.log(id)
       this.showName = true
       this.enableOkButton = true
     },
@@ -245,7 +241,6 @@ export default {
       }
     },
     createCycle() {
-      console.log('CreateCycle')
       this.emitter.emit('showLoader', true)
       this.$refs.createCycleModal.hide()
 
@@ -258,7 +253,6 @@ export default {
         versionId: this.versionSelected,
         sprintId: null
       }
-      console.log(payload)
       idelium.jira(this.config.url.jiraProxy, 'post', url, payload).then((returnVal) => {
         if (returnVal.http_code == 200) {
           this.addTestToCycle(returnVal.responseJira.id)
@@ -271,7 +265,6 @@ export default {
       })
     },
     updateCycle(id) {
-      console.log('CreateCycle')
       let url = this.config.url.wsJiraServiceURL + 'zapi/latest/cycle'
       let payload = {
         id: id,
@@ -282,7 +275,6 @@ export default {
         versionId: this.versionSelected,
         sprintId: null
       }
-      console.log(payload)
       idelium.jira(this.config.url.jiraProxy, 'put', url, payload).then((returnVal) => {
         if (returnVal.http_code == 200) {
           this.successMessage =
@@ -302,14 +294,13 @@ export default {
       })
     },
     createJenkinsFile(versionId, cycleId) {
-      axios
+      apiClient
         .post(this.config.url.jenkinsFile, {
           projectId: this.$route.params.id,
           versionId: versionId,
           cycleId: cycleId
         })
         .then((response) => {
-          console.log(response)
           this.emitter.emit('showLoader', false)
           this.$refs.createCycleModal.show()
         })
@@ -318,7 +309,6 @@ export default {
         })
     },
     addTestToCycle(cycleId) {
-      console.log('addTesCycle')
       let issueToSend = []
       for (let i = 0; i < this.issues.length; i++) {
         issueToSend.push(this.issues[i].key)
@@ -331,7 +321,6 @@ export default {
         projectId: this.$route.params.id,
         method: '1'
       }
-      console.log(payload)
       let url = this.config.url.wsJiraServiceURL + 'zapi/latest/execution/addTestsToCycle'
       idelium.jira(this.config.url.jiraProxy, 'post', url, payload).then((returnVal) => {
         if (returnVal.http_code == 200) {

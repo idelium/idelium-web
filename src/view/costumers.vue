@@ -107,7 +107,7 @@
 }
 </style>
 <script>
-import axios from 'axios'
+import apiClient from '@/services/apiClient'
 import modalModifyCostumer from './costumer/modalModifyCostumer.vue'
 
 import copy from 'copy-to-clipboard'
@@ -117,7 +117,6 @@ export default {
   created() {
     this.getCostumers()
     this.$gtag.event('idelium-builder', { method: 'costumer' })
-    console.log('costumers')
     this.emitter.on('refreshCostumer', () => {
       this.$forceUpdate()
     })
@@ -157,7 +156,7 @@ export default {
     },
     deleteAction(id) {
       this.emitter.emit('showLoader', true)
-      axios
+      apiClient
         .delete(this.config.serviceBaseUrl + this.config.url.costumers + '/' + id, {
           headers: this.setHeaders()
         })
@@ -173,7 +172,7 @@ export default {
     },
     getCostumers() {
       this.emitter.emit('showLoader', true)
-      axios
+      apiClient
         .get(this.config.serviceBaseUrl + this.config.url.costumers, {
           headers: this.setHeaders()
         })
@@ -188,7 +187,7 @@ export default {
         })
     },
     insertCostumer(data) {
-      axios
+      apiClient
         .post(
           this.config.serviceBaseUrl + this.config.url.costumers,
           {
@@ -211,7 +210,7 @@ export default {
     },
     updateCostumer(data) {
       this.emitter.emit('showLoader', true)
-      axios
+      apiClient
         .put(
           this.config.serviceBaseUrl + this.config.url.costumers + '/' + data.id,
           {
@@ -241,8 +240,6 @@ export default {
       }
     },
     updateData(data) {
-      console.log('updateData:')
-      console.log(data)
       if (data.type == 'new') {
         this.insertCostumer(data)
       } else {

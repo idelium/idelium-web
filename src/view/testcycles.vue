@@ -205,7 +205,9 @@
 </style>
 
 <script>
-import axios from 'axios'
+import apiClient from '@/services/apiClient'
+import { getSelectedProjectId } from '@/stores/session'
+import { buildTestCyclePayload } from '@/domain/workflowPayloads'
 
 import draggable from 'vuedraggable'
 import copy from 'copy-to-clipboard'
@@ -237,7 +239,6 @@ export default {
     this.getTests(1)
     if (this.commandLine != '') this.setCommandLine()
     this.emitter.on('refreshTestCycle', (msg) => {
-      console.log('refreshTestCycle')
       this.commandLine = ''
       this.testCycleSelected = null
       if (msg == true) this.getTests(2)
@@ -248,7 +249,6 @@ export default {
     testFilter() {
       // Do something with search nameIssue after it debounced
       let filter = this.testFilter
-      console.log(filter)
       this.searchTextTests(filter)
     },
     arrayTestsSelectedDragged() {
@@ -274,18 +274,15 @@ export default {
     },
     getTests(from) {
       this.emitter.emit('showLoader', true)
-      console.log('getTests:' + from)
-      axios
+      apiClient
         .get(
-          this.config.serviceBaseUrl + this.config.url.tests + '/' + localStorage.projectIdSelected,
+          this.config.serviceBaseUrl + this.config.url.tests + '/' + getSelectedProjectId(),
           {
             headers: this.setHeaders()
           }
         )
         .then((response) => {
-          console.log(response)
           this.arrayTests = this.listOriginalTests = response.data
-          console.log(this.arrayTests)
           this.getTestCycles(2)
         })
         .catch((e) => {
@@ -294,14 +291,13 @@ export default {
         })
     },
     getTestCycles(from) {
-      console.log('getTestCycles from:' + from)
       this.emitter.emit('showLoader', true)
-      axios
+      apiClient
         .get(
           this.config.serviceBaseUrl +
             this.config.url.testcycles +
             '/' +
-            localStorage.projectIdSelected,
+            getSelectedProjectId(),
           {
             headers: this.setHeaders()
           }
@@ -325,7 +321,7 @@ export default {
         'idelium --idCycle=' +
         this.testCycleSelected.id +
         ' --idProject=' +
-        localStorage.projectIdSelected +
+        getSelectedProjectId() +
         ' --environment=<environment name>'
     },
     getTestCycle() {
@@ -336,12 +332,12 @@ export default {
       }
       this.setCommandLine()
       this.emitter.emit('showLoader', true)
-      axios
+      apiClient
         .get(
           this.config.serviceBaseUrl +
             this.config.url.testcycles +
             '/' +
-            localStorage.projectIdSelected +
+            getSelectedProjectId() +
             '/' +
             this.testCycleSelected.id,
           {
@@ -360,15 +356,15 @@ export default {
     },
     saveTestCycle() {
       this.emitter.emit('showLoader', true)
-      axios
+      apiClient
         .post(
           this.config.serviceBaseUrl + this.config.url.testcycles,
-          {
+          buildTestCyclePayload({
             name: this.newNameTestCycle,
             description: this.newDescriptionTestCycle,
-            config: JSON.stringify(this.arrayTestsSelectedDragged),
-            idProject: localStorage.projectIdSelected
-          },
+            tests: this.arrayTestsSelectedDragged,
+            projectId: getSelectedProjectId()
+          }),
           {
             headers: this.setHeaders()
           }
@@ -386,12 +382,12 @@ export default {
     },
     modifyTestCycle() {
       this.emitter.emit('showLoader', true)
-      axios
+      apiClient
         .put(
           this.config.serviceBaseUrl +
             this.config.url.testcycles +
             '/' +
-            localStorage.projectIdSelected +
+            getSelectedProjectId() +
             '/' +
             this.testCycleSelected.id,
           {
@@ -413,14 +409,11 @@ export default {
         })
     },
     log: function () {
-      console.log(this.arrayTestsSelectedDragged)
       this.copyArray()
       this.disableNameTestCycle = this.arrayTestsSelectedDragged.length == 0
     },
     deleteItem(index) {
-      console.log('delete copy item: ' + index)
       this.arrayTestsSelectedDragged.splice(index, 1)
-      console.log(this.arrayTestsSelectedDragged)
       this.copyArray()
       this.disableNameTestCycle = this.arrayTestsSelectedDragged.length == 0
     },

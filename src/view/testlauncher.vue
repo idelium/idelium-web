@@ -70,7 +70,8 @@
   </div>
 </template>
 <script>
-import axios from 'axios'
+import apiClient from '@/services/apiClient'
+import { getSelectedProjectId } from '@/stores/session'
 
 import platformLauncher from './platformlauncher/modalListPlatform.vue'
 
@@ -95,12 +96,12 @@ export default {
   methods: {
     getTestCycles() {
       this.emitter.emit('showLoader', true)
-      axios
+      apiClient
         .get(
           this.config.serviceBaseUrl +
             this.config.url.testcycles +
             '/' +
-            localStorage.projectIdSelected,
+            getSelectedProjectId(),
           {
             headers: this.setHeaders()
           }
@@ -115,12 +116,12 @@ export default {
         })
     },
     getEnvironments() {
-      axios
+      apiClient
         .get(
           this.config.serviceBaseUrl +
             this.config.url.environments +
             '/' +
-            localStorage.projectIdSelected,
+            getSelectedProjectId(),
           {
             headers: this.setHeaders()
           }

@@ -329,7 +329,9 @@
 </style>
 
 <script>
-import axios from 'axios'
+import apiClient from '@/services/apiClient'
+import { getSelectedProjectId } from '@/stores/session'
+import { buildTestPayload } from '@/domain/workflowPayloads'
 
 import draggable from 'vuedraggable'
 import importSelenium from './tests/importSelenium.vue'
@@ -376,11 +378,9 @@ export default {
     stepFilter() {
       // Do something with search nameIssue after it debounced
       let filter = this.stepFilter
-      console.log(filter)
       this.searchTextSteps(filter)
     },
     arrayStepsSelectedDragged() {
-      console.log('arrayStepsSelectedDragged: ' + this.arrayStepsSelectedDragged.length)
       this.disableNameTest = this.arrayStepsSelectedDragged.length == 0
     },
     newNameTest() {
@@ -396,7 +396,6 @@ export default {
       this.$forceUpdate();
     }, */
     files() {
-      console.log(this.files)
     }
   },
   methods: {
@@ -414,7 +413,6 @@ export default {
         this.importedFromSelenium = true
         this.arrayEditImportedSteps = []
         for (let i in this.arrayStepsImported) {
-          console.log(i)
           this.arrayEditImportedSteps.push(false)
         }
       }
@@ -426,17 +424,15 @@ export default {
     },
     getSteps() {
       this.emitter.emit('showLoader', true)
-      axios
+      apiClient
         .get(
-          this.config.serviceBaseUrl + this.config.url.steps + '/' + localStorage.projectIdSelected,
+          this.config.serviceBaseUrl + this.config.url.steps + '/' + getSelectedProjectId(),
           {
             headers: this.setHeaders()
           }
         )
         .then((response) => {
-          console.log(response)
           this.arraySteps = this.listOriginalSteps = response.data
-          console.log(this.arraySteps)
           this.getTests()
         })
         .catch((e) => {
@@ -445,9 +441,9 @@ export default {
     },
     getTests() {
       this.emitter.emit('showLoader', true)
-      axios
+      apiClient
         .get(
-          this.config.serviceBaseUrl + this.config.url.tests + '/' + localStorage.projectIdSelected,
+          this.config.serviceBaseUrl + this.config.url.tests + '/' + getSelectedProjectId(),
           {
             headers: this.setHeaders()
           }
@@ -468,12 +464,12 @@ export default {
         return false
       }
       this.emitter.emit('showLoader', true)
-      axios
+      apiClient
         .get(
           this.config.serviceBaseUrl +
             this.config.url.tests +
             '/' +
-            localStorage.projectIdSelected +
+            getSelectedProjectId() +
             '/' +
             this.testSelected.id,
           {
@@ -492,15 +488,15 @@ export default {
     },
     saveTest() {
       this.emitter.emit('showLoader', true)
-      axios
+      apiClient
         .post(
           this.config.serviceBaseUrl + this.config.url.tests,
-          {
+          buildTestPayload({
             name: this.newNameTest,
             description: this.newDescriptionTest,
-            config: JSON.stringify(this.arrayStepsSelectedDragged),
-            idProject: localStorage.projectIdSelected
-          },
+            steps: this.arrayStepsSelectedDragged,
+            projectId: getSelectedProjectId()
+          }),
           {
             headers: this.setHeaders()
           }
@@ -518,21 +514,20 @@ export default {
     },
     saveImportTest() {
       this.emitter.emit('showLoader', true)
-      axios
+      apiClient
         .post(
           this.config.serviceBaseUrl + this.config.url.importtest,
           {
             name: this.importedNameTest,
             description: this.importedDescriptionTest,
             import: JSON.stringify(this.arrayStepsImported),
-            idProject: localStorage.projectIdSelected
+            idProject: getSelectedProjectId()
           },
           {
             headers: this.setHeaders()
           }
         )
         .then((response) => {
-          console.log(response)
           this.arrayStepsSelectedDragged = []
           this.arrayStepsImported = []
           this.cancelUpload()
@@ -546,12 +541,12 @@ export default {
     },
     modifyTest() {
       this.emitter.emit('showLoader', true)
-      axios
+      apiClient
         .put(
           this.config.serviceBaseUrl +
             this.config.url.tests +
             '/' +
-            localStorage.projectIdSelected +
+            getSelectedProjectId() +
             '/' +
             this.testSelected.id,
           {
@@ -574,12 +569,10 @@ export default {
         })
     },
     log: function () {
-      console.log(this.arrayStepsSelectedDragged)
       this.copyArray()
     },
     deleteItem(index) {
       this.arrayStepsSelectedDragged.splice(index, 1)
-      console.log(this.arrayStepsSelectedDragged)
       this.copyArray()
     },
     deleteItemImported(index) {
@@ -606,7 +599,6 @@ export default {
       this.arrayStepsImported[index].steps[0].findBy = findBy
       this.arrayStepsImported[index].steps[1].findBy = findBy
       this.endEditImportedItem(index)
-      console.log(obj)
     },
     copyArray() {
       this.disableNameTest = this.arrayStepsSelectedDragged.length == 0

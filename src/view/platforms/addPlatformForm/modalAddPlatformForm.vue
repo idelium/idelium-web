@@ -195,7 +195,6 @@ export default {
       if (this.arrayLocations.length > 0) this.locationSelected = this.arrayLocations[0].id
     },
     async getBrand() {
-      console.log('getBrand' + this.typeSelected)
       this.emitter.emit('showLoader', true)
       this.arrayBrands = []
       this.arrayModel = []
@@ -244,7 +243,6 @@ export default {
       this.emitter.emit('showLoader', false)
     },
     async getBrowser() {
-      console.log('getBrowser')
       this.emitter.emit('showLoader', true)
       let response = await commonCalls.getBrowser(this, this.osSelected).catch((e) => {
         this.Logout(this, e)
@@ -254,7 +252,6 @@ export default {
       this.getBrowserVersion()
     },
     async getBrowserVersion() {
-      console.log('getBrowserVersion')
       this.emitter.emit('showLoader', true)
       let response = await commonCalls.getBrowserVersion(this, this.browserSelected).catch((e) => {
         this.Logout(this, e)

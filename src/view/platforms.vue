@@ -207,7 +207,6 @@ export default {
   created() {
     this.getLocations()
     this.emitter.on('refreshPlatform', (msg) => {
-      console.log('refreshPlatform')
       if (msg == true) this.getLocations()
       else {
         this.show = false

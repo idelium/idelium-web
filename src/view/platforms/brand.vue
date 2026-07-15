@@ -87,7 +87,6 @@ export default {
     }
   },
   created() {
-    console.log('brands')
     this.getBrand()
   },
   watch: {},

@@ -48,7 +48,6 @@ export default {
   },
   created() {
     this.emitter.on('showLoader', (msg) => {
-      console.log('showLoader:' + msg)
       this.showLoader = msg
     })
     this.emitter.on('sideBar', (msg) => {

@@ -55,7 +55,8 @@
 </style>
 
 <script>
-import axios from 'axios'
+import apiClient from '@/services/apiClient'
+import { getSelectedProjectId } from '@/stores/session'
 
 export default {
   name: 'SidebarComponent',
@@ -79,7 +80,7 @@ export default {
   },
   methods: {
     go(link, active) {
-      if (localStorage.projectIdSelected != undefined || active == true)
+      if (getSelectedProjectId() != undefined || active == true)
         this.$router.push({ path: '/' + link })
       else {
         alert('Please insert your first project')
@@ -88,7 +89,7 @@ export default {
     },
     getSidebar() {
       this.emitter.emit('showLoader', true)
-      axios
+      apiClient
         .get(this.config.serviceBaseUrl + this.config.url.sidebar, {
           headers: this.setHeaders()
         })

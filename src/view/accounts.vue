@@ -98,13 +98,12 @@
   </div>
 </template>
 <script>
-import axios from 'axios'
+import apiClient from '@/services/apiClient'
 import modalModifyAccount from './account/modalModifyAccount.vue'
 
 export default {
   name: 'AccountsComponent',
   created() {
-    console.log('accounts')
     this.getAccounts()
     this.$gtag.event('idelium', { method: 'account' })
     this.emitter.on('refreshAccount', () => {
@@ -146,7 +145,7 @@ export default {
     },
     deleteAction(id) {
       this.emitter.emit('showLoader', true)
-      axios
+      apiClient
         .delete(this.config.serviceBaseUrl + this.config.url.accounts + '/' + id, {
           headers: this.setHeaders()
         })
@@ -161,7 +160,7 @@ export default {
         })
     },
     getRoles() {
-      axios
+      apiClient
         .get(this.config.serviceBaseUrl + this.config.url.roles, {
           headers: this.setHeaders()
         })
@@ -175,7 +174,7 @@ export default {
         })
     },
     getCostumers() {
-      axios
+      apiClient
         .get(this.config.serviceBaseUrl + this.config.url.costumers, {
           headers: this.setHeaders()
         })
@@ -191,16 +190,14 @@ export default {
     },
     getAccounts() {
       this.emitter.emit('showLoader', true)
-      axios
+      apiClient
         .get(this.config.serviceBaseUrl + this.config.url.accounts, {
           headers: this.setHeaders()
         })
         .then((response) => {
           this.emitter.emit('showLoader', false)
           this.arrayAccounts = response.data
-          console.log(this.arrayAccounts)
           let obj = this.arrayAccounts.find(({ role }) => role === 1)
-          console.log(obj)
           if (obj != null) {
             this.isSuperAdmin = true
             this.getCostumers()
@@ -213,7 +210,7 @@ export default {
         })
     },
     insertAccount(data) {
-      axios
+      apiClient
         .post(
           this.config.serviceBaseUrl + this.config.url.accounts,
           {
@@ -238,7 +235,7 @@ export default {
     },
     updateAccount(data) {
       this.emitter.emit('showLoader', true)
-      axios
+      apiClient
         .put(
           this.config.serviceBaseUrl + this.config.url.accounts + '/' + data.id,
           {
@@ -263,8 +260,6 @@ export default {
       this.$refs.modifyModal.showModal(this.arrayAccounts[index], type)
     },
     updateData(data) {
-      console.log('updateData:')
-      console.log(data)
       if (data.type == 'new') {
         this.insertAccount(data)
       } else {

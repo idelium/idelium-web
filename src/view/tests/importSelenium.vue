@@ -90,7 +90,7 @@
 }
 </style>
 <script>
-import axios from 'axios'
+import apiClient from '@/services/apiClient'
 import FileUpload from 'vue-upload-component'
 export default {
   name: 'importSelentium',
@@ -121,7 +121,6 @@ export default {
   },
 
   created() {
-    console.log('import selenium')
   },
   watch: {
     testName() {
@@ -133,16 +132,14 @@ export default {
   },
   methods: {
     inputFilter(newFile) {
-      console.log('---------')
       this.errortext = ''
       var fileExt = newFile.name.split('.').pop()
       if (fileExt != 'side') {
         this.errortext = this.language[this.config.currentLanguage].Tests.selenium.extensionIsWrong
         return false
       }
-      //console.log( this.blobToString(newFile.file))
       let url = URL.createObjectURL(newFile.file)
-      axios
+      apiClient
         .get(url, {
           responseType: 'json'
         })
@@ -160,7 +157,6 @@ export default {
         })
     },
     findTarget(commandObj) {
-      console.log('findTarget')
       let target = null
       let findBy = null
       if (this.onlyXpath == true) {

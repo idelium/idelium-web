@@ -286,7 +286,9 @@
 <script>
 import { Modal, Button } from 'bootstrap'
 import JsonEditor from '../components/JsonEditor.vue'
-import axios from 'axios'
+import apiClient from '@/services/apiClient'
+import { getSelectedProjectId } from '@/stores/session'
+import { buildEnvironmentPayload } from '@/domain/workflowPayloads'
 //import draggable from 'vuedraggable'
 import download from '@/shared/download'
 import wizard from './environments/wizard.vue'
@@ -384,7 +386,6 @@ export default {
     )
   },
   created() {
-    console.log('environments')
     this.emitter.on('refreshEnvironment', (msg) => {
       if (msg == true) this.getEnvironments()
       else this.$forceUpdate()
@@ -393,8 +394,6 @@ export default {
   methods: {
     changeViewMode() {
       if (this.modeSelected == 'wizard') {
-        console.log('before put')
-        console.log(this.jsonEnvironments)
         setTimeout(
           function () {
             this.$refs.wizard.putJson(this.rememberJson)
@@ -420,12 +419,12 @@ export default {
     },
     deleteAction(index) {
       this.emitter.emit('showLoader', true)
-      axios
+      apiClient
         .delete(
           this.config.serviceBaseUrl +
             this.config.url.environments +
             '/' +
-            localStorage.projectIdSelected +
+            getSelectedProjectId() +
             '/' +
             this.listEnvironments[index].id,
           {
@@ -462,12 +461,12 @@ export default {
     },
     getJson(id, code = null, description = null, isDuplicate = false, isDownload = false) {
       this.emitter.emit('showLoader', true)
-      axios
+      apiClient
         .get(
           this.config.serviceBaseUrl +
             this.config.url.environments +
             '/' +
-            localStorage.projectIdSelected +
+            getSelectedProjectId() +
             '/' +
             id,
           {
@@ -475,7 +474,6 @@ export default {
           }
         )
         .then((response) => {
-          console.log(response)
           this.emitter.emit('showLoader', false)
           if (isDuplicate == false) {
             if (isDownload == false) {
@@ -503,12 +501,12 @@ export default {
     },
     getEnvironments() {
       this.emitter.emit('showLoader', true)
-      axios
+      apiClient
         .get(
           this.config.serviceBaseUrl +
             this.config.url.environments +
             '/' +
-            localStorage.projectIdSelected,
+            getSelectedProjectId(),
           {
             headers: this.setHeaders()
           }
@@ -523,14 +521,10 @@ export default {
         })
     },
     changeJson: function (json) {
-      console.log('change json from editor')
-      console.log(json)
       this.jsonEnvironments = json
       this.rememberJson = json
     },
     changeWizardJson: function (json) {
-      console.log('changeWizardJson')
-      console.log(json)
       this.loadJsonToEdit = this.jsonEnvironments = json
       this.saveJson(true)
     },
@@ -540,7 +534,6 @@ export default {
       this.saveJson(true)
     },
     savePreSave(isNew) {
-      console.log('savePreSave: ' + isNew)
       if (this.modeSelected == 'json') {
         this.saveJson(isNew)
       } else {
@@ -548,7 +541,6 @@ export default {
       }
     },
     saveJson(isNew = null) {
-      console.log('saveJson')
       let fileName = null
       let jsonObject = null
       if (isNew == false) {
@@ -560,15 +552,15 @@ export default {
         jsonObject = this.jsonEnvironments
       }
       this.emitter.emit('showLoader', true)
-      axios
+      apiClient
         .post(
           this.config.serviceBaseUrl + this.config.url.environments,
-          {
+          buildEnvironmentPayload({
             code: fileName,
-            config: JSON.stringify(jsonObject),
+            config: jsonObject,
             description: this.environmentDescription,
-            idProject: localStorage.projectIdSelected
-          },
+            projectId: getSelectedProjectId()
+          }),
           {
             headers: this.setHeaders()
           }
@@ -588,12 +580,12 @@ export default {
     },
     updateJson() {
       this.emitter.emit('showLoader', true)
-      axios
+      apiClient
         .put(
           this.config.serviceBaseUrl +
             this.config.url.environments +
             '/' +
-            localStorage.projectIdSelected +
+            getSelectedProjectId() +
             '/' +
             this.idJsonSelecteds,
           {
@@ -628,10 +620,8 @@ export default {
       } else {
         this.loadJsonToEdit = this.generateJson(param.appium)
       }
-      console.log(this.loadJsonToEdit)
     },
     generateJson(json) {
-      console.log('generateJson')
       let jsonCreated = {}
       let subParameter = false
       let jsonSub = {}
@@ -641,7 +631,6 @@ export default {
         else jsonCreated[json[i].typeName] = json[i].default
       }
       if (subParameter == true) jsonCreated['appiumDesiredCaps'] = jsonSub
-      console.log(jsonCreated)
       return jsonCreated
     }
   },

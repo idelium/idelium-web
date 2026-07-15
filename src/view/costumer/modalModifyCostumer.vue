@@ -129,7 +129,6 @@ export default {
       }
     },
     showModal(dataCostumer, type) {
-      console.log('show Modal:' + type)
       this.type = type
       this.costumerDescription = ''
       this.confirmPassword = ''

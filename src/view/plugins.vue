@@ -258,7 +258,8 @@
 </style>
 
 <script>
-import axios from 'axios'
+import apiClient from '@/services/apiClient'
+import { getSelectedProjectId } from '@/stores/session'
 import { Modal } from 'bootstrap'
 import { VAceEditor } from 'vue3-ace-editor'
 
@@ -315,7 +316,6 @@ export default {
   methods: {
     importPlugin(value) {
       this.showEditor = false
-      console.log(value)
       this.textNew = value
       this.tabIndex = 1
       this.$refs.tab2.click()
@@ -336,7 +336,6 @@ export default {
     newPlugin() {
       this.showEditor = false
       this.textNew = this.config.pluginTemplate
-      console.log(this.textNew)
       setTimeout(
         function () {
           this.showEditor = true
@@ -350,12 +349,12 @@ export default {
     getPlugin(id, name, isDownload = false) {
       //alert(this.config.timeChecksession)
       this.showEditorResume = false
-      axios
+      apiClient
         .get(
           this.config.serviceBaseUrl +
             this.config.url.plugins +
             '/' +
-            localStorage.projectIdSelected +
+            getSelectedProjectId() +
             '/' +
             id,
           {
@@ -393,12 +392,12 @@ export default {
     },
     deleteAction(index) {
       this.emitter.emit('showLoader', true)
-      axios
+      apiClient
         .delete(
           this.config.serviceBaseUrl +
             this.config.url.plugins +
             '/' +
-            localStorage.projectIdSelected +
+            getSelectedProjectId() +
             '/' +
             this.listPlugins[index].id,
           {
@@ -416,14 +415,14 @@ export default {
     },
     savePlugin(filename, code, description) {
       this.emitter.emit('showLoader', true)
-      axios
+      apiClient
         .post(
           this.config.serviceBaseUrl + this.config.url.plugins,
           {
             name: filename,
             code: [code],
             description: description,
-            idProject: localStorage.projectIdSelected
+            idProject: getSelectedProjectId()
           },
           {
             headers: this.setHeaders()
@@ -442,12 +441,12 @@ export default {
     },
     updatePlugin(code) {
       this.emitter.emit('showLoader', true)
-      axios
+      apiClient
         .put(
           this.config.serviceBaseUrl +
             this.config.url.plugins +
             '/' +
-            localStorage.projectIdSelected +
+            getSelectedProjectId() +
             '/' +
             this.pluginSelected,
           {
@@ -467,7 +466,7 @@ export default {
           },
           {
             headers: {
-              Authorization: 'Bearer ' + localStorage.token
+              Accept: 'application/json'
             }
           }
         )
@@ -479,12 +478,12 @@ export default {
     listPlugin() {
       this.emitter.emit('showLoader', true)
       //alert(this.config.timeChecksession)
-      axios
+      apiClient
         .get(
           this.config.serviceBaseUrl +
             this.config.url.plugins +
             '/' +
-            localStorage.projectIdSelected,
+            getSelectedProjectId(),
           {
             headers: this.setHeaders()
           }

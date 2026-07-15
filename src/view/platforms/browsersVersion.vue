@@ -166,7 +166,6 @@ export default {
       this.getOs()
     },
     async getOs() {
-      console.log('getOs')
       this.emitter.emit('showLoader', true)
       let response = await commonCalls.getOs(this, this.typeSelected).catch((e) => {
         this.Logout(this, e)
@@ -178,7 +177,6 @@ export default {
       this.getBrowser()
     },
     async getBrowser() {
-      console.log('getBrowser')
       this.emitter.emit('showLoader', true)
       let response = await commonCalls.getBrowser(this, this.osSelected).catch((e) => {
         this.Logout(this, e)
@@ -188,7 +186,6 @@ export default {
       this.getBrowserVersion()
     },
     async getBrowserVersion() {
-      console.log('getBrowserVersion')
       this.emitter.emit('showLoader', true)
       let response = await commonCalls.getBrowserVersion(this, this.browserSelected).catch((e) => {
         this.Logout(this, e)
@@ -196,10 +193,7 @@ export default {
       this.arrayElements = response.data
       let obj = this.arrayOs.find(({ id }) => id === this.osSelected)
       if (obj != undefined) this.osToShow = obj.name
-      console.log(this.arrayBrowser)
-      console.log(this.browserSelected)
       let objBrowser = this.arrayBrowser.find(({ id }) => id === this.browserSelected)
-      console.log(objBrowser)
       if (objBrowser != undefined) this.browserToShow = objBrowser.name
       else this.browserToShow = ''
 

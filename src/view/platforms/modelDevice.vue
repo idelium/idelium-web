@@ -105,7 +105,6 @@ export default {
     }
   },
   created() {
-    console.log('brands')
   },
   watch: {},
   methods: {

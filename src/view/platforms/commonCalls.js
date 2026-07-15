@@ -1,7 +1,7 @@
-import axios from 'axios'
+import apiClient from '@/services/apiClient'
 export default {
   getPlatforms(obj, type) {
-    return axios.get(
+    return apiClient.get(
       obj.config.serviceBaseUrl + obj.config.url.platforms + '/manageplatforms/' + type,
       {
         headers: obj.setHeaders()
@@ -9,7 +9,7 @@ export default {
     )
   },
   savePlatform(obj, payload) {
-    return axios.post(
+    return apiClient.post(
       obj.config.serviceBaseUrl + obj.config.url.platforms + '/manageplatforms',
       payload,
       {
@@ -18,7 +18,7 @@ export default {
     )
   },
   updateStatusPlatform(obj, id, type, status) {
-    return axios.put(
+    return apiClient.put(
       obj.config.serviceBaseUrl + obj.config.url.platforms + '/manageplatforms',
       {
         id: id,
@@ -31,7 +31,7 @@ export default {
     )
   },
   deletePlatform(obj, id, type) {
-    return axios.delete(
+    return apiClient.delete(
       obj.config.serviceBaseUrl + obj.config.url.platforms + '/manageplatforms/' + type + '/' + id,
       {
         headers: obj.setHeaders()
@@ -39,22 +39,22 @@ export default {
     )
   },
   getTypes(obj) {
-    return axios.get(obj.config.serviceBaseUrl + obj.config.url.platforms + '/types', {
+    return apiClient.get(obj.config.serviceBaseUrl + obj.config.url.platforms + '/types', {
       headers: obj.setHeaders()
     })
   },
   getStatus(obj) {
-    return axios.get(obj.config.serviceBaseUrl + obj.config.url.platforms + '/status', {
+    return apiClient.get(obj.config.serviceBaseUrl + obj.config.url.platforms + '/status', {
       headers: obj.setHeaders()
     })
   },
   getOs(obj, type) {
-    return axios.get(obj.config.serviceBaseUrl + obj.config.url.platforms + '/os/' + type, {
+    return apiClient.get(obj.config.serviceBaseUrl + obj.config.url.platforms + '/os/' + type, {
       headers: obj.setHeaders()
     })
   },
   saveOs(obj, name, type) {
-    return axios.post(
+    return apiClient.post(
       obj.config.serviceBaseUrl + obj.config.url.platforms + '/os',
       {
         name: name,
@@ -66,7 +66,7 @@ export default {
     )
   },
   modifyOs(obj, name, id, type) {
-    return axios.put(
+    return apiClient.put(
       obj.config.serviceBaseUrl + obj.config.url.platforms + '/os',
       {
         name: name,
@@ -79,12 +79,12 @@ export default {
     )
   },
   getOsVersion(obj, idOs) {
-    return axios.get(obj.config.serviceBaseUrl + obj.config.url.platforms + '/osversion/' + idOs, {
+    return apiClient.get(obj.config.serviceBaseUrl + obj.config.url.platforms + '/osversion/' + idOs, {
       headers: obj.setHeaders()
     })
   },
   saveOsVersion(obj, version, idOs) {
-    return axios.post(
+    return apiClient.post(
       obj.config.serviceBaseUrl + obj.config.url.platforms + '/osversion',
       {
         version: version,
@@ -96,7 +96,7 @@ export default {
     )
   },
   modifyOsVersion(obj, version, id, idOs) {
-    return axios.put(
+    return apiClient.put(
       obj.config.serviceBaseUrl + obj.config.url.platforms + '/osversion',
       {
         version: version,
@@ -109,12 +109,12 @@ export default {
     )
   },
   getBrowser(obj, idOs) {
-    return axios.get(obj.config.serviceBaseUrl + obj.config.url.platforms + '/browsers/' + idOs, {
+    return apiClient.get(obj.config.serviceBaseUrl + obj.config.url.platforms + '/browsers/' + idOs, {
       headers: obj.setHeaders()
     })
   },
   saveBrowser(obj, name, idOs) {
-    return axios.post(
+    return apiClient.post(
       obj.config.serviceBaseUrl + obj.config.url.platforms + '/browsers',
       {
         name: name,
@@ -126,7 +126,7 @@ export default {
     )
   },
   modifyBrowser(obj, name, id, idOs) {
-    return axios.put(
+    return apiClient.put(
       obj.config.serviceBaseUrl + obj.config.url.platforms + '/browsers',
       {
         name: name,
@@ -139,7 +139,7 @@ export default {
     )
   },
   getBrowserVersion(obj, idBrowser) {
-    return axios.get(
+    return apiClient.get(
       obj.config.serviceBaseUrl + obj.config.url.platforms + '/browserversions/' + idBrowser,
       {
         headers: obj.setHeaders()
@@ -147,7 +147,7 @@ export default {
     )
   },
   saveBrowserVersion(obj, version, idBrowser) {
-    return axios.post(
+    return apiClient.post(
       obj.config.serviceBaseUrl + obj.config.url.platforms + '/browserversions',
       {
         version: version,
@@ -159,7 +159,7 @@ export default {
     )
   },
   modifyBrowserVersion(obj, version, id, idBrowser) {
-    return axios.put(
+    return apiClient.put(
       obj.config.serviceBaseUrl + obj.config.url.platforms + '/browserversions',
       {
         version: version,
@@ -172,12 +172,12 @@ export default {
     )
   },
   getBrand(obj) {
-    return axios.get(obj.config.serviceBaseUrl + obj.config.url.platforms + '/brands', {
+    return apiClient.get(obj.config.serviceBaseUrl + obj.config.url.platforms + '/brands', {
       headers: obj.setHeaders()
     })
   },
   saveBrand(obj, brand) {
-    return axios.post(
+    return apiClient.post(
       obj.config.serviceBaseUrl + obj.config.url.platforms + '/brands',
       {
         brand: brand
@@ -188,7 +188,7 @@ export default {
     )
   },
   modifyBrand(obj, brand, id) {
-    return axios.put(
+    return apiClient.put(
       obj.config.serviceBaseUrl + obj.config.url.platforms + '/brands',
       {
         brand: brand,
@@ -200,12 +200,12 @@ export default {
     )
   },
   getModelDevice(obj, idBrand) {
-    return axios.get(obj.config.serviceBaseUrl + obj.config.url.platforms + '/models/' + idBrand, {
+    return apiClient.get(obj.config.serviceBaseUrl + obj.config.url.platforms + '/models/' + idBrand, {
       headers: obj.setHeaders()
     })
   },
   saveModelDevice(obj, model, idBrand) {
-    return axios.post(
+    return apiClient.post(
       obj.config.serviceBaseUrl + obj.config.url.platforms + '/models',
       {
         model: model,
@@ -217,7 +217,7 @@ export default {
     )
   },
   modifyModelDevice(obj, model, id, idBrand) {
-    return axios.put(
+    return apiClient.put(
       obj.config.serviceBaseUrl + obj.config.url.platforms + '/models',
       {
         model: model,
@@ -230,12 +230,12 @@ export default {
     )
   },
   getLocation(obj) {
-    return axios.get(obj.config.serviceBaseUrl + obj.config.url.platforms + '/locations', {
+    return apiClient.get(obj.config.serviceBaseUrl + obj.config.url.platforms + '/locations', {
       headers: obj.setHeaders()
     })
   },
   saveLocation(obj, name) {
-    return axios.post(
+    return apiClient.post(
       obj.config.serviceBaseUrl + obj.config.url.platforms + '/locations',
       {
         name: name
@@ -246,7 +246,7 @@ export default {
     )
   },
   modifyLocation(obj, name, id) {
-    return axios.put(
+    return apiClient.put(
       obj.config.serviceBaseUrl + obj.config.url.platforms + '/locations',
       {
         name: name,

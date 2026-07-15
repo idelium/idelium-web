@@ -1,6 +1,5 @@
 var download = {
   file(filename, text, mimeType) {
-    console.log('download: ' + filename)
     var element = document.createElement('a')
     element.setAttribute('href', 'data:' + mimeType + ';charset=utf-8,' + encodeURIComponent(text))
     element.setAttribute('download', filename)

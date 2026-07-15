@@ -86,7 +86,7 @@
 }
 </style>
 <script>
-import axios from 'axios'
+import apiClient from '@/services/apiClient'
 
 import copy from 'copy-to-clipboard'
 import download from '@/shared/download'
@@ -112,7 +112,6 @@ export default {
       if (msg == true) this.getApiKey()
       else this.$forceUpdate()
     })
-    console.log('header')
     this.getApiKey()
   },
   methods: {
@@ -125,13 +124,12 @@ export default {
     },
     getApiKey() {
       this.emitter.emit('showLoader', true)
-      axios
+      apiClient
         .get(this.config.serviceBaseUrl + this.config.url.apikey, {
           headers: this.setHeaders()
         })
         .then((response) => {
           this.emitter.emit('showLoader', false)
-          console.log(response.data)
           this.apikey = response.data.apiKey
         })
         .catch((e) => {
@@ -148,7 +146,7 @@ export default {
       ).then(() => this.generateAction())
     },
     generateAction() {
-      axios
+      apiClient
         .put(
           this.config.serviceBaseUrl + this.config.url.apikey,
           {},
@@ -158,7 +156,6 @@ export default {
         )
         .then((response) => {
           this.emitter.emit('showLoader', false)
-          console.log(response.data)
           this.apikey = response.data.apiKey
         })
         .catch((e) => {

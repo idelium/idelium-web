@@ -12,18 +12,18 @@
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title" id="exampleModalLabel">
-              <font-awesome-icon icon="vial" class="iconClass" /> 
+              <font-awesome-icon icon="vial" class="iconClass" />
             </h5>
           </div>
-            <v-ace-editor
+          <v-ace-editor
             v-model:value="dataResponse"
             lang="python"
             theme="chrome"
             style="margin-top: 10px; min-height: 80vh; max-height: 80vh"
             v-if="showEditor == true"
           />
+        </div>
       </div>
-    </div>
     </div>
   </div>
 </template>
@@ -50,54 +50,51 @@
 </style>
 
 <script>
-import { Modal } from 'bootstrap'
-import { VAceEditor } from 'vue3-ace-editor'
+import { Modal } from "bootstrap";
+import { VAceEditor } from "vue3-ace-editor";
+import { formatPostmanResponse } from "@/domain/postmanResults";
 export default {
-  created() {
-    console.log('modal testcycle')
-  },
+  created() {},
   data() {
     return {
-      dataResponse:'test',
-      showEditor:false,
-    }
+      dataResponse: "test",
+      showEditor: false,
+    };
   },
   mounted() {
-    this.modalElem = new Modal(document.getElementById('postmanModal'))
+    this.modalElem = new Modal(document.getElementById("postmanModal"));
   },
   methods: {
     showPostmanCollection(index) {
-      console.log(index)
-      this.modalElem.hide()
+      this.modalElem.hide();
     },
     getVariant(status) {
-      let variant = 'success'
+      let variant = "success";
       if (status != 1) {
-        variant = 'danger'
+        variant = "danger";
       }
-      return variant
+      return variant;
     },
     getStatusText(status) {
-      let variant = 'success'
+      let variant = "success";
       if (status != 1) {
-        variant = 'failed'
+        variant = "failed";
       }
-      return variant
+      return variant;
     },
     showModal(dataResponse) {
-      this.dataResponse=JSON.stringify(dataResponse)
-      console.log(dataResponse)
-      this.modalElem.show()
+      this.dataResponse = formatPostmanResponse(dataResponse);
+      this.modalElem.show();
       setTimeout(
-          function () {
-            this.showEditor=true
-          }.bind(this),
-          100
-        )
+        function () {
+          this.showEditor = true;
+        }.bind(this),
+        100,
+      );
     },
   },
   components: {
     VAceEditor,
   },
-}
+};
 </script>

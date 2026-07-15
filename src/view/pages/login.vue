@@ -20,7 +20,9 @@
             </p>
             <span class="errorMessage">{{ error }}</span>
             <input
-              :placeholder="language[config.currentLanguage].Login.placeUsername"
+              :placeholder="
+                language[config.currentLanguage].Login.placeUsername
+              "
               class="form-control username"
               v-model="email"
               id="username"
@@ -28,7 +30,9 @@
             />
             <div class="input-group mb-3">
               <input
-                :placeholder="language[config.currentLanguage].Login.placePassword"
+                :placeholder="
+                  language[config.currentLanguage].Login.placePassword
+                "
                 aria-describedby="password-addon"
                 id="password"
                 v-model="password"
@@ -211,97 +215,87 @@
 }
 </style>
 <script>
-import axios from 'axios'
-
-import validateEmail from '@/shared/validateEmail'
-axios.defaults.withCredentials = true
-axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest'
+import apiClient from "@/services/apiClient";
+import { useSessionStore } from "@/stores/session";
+import validateEmail from "@/shared/validateEmail";
 export default {
-  name: 'LoginComponent',
+  name: "LoginComponent",
+  setup() {
+    return { session: useSessionStore() };
+  },
   data() {
     return {
-      email: '',
-      password: '',
-      status: 'not_accepted',
+      email: "",
+      password: "",
+      status: "not_accepted",
       error: null,
       showError: false,
-      showPassword: false
-    }
-  },
-  created() {
-    console.log('login')
+      showPassword: false,
+    };
   },
   methods: {
     csrf() {
-      axios
-        .get(this.config.serviceBaseUrl + this.config.url.csrf, {})
-        .then((response) => {
-          console.log(response.data)
-        })
-        .catch((e) => {
-          console.log(e)
-        })
+      return apiClient.get(this.config.serviceBaseUrl + this.config.url.csrf);
     },
     async auth() {
-      if (this.email == '') {
-        this.error = this.language[this.config.currentLanguage].Login.errorMail
-        this.showError = true
-        return false
+      if (this.email == "") {
+        this.error = this.language[this.config.currentLanguage].Login.errorMail;
+        this.showError = true;
+        return false;
       }
       if (validateEmail.validateEmail(this.email) == false) {
-        this.error = this.language[this.config.currentLanguage].Login.isNotEmail
-        this.showError = true
-        return false
+        this.error =
+          this.language[this.config.currentLanguage].Login.isNotEmail;
+        this.showError = true;
+        return false;
       }
-      if (this.password == '') {
-        this.error = this.language[this.config.currentLanguage].Login.errorPassword
-        this.showError = true
-        return false
+      if (this.password == "") {
+        this.error =
+          this.language[this.config.currentLanguage].Login.errorPassword;
+        this.showError = true;
+        return false;
       }
-      this.error = null
-      this.showError = false
-      await this.csrf()
-      let token=null
+      this.error = null;
+      this.showError = false;
+      await this.csrf();
+      let token = null;
       if (import.meta.env.VITE_GOOGLE_SITE_KEY) {
-        await this.$recaptchaLoaded()
-        token = await this.$recaptcha('login')
+        await this.$recaptchaLoaded();
+        token = await this.$recaptcha("login");
       }
-      
-      this.emitter.emit('showLoader', true)
-      axios
-        .post(
+
+      this.emitter.emit("showLoader", true);
+      try {
+        const response = await apiClient.post(
           this.config.serviceBaseUrl + this.config.url.login,
           {
             email: this.email,
             password: this.password,
-            token: token
+            token: token,
           },
           {
             headers: {
-              xsrfHeaderName: 'X-CSRFToken'
-            }
-          }
-        )
-        .then((response) => {
-          console.log(response.data)
-          localStorage.token = response.data.access_token
-          localStorage.session = response.data.session
-          if (this.$route.query.back) {
-            this.$router.push({ name: this.$route.query.back }).catch()
-          } else {
-            this.$router.push({ name: 'projects' }).catch()
-          }
-        })
-        .catch((e) => {
-          this.error = this.language[this.config.currentLanguage].Login.errorCredential
-          this.showError = true
-          this.$isAuthenticated.value = false
-          console.log(e)
-        })
+              xsrfHeaderName: "X-CSRFToken",
+            },
+          },
+        );
+        this.session.establishSession({
+          accessToken: response.data.access_token,
+          sessionId: response.data.session,
+        });
+        await this.$router.push({ name: this.$route.query.back || "projects" });
+      } catch {
+        this.error =
+          this.language[this.config.currentLanguage].Login.errorCredential;
+        this.showError = true;
+        this.$isAuthenticated.value = false;
+      } finally {
+        this.emitter.emit("showLoader", false);
+      }
     },
     ask() {
-      alert('Non riesci ad entrare ? Chiedi in segreteria')
-    }
-  }
-}
+      alert("Non riesci ad entrare ? Chiedi in segreteria");
+    },
+  },
+};
 </script>

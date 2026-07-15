@@ -332,7 +332,9 @@
 </style>
 
 <script>
-import axios from 'axios'
+import apiClient from '@/services/apiClient'
+import { getSelectedProjectId } from '@/stores/session'
+import { buildStepPayload } from '@/domain/workflowPayloads'
 import { Modal } from 'bootstrap'
 
 import draggable from 'vuedraggable'
@@ -354,7 +356,6 @@ let templateJson = {
 }
 
 export default {
-  // eslint-disable-next-line vue/multi-word-component-names
   name: 'StepsComponent',
   inheritAttrs: false,
   data: () => {
@@ -435,7 +436,6 @@ export default {
     this.modalElem = new Modal(document.getElementById('myModal'))
   },
   created() {
-    console.log('steps')
     this.emitter.on('refreshStep', (msg) => {
       if (msg == true) this.getSteps()
       else this.$forceUpdate()
@@ -443,7 +443,6 @@ export default {
   },
   methods: {
     moveElement(e) {
-      console.log(e)
       this.btnSaveOrderDisabled = false
     },
     syncWizardJson() {
@@ -463,7 +462,6 @@ export default {
       )
     },
     setStepDescription(e) {
-      console.log(e)
       this.stepDescription = e
     },
     setEditStepDescription() {
@@ -485,12 +483,12 @@ export default {
       ).then(() => this.deleteAction(element))
     },
     deleteAction(element) {
-      axios
+      apiClient
         .delete(
           this.config.serviceBaseUrl +
             this.config.url.steps +
             '/' +
-            localStorage.projectIdSelected +
+            getSelectedProjectId() +
             '/' +
             element.id,
           {
@@ -498,7 +496,6 @@ export default {
           }
         )
         .then((response) => {
-          console.log(response)
           this.btnSaveEnable = false
           const index = this.listSteps.findIndex((item) => item.id == element.id)
           this.listSteps.splice(index, 1)
@@ -509,22 +506,19 @@ export default {
         })
     },
     duplicateStep(element) {
-      console.log('duplicate')
       this.getJson(element.id, element.name, element.description, true, false)
     },
     downloadStep(element) {
-      console.log('download')
       this.getJson(element.id, element.name, element.description, false, true)
     },
     getJson(id, name = null, stepDescription = null, isDuplicate = false, isDownload = false) {
-      console.log('getJson id:' + id)
       this.emitter.emit('showLoader', true)
-      axios
+      apiClient
         .get(
           this.config.serviceBaseUrl +
             this.config.url.steps +
             '/' +
-            localStorage.projectIdSelected +
+            getSelectedProjectId() +
             '/' +
             id,
           {
@@ -532,7 +526,6 @@ export default {
           }
         )
         .then((response) => {
-          console.log(response)
           this.emitter.emit('showLoader', false)
           if (isDuplicate == false) {
             if (isDownload == false) {
@@ -563,13 +556,12 @@ export default {
     },
     getSteps() {
       this.emitter.emit('showLoader', true)
-      if (localStorage.projectIdSelected === null || localStorage.projectIdSelected === undefined) {
-        console.log('skip')
+      if (getSelectedProjectId() === null || getSelectedProjectId() === undefined) {
         return false
       }
-      axios
+      apiClient
         .get(
-          this.config.serviceBaseUrl + this.config.url.steps + '/' + localStorage.projectIdSelected,
+          this.config.serviceBaseUrl + this.config.url.steps + '/' + getSelectedProjectId(),
           {
             headers: this.setHeaders()
           }
@@ -587,12 +579,10 @@ export default {
       this.jsonSteps = json
     },
     syncJson: function (json) {
-      console.log('syncJson')
       this.loadJsonToEdit = json
       this.jsonSteps = json
     },
     syncEditJson: function (json) {
-      console.log('syncJson')
       this.loadEditJsonToEdit = json
       this.jsonEditSteps = json
       this.jsonResumeSteps = json
@@ -603,7 +593,6 @@ export default {
       this.btnSaveEnable = true
     },
     saveStep() {
-      // eslint-disable-next-line
       let regex = RegExp('[-*#+=;:\/,~ \.\$ ]+')
       if (this.jsonSteps == null) {
         this.jsonSteps = this.defaultJson
@@ -617,15 +606,15 @@ export default {
         return false
       }
       this.emitter.emit('showLoader', true)
-      axios
+      apiClient
         .post(
           this.config.serviceBaseUrl + this.config.url.steps,
-          {
-            description: this.stepDescription.toLowerCase(),
-            name: this.stepNameFile.toLowerCase(),
-            config: JSON.stringify(this.jsonSteps),
-            idProject: localStorage.projectIdSelected
-          },
+          buildStepPayload({
+            description: this.stepDescription,
+            name: this.stepNameFile,
+            config: this.jsonSteps,
+            projectId: getSelectedProjectId()
+          }),
           {
             headers: this.setHeaders()
           }
@@ -651,13 +640,12 @@ export default {
     },
     saveOrderSteps() {
       this.emitter.emit('showLoader', true)
-      console.log(this.listSteps)
-      axios
+      apiClient
         .post(
           this.config.serviceBaseUrl +
             this.config.url.steps +
             '/' +
-            localStorage.projectIdSelected +
+            getSelectedProjectId() +
             '/updateorder',
           {
             order: this.listSteps
@@ -667,7 +655,6 @@ export default {
           }
         )
         .then((response) => {
-          console.log(response)
           this.emitter.emit('showLoader', false)
           this.btnSaveOrderDisabled = true
         })
@@ -677,12 +664,12 @@ export default {
     },
     updateStep() {
       this.emitter.emit('showLoader', true)
-      axios
+      apiClient
         .put(
           this.config.serviceBaseUrl +
             this.config.url.steps +
             '/' +
-            localStorage.projectIdSelected +
+            getSelectedProjectId() +
             '/' +
             this.idResume,
           {

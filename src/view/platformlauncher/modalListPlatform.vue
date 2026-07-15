@@ -175,13 +175,13 @@
 
 <script>
 import commonCalls from '../platforms/commonCalls'
-import axios from 'axios'
+import apiClient from '@/services/apiClient'
+import { getSelectedProjectId } from '@/stores/session'
 import { Modal } from 'bootstrap'
 
 export default {
   name: 'platformLauncher',
   created() {
-    console.log('modalListPlatform')
   },
   mounted() {
     this.modalElem = new Modal(document.getElementById('myModal'))
@@ -215,13 +215,13 @@ export default {
     launchTest(idPlatform) {
       this.modalElem.hide()
       this.emitter.emit('showLoader', true)
-      axios
+      apiClient
         .post(
           this.config.serviceBaseUrl + this.config.url.launchtest,
           {
             idTestCycle: this.idTest.toString(),
             environment: this.environment,
-            idProject: localStorage.projectIdSelected,
+            idProject: getSelectedProjectId(),
             idPlatform: idPlatform
           },
           {
@@ -229,7 +229,6 @@ export default {
           }
         )
         .then((response) => {
-          console.log(response)
           this.emitter.emit('showLoader', false)
         })
         .catch((e) => {
@@ -265,7 +264,6 @@ export default {
       this.emitter.emit('showLoader', false)
     },
     async getBrand() {
-      console.log('getBrand' + this.typeSelected)
       this.emitter.emit('showLoader', true)
       this.arrayBrands = []
       if (this.getTypeName(this.typeSelected) == 'mobile devices') {
@@ -286,7 +284,6 @@ export default {
       this.filterPlatform()
     },
     async getBrowser() {
-      console.log('getBrowser')
       let response = await commonCalls.getBrowser(this, this.osSelected).catch((e) => {
         this.Logout(this, e)
       })
@@ -312,7 +309,6 @@ export default {
     },
     filterPlatform() {
       this.arrayPlatformsToShow = this.arrayPlatforms
-      console.log('filterPlatform')
       if (this.brandSelected != 'all') {
         let dummyArray = []
         for (let i = 0; i < this.arrayPlatformsToShow.length > 0; i++) {
@@ -334,7 +330,6 @@ export default {
         for (let i = 0; i < this.arrayPlatformsToShow.length > 0; i++) {
           if (this.arrayPlatformsToShow[i].browser == this.browserSelected)
             dummyArray.push(this.arrayPlatformsToShow[i])
-          console.log(this.arrayPlatformsToShow[i].browser + '=' + this.browserSelected)
         }
         this.arrayPlatformsToShow = dummyArray
       }

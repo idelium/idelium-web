@@ -137,6 +137,7 @@ export default {
     status: 'status',
     method: 'method',
     url: 'url',
+    assertions: 'assertions',
     response: 'response',
     showResponse: ' show response',
     time: 'time'

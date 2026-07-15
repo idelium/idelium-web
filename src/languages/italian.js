@@ -138,6 +138,7 @@ export default {
     status: 'status',
     method: 'method',
     url: 'url',
+    assertions: 'asserzioni',
     response: 'response',
     showResponse: ' visualizza response',
     time: 'time'

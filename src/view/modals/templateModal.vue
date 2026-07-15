@@ -182,7 +182,6 @@ export default {
         return false
       }
       let findSteps = this.searchModeResult.filter((d) => d.key == this.nameIssue)
-      console.log(findSteps)
       this.jiraTestOk = []
       //this.issues.push(this.nameIssue.toUpperCase())
       let objectToSave = findSteps[0]
@@ -206,7 +205,6 @@ export default {
       this.checkJira = true
       this.enableUpdateButton = true
       for (let i = 0; i < this.issues.length; i++) {
-        console.log(this.issues[i])
         let url = this.config.url.wsJiraServiceURL + 'api/latest/issue/' + this.issues[i]
         idelium.jira(this.config.url.jiraProxy, 'get', url).then((returnVal) => {
           if (returnVal.http_code == 200) {
@@ -250,7 +248,6 @@ export default {
         idelium
           .mongo(this.config.url.mongoProxy, 'post', '/templates', JSON.stringify(payload))
           .then((returnVal) => {
-            console.log(returnVal)
             if (returnVal.result == 'ko') {
               this.manageErrorResponse(returnVal)
             } else {
@@ -268,7 +265,6 @@ export default {
             JSON.stringify(payload)
           )
           .then((returnVal) => {
-            console.log(returnVal)
             if (returnVal.result == 'ko') {
               this.manageErrorResponse(returnVal)
             } else {
@@ -302,7 +298,6 @@ export default {
               this.enableAddButton = true
               this.showListMode = true
               let findSteps = this.searchModeResult.filter((d) => d.key == searchText)
-              console.log(findSteps)
               if (findSteps.length == 0) {
                 this.enableAddButton = false
               }

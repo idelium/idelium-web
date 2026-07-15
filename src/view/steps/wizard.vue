@@ -469,7 +469,9 @@ import selenium from './selenium'
 import appium from './appium'
 import webservices from './webservices'
 import postman from './postman'
-import axios from 'axios'
+import apiClient from '@/services/apiClient'
+import { getSelectedProjectId } from '@/stores/session'
+import { classifyPostmanDocument } from '@/domain/postmanResults'
 
 import JsonEditor from '../../components/JsonEditor.vue'
 import FileUpload from 'vue-upload-component'
@@ -484,9 +486,7 @@ export default {
   },
   props: ['jsonFromEditor_prop', 'minheight'],
   created() {
-    console.log('wizard created')
     if (localStorage.wrapperSelected) this.typeOfWrapperSelected = localStorage.wrapperSelected
-    console.log(this.jsonFromEditor_prop)
     this.initWrapperArray()
   },
   watch: {
@@ -517,7 +517,6 @@ export default {
       }
     },
     textBdd() {
-      console.log('textBdd change')
       this.checkPossibleAddType()
       this.buildJson()
     },
@@ -584,8 +583,7 @@ export default {
     }
   },
   methods: {
-    inputFilter(newFile) {
-      console.log('-----inputFilter----')
+    async inputFilter(newFile) {
       this.errortext = ''
       var fileExt = newFile.name.split('.').pop()
       if (fileExt != 'json') {
@@ -593,47 +591,29 @@ export default {
           this.language[this.config.currentLanguage].Plugins.importPlugin.extensionIsWrong
         return false
       }
-      //console.log( this.blobToString(newFile.file))
-      let url = URL.createObjectURL(newFile.file)
-
-      axios
-        .get(url, {
-          responseType: 'text'
-        })
-        .then((response) => {
-          let jsonResponse=JSON.parse(response.data)
-          if (!jsonResponse.info && !jsonResponse.name) {
-            this.errortext =
-              this.language[
-                this.config.currentLanguage
-              ].Steps.wizard.importPostman.isNotCollectionFile
-            return false
-          }
-          if (jsonResponse.name != undefined) {
-            this.postmanJson.environment = jsonResponse
-            this.showOverriteLabel = true
-          } else {
-            this.postmanJson.collection = jsonResponse
-            this.note = jsonResponse.info.name
-            this.addEditTypeStep(true, this.postmanJson)
-          }
-          console.log(this.postmanJson)
-          //console.log(JSON.stringify(json_to_send));
-
-          //this.addEditTypeStep(false, response.data);
-        })
-        .catch((e) => {
-          this.error = e
-        })
+      try {
+        const postman = classifyPostmanDocument(await newFile.file.text())
+        if (postman.type === 'environment') {
+          this.postmanJson.environment = postman.document
+          this.showOverriteLabel = true
+        } else {
+          this.postmanJson.collection = postman.document
+          this.note = postman.document.info.name
+          this.addEditTypeStep(true, this.postmanJson)
+        }
+      } catch {
+        this.errortext =
+          this.language[this.config.currentLanguage].Steps.wizard.importPostman.isNotCollectionFile
+        return false
+      }
+      return true
     },
     changeJsonEditor() {
-      console.log('changeJsonEditor')
       if (this.jsonFromEditor_prop == {}) return false
       else {
         this.jsonFromEditor = this.jsonFromEditor_prop
         this.initWrapperArray()
       }
-      console.log(this.jsonFromEditor)
       this.name = this.jsonFromEditor.name
       this.attachScreenshot = this.jsonFromEditor.attachScreenshot
       this.failedExit = this.jsonFromEditor.failedExit
@@ -644,9 +624,7 @@ export default {
       if (this.arrayStepTypeToAdd.length > 0) this.displayCard = 'fade-in'
     },
     buildJson() {
-      console.log('buildJson')
       this.buildJson
-      console.log(this.arrayStepTypeToAdd)
       this.arrayStepTypeToAdd.forEach(function (v) {
         delete v.id
       })
@@ -657,7 +635,6 @@ export default {
         attachScreenshot: this.attachScreenshot,
         steps: this.arrayStepTypeToAdd
       }
-      console.log(this.objectJsonToSend)
       this.$emit('syncJson', this.objectJsonToSend)
     },
     checkPossibleAddType() {
@@ -712,7 +689,6 @@ export default {
     editStepType(typeStep, repeat = false) {
       let index = this.arrayStepTypeToAdd.findIndex((x) => x.id === typeStep.id)
 
-      console.log(typeStep)
       let found = false
       if (repeat == false) found = this.searchFindTypeStep(typeStep.stepType)
       let objectFound = this.stepsType.find((d) => d.name == typeStep.stepType)
@@ -736,7 +712,6 @@ export default {
       }
       for (const element of arrayKey) {
         for (let i = 0; i < objectFound.syntax.length; i++) {
-          console.log(objectFound.syntax[i].typeName + '==' + element)
           if (objectFound.syntax[i].typeName == element) {
             this.responseTypeSelect[i] = typeStep[element]
             this.checkInput(objectFound.syntax[i].type, i)
@@ -757,7 +732,6 @@ export default {
       let objectToStore = {}
       objectToStore['stepType'] = this.stepTypeSelected.name
       for (let i = 0; i < this.arraySyntax.length; i++) {
-        console.log(this.arraySyntax[i])
         if (
           this.arraySyntax[i].type == 'string' ||
           this.arraySyntax[i].type == 'options' ||
@@ -783,9 +757,6 @@ export default {
         this.arrayStepTypeToAdd[this.indexForEdit] = objectToStore
         this.showBtnEditTestType = 'hide-element'
       }
-      console.log('--------------------------------')
-      console.log(objectToStore)
-      console.log('--------------------------------')
       this.initWrapperArray()
     },
     deleteStepType(index) {
@@ -798,7 +769,6 @@ export default {
       this.textBdd = ''
       this.note = ''
       this.isBtnAddStepTypeDisabled = true
-      //console.log(this.stepsType);
       this.fillStepsFileArray(this.typeOfWrapperSelected)
     },
     fillStepsFileArray(wrapperName) {
@@ -834,19 +804,18 @@ export default {
     listPlugin() {
       this.emitter.emit('showLoader', true)
       //alert(this.config.timeChecksession)
-      axios
+      apiClient
         .get(
           this.config.serviceBaseUrl +
             this.config.url.plugins +
             '/' +
-            localStorage.projectIdSelected,
+            getSelectedProjectId(),
           {
             headers: this.setHeaders()
           }
         )
         .then((response) => {
           this.emitter.emit('showLoader', false)
-          console.log(response)
           this.arrayPlugins = []
           for (const element of response.data) {
             let objectToPush = element

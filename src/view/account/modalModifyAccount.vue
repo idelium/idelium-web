@@ -245,7 +245,6 @@ export default {
         this.labelButtonAction =
           this.language[this.config.currentLanguage].Accounts.modal.addAccount
       }
-      console.log(this.$refs.mymodal)
       this.modalElem.show()
     },
     sendData() {

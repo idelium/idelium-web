@@ -42,7 +42,6 @@ export default {
   created() {
     // Using the service bus
     this.emitter.on('openErrorModal', (msg) => {
-      console.log(msg)
       this.titleErrorModal = msg.title
       this.messageErrorModal = msg.message
       this.showDefaultOK = msg.showDefaultOK

@@ -111,7 +111,8 @@ import modalTestPerformed from './testperformed/modalTestPerformed.vue'
 import 'splitpanes/dist/splitpanes.css'
 import { Splitpanes, Pane } from 'splitpanes'
 
-import axios from 'axios'
+import apiClient from '@/services/apiClient'
+import { getSelectedProjectId } from '@/stores/session'
 
 export default {
   name: 'TestsPerformedComponent',
@@ -162,12 +163,12 @@ export default {
       this.arrayTest = []
       this.testCycleSelected = null
       this.emitter.emit('showLoader', true)
-      axios
+      apiClient
         .get(
           this.config.serviceBaseUrl +
             this.config.url.testcycles +
             '/' +
-            localStorage.projectIdSelected,
+            getSelectedProjectId(),
           {
             headers: this.setHeaders()
           }
@@ -186,7 +187,7 @@ export default {
       this.arrayTest = []
       this.emitter.emit('showLoader', true)
       this.spinreverseDate = 'spin-reverse'
-      axios
+      apiClient
         .get(this.config.serviceBaseUrl + this.config.url.getTestCyclePerformed + '/' + id, {
           headers: this.setHeaders()
         })
@@ -205,7 +206,7 @@ export default {
 
     getTest(id) {
       this.emitter.emit('showLoader', true)
-      axios
+      apiClient
         .get(this.config.serviceBaseUrl + this.config.url.getTestPerformed + '/' + id, {
           headers: this.setHeaders()
         })
@@ -221,7 +222,7 @@ export default {
     },
     getStep(id, name) {
       this.emitter.emit('showLoader', true)
-      axios
+      apiClient
         .get(this.config.serviceBaseUrl + this.config.url.getStepPerformed + '/' + id, {
           headers: this.setHeaders()
         })
@@ -231,7 +232,6 @@ export default {
         })
         .catch((e) => {
           this.error = e
-          console.log(e)
           this.Logout(this, e)
         })
     }

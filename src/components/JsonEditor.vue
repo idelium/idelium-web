@@ -41,7 +41,6 @@ export default {
   },
   methods: {
     _onChange(e) {
-      console.log(e)
       if (this.onChange && this.editor) {
         this.onChange(this.editor.get(), this.refName)
       }
