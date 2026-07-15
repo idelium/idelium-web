@@ -14,12 +14,12 @@ See [Vite Configuration Reference](https://vitejs.dev/config/).
 
 ## Prerequisite
 
-Node 18.x
+Node 22.17.0 and npm from the committed lockfile.
 
 ## Project Setup
 
 ```sh
-npm install
+npm ci
 ```
 
 ### Config environment
@@ -48,6 +48,18 @@ npm run build
 ```sh
 npm run lint
 ```
+
+CI uses non-mutating gates:
+
+```sh
+npm run lint:check
+npm run format:check
+npm run test:unit -- --run
+npm run build
+```
+
+See [docs/security/session-storage.md](docs/security/session-storage.md) for the
+browser-session threat model and the planned `HttpOnly` cookie migration.
 ## Demo
 
 [https://github.com/idelium/idelium-docker](https://github.com/idelium/idelium-docker)
