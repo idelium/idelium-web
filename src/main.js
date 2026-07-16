@@ -12,6 +12,7 @@ import 'element-plus/theme-chalk/index.css'
 import Toast from 'vue3-toast-single'
 import 'vue3-toast-single/dist/toast.css'
 import vSelect from 'vue-select'
+import Konva from 'konva'
 import appKonva from 'vue-konva'
 import appFullscreen from 'vue-fullscreen'
 import { VueReCaptcha } from 'vue-recaptcha-v3'
@@ -97,6 +98,8 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
 import italian from './languages/italian'
 import english from './languages/english'
+
+Konva.legacyTextRendering = true
 
 const emitter = mitt()
 const app = createApp(App)
