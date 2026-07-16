@@ -20,10 +20,7 @@ describe("route smoke checks", () => {
   });
 
   it("opens the main project route for an authenticated session", async () => {
-    useSessionStore(pinia).establishSession({
-      accessToken: "token",
-      sessionId: "session",
-    });
+    useSessionStore(pinia).establishSession();
     await router.push("/projects");
     expect(router.currentRoute.value.name).toBe("projects");
   });

@@ -266,7 +266,7 @@ export default {
 
       this.emitter.emit("showLoader", true);
       try {
-        const response = await apiClient.post(
+        await apiClient.post(
           this.config.serviceBaseUrl + this.config.url.login,
           {
             email: this.email,
@@ -279,10 +279,7 @@ export default {
             },
           },
         );
-        this.session.establishSession({
-          accessToken: response.data.access_token,
-          sessionId: response.data.session,
-        });
+        this.session.establishSession();
         await this.$router.push({ name: this.$route.query.back || "projects" });
       } catch {
         this.error =

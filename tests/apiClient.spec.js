@@ -10,11 +10,8 @@ describe("central API client", () => {
     useSessionStore(pinia).clear();
   });
 
-  it("adds authorization state without exposing it to callers", async () => {
-    useSessionStore(pinia).establishSession({
-      accessToken: "secret-token",
-      sessionId: "session-id",
-    });
+  it("uses browser credentials without adding JavaScript-readable secrets", async () => {
+    useSessionStore(pinia).establishSession();
     apiClient.defaults.adapter = async (request) => ({
       data: null,
       status: 200,
@@ -24,17 +21,15 @@ describe("central API client", () => {
     });
 
     const response = await apiClient.get("/resource");
-    expect(response.config.headers.Authorization).toBe("Bearer secret-token");
-    expect(response.config.headers.Session).toBe("session-id");
+    expect(response.config.withCredentials).toBe(true);
+    expect(response.config.headers.Authorization).toBeUndefined();
+    expect(response.config.headers.Session).toBeUndefined();
   });
 
   it("runs one predictable logout handler for an authorization failure", async () => {
     const handler = vi.fn();
     setUnauthorizedHandler(handler);
-    useSessionStore(pinia).establishSession({
-      accessToken: "secret-token",
-      sessionId: "session-id",
-    });
+    useSessionStore(pinia).establishSession();
     apiClient.defaults.adapter = () =>
       Promise.reject({ response: { status: 401 }, code: "ERR" });
 

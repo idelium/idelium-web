@@ -6,18 +6,14 @@ import { STORAGE_KEY, useSessionStore } from "@/stores/session";
 describe("session store", () => {
   beforeEach(() => setActivePinia(createPinia()));
 
-  it("persists login and project selection only for the browser tab", () => {
+  it("persists non-sensitive session state only for the browser tab", () => {
     const session = useSessionStore();
-    session.establishSession({
-      accessToken: "access-token",
-      sessionId: "session-id",
-    });
+    session.establishSession();
     session.selectCustomer(7);
     session.selectProject(11);
 
     expect(JSON.parse(sessionStorage.getItem(STORAGE_KEY))).toMatchObject({
-      accessToken: "access-token",
-      sessionId: "session-id",
+      authenticated: true,
       selectedCustomerId: 7,
       selectedProjectId: 11,
     });
@@ -26,10 +22,7 @@ describe("session store", () => {
 
   it("clears credentials and selection on logout", () => {
     const session = useSessionStore();
-    session.establishSession({
-      accessToken: "access-token",
-      sessionId: "session-id",
-    });
+    session.establishSession();
     session.selectProject(11);
     session.clear();
 
@@ -42,8 +35,7 @@ describe("session store", () => {
     sessionStorage.setItem(
       STORAGE_KEY,
       JSON.stringify({
-        accessToken: "token",
-        sessionId: "session",
+        authenticated: true,
         selectedProjectId: 5,
       }),
     );

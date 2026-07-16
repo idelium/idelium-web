@@ -15,14 +15,6 @@ export const apiClient = axios.create({
   },
 });
 
-apiClient.interceptors.request.use((request) => {
-  const session = useSessionStore(pinia);
-  if (session.accessToken)
-    request.headers.Authorization = `Bearer ${session.accessToken}`;
-  if (session.sessionId) request.headers.Session = session.sessionId;
-  return request;
-});
-
 apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {

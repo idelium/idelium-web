@@ -24,36 +24,29 @@ export const useSessionStore = defineStore("session", {
   state: () => {
     const persisted = readPersistedState();
     return {
-      accessToken: persisted.accessToken || null,
-      sessionId: persisted.sessionId || null,
+      authenticated: persisted.authenticated === true,
       selectedCustomerId: persisted.selectedCustomerId || null,
       selectedProjectId: persisted.selectedProjectId || null,
       hasNoProjects: persisted.hasNoProjects === true,
     };
   },
   getters: {
-    isAuthenticated: (state) => Boolean(state.accessToken || state.sessionId),
+    isAuthenticated: (state) => state.authenticated,
   },
   actions: {
     persist() {
       getStorage()?.setItem(
         STORAGE_KEY,
         JSON.stringify({
-          accessToken: this.accessToken,
-          sessionId: this.sessionId,
+          authenticated: this.authenticated,
           selectedCustomerId: this.selectedCustomerId,
           selectedProjectId: this.selectedProjectId,
           hasNoProjects: this.hasNoProjects,
         }),
       );
     },
-    establishSession({ accessToken, sessionId }) {
-      this.accessToken = accessToken || null;
-      this.sessionId = sessionId || null;
-      this.persist();
-    },
-    updateSessionId(sessionId) {
-      this.sessionId = sessionId || null;
+    establishSession() {
+      this.authenticated = true;
       this.persist();
     },
     selectCustomer(customerId) {

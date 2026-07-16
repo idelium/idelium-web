@@ -55,9 +55,7 @@ describe("login component", () => {
 
   it("establishes the session and navigates after login", async () => {
     api.get.mockResolvedValue({});
-    api.post.mockResolvedValue({
-      data: { access_token: "token", session: "session" },
-    });
+    api.post.mockResolvedValue({ data: { authenticated: true } });
     const { wrapper, push } = mountLogin();
     await wrapper.get("#username").setValue("user@example.com");
     await wrapper.get("#password").setValue("password");

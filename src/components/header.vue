@@ -294,7 +294,7 @@ export default {
     },
     actionLogout() {
       apiClient
-        .get(this.config.serviceBaseUrl + this.config.url.logout, {
+        .post(this.config.serviceBaseUrl + this.config.url.logout, null, {
           headers: this.setHeaders()
         })
         .then(() => {
