@@ -54,12 +54,13 @@ CI uses non-mutating gates:
 ```sh
 npm run lint:check
 npm run format:check
-npm run test:unit -- --run
+npm run audit:dependencies
+npm run test:coverage
 npm run build
 ```
 
 See [docs/security/session-storage.md](docs/security/session-storage.md) for the
-browser-session threat model and the planned `HttpOnly` cookie migration.
+browser-session threat model and cookie-based authentication design.
 ## Demo
 
 [https://github.com/idelium/idelium-docker](https://github.com/idelium/idelium-docker)

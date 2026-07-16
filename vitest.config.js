@@ -15,6 +15,24 @@ export default mergeConfig(
       transformMode: {
         web: [/\.[jt]sx$/],
       },
+      coverage: {
+        provider: "v8",
+        include: [
+          "src/services/**",
+          "src/stores/**",
+          "src/domain/**",
+          "src/router/**",
+          "src/components/header.vue",
+          "src/view/pages/login.vue",
+          "src/view/testcycles.vue",
+        ],
+        thresholds: {
+          lines: 60,
+          functions: 50,
+          statements: 60,
+          branches: 50,
+        },
+      },
     },
   }),
 );
