@@ -42,4 +42,14 @@ describe("wizard markup", () => {
     expect(source).toContain('v-if="loading"');
     expect(source).toContain("loading: false");
   });
+
+  it("keeps timeline mouse listeners on Konva nodes instead of the layer", () => {
+    const source = readSource("src/view/testperformed/timeLine.vue");
+    const layerOpenTag = source.match(/<v-layer[\s\S]*?>/)?.[0] ?? "";
+
+    expect(layerOpenTag).not.toContain("@mousedown");
+    expect(layerOpenTag).not.toContain("@mouseenter");
+    expect(layerOpenTag).not.toContain("@mouseout");
+    expect(source).toContain("@mousedown=\"eventShowImage\"");
+  });
 });

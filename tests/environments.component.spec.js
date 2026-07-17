@@ -1,5 +1,5 @@
 import { shallowMount } from "@vue/test-utils";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const api = vi.hoisted(() => ({ get: vi.fn() }));
 const modal = vi.hoisted(() => ({ show: vi.fn(), hide: vi.fn() }));
@@ -16,8 +16,15 @@ import { pinia } from "@/stores/pinia";
 import { useSessionStore } from "@/stores/session";
 
 describe("environments component", () => {
-  function mountEnvironments(overrides = {}) {
+  beforeEach(() => {
+    api.get.mockReset();
+    modal.show.mockClear();
+    modal.hide.mockClear();
+  });
+
+  function mountEnvironments(overrides = {}, mountOptions = {}) {
     return shallowMount(Environments, {
+      ...mountOptions,
       global: {
         plugins: [pinia],
         stubs: {
@@ -68,5 +75,23 @@ describe("environments component", () => {
       }),
     );
     expect(wrapper.find("#nav-home-tab").attributes("disabled")).toBeDefined();
+  });
+
+  it("moves focus out of the editor modal before hiding it", async () => {
+    api.get.mockResolvedValue({ data: [{ id: 1, code: "dev" }] });
+    const host = document.createElement("div");
+    document.body.append(host);
+
+    const wrapper = mountEnvironments({}, { attachTo: host });
+
+    const cancelButton = wrapper.find(".modal-footer .btn-secondary");
+    cancelButton.element.focus();
+
+    await cancelButton.trigger("click");
+
+    expect(document.activeElement).not.toBe(cancelButton.element);
+    expect(modal.hide).toHaveBeenCalled();
+    wrapper.unmount();
+    host.remove();
   });
 });

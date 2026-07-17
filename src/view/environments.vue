@@ -240,7 +240,7 @@
                 type="button"
                 class="btn btn-secondary btn-sm"
                 style="color: black !important; float: left !important"
-                v-on:click="modalElem.hide()"
+                v-on:click="hideEditorModal()"
               >
                 {{ language[config.currentLanguage].Environments.btnCancel }}
               </button>
@@ -315,6 +315,7 @@ import JsonEditor from "../components/JsonEditor.vue";
 import apiClient from "@/services/apiClient";
 import { getSelectedProjectId } from "@/stores/session";
 import { buildEnvironmentPayload } from "@/domain/workflowPayloads";
+import { hideModalSafely } from "@/shared/bootstrapModal";
 //import draggable from 'vuedraggable'
 import download from "@/shared/download";
 import { routableTabs } from "@/shared/routableTabs";
@@ -591,6 +592,9 @@ export default {
         this.$refs.wizard.generateJson(false);
       }
     },
+    hideEditorModal() {
+      hideModalSafely(this.$refs.mymodal, this.modalElem);
+    },
     saveJson(isNew = null) {
       let fileName = null;
       let jsonObject = null;
@@ -619,7 +623,7 @@ export default {
         .then((response) => {
           this.emitter.emit("showLoader", false);
           this.btnSaveEnable = false;
-          this.modalElem.hide();
+          this.hideEditorModal();
           this.loadJsonToEdit = this.generateJson(param.selenium);
 
           this.listEnvironments = response.data;
@@ -651,7 +655,7 @@ export default {
           (response) => {
             this.emitter.emit("showLoader", false);
             this.btnSaveEnable = false;
-            this.modalElem.hide();
+            this.hideEditorModal();
             this.loadJsonToEdit = this.generateJson(param.selenium);
             this.listEnvironments = response.data;
             this.environmentsLoaded = true;

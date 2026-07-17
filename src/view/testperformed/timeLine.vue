@@ -4,14 +4,24 @@
       ><font-awesome-icon icon="expand-arrows-alt" @click="toggle"
     /></span>
     <v-stage :config="configKonva" v-if="showMe == true">
-      <v-layer
-        @mouseDown="eventShowImage"
-        @mouseenter="handleMouseEnter"
-        @mouseout="handleMouseOut"
-      >
-        <v-rect v-for="item in rectangles" :key="item.id" :config="item" />
+      <v-layer>
+        <v-rect
+          v-for="item in rectangles"
+          :key="item.id"
+          :config="item"
+          @mousedown="eventShowImage"
+          @mouseenter="handleMouseEnter"
+          @mouseout="handleMouseOut"
+        />
         <v-line v-for="item in lines" :key="item.id" :config="item" />
-        <v-text v-for="item in texts" :key="item.id" :config="item" />
+        <v-text
+          v-for="item in texts"
+          :key="item.id"
+          :config="item"
+          @mousedown="eventShowImage"
+          @mouseenter="handleMouseEnter"
+          @mouseout="handleMouseOut"
+        />
       </v-layer>
     </v-stage>
   </div>

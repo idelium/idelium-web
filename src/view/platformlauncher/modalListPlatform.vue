@@ -12,24 +12,30 @@
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title" id="exampleModalLabel">
-              {{ language[config.currentLanguage].TestLauncher.ModalListPlatform.modalTitle }}
+              {{
+                language[config.currentLanguage].TestLauncher.ModalListPlatform
+                  .modalTitle
+              }}
             </h5>
           </div>
           <div class="row" style="margin-top: 10px">
             <div class="col-sm-3"></div>
             <div class="col-sm-3 labelFilter" v-if="showBrandCol == true">
               <span>{{
-                language[config.currentLanguage].TestLauncher.ModalListPlatform.colBrand
+                language[config.currentLanguage].TestLauncher.ModalListPlatform
+                  .colBrand
               }}</span>
             </div>
             <div class="col-sm-3 labelFilter">
               <span>{{
-                language[config.currentLanguage].TestLauncher.ModalListPlatform.colOs
+                language[config.currentLanguage].TestLauncher.ModalListPlatform
+                  .colOs
               }}</span>
             </div>
             <div class="col-sm-3 labelFilter">
               <span v-if="arrayBrowser.length > 0">{{
-                language[config.currentLanguage].TestLauncher.ModalListPlatform.colBrowser
+                language[config.currentLanguage].TestLauncher.ModalListPlatform
+                  .colBrowser
               }}</span>
             </div>
           </div>
@@ -40,7 +46,11 @@
                 v-model="typeSelected"
                 v-on:change="getPlatforms()"
               >
-                <option v-for="(type, index) in arrayTypes" v-bind:key="index" :value="type.id">
+                <option
+                  v-for="(type, index) in arrayTypes"
+                  v-bind:key="index"
+                  :value="type.id"
+                >
                   {{ type.name }}
                 </option>
               </select>
@@ -52,19 +62,37 @@
                 v-on:change="getBrand()"
               >
                 <option :value="'all'">
-                  {{ language[config.currentLanguage].TestLauncher.ModalListPlatform.all }}
+                  {{
+                    language[config.currentLanguage].TestLauncher
+                      .ModalListPlatform.all
+                  }}
                 </option>
-                <option v-for="(type, index) in arrayBrands" v-bind:key="index" :value="type.id">
+                <option
+                  v-for="(type, index) in arrayBrands"
+                  v-bind:key="index"
+                  :value="type.id"
+                >
                   {{ type.brand }}
                 </option>
               </select>
             </div>
             <div class="col-sm-3">
-              <select class="form-select form-control" v-model="osSelected" v-on:change="getOs()">
+              <select
+                class="form-select form-control"
+                v-model="osSelected"
+                v-on:change="getOs()"
+              >
                 <option value="all" selected>
-                  {{ language[config.currentLanguage].TestLauncher.ModalListPlatform.all }}
+                  {{
+                    language[config.currentLanguage].TestLauncher
+                      .ModalListPlatform.all
+                  }}
                 </option>
-                <option v-for="(type, index) in arrayOs" v-bind:key="index" :value="type.id">
+                <option
+                  v-for="(type, index) in arrayOs"
+                  v-bind:key="index"
+                  :value="type.id"
+                >
                   {{ type.name }}
                 </option>
               </select>
@@ -78,9 +106,16 @@
                 v-on:change="filterPlatform()"
               >
                 <option value="all">
-                  {{ language[config.currentLanguage].TestLauncher.ModalListPlatform.all }}
+                  {{
+                    language[config.currentLanguage].TestLauncher
+                      .ModalListPlatform.all
+                  }}
                 </option>
-                <option v-for="(type, index) in arrayBrowser" v-bind:key="index" :value="type.id">
+                <option
+                  v-for="(type, index) in arrayBrowser"
+                  v-bind:key="index"
+                  :value="type.id"
+                >
                   {{ type.name }}
                 </option>
               </select>
@@ -97,28 +132,40 @@
                   <tr>
                     <th scope="col">
                       {{
-                        language[config.currentLanguage].TestLauncher.ModalListPlatform.colLocation
+                        language[config.currentLanguage].TestLauncher
+                          .ModalListPlatform.colLocation
                       }}
                     </th>
                     <th scope="col" v-if="showBrandCol == true">
-                      {{ language[config.currentLanguage].TestLauncher.ModalListPlatform.colBrand }}
-                    </th>
-                    <th scope="col">
-                      {{ language[config.currentLanguage].TestLauncher.ModalListPlatform.colOs }}
-                    </th>
-                    <th scope="col">
                       {{
-                        language[config.currentLanguage].TestLauncher.ModalListPlatform.colBrowser
+                        language[config.currentLanguage].TestLauncher
+                          .ModalListPlatform.colBrand
                       }}
                     </th>
                     <th scope="col">
                       {{
-                        language[config.currentLanguage].TestLauncher.ModalListPlatform.colStatus
+                        language[config.currentLanguage].TestLauncher
+                          .ModalListPlatform.colOs
+                      }}
+                    </th>
+                    <th scope="col">
+                      {{
+                        language[config.currentLanguage].TestLauncher
+                          .ModalListPlatform.colBrowser
+                      }}
+                    </th>
+                    <th scope="col">
+                      {{
+                        language[config.currentLanguage].TestLauncher
+                          .ModalListPlatform.colStatus
                       }}
                     </th>
                   </tr>
                 </thead>
-                <tr v-for="(item, index) in arrayPlatformsToShow" v-bind:key="index">
+                <tr
+                  v-for="(item, index) in arrayPlatformsToShow"
+                  v-bind:key="index"
+                >
                   <td>
                     {{ getLocationName(item.location) }}
                   </td>
@@ -140,7 +187,8 @@
                       style="width=100"
                     >
                       {{
-                        language[config.currentLanguage].TestLauncher.ModalListPlatform.launchtest
+                        language[config.currentLanguage].TestLauncher
+                          .ModalListPlatform.launchtest
                       }}
                     </button>
                     <span
@@ -168,53 +216,56 @@
   color: #fff;
   background-color: #2d8515;
   border-color: #2d8515;
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 15%), 0 1px 1px rgb(0 0 0 / 8%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 15%),
+    0 1px 1px rgb(0 0 0 / 8%);
   margin: 10px;
 }
 </style>
 
 <script>
-import commonCalls from '../platforms/commonCalls'
-import apiClient from '@/services/apiClient'
-import { getSelectedProjectId } from '@/stores/session'
-import { Modal } from 'bootstrap'
+import commonCalls from "../platforms/commonCalls";
+import apiClient from "@/services/apiClient";
+import { getSelectedProjectId } from "@/stores/session";
+import { Modal } from "bootstrap";
 
 export default {
-  name: 'platformLauncher',
-  created() {
-  },
+  name: "platformLauncher",
+  created() {},
   mounted() {
-    this.modalElem = new Modal(document.getElementById('myModal'))
+    this.modalElem = new Modal(document.getElementById("myModal"));
   },
   data() {
     return {
       typeSelected: null,
-      brandSelected: 'all',
-      browserSelected: 'all',
-      osSelected: 'all',
+      brandSelected: "all",
+      browserSelected: "all",
+      osSelected: "all",
       arrayTypes: [],
       arrayPlatforms: [],
       arrayPlatformsToShow: [],
       arrayBrowser: [],
       arrayOs: [],
       arrayBrands: [],
+      arrayLocations: [],
+      arrayStatus: [],
       elementIdToEdit: null,
       elementToEdit: null,
       showBrandCol: true,
       idTest: null,
-      environment: null
-    }
+      environment: null,
+    };
   },
   methods: {
     showModal(id, environment) {
-      this.modalElem.show()
-      this.getLocations()
-      this.idTest = id
-      this.environment = environment
+      this.modalElem.show();
+      this.getLocations();
+      this.idTest = id;
+      this.environment = environment;
     },
     launchTest(idPlatform) {
-      this.modalElem.hide()
-      this.emitter.emit('showLoader', true)
+      this.modalElem.hide();
+      this.emitter.emit("showLoader", true);
       apiClient
         .post(
           this.config.serviceBaseUrl + this.config.url.launchtest,
@@ -222,132 +273,150 @@ export default {
             idTestCycle: this.idTest.toString(),
             environment: this.environment,
             idProject: getSelectedProjectId(),
-            idPlatform: idPlatform
+            idPlatform: idPlatform,
           },
           {
-            headers: this.setHeaders()
-          }
+            headers: this.setHeaders(),
+          },
         )
         .then((response) => {
-          this.emitter.emit('showLoader', false)
+          this.emitter.emit("showLoader", false);
         })
         .catch((e) => {
-          this.Logout(this, e)
-          this.error = e
-        })
+          this.Logout(this, e);
+          this.error = e;
+        });
     },
     async getLocations() {
-      this.emitter.emit('showLoader', true)
+      this.emitter.emit("showLoader", true);
       let response = await commonCalls.getLocation(this).catch((e) => {
-        this.Logout(this, e)
-      })
-      this.arrayLocations = response.data
-      this.getStatus()
-      this.getTypes()
+        this.Logout(this, e);
+      });
+      this.arrayLocations = response.data;
+      this.getStatus();
+      this.getTypes();
     },
     async getStatus() {
       let response = await commonCalls.getStatus(this).catch((e) => {
-        this.Logout(this, e)
-      })
-      this.arrayStatus = response.data
+        this.Logout(this, e);
+      });
+      this.arrayStatus = response.data;
     },
     async getTypes() {
       let response = await commonCalls.getTypes(this).catch((e) => {
-        this.Logout(this, e)
-      })
-      this.arrayTypes = response.data
-      if (this.arrayTypes.length > 0) this.typeSelected = this.arrayTypes[0].id
+        this.Logout(this, e);
+      });
+      this.arrayTypes = response.data;
+      if (this.arrayTypes.length > 0) this.typeSelected = this.arrayTypes[0].id;
 
-      this.show = true
-      this.getPlatforms()
-      this.getBrand()
-      this.emitter.emit('showLoader', false)
+      this.show = true;
+      this.getPlatforms();
+      this.getBrand();
+      this.emitter.emit("showLoader", false);
     },
     async getBrand() {
-      this.emitter.emit('showLoader', true)
-      this.arrayBrands = []
-      if (this.getTypeName(this.typeSelected) == 'mobile devices') {
+      this.emitter.emit("showLoader", true);
+      this.arrayBrands = [];
+      if (this.getTypeName(this.typeSelected) == "mobile devices") {
         let response = await commonCalls.getBrand(this).catch((e) => {
-          this.Logout(this, e)
-        })
-        this.arrayBrands = response.data
+          this.Logout(this, e);
+        });
+        this.arrayBrands = response.data;
       }
-      this.getOs()
+      this.getOs();
     },
     async getOs() {
-      let response = await commonCalls.getOs(this, this.typeSelected).catch((e) => {
-        this.Logout(this, e)
-      })
-      this.arrayOs = response.data
-      this.browserSelected = 'all'
-      this.getBrowser()
-      this.filterPlatform()
+      let response = await commonCalls
+        .getOs(this, this.typeSelected)
+        .catch((e) => {
+          this.Logout(this, e);
+        });
+      this.arrayOs = response.data;
+      this.browserSelected = "all";
+      this.getBrowser();
+      this.filterPlatform();
     },
     async getBrowser() {
-      let response = await commonCalls.getBrowser(this, this.osSelected).catch((e) => {
-        this.Logout(this, e)
-      })
-      this.arrayBrowser = response.data
-      this.emitter.emit('showLoader', false)
-      this.filterPlatform()
+      let response = await commonCalls
+        .getBrowser(this, this.osSelected)
+        .catch((e) => {
+          this.Logout(this, e);
+        });
+      this.arrayBrowser = response.data;
+      this.emitter.emit("showLoader", false);
+      this.filterPlatform();
     },
     editThisElement(element) {
-      this.elementIdToEdit = element.id
-      this.elementToEdit = element.status
+      this.elementIdToEdit = element.id;
+      this.elementToEdit = element.status;
     },
     getLocationName(idLocation) {
-      let objLocation = this.arrayLocations.find(({ id }) => id === idLocation)
-      return objLocation.name
+      let objLocation = this.normalizeLookupArray(this.arrayLocations).find(
+        ({ id }) => id === idLocation,
+      );
+      return objLocation?.name || "";
     },
     getStatusName(idStatus) {
-      let objStatus = this.arrayStatus.find(({ id }) => id === idStatus)
-      return objStatus.name
+      let objStatus = this.normalizeLookupArray(this.arrayStatus).find(
+        ({ id }) => id === idStatus,
+      );
+      return objStatus?.name || "";
     },
     getTypeName(idType) {
-      let objType = this.arrayTypes.find(({ id }) => id === idType)
-      return objType.name
+      let objType = this.normalizeLookupArray(this.arrayTypes).find(
+        ({ id }) => id === idType,
+      );
+      return objType?.name || "";
+    },
+    normalizeLookupArray(value) {
+      if (Array.isArray(value)) return value;
+      if (Array.isArray(value?.data)) return value.data;
+      return [];
     },
     filterPlatform() {
-      this.arrayPlatformsToShow = this.arrayPlatforms
-      if (this.brandSelected != 'all') {
-        let dummyArray = []
+      this.arrayPlatformsToShow = this.arrayPlatforms;
+      if (this.brandSelected != "all") {
+        let dummyArray = [];
         for (let i = 0; i < this.arrayPlatformsToShow.length > 0; i++) {
           if (this.arrayPlatformsToShow[i].brand == this.brandSelected)
-            dummyArray.push(this.arrayPlatformsToShow[i])
+            dummyArray.push(this.arrayPlatformsToShow[i]);
         }
-        this.arrayPlatformsToShow = dummyArray
+        this.arrayPlatformsToShow = dummyArray;
       }
-      if (this.osSelected != 'all') {
-        let dummyArray = []
+      if (this.osSelected != "all") {
+        let dummyArray = [];
         for (let i = 0; i < this.arrayPlatformsToShow.length > 0; i++) {
           if (this.arrayPlatformsToShow[i].os == this.osSelected)
-            dummyArray.push(this.arrayPlatformsToShow[i])
+            dummyArray.push(this.arrayPlatformsToShow[i]);
         }
-        this.arrayPlatformsToShow = dummyArray
+        this.arrayPlatformsToShow = dummyArray;
       }
-      if (this.browserSelected != 'all') {
-        let dummyArray = []
+      if (this.browserSelected != "all") {
+        let dummyArray = [];
         for (let i = 0; i < this.arrayPlatformsToShow.length > 0; i++) {
           if (this.arrayPlatformsToShow[i].browser == this.browserSelected)
-            dummyArray.push(this.arrayPlatformsToShow[i])
+            dummyArray.push(this.arrayPlatformsToShow[i]);
         }
-        this.arrayPlatformsToShow = dummyArray
+        this.arrayPlatformsToShow = dummyArray;
       }
     },
     async getPlatforms() {
-      let response = await commonCalls.getPlatforms(this, this.typeSelected).catch((e) => {
-        this.Logout(this, e)
-      })
-      if (this.getTypeName(this.typeSelected) == 'mobile devices') this.showBrandCol = true
-      else this.showBrandCol = false
-      this.arrayPlatforms = response.data
-      this.osSelected = 'all'
-      this.browserSelected = 'all'
-      this.brandSelected = 'all'
-      this.arrayBrowser = []
-      this.getBrand()
-      this.emitter.emit('showLoader', false)
-    }
-  }
-}
+      let response = await commonCalls
+        .getPlatforms(this, this.typeSelected)
+        .catch((e) => {
+          this.Logout(this, e);
+        });
+      if (this.getTypeName(this.typeSelected) == "mobile devices")
+        this.showBrandCol = true;
+      else this.showBrandCol = false;
+      this.arrayPlatforms = response.data;
+      this.osSelected = "all";
+      this.browserSelected = "all";
+      this.brandSelected = "all";
+      this.arrayBrowser = [];
+      this.getBrand();
+      this.emitter.emit("showLoader", false);
+    },
+  },
+};
 </script>

@@ -107,6 +107,96 @@ $font-stack: "Roboto Slab", serif;
   font-weight: 800;
   text-transform: uppercase;
 }
+
+.idelium-tabler-container > .info,
+.idelium-tabler-container > .costum,
+.idelium-tabler-container > div {
+  margin: 0 auto;
+  max-width: 1280px;
+  width: 100%;
+}
+
+.idelium-tabler-container .nav-tabs {
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid var(--idelium-border);
+  border-bottom: 0;
+  border-radius: 1rem 1rem 0 0;
+  padding: 0.95rem 1rem 0;
+}
+
+.idelium-tabler-container .tab-content {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.025), transparent),
+    var(--idelium-surface);
+  border: 1px solid var(--idelium-border);
+  border-radius: 0 0 1rem 1rem;
+  box-shadow: var(--idelium-shadow);
+  margin-bottom: 1.25rem;
+  padding: 1rem;
+}
+
+.idelium-tabler-container .tab-content > .tab-pane > .row {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.idelium-tabler-container
+  .tab-content
+  > .tab-pane
+  > .row
+  > [class*="col-sm-1"]:empty,
+.idelium-tabler-container
+  .tab-content
+  > .tab-pane
+  > .row
+  > [class*="col-sm-2"]:empty {
+  display: none;
+}
+
+.idelium-tabler-container .tab-content > .tab-pane > .row > .col,
+.idelium-tabler-container .tab-content > .tab-pane > .row > [class*="col-sm-"],
+.idelium-tabler-container .tab-content > .tab-pane > .row > [class*="col-"] {
+  flex: 1 1 auto;
+  max-width: 100%;
+}
+
+.idelium-tabler-container .tab-content .form-control,
+.idelium-tabler-container .tab-content .form-select,
+.idelium-tabler-container .tab-content .vs__dropdown-toggle {
+  margin-bottom: 0.85rem;
+}
+
+.idelium-tabler-container .list-group {
+  gap: 0.55rem;
+}
+
+.idelium-tabler-container .list-group-item {
+  background: rgba(255, 255, 255, 0.045) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 0.85rem !important;
+  color: #f4f4f5 !important;
+  font-weight: 700;
+  padding: 0.85rem 0.95rem !important;
+}
+
+.idelium-tabler-container .dragArea {
+  background:
+    linear-gradient(180deg, rgba(255, 122, 24, 0.035), transparent),
+    rgba(255, 255, 255, 0.02);
+  border: 1px dashed rgba(255, 122, 24, 0.35);
+  border-radius: 1rem;
+  padding: 0.75rem;
+}
+
+.idelium-tabler-container .paneColumn,
+.idelium-tabler-container .scroll-area,
+.idelium-tabler-container .scroll-area2,
+.idelium-tabler-container .scroll-area90 {
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid var(--idelium-border);
+  border-radius: 1rem;
+  padding: 0.9rem;
+}
 .costum th {
   color: #f4f0ec !important;
 }
