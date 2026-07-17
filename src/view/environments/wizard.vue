@@ -4,25 +4,30 @@
     <div class="col">
       <div class="row my-1" v-for="(param, index) in parameters" v-bind:key="index">
         <div class="col-sm-2">
-          <label for="input-small">{{ param.typeName }}:</label>
+          <label :for="'environment-param-' + index">{{ param.typeName }}:</label>
         </div>
         <div class="col-sm-6">
           <input
-            class="form-control"
+            class="form-control form-control-sm"
+            :id="'environment-param-' + index"
             v-model="values[index]"
-            size="sm"
             :placeholder="param.placeholder"
             v-if="param.type == 'string'"
           />
           <input
-            class="form-control"
+            class="form-control form-control-sm"
+            :id="'environment-param-' + index"
             v-model="values[index]"
-            size="sm"
             :placeholder="param.placeholder"
             v-if="param.type == 'int'"
             type="number"
           />
-          <select v-model="values[index]" v-if="param.type == 'options'" class="form-control">
+          <select
+            v-model="values[index]"
+            v-if="param.type == 'options'"
+            class="form-control"
+            :id="'environment-param-' + index"
+          >
             <option v-for="(item, index2) in param.options" v-bind:key="index2" :value="item">
               {{ item }}
             </option>
@@ -31,6 +36,7 @@
             <input
               type="checkbox"
               class="form-check-input"
+              :id="'environment-param-' + index"
               v-model="values[index]"
               name="check-button"
               v-if="param.type == 'boolean'"
@@ -60,17 +66,17 @@
       <div class="row my-1" v-for="(env, index) in environments" v-bind:key="index">
         <div class="col-sm-3">
           <input
-            class="form-control"
+            class="form-control form-control-sm"
+            :id="'environment-variable-name-' + index"
             v-model="environments[index].name"
-            size="sm"
             :placeholder="language[config.currentLanguage].Environments.name"
           />
         </div>
         <div class="col-sm-6">
           <input
-            class="form-control"
+            class="form-control form-control-sm"
+            :id="'environment-variable-value-' + index"
             v-model="environments[index].value"
-            size="sm"
             :placeholder="language[config.currentLanguage].Environments.value"
             :disabled="environments[index].name.length == 0"
           />

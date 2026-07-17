@@ -8,12 +8,17 @@
             <div class="row">
               <div class="col-sm-1" />
               <div class="col-sm-3">
-                <label class="form-check-label" for="flexCheckChecked">
+                <label class="form-check-label" :for="fieldId('name')">
                   {{ language[config.currentLanguage].Steps.wizard.name }}
                 </label>
               </div>
               <div class="col-sm-7">
-                <input class="form-control" id="input-horizontal" v-model="name" />
+                <input
+                  class="form-control"
+                  :id="fieldId('name')"
+                  :name="fieldId('name')"
+                  v-model="name"
+                />
               </div>
               <div class="col-sm-1" />
             </div>
@@ -24,7 +29,7 @@
                   icon="door-open"
                   style="font-size: 20px; float: left; margin-top: 5px; margin-right: 10px"
                 />
-                <label class="form-check-label" for="flexCheckChecked">
+                <label class="form-check-label" :for="fieldId('failed-exit')">
                   {{ language[config.currentLanguage].Steps.wizard.failedExit }}
                 </label>
               </div>
@@ -33,8 +38,9 @@
                   <input
                     type="checkbox"
                     class="form-check-input"
+                    :id="fieldId('failed-exit')"
+                    :name="fieldId('failed-exit')"
                     v-model="failedExit"
-                    name="check-button"
                   />
                 </div>
               </div>
@@ -47,7 +53,7 @@
                   icon="camera"
                   style="font-size: 20px; float: left; margin-top: 5px; margin-right: 10px"
                 />
-                <label class="form-check-label" for="flexCheckChecked">
+                <label class="form-check-label" :for="fieldId('attach-screenshot')">
                   {{ language[config.currentLanguage].Steps.wizard.attachScreenshot }}
                 </label>
               </div>
@@ -56,8 +62,9 @@
                   <input
                     type="checkbox"
                     class="form-check-input"
+                    :id="fieldId('attach-screenshot')"
+                    :name="fieldId('attach-screenshot')"
                     v-model="attachScreenshot"
-                    name="check-button"
                   />
                 </div>
               </div>
@@ -147,14 +154,15 @@
                     <div class="col">
                       <div class="row" v-if="stepTypeSelected != null">
                         <div class="col-sm-2">
-                          <label class="form-check-label" for="flexCheckChecked">
+                          <label class="form-check-label" :for="fieldId('note')">
                             {{ language[config.currentLanguage].Steps.wizard.step.note }}
                           </label>
                         </div>
                         <div class="col">
                           <input
                             class="form-control"
-                            id="input-horizontal-note"
+                            :id="fieldId('note')"
+                            :name="fieldId('note')"
                             :state="isNoteOk"
                             v-model="note"
                           />
@@ -169,7 +177,10 @@
                             style="margin-top: 10px"
                           >
                             <div class="col-sm-2">
-                              <label class="form-check-label" for="flexCheckChecked">
+                              <label
+                                class="form-check-label"
+                                :for="fieldId('syntax-' + index)"
+                              >
                                 {{ syntax.typeName }}
                               </label>
                             </div>
@@ -177,13 +188,16 @@
                               <input
                                 class="form-control"
                                 v-if="syntax.type == 'string' || syntax.type == 'integer'"
-                                :id="'input-horizontal' + index"
+                                :id="fieldId('syntax-' + index)"
+                                :name="fieldId('syntax-' + index)"
                                 :state="stateInput[index]"
                                 @input="checkInput(syntax.type, index)"
                                 v-model="responseTypeSelect[index]"
                               />
                               <select
                                 class="form-select form-select-sm form-control"
+                                :id="fieldId('syntax-' + index)"
+                                :name="fieldId('syntax-' + index)"
                                 v-model="responseTypeSelect[index]"
                                 v-if="syntax.type == 'options'"
                               >
@@ -257,10 +271,13 @@
                           v-model="arrayStepTypeToAdd"
                           tag="transition-group"
                           :component-data="{ name: 'fade' }"
-                          item-key="id"
+                          item-key="__key"
                         >
-                          <template #item="{ element }">
-                            <div class="list-group-item costum text-truncate">
+                          <template #item="{ element, index }">
+                            <div
+                              class="list-group-item costum text-truncate"
+                              :key="element.__key"
+                            >
                               <span v-on:click="editStepType(element)">{{ element.note }}</span>
                               <a
                                 href="#"
@@ -484,7 +501,14 @@ export default {
     draggable,
     FileUpload
   },
-  props: ['jsonFromEditor_prop', 'minheight'],
+  props: {
+    jsonFromEditor_prop: Object,
+    minheight: String,
+    idPrefix: {
+      type: String,
+      default: 'step-wizard'
+    }
+  },
   created() {
     if (localStorage.wrapperSelected) this.typeOfWrapperSelected = localStorage.wrapperSelected
     this.initWrapperArray()
@@ -578,11 +602,15 @@ export default {
       objectJsonToSend: {},
       showBtnEditTestType: 'hide-element',
       indexForEdit: -1,
+      nextStepKey: 1,
       postmanJson: { environment: null, collection: null },
       showOverriteLabel: false
     }
   },
   methods: {
+    fieldId(name) {
+      return this.idPrefix + '-' + name
+    },
     async inputFilter(newFile) {
       this.errortext = ''
       var fileExt = newFile.name.split('.').pop()
@@ -618,22 +646,23 @@ export default {
       this.attachScreenshot = this.jsonFromEditor.attachScreenshot
       this.failedExit = this.jsonFromEditor.failedExit
       for (let i = 0; i < this.jsonFromEditor.steps.length; i++) {
-        this.jsonFromEditor.steps[i]['id'] = Date.now()
+        this.jsonFromEditor.steps[i]['__key'] = this.createStepKey()
       }
       this.arrayStepTypeToAdd = this.jsonFromEditor.steps
       if (this.arrayStepTypeToAdd.length > 0) this.displayCard = 'fade-in'
     },
     buildJson() {
       this.buildJson
-      this.arrayStepTypeToAdd.forEach(function (v) {
-        delete v.id
+      const steps = this.arrayStepTypeToAdd.map((step) => {
+        const { __key, ...stepToSend } = step
+        return stepToSend
       })
       this.objectJsonToSend = {
         name: this.name,
         editorType: this.typeOfWrapperSelected,
         failedExit: this.failedExit,
         attachScreenshot: this.attachScreenshot,
-        steps: this.arrayStepTypeToAdd
+        steps: steps
       }
       this.$emit('syncJson', this.objectJsonToSend)
     },
@@ -687,7 +716,7 @@ export default {
       return found
     },
     editStepType(typeStep, repeat = false) {
-      let index = this.arrayStepTypeToAdd.findIndex((x) => x.id === typeStep.id)
+      let index = this.arrayStepTypeToAdd.findIndex((x) => x.__key === typeStep.__key)
 
       let found = false
       if (repeat == false) found = this.searchFindTypeStep(typeStep.stepType)
@@ -751,13 +780,19 @@ export default {
       }
       objectToStore['note'] = this.note
       if (isAdd == true) {
-        objectToStore['id'] = Date.now()
+        objectToStore['__key'] = this.createStepKey()
         this.arrayStepTypeToAdd.push(objectToStore)
       } else {
+        objectToStore['__key'] = this.arrayStepTypeToAdd[this.indexForEdit].__key
         this.arrayStepTypeToAdd[this.indexForEdit] = objectToStore
         this.showBtnEditTestType = 'hide-element'
       }
       this.initWrapperArray()
+    },
+    createStepKey() {
+      const key = 'step-' + Date.now() + '-' + this.nextStepKey
+      this.nextStepKey += 1
+      return key
     },
     deleteStepType(index) {
       this.arrayStepTypeToAdd.splice(index, 1)

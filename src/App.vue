@@ -1,5 +1,5 @@
 <template>
-  <loader v-if="$root.loading"></loader>
+  <loader v-if="loading"></loader>
   <router-view v-else></router-view>
 </template>
 <style lang="scss">
@@ -15,6 +15,11 @@ export default {
   name: 'App',
   components: {
     loader
+  },
+  data() {
+    return {
+      loading: false
+    }
   },
   created() {
     this.config.serviceBaseUrl = resolveApiBaseUrl()

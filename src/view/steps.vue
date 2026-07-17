@@ -181,6 +181,7 @@
         <wizard
           ref="wizard"
           v-if="modeSelected != 'json'"
+          id-prefix="step-new"
           :jsonFromEditor="jsonSteps"
           v-on:setStepDescription="setStepDescription"
           v-on:syncJson="syncJson"
@@ -242,6 +243,7 @@
             <wizard
               ref="wizardEdit"
               v-if="modeEditSelected != 'json'"
+              id-prefix="step-edit"
               :jsonFromEditor_prop="resumeJson"
               v-on:setStepDescription="setEditStepDescription"
               v-on:syncJson="syncEditJson"
