@@ -343,7 +343,7 @@ export default {
       all: 'all',
       modalAddPlatform: {
         chooseType: '--- select a type ---',
-        placeholderHost: 'ex: 10.10.10.10 or device.idelium.io',
+        placeholderHost: 'ex: 10.10.10.10 or device.example.com',
         modalTitle: 'Add platform form',
         lblAddress: 'IP address or hostname',
         lblLocation: 'Location',

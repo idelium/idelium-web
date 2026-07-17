@@ -102,6 +102,8 @@ browser code, so they must never contain secrets.
 
 | Variable | Purpose | Required |
 | --- | --- | --- |
+| `VITE_IDELIUM_API_BASE_URL` | Browser-facing API base URL. Use `/api/` when frontend and API share the same reverse proxy. | No |
+| `VITE_IDELIUM_PUBLIC_SITE_URL` | Public product or documentation URL shown by informational views. | No |
 | `VITE_GOOGLE_SITE_KEY` | Public reCAPTCHA v3 site key used during login | No |
 | `VITE_GOOGLE_TAG_ID` | Google tag identifier for analytics | No |
 
@@ -110,10 +112,10 @@ and reCAPTCHA configuration must use public identifiers only; private keys,
 session values, customer data, and credentials must not be included in frontend
 environment files or analytics events.
 
-The API base URL is currently selected in `src/App.vue`: localhost uses the
-local HTTPS stack and other hosts use the hosted service endpoint. Treat changes
-to this behavior as deployment configuration changes and test both local and
-deployed routing.
+The API base URL defaults to `/api/`, which matches the supported Docker reverse
+proxy. Set `VITE_IDELIUM_API_BASE_URL` only when the frontend must call an API
+origin that is different from the current site. Treat changes to this behavior
+as deployment configuration changes and test both local and deployed routing.
 
 ## Authentication and session security
 
@@ -283,4 +285,5 @@ opening a pull request.
 - [`idelium-docker`](https://github.com/idelium/idelium-docker) — reproducible
   full-stack environment.
 
-Project information is available at [idelium.io](https://idelium.io/).
+Project information is available from the
+[Idelium GitHub organization](https://github.com/idelium).

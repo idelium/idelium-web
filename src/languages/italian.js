@@ -345,7 +345,7 @@ export default {
       modalAddPlatform: {
         chooseType: '--- Seleziona ---',
         modalTitle: 'Aggiungi piattaforma',
-        placeholderHost: 'ex: 10.10.10.10 o device.idelium.io',
+        placeholderHost: 'ex: 10.10.10.10 o device.example.com',
         lblAddress: 'Indirizzo IP o nome host',
         lblLocation: 'Località',
         lblBrand: 'Marca',

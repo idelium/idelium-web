@@ -40,11 +40,13 @@
 }
 </style>
 <script>
+import { resolvePublicSiteUrl } from '@/services/runtimeConfig'
+
 export default {
   name: 'InfoComponent',
   methods: {
     goIdelium() {
-      window.open('https://idelium.io', '_blank')
+      window.open(resolvePublicSiteUrl(), '_blank')
     }
   }
 }

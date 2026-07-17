@@ -9,17 +9,15 @@
 
 <script>
 import loader from './loader/animationLoader.vue'
+import { resolveApiBaseUrl } from './services/runtimeConfig'
+
 export default {
   name: 'App',
   components: {
     loader
   },
   created() {
-    if (window.location.hostname == 'localhost') {
-      this.config.serviceBaseUrl = 'https://localhost/api/'
-    } else {
-      this.config.serviceBaseUrl = 'https://service.idelium.io/api/'
-    }
+    this.config.serviceBaseUrl = resolveApiBaseUrl()
   }
 }
 </script>
