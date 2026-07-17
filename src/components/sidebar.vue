@@ -6,10 +6,7 @@
       <div
         v-for="(item, index) in menu"
         v-bind:key="index"
-        :class="
-          'list-group-item ' +
-          ($router.currentRoute.value.fullPath == '/' + item.link ? 'active' : '')
-        "
+        :class="'list-group-item ' + (isActiveMenuItem(item.link) ? 'active' : '')"
         v-on:click="go(item.link, item.isActiveEmptyDb)"
         style="margin-top: 10px"
       >
@@ -79,6 +76,12 @@ export default {
     })
   },
   methods: {
+    isActiveMenuItem(link) {
+      const itemPath = '/' + link
+      const currentPath = this.$router.currentRoute.value.path
+
+      return currentPath === itemPath || currentPath.startsWith(itemPath + '/')
+    },
     go(link, active) {
       if (getSelectedProjectId() != undefined || active == true)
         this.$router.push({ path: '/' + link })

@@ -130,6 +130,7 @@ import { Modal } from 'bootstrap'
 import validatePassword from '@/shared/validatePassword'
 export default {
   props: ['arrayAccounts', 'roles', 'costumers', 'isSuperAdmin'],
+  emits: ['updateData'],
   data() {
     return {
       modalElem: null,

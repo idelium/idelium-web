@@ -9,6 +9,7 @@
           role="tab"
           aria-controls="nav-home"
           :aria-selected="isActiveTab('order')"
+          :disabled="isEnvironmentOrderTabDisabled"
           v-on:click="openTab('order')"
         >
           {{ language[config.currentLanguage].Environments.tabOrderEnvironments }}
@@ -301,6 +302,7 @@ export default {
     return {
       enabled: true,
       listEnvironments: [],
+      environmentsLoaded: false,
       modalElem: null,
       buttonElem: null,
       dragging: false,
@@ -366,6 +368,9 @@ export default {
     },
     draggingInfo() {
       return this.dragging ? 'under drag' : ''
+    },
+    isEnvironmentOrderTabDisabled() {
+      return this.environmentsLoaded && this.listEnvironments.length === 0
     }
   },
   watch: {
@@ -392,6 +397,11 @@ export default {
     })
   },
   methods: {
+    redirectEmptyEnvironments() {
+      if (this.isEnvironmentOrderTabDisabled && this.isActiveTab('order')) {
+        this.openTab('new')
+      }
+    },
     changeViewMode() {
       if (this.modeSelected == 'wizard') {
         setTimeout(
@@ -434,6 +444,8 @@ export default {
         .then((response) => {
           this.btnSaveEnable = false
           this.listEnvironments = response.data
+          this.environmentsLoaded = true
+          this.redirectEmptyEnvironments()
           this.emitter.emit('showLoader', false)
         })
         .catch((e) => {
@@ -513,6 +525,8 @@ export default {
         .then((response) => {
           this.emitter.emit('showLoader', false)
           this.listEnvironments = response.data
+          this.environmentsLoaded = true
+          this.redirectEmptyEnvironments()
         })
         .catch((e) => {
           this.Logout(this, e)
@@ -571,6 +585,7 @@ export default {
           this.loadJsonToEdit = this.generateJson(param.selenium)
 
           this.listEnvironments = response.data
+          this.environmentsLoaded = true
         })
         .catch((e) => {
           this.Logout(this, e)
@@ -601,6 +616,7 @@ export default {
             this.modalElem.hide()
             this.loadJsonToEdit = this.generateJson(param.selenium)
             this.listEnvironments = response.data
+            this.environmentsLoaded = true
           },
           {
             headers: this.setHeaders()

@@ -13,7 +13,7 @@
               aria-controls="nav-tabTitleModify"
               :aria-selected="isActiveTab('modify')"
               ref="home"
-              :disabled="arrayTests.length == 0"
+              :disabled="isModifyTabDisabled"
               v-on:click="openTab('modify')"
             >
               {{ language[config.currentLanguage].Tests.tabTitleModify }}
@@ -358,6 +358,7 @@ export default {
       importedDescriptionTest: '',
       modifyDescriptionTest: '',
       tabOpen: 0,
+      testsLoaded: false,
       importedFromSelenium: false,
       seleniumImport: {}
     }
@@ -394,9 +395,19 @@ export default {
     files() {
     }
   },
+  computed: {
+    isModifyTabDisabled() {
+      return this.testsLoaded && this.arrayTests.length === 0
+    }
+  },
   methods: {
     onRoutableTabChange(tab) {
       this.tabOpen = ['modify', 'new', 'import'].indexOf(tab)
+    },
+    redirectEmptyTests() {
+      if (this.isModifyTabDisabled && this.isActiveTab('modify')) {
+        this.openTab('new')
+      }
     },
     cancelUpload() {
       this.$refs.selenium.showUploadComponent()
@@ -450,6 +461,8 @@ export default {
         .then((response) => {
           this.emitter.emit('showLoader', false)
           this.arrayTests = response.data
+          this.testsLoaded = true
+          this.redirectEmptyTests()
         })
         .catch((e) => {
           this.Logout(this, e)

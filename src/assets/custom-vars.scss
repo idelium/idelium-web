@@ -56,12 +56,30 @@ $font-stack: 'Roboto Slab', serif;
 .costum {
   --bs-table-color: #e8e4e0;
   --bs-table-striped-color: #e8e4e0;
+  --bs-table-bg: transparent;
+  --bs-table-striped-bg: rgba(255, 255, 255, 0.025);
+  --bs-table-border-color: rgba(255, 255, 255, 0.14);
 }
 .costum th {
   color: #f4f0ec !important;
 }
 .costum td {
   color: #e8e4e0 !important;
+}
+.table.costum > :not(caption) > * > * {
+  color: #f1ede8 !important;
+  padding: 0.85rem 0.75rem;
+  vertical-align: middle;
+}
+.table.costum > thead > tr > th {
+  color: #f8f4ef !important;
+  font-weight: 700;
+}
+.table.costum > tbody > tr > td,
+.table.costum > tbody > tr > td span,
+.table.costum > tbody > tr > td button.btn-link {
+  color: #f1ede8 !important;
+  font-weight: 600;
 }
 optgroup {
   font-family: 'Arial', sans-serif;

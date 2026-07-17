@@ -28,9 +28,9 @@
               :state="nameCheck"
               aria-describedby="input-live-help input-live-feedback"
             />
-            <b-form-invalid-feedback id="input-live-feedback">
+            <div class="invalid-feedback d-block" id="input-live-feedback" v-if="nameCheck == false">
               name is duplicated
-            </b-form-invalid-feedback>
+            </div>
             <input
               class="form-control"
               id="input-none"
@@ -60,6 +60,7 @@
 import { Modal } from 'bootstrap'
 export default {
   props: ['arrayProjects'],
+  emits: ['updateData'],
 
   data() {
     return {

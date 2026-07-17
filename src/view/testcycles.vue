@@ -13,7 +13,7 @@
               aria-controls="nav-tabTitleModify"
               :aria-selected="isActiveTab('modify')"
               ref="home"
-              :disabled="arrayTestCycles.length == 0"
+              :disabled="isTestCycleModifyTabDisabled"
               v-on:click="openTab('modify'); getTestCycles(1)"
             >
               {{ language[config.currentLanguage].TestCycles.tabTitleModify }}
@@ -222,6 +222,7 @@ export default {
       arrayTestsSelectedDragged: [],
       listOriginalTests: [],
       arrayTestCycles: [],
+      testCyclesLoaded: false,
       testCycleSelected: null,
       testFilter: '',
       disableNameTestCycle: true,
@@ -260,6 +261,11 @@ export default {
     },
     testCycleSelected() {
       this.getTestCycle()
+    }
+  },
+  computed: {
+    isTestCycleModifyTabDisabled() {
+      return this.testCyclesLoaded && this.arrayTestCycles.length === 0
     }
   },
   methods: {
@@ -308,6 +314,7 @@ export default {
             objectTc.name = objectTc.name + '(' + objectTc.id + ')'
             this.arrayTestCycles.push(objectTc)
           }
+          this.testCyclesLoaded = true
           this.redirectEmptyTestCycles()
         })
         .catch((e) => {
@@ -316,7 +323,7 @@ export default {
         })
     },
     redirectEmptyTestCycles() {
-      if (this.arrayTestCycles.length === 0 && this.isActiveTab('modify')) {
+      if (this.isTestCycleModifyTabDisabled && this.isActiveTab('modify')) {
         this.openTab('new')
       }
     },

@@ -81,6 +81,7 @@
 import { Modal } from 'bootstrap'
 export default {
   props: ['arrayCostumers'],
+  emits: ['updateData'],
 
   data() {
     return {

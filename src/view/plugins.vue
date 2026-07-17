@@ -8,6 +8,7 @@
         role="tab"
         aria-controls="nav-home"
         :aria-selected="isActiveTab('list')"
+        :disabled="isPluginListDisabled"
         v-on:click="openTab('list'); listPlugin()"
       >
         {{ language[config.currentLanguage].Plugins.tabListPlugins }}
@@ -289,7 +290,8 @@ export default {
       descriptionNewFile: '',
       titleModal: '',
       pluginSelected: null,
-      tabIndex: 0
+      tabIndex: 0,
+      pluginsLoaded: false
     }
   },
   options: {},
@@ -299,7 +301,11 @@ export default {
       else this.$forceUpdate()
     })
   },
-  computed: {},
+  computed: {
+    isPluginListDisabled() {
+      return this.pluginsLoaded && this.listPlugins.length === 0
+    }
+  },
   watch: {
     $route() {
       this.page = 0
@@ -313,6 +319,11 @@ export default {
   methods: {
     onRoutableTabChange(tab) {
       if (tab === 'new' && this.textNew === 'new') this.newPlugin()
+    },
+    redirectEmptyPlugins() {
+      if (this.isPluginListDisabled && this.isActiveTab('list')) {
+        this.openTab('new')
+      }
     },
     importPlugin(value) {
       this.showEditor = false
@@ -407,6 +418,8 @@ export default {
         .then((response) => {
           this.emitter.emit('showLoader', false)
           this.listPlugins = response.data
+          this.pluginsLoaded = true
+          this.redirectEmptyPlugins()
         })
         .catch((e) => {
           this.Logout(this, e)
@@ -431,6 +444,7 @@ export default {
         .then((response) => {
           this.emitter.emit('showLoader', false)
           this.listPlugins = response.data
+          this.pluginsLoaded = true
           this.descriptionNewFile = ''
           this.nameNewFile = ''
         })
@@ -460,6 +474,7 @@ export default {
           (response) => {
             this.emitter.emit('showLoader', false)
             this.listPlugins = response.data
+            this.pluginsLoaded = true
             this.jsoneditorModal = false
             this.descriptionNewFile = ''
             this.nameNewFile = ''
@@ -491,6 +506,8 @@ export default {
         .then((response) => {
           this.emitter.emit('showLoader', false)
           this.listPlugins = response.data
+          this.pluginsLoaded = true
+          this.redirectEmptyPlugins()
         })
         .catch((e) => {
           this.Logout(this, e)

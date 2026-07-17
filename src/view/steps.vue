@@ -8,6 +8,7 @@
         role="tab"
         aria-controls="nav-tabOrderSteps"
         :aria-selected="isActiveTab('order')"
+        :disabled="isStepOrderTabDisabled"
         v-on:click="openTab('order'); getSteps()"
       >
         {{ language[config.currentLanguage].Steps.tabOrderSteps }}
@@ -214,7 +215,7 @@
           <div class="modal-body">
             <p />
             <div class="col-sm-2">
-              <select v-model="modeEditSelected" :options="modeOptions" class="form-control">
+              <select v-model="modeEditSelected" class="form-control">
                 <option v-for="item in modeOptions" v-bind:key="item" :value="item.value">
                   {{ item.text }}
                 </option>
@@ -361,6 +362,7 @@ export default {
     return {
       enabled: true,
       listSteps: [],
+      stepsLoaded: false,
       arrayRealStep: [],
       dragging: false,
       jsonSteps: null,
@@ -400,6 +402,9 @@ export default {
     },
     draggingInfo() {
       return this.dragging ? 'under drag' : ''
+    },
+    isStepOrderTabDisabled() {
+      return this.stepsLoaded && this.listSteps.length === 0
     }
   },
   watch: {
@@ -441,6 +446,11 @@ export default {
     })
   },
   methods: {
+    redirectEmptySteps() {
+      if (this.isStepOrderTabDisabled && this.isActiveTab('order')) {
+        this.openTab('new')
+      }
+    },
     moveElement(e) {
       this.btnSaveOrderDisabled = false
     },
@@ -498,6 +508,8 @@ export default {
           this.btnSaveEnable = false
           const index = this.listSteps.findIndex((item) => item.id == element.id)
           this.listSteps.splice(index, 1)
+          this.stepsLoaded = true
+          this.redirectEmptySteps()
           this.modalElem.hide()
         })
         .catch((e) => {
@@ -568,6 +580,8 @@ export default {
         .then((response) => {
           this.emitter.emit('showLoader', false)
           this.listSteps = response.data
+          this.stepsLoaded = true
+          this.redirectEmptySteps()
         })
         .catch((e) => {
           this.Logout(this, e)
@@ -624,6 +638,7 @@ export default {
             name: this.stepNameFile.toLowerCase(),
             description: this.stepDescription.toLowerCase()
           })
+          this.stepsLoaded = true
           this.stepDescription = ''
           this.stepNameFile = ''
           this.jsonSteps = null
@@ -684,6 +699,7 @@ export default {
           this.btnSaveEnable = false
           this.modalElem.hide()
           this.listSteps = response.data
+          this.stepsLoaded = true
           this.emitter.emit('showLoader', false)
         })
         .catch()

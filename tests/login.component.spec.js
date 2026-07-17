@@ -32,6 +32,7 @@ function mountLogin() {
               isNotEmail: "Invalid email",
               errorPassword: "Password required",
               errorCredential: "Invalid credentials",
+              rememberPassword: "Remember password",
             },
           },
         },
@@ -63,5 +64,43 @@ describe("login component", () => {
     await vi.waitFor(() =>
       expect(push).toHaveBeenCalledWith({ name: "projects" }),
     );
+  });
+
+  it("remembers credentials after a successful login when selected", async () => {
+    api.get.mockResolvedValue({});
+    api.post.mockResolvedValue({ data: { authenticated: true } });
+    const { wrapper } = mountLogin();
+    await wrapper.get("#username").setValue("user@example.com");
+    await wrapper.get("#password").setValue("password");
+    await wrapper.get("#rememberPassword").setValue(true);
+    await wrapper.get("#login").trigger("click");
+
+    await vi.waitFor(() =>
+      expect(window.localStorage.getItem("idelium.rememberedLogin")).toBe(
+        JSON.stringify({
+          email: "user@example.com",
+          password: "password",
+        }),
+      ),
+    );
+  });
+
+  it("loads remembered credentials", async () => {
+    window.localStorage.setItem(
+      "idelium.rememberedLogin",
+      JSON.stringify({
+        email: "remembered@example.com",
+        password: "remembered-password",
+      }),
+    );
+
+    const { wrapper } = mountLogin();
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.get("#username").element.value).toBe(
+      "remembered@example.com",
+    );
+    expect(wrapper.get("#password").element.value).toBe("remembered-password");
+    expect(wrapper.get("#rememberPassword").element.checked).toBe(true);
   });
 });

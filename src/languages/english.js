@@ -41,7 +41,8 @@ export default {
     errorMail: 'The email is empty',
     isNotEmail: 'Is not a validate email',
     errorPassword: 'The password is empty',
-    errorCredential: 'Access denied, check your credentials'
+    errorCredential: 'Access denied, check your credentials',
+    rememberPassword: 'Remember password'
   },
   Logout: {},
   Environments: {

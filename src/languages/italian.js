@@ -41,7 +41,8 @@ export default {
     errorMail: 'La mail è vuota',
     isNotEmail: 'Non è un indirizzo email',
     errorPassword: 'La password è vuota',
-    errorCredential: 'Accesso negato, verifica le tue credenziali'
+    errorCredential: 'Accesso negato, verifica le tue credenziali',
+    rememberPassword: 'Ricorda password'
   },
   Logout: {},
   Environments: {

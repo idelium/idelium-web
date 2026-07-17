@@ -51,6 +51,17 @@
                 />
               </button>
             </div>
+            <div class="form-check remember-password">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                id="rememberPassword"
+                v-model="rememberPassword"
+              />
+              <label class="form-check-label" for="rememberPassword">
+                {{ language[config.currentLanguage].Login.rememberPassword }}
+              </label>
+            </div>
             <button
               type="button"
               id="login"
@@ -61,10 +72,6 @@
             >
               {{ language[config.currentLanguage].Login.btnLogin }}
             </button>
-            <img
-              src="@/assets/sectigo_trust_seal_sm_2x.png"
-              style="margin-top: 10px; width: 100px; float: right"
-            />
           </div>
         </div>
       </div>
@@ -121,6 +128,14 @@
   align-content: right;
   margin-top: 30px;
   font-size: 1rem !important;
+}
+.remember-password {
+  color: #f4f4f5;
+  font-size: 0.9rem;
+  margin-top: 10px;
+}
+.remember-password label {
+  cursor: pointer;
 }
 .infoLogin {
   text-align: left;
@@ -218,6 +233,9 @@
 import apiClient from "@/services/apiClient";
 import { useSessionStore } from "@/stores/session";
 import validateEmail from "@/shared/validateEmail";
+
+const rememberedLoginKey = "idelium.rememberedLogin";
+
 export default {
   name: "LoginComponent",
   setup() {
@@ -231,9 +249,40 @@ export default {
       error: null,
       showError: false,
       showPassword: false,
+      rememberPassword: false,
     };
   },
+  mounted() {
+    this.loadRememberedLogin();
+  },
   methods: {
+    loadRememberedLogin() {
+      const rememberedLogin = window.localStorage.getItem(rememberedLoginKey);
+      if (rememberedLogin == null) return;
+
+      try {
+        const credentials = JSON.parse(rememberedLogin);
+        this.email = credentials.email || "";
+        this.password = credentials.password || "";
+        this.rememberPassword = this.email !== "" || this.password !== "";
+      } catch {
+        window.localStorage.removeItem(rememberedLoginKey);
+      }
+    },
+    updateRememberedLogin() {
+      if (this.rememberPassword == false) {
+        window.localStorage.removeItem(rememberedLoginKey);
+        return;
+      }
+
+      window.localStorage.setItem(
+        rememberedLoginKey,
+        JSON.stringify({
+          email: this.email,
+          password: this.password,
+        }),
+      );
+    },
     csrf() {
       return apiClient.get(this.config.serviceBaseUrl + this.config.url.csrf);
     },
@@ -274,6 +323,7 @@ export default {
             token: token,
           },
         );
+        this.updateRememberedLogin();
         this.session.establishSession();
         await this.$router.push({ name: this.$route.query.back || "projects" });
       } catch {
