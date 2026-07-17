@@ -79,6 +79,7 @@
 
 <script>
 import { Modal } from 'bootstrap'
+import { hideModalSafely } from '@/shared/bootstrapModal'
 export default {
   props: ['arrayCostumers'],
   emits: ['updateData'],
@@ -164,10 +165,10 @@ export default {
         type: this.type
       }
       this.$emit('updateData', sendData)
-      this.modalElem.hide()
+      hideModalSafely(this.$refs.mymodal, this.modalElem)
     },
     hideModal() {
-      this.modalElem.hide()
+      hideModalSafely(this.$refs.mymodal, this.modalElem)
     },
     toggleModal() {
       // We pass the ID of the button that we want to return focus to

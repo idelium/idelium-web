@@ -128,6 +128,7 @@
 <script>
 import { Modal } from 'bootstrap'
 import validatePassword from '@/shared/validatePassword'
+import { hideModalSafely } from '@/shared/bootstrapModal'
 export default {
   props: ['arrayAccounts', 'roles', 'costumers', 'isSuperAdmin'],
   emits: ['updateData'],
@@ -259,10 +260,10 @@ export default {
         type: this.type
       }
       this.$emit('updateData', sendData)
-      this.modalElem.hide()
+      hideModalSafely(this.$refs.mymodal, this.modalElem)
     },
     hideModal() {
-      this.modalElem.hide()
+      hideModalSafely(this.$refs.mymodal, this.modalElem)
     },
     toggleModal() {
       // this.$refs['my-modal'].toggle('#toggle-btn')

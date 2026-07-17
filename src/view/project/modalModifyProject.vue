@@ -58,6 +58,7 @@
 
 <script>
 import { Modal } from 'bootstrap'
+import { hideModalSafely } from '@/shared/bootstrapModal'
 export default {
   props: ['arrayProjects'],
   emits: ['updateData'],
@@ -145,7 +146,7 @@ export default {
         type: this.type
       }
       this.$emit('updateData', sendData)
-      this.modalElem.hide()
+      hideModalSafely(this.$refs.mymodal, this.modalElem)
     },
     hideModal() {
       if (this.arrayProjects.length == 0) {

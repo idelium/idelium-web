@@ -5,76 +5,78 @@
         language[config.currentLanguage].Profile.title
       }}
     </div>
-    <b-card tag="article" class="mb-2" style="margin-top: 10px">
-      <div class="row profileRow">
-        <div class="col profileLabel">
-          {{ language[config.currentLanguage].Profile.name }}
+    <article class="card mb-2" style="margin-top: 10px">
+      <div class="card-body">
+        <div class="row profileRow">
+          <div class="col profileLabel">
+            {{ language[config.currentLanguage].Profile.name }}
+          </div>
+          <div class="col">
+            {{ user.name }}
+          </div>
         </div>
-        <div class="col">
-          {{ user.name }}
+        <div class="row profileRow">
+          <div class="col profileLabel">
+            {{ language[config.currentLanguage].Profile.email }}
+          </div>
+          <div class="col">
+            {{ user.email }}
+          </div>
         </div>
-      </div>
-      <div class="row profileRow">
-        <div class="col profileLabel">
-          {{ language[config.currentLanguage].Profile.email }}
+        <div class="row profileRow">
+          <div class="col profileLabel">
+            {{ language[config.currentLanguage].Profile.company }}
+          </div>
+          <div class="col">
+            {{ user.companyName }}
+          </div>
         </div>
-        <div class="col">
-          {{ user.email }}
+        <div class="row profileRow">
+          <div class="col profileLabel">
+            {{ language[config.currentLanguage].Profile.role }}
+          </div>
+          <div class="col">
+            {{ user.roleName }}
+          </div>
         </div>
-      </div>
-      <div class="row profileRow">
-        <div class="col profileLabel">
-          {{ language[config.currentLanguage].Profile.company }}
+        <div class="row profileRow">
+          <div class="col profileLabel">
+            {{ language[config.currentLanguage].Profile.password }}
+          </div>
+          <div class="col">
+            <input type="password" class="form-control" v-model="password" />
+          </div>
         </div>
-        <div class="col">
-          {{ user.companyName }}
-        </div>
-      </div>
-      <div class="row profileRow">
-        <div class="col profileLabel">
-          {{ language[config.currentLanguage].Profile.role }}
-        </div>
-        <div class="col">
-          {{ user.roleName }}
-        </div>
-      </div>
-      <div class="row profileRow">
-        <div class="col profileLabel">
-          {{ language[config.currentLanguage].Profile.password }}
-        </div>
-        <div class="col">
-          <input type="password" class="form-control" v-model="password" />
-        </div>
-      </div>
-      <div class="row profileRow">
-        <div class="col profileLabel">
-          {{ language[config.currentLanguage].Profile.confirmPassword }}
-        </div>
-        <div class="col">
-          <input
-            type="password"
-            v-model="confirmPassword"
-            class="form-control"
-            :disabled="!checkPassword"
-          />
-        </div>
-      </div>
-      <div class="row profileRow">
-        <div class="col profileLabel"></div>
-        <div class="col">
-          <button
-            type="button"
-            class="btn btn-success"
-            size="sm"
-            style="float: right"
-            :disabled="!checkConfirmPassword"
-            v-on:click="updatePassword()"
-          >
+        <div class="row profileRow">
+          <div class="col profileLabel">
             {{ language[config.currentLanguage].Profile.confirmPassword }}
-          </button>
+          </div>
+          <div class="col">
+            <input
+              type="password"
+              v-model="confirmPassword"
+              class="form-control"
+              :disabled="!checkPassword"
+            />
+          </div>
+        </div>
+        <div class="row profileRow">
+          <div class="col profileLabel"></div>
+          <div class="col">
+            <button
+              type="button"
+              class="btn btn-success"
+              size="sm"
+              style="float: right"
+              :disabled="!checkConfirmPassword"
+              v-on:click="updatePassword()"
+            >
+              {{ language[config.currentLanguage].Profile.confirmPassword }}
+            </button>
+          </div>
         </div>
       </div>
-    </b-card>
+    </article>
   </div>
 </template>
 <style scoped>
