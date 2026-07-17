@@ -10,7 +10,9 @@
                 <input
                   class="form-control"
                   id="input-none"
-                  :placeholder="language[config.currentLanguage].Platforms.Location.name"
+                  :placeholder="
+                    language[config.currentLanguage].Platforms.Location.name
+                  "
                   v-model="name"
                 />
               </div>
@@ -37,9 +39,14 @@
         <table width="50%" class="table table-striped costum">
           <thead>
             <tr>
-              <th scope="col">{{ language[config.currentLanguage].Platforms.Location.id }}</th>
               <th scope="col">
-                {{ language[config.currentLanguage].Platforms.Location.colLocation }}
+                {{ language[config.currentLanguage].Platforms.Location.id }}
+              </th>
+              <th scope="col">
+                {{
+                  language[config.currentLanguage].Platforms.Location
+                    .colLocation
+                }}
               </th>
               <th scope="col"></th>
             </tr>
@@ -59,7 +66,9 @@
                 <input
                   class="form-control"
                   id="input-none"
-                  :placeholder="language[config.currentLanguage].Platforms.Location.name"
+                  :placeholder="
+                    language[config.currentLanguage].Platforms.Location.name
+                  "
                   v-model="elementNameToEdit"
                   v-if="elementIdToEdit == element.id"
                   v-on:keyup.enter="modify()"
@@ -76,58 +85,62 @@
   </div>
 </template>
 <script>
-import commonCalls from './commonCalls'
+import commonCalls from "./commonCalls";
 export default {
-  name: 'LocationComponent',
+  name: "LocationComponent",
   data() {
     return {
       typeSelected: null,
-      name: '',
+      name: "",
       arrayElements: [],
       elementIdToEdit: null,
-      elementNameToEdit: ''
-    }
+      elementNameToEdit: "",
+    };
   },
-  created() {
-  },
+  created() {},
   watch: {},
   methods: {
     tabStart() {
-      this.getLocation()
+      this.getLocation();
     },
     editThisElement(element) {
-      this.elementIdToEdit = element.id
-      this.elementNameToEdit = element.name
+      this.elementIdToEdit = element.id;
+      this.elementNameToEdit = element.name;
     },
     async modify() {
-      this.emitter.emit('showLoader', true)
+      this.emitter.emit("showLoader", true);
       let response = await commonCalls
         .modifyLocation(this, this.elementNameToEdit, this.elementIdToEdit)
         .catch((e) => {
-          this.Logout(this, e)
-        })
-      this.arrayElements = response.data
-      this.emitter.emit('showLoader', false)
-      this.elementIdToEdit = null
-      this.elementNameToEdit = ''
+          this.Logout(this, e);
+        });
+      this.arrayElements = response.data;
+      this.emitter.emit("showLoader", false);
+      this.elementIdToEdit = null;
+      this.elementNameToEdit = "";
     },
     async getLocation() {
-      this.emitter.emit('showLoader', true)
-      let response = await commonCalls.getLocation(this).catch((e) => {
-        this.Logout(this, e)
-      })
-      this.arrayElements = response.data
-      this.emitter.emit('showLoader', false)
+      this.emitter.emit("showLoader", true);
+      try {
+        const response = await commonCalls.getLocation(this);
+        this.arrayElements = response.data;
+      } catch (e) {
+        this.Logout(this, e);
+      } finally {
+        this.emitter.emit("showLoader", false);
+      }
     },
     async save() {
-      this.emitter.emit('showLoader', true)
-      let response = await commonCalls.saveLocation(this, this.name).catch((e) => {
-        this.Logout(this, e)
-      })
-      this.arrayElements = response.data
-      this.name = ''
-      this.emitter.emit('showLoader', false)
-    }
-  }
-}
+      this.emitter.emit("showLoader", true);
+      let response = await commonCalls
+        .saveLocation(this, this.name)
+        .catch((e) => {
+          this.Logout(this, e);
+        });
+      this.arrayElements = response.data;
+      this.name = "";
+      this.emitter.emit("showLoader", false);
+    },
+  },
+};
 </script>

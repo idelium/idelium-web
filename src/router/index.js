@@ -103,7 +103,7 @@ const router = createRouter({
           meta: { requiresAuth: true },
         },
         {
-          path: "platforms",
+          path: "platforms/:tab?",
           name: "platforms",
           component: platforms,
           meta: { requiresAuth: true },

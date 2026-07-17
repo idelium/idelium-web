@@ -8,15 +8,24 @@
             <div class="row" style="">
               <div class="col-sm-2">
                 <span style="font-size: 10px"> </span><br />
-                <select class="form-control" v-model="typeSelected" v-on:change="getOs()">
-                  <option v-for="(type, index) in arrayTypes" v-bind:key="index" :value="type.id">
+                <select
+                  class="form-control"
+                  v-model="typeSelected"
+                  v-on:change="getOs()"
+                >
+                  <option
+                    v-for="(type, index) in arrayTypes"
+                    v-bind:key="index"
+                    :value="type.id"
+                  >
                     {{ type.name }}
                   </option>
                 </select>
               </div>
               <div class="col-sm-2">
                 <span style="font-size: 10px">{{
-                  language[config.currentLanguage].Platforms.BrowserVersion.colOs
+                  language[config.currentLanguage].Platforms.BrowserVersion
+                    .colOs
                 }}</span
                 ><br />
                 <select
@@ -25,14 +34,19 @@
                   v-on:change="getBrowser()"
                   v-if="typeSelected != null"
                 >
-                  <option v-for="(os, index) in arrayOs" v-bind:key="index" :value="os.id">
+                  <option
+                    v-for="(os, index) in arrayOs"
+                    v-bind:key="index"
+                    :value="os.id"
+                  >
                     {{ os.name }}
                   </option>
                 </select>
               </div>
               <div class="col-sm-2">
                 <span style="font-size: 10px">{{
-                  language[config.currentLanguage].Platforms.BrowserVersion.colBrowser
+                  language[config.currentLanguage].Platforms.BrowserVersion
+                    .colBrowser
                 }}</span
                 ><br />
                 <select
@@ -55,7 +69,10 @@
                 <input
                   class="form-control"
                   id="input-none"
-                  :placeholder="language[config.currentLanguage].Platforms.BrowserVersion.name"
+                  :placeholder="
+                    language[config.currentLanguage].Platforms.BrowserVersion
+                      .name
+                  "
                   v-model="name"
                   v-if="osSelected != null"
                 />
@@ -86,16 +103,27 @@
           <thead>
             <tr>
               <th scope="col">
-                {{ language[config.currentLanguage].Platforms.BrowserVersion.id }}
+                {{
+                  language[config.currentLanguage].Platforms.BrowserVersion.id
+                }}
               </th>
               <th scope="col">
-                {{ language[config.currentLanguage].Platforms.BrowserVersion.colOs }}
+                {{
+                  language[config.currentLanguage].Platforms.BrowserVersion
+                    .colOs
+                }}
               </th>
               <th scope="col">
-                {{ language[config.currentLanguage].Platforms.BrowserVersion.colBrowser }}
+                {{
+                  language[config.currentLanguage].Platforms.BrowserVersion
+                    .colBrowser
+                }}
               </th>
               <th scope="col">
-                {{ language[config.currentLanguage].Platforms.BrowserVersion.colBrowserVersion }}
+                {{
+                  language[config.currentLanguage].Platforms.BrowserVersion
+                    .colBrowserVersion
+                }}
               </th>
               <th scope="col"></th>
             </tr>
@@ -121,7 +149,10 @@
                 <input
                   class="form-control"
                   id="input-none"
-                  :placeholder="language[config.currentLanguage].Platforms.BrowserVersion.name"
+                  :placeholder="
+                    language[config.currentLanguage].Platforms.BrowserVersion
+                      .name
+                  "
                   v-model="elementNameToEdit"
                   v-if="elementIdToEdit == element.id"
                   v-on:keyup.enter="modify()"
@@ -138,94 +169,155 @@
   </div>
 </template>
 <script>
-import commonCalls from './commonCalls'
+import commonCalls from "./commonCalls";
 export default {
-  name: 'os_version',
+  name: "os_version",
   props: {
-    arrayTypes: Array
+    arrayTypes: Array,
   },
   data() {
     return {
       typeSelected: null,
       osSelected: null,
       browserSelected: null,
-      name: '',
-      osToShow: '',
+      name: "",
+      osToShow: "",
       arrayElements: [],
       elementIdToEdit: null,
-      elementNameToEdit: '',
+      elementNameToEdit: "",
       arrayOs: [],
-      arrayBrowser: []
-    }
+      arrayBrowser: [],
+    };
   },
   created() {},
   watch: {},
   methods: {
     tabStart() {
-      if (this.arrayTypes.length > 0) this.typeSelected = this.arrayTypes[0].id
-      this.getOs()
+      if (this.arrayTypes.length === 0) {
+        this.typeSelected = null;
+        this.osSelected = null;
+        this.browserSelected = null;
+        this.arrayOs = [];
+        this.arrayBrowser = [];
+        this.arrayElements = [];
+        this.osToShow = "";
+        this.browserToShow = "";
+        return;
+      }
+      this.typeSelected = this.arrayTypes[0].id;
+      this.getOs();
     },
     async getOs() {
-      this.emitter.emit('showLoader', true)
-      let response = await commonCalls.getOs(this, this.typeSelected).catch((e) => {
-        this.Logout(this, e)
-      })
-      this.arrayOs = response.data
+      if (this.typeSelected == null) return;
+      this.emitter.emit("showLoader", true);
+      try {
+        const response = await commonCalls.getOs(this, this.typeSelected);
+        this.arrayOs = response.data;
 
-      if (this.arrayOs.length > 0) this.osSelected = this.arrayOs[0].id
-      this.osToShow = this.arrayOs[0].name
-      this.getBrowser()
+        if (this.arrayOs.length === 0) {
+          this.osSelected = null;
+          this.browserSelected = null;
+          this.osToShow = "";
+          this.browserToShow = "";
+          this.arrayBrowser = [];
+          this.arrayElements = [];
+          return;
+        }
+
+        this.osSelected = this.arrayOs[0].id;
+        this.osToShow = this.arrayOs[0].name;
+        await this.getBrowser();
+      } catch (e) {
+        this.Logout(this, e);
+      } finally {
+        this.emitter.emit("showLoader", false);
+      }
     },
     async getBrowser() {
-      this.emitter.emit('showLoader', true)
-      let response = await commonCalls.getBrowser(this, this.osSelected).catch((e) => {
-        this.Logout(this, e)
-      })
-      this.arrayBrowser = response.data
-      if (this.arrayBrowser.length > 0) this.browserSelected = this.arrayBrowser[0].id
-      this.getBrowserVersion()
+      if (this.osSelected == null) {
+        this.browserSelected = null;
+        this.browserToShow = "";
+        this.arrayBrowser = [];
+        this.arrayElements = [];
+        return;
+      }
+      this.emitter.emit("showLoader", true);
+      try {
+        const response = await commonCalls.getBrowser(this, this.osSelected);
+        this.arrayBrowser = response.data;
+        if (this.arrayBrowser.length === 0) {
+          this.browserSelected = null;
+          this.browserToShow = "";
+          this.arrayElements = [];
+          return;
+        }
+
+        this.browserSelected = this.arrayBrowser[0].id;
+        await this.getBrowserVersion();
+      } catch (e) {
+        this.Logout(this, e);
+      } finally {
+        this.emitter.emit("showLoader", false);
+      }
     },
     async getBrowserVersion() {
-      this.emitter.emit('showLoader', true)
-      let response = await commonCalls.getBrowserVersion(this, this.browserSelected).catch((e) => {
-        this.Logout(this, e)
-      })
-      this.arrayElements = response.data
-      let obj = this.arrayOs.find(({ id }) => id === this.osSelected)
-      if (obj != undefined) this.osToShow = obj.name
-      let objBrowser = this.arrayBrowser.find(({ id }) => id === this.browserSelected)
-      if (objBrowser != undefined) this.browserToShow = objBrowser.name
-      else this.browserToShow = ''
-
-      this.emitter.emit('showLoader', false)
+      if (this.browserSelected == null) {
+        this.arrayElements = [];
+        this.browserToShow = "";
+        return;
+      }
+      this.emitter.emit("showLoader", true);
+      try {
+        const response = await commonCalls.getBrowserVersion(
+          this,
+          this.browserSelected,
+        );
+        this.arrayElements = response.data;
+        let obj = this.arrayOs.find(({ id }) => id === this.osSelected);
+        if (obj != undefined) this.osToShow = obj.name;
+        let objBrowser = this.arrayBrowser.find(
+          ({ id }) => id === this.browserSelected,
+        );
+        if (objBrowser != undefined) this.browserToShow = objBrowser.name;
+        else this.browserToShow = "";
+      } catch (e) {
+        this.Logout(this, e);
+      } finally {
+        this.emitter.emit("showLoader", false);
+      }
     },
     editThisElement(element) {
-      this.elementIdToEdit = element.id
-      this.elementNameToEdit = element.version
+      this.elementIdToEdit = element.id;
+      this.elementNameToEdit = element.version;
     },
     async modify() {
-      this.emitter.emit('showLoader', true)
+      this.emitter.emit("showLoader", true);
       let response = await commonCalls
-        .modifyBrowserVersion(this, this.elementNameToEdit, this.elementIdToEdit, this.osSelected)
+        .modifyBrowserVersion(
+          this,
+          this.elementNameToEdit,
+          this.elementIdToEdit,
+          this.osSelected,
+        )
         .catch((e) => {
-          this.Logout(this, e)
-        })
-      this.arrayElements = response.data
-      this.emitter.emit('showLoader', false)
-      this.elementIdToEdit = null
-      this.elementNameToEdit = ''
+          this.Logout(this, e);
+        });
+      this.arrayElements = response.data;
+      this.emitter.emit("showLoader", false);
+      this.elementIdToEdit = null;
+      this.elementNameToEdit = "";
     },
     async save() {
-      this.emitter.emit('showLoader', true)
+      this.emitter.emit("showLoader", true);
       let response = await commonCalls
         .saveBrowserVersion(this, this.name, this.browserSelected)
         .catch((e) => {
-          this.Logout(this, e)
-        })
-      this.arrayElements = response.data
-      this.name = ''
-      this.emitter.emit('showLoader', false)
-    }
-  }
-}
+          this.Logout(this, e);
+        });
+      this.arrayElements = response.data;
+      this.name = "";
+      this.emitter.emit("showLoader", false);
+    },
+  },
+};
 </script>

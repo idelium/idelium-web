@@ -7,8 +7,16 @@
           <div class="col">
             <div class="row" style="margin-top: 10px">
               <div class="col-sm-2">
-                <select class="form-control" v-model="typeSelected" v-on:change="getOs()">
-                  <option v-for="(type, index) in arrayTypes" v-bind:key="index" :value="type.id">
+                <select
+                  class="form-control"
+                  v-model="typeSelected"
+                  v-on:change="getOs()"
+                >
+                  <option
+                    v-for="(type, index) in arrayTypes"
+                    v-bind:key="index"
+                    :value="type.id"
+                  >
                     {{ type.name }}
                   </option>
                 </select>
@@ -20,7 +28,11 @@
                   v-on:change="getBrowser()"
                   v-if="typeSelected != null"
                 >
-                  <option v-for="(os, index) in arrayOs" v-bind:key="index" :value="os.id">
+                  <option
+                    v-for="(os, index) in arrayOs"
+                    v-bind:key="index"
+                    :value="os.id"
+                  >
                     {{ os.name }}
                   </option>
                 </select>
@@ -29,7 +41,9 @@
                 <input
                   class="form-control"
                   id="input-none"
-                  :placeholder="language[config.currentLanguage].Platforms.Browsers.name"
+                  :placeholder="
+                    language[config.currentLanguage].Platforms.Browsers.name
+                  "
                   v-model="name"
                   v-if="osSelected != null"
                 />
@@ -58,10 +72,16 @@
         <table width="50%" class="table table-striped costum">
           <thead>
             <tr>
-              <th scope="col">{{ language[config.currentLanguage].Platforms.Browsers.id }}</th>
-              <th scope="col">{{ language[config.currentLanguage].Platforms.Browsers.colOs }}</th>
               <th scope="col">
-                {{ language[config.currentLanguage].Platforms.Browsers.colBrowser }}
+                {{ language[config.currentLanguage].Platforms.Browsers.id }}
+              </th>
+              <th scope="col">
+                {{ language[config.currentLanguage].Platforms.Browsers.colOs }}
+              </th>
+              <th scope="col">
+                {{
+                  language[config.currentLanguage].Platforms.Browsers.colBrowser
+                }}
               </th>
               <th scope="col"></th>
             </tr>
@@ -84,7 +104,9 @@
                 <input
                   class="form-control"
                   id="input-none"
-                  :placeholder="language[config.currentLanguage].Platforms.Browsers.name"
+                  :placeholder="
+                    language[config.currentLanguage].Platforms.Browsers.name
+                  "
                   v-model="elementNameToEdit"
                   v-if="elementIdToEdit == element.id"
                   v-on:keyup.enter="modify()"
@@ -101,81 +123,113 @@
   </div>
 </template>
 <script>
-import commonCalls from './commonCalls'
+import commonCalls from "./commonCalls";
 export default {
-  name: 'os_version',
+  name: "os_version",
   props: {
-    arrayTypes: Array
+    arrayTypes: Array,
   },
   data() {
     return {
       typeSelected: null,
       osSelected: null,
-      name: '',
-      osToShow: '',
+      name: "",
+      osToShow: "",
       arrayElements: [],
       elementIdToEdit: null,
-      elementNameToEdit: '',
-      arrayOs: []
-    }
+      elementNameToEdit: "",
+      arrayOs: [],
+    };
   },
-  created() {
-  },
+  created() {},
   watch: {},
   methods: {
     tabStart() {
-      if (this.arrayTypes.length > 0) this.typeSelected = this.arrayTypes[0].id
-      this.getOs()
+      if (this.arrayTypes.length === 0) {
+        this.typeSelected = null;
+        this.osSelected = null;
+        this.arrayOs = [];
+        this.arrayElements = [];
+        this.osToShow = "";
+        return;
+      }
+      this.typeSelected = this.arrayTypes[0].id;
+      this.getOs();
     },
     async getOs() {
-      this.emitter.emit('showLoader', true)
-      let response = await commonCalls.getOs(this, this.typeSelected).catch((e) => {
-        this.Logout(this, e)
-      })
-      this.arrayOs = response.data
+      if (this.typeSelected == null) return;
+      this.emitter.emit("showLoader", true);
+      try {
+        const response = await commonCalls.getOs(this, this.typeSelected);
+        this.arrayOs = response.data;
 
-      if (this.arrayOs.length > 0) this.osSelected = this.arrayOs[0].id
-      this.osToShow = this.arrayOs[0].name
-      this.getBrowser()
-      this.emitter.emit('showLoader', false)
+        if (this.arrayOs.length === 0) {
+          this.osSelected = null;
+          this.osToShow = "";
+          this.arrayElements = [];
+          return;
+        }
+
+        this.osSelected = this.arrayOs[0].id;
+        this.osToShow = this.arrayOs[0].name;
+        await this.getBrowser();
+      } catch (e) {
+        this.Logout(this, e);
+      } finally {
+        this.emitter.emit("showLoader", false);
+      }
     },
     async getBrowser() {
-      this.emitter.emit('showLoader', true)
-      let response = await commonCalls.getBrowser(this, this.osSelected).catch((e) => {
-        this.Logout(this, e)
-      })
-      this.arrayElements = response.data
-      let obj = this.arrayOs.find(({ id }) => id === this.osSelected)
-      if (obj != undefined) this.osToShow = obj.name
-      else this.osToShow = ''
-
-      this.emitter.emit('showLoader', false)
+      if (this.osSelected == null) {
+        this.arrayElements = [];
+        this.osToShow = "";
+        return;
+      }
+      this.emitter.emit("showLoader", true);
+      try {
+        const response = await commonCalls.getBrowser(this, this.osSelected);
+        this.arrayElements = response.data;
+        let obj = this.arrayOs.find(({ id }) => id === this.osSelected);
+        if (obj != undefined) this.osToShow = obj.name;
+        else this.osToShow = "";
+      } catch (e) {
+        this.Logout(this, e);
+      } finally {
+        this.emitter.emit("showLoader", false);
+      }
     },
     editThisElement(element) {
-      this.elementIdToEdit = element.id
-      this.elementNameToEdit = element.name
+      this.elementIdToEdit = element.id;
+      this.elementNameToEdit = element.name;
     },
     async modify() {
-      this.emitter.emit('showLoader', true)
+      this.emitter.emit("showLoader", true);
       let response = await commonCalls
-        .modifyBrowser(this, this.elementNameToEdit, this.elementIdToEdit, this.osSelected)
+        .modifyBrowser(
+          this,
+          this.elementNameToEdit,
+          this.elementIdToEdit,
+          this.osSelected,
+        )
         .catch((e) => {
-          this.Logout(this, e)
-        })
-      this.arrayElements = response.data
-      this.emitter.emit('showLoader', false)
-      this.elementIdToEdit = null
-      this.elementNameToEdit = ''
+          this.Logout(this, e);
+        });
+      this.arrayElements = response.data;
+      this.emitter.emit("showLoader", false);
+      this.elementIdToEdit = null;
+      this.elementNameToEdit = "";
     },
     async save() {
-      this.emitter.emit('showLoader', true)
-      let response = await commonCalls.saveBrowser(this, this.name, this.osSelected).catch((e) => {
-        this.Logout(this, e)
-      })
-      this.arrayElements = response.data
-      this.name = ''
-      this.emitter.emit('showLoader', false)
-    }
-  }
-}
+      this.emitter.emit("showLoader", true);
+      let response = await commonCalls
+        .saveBrowser(this, this.name, this.osSelected)
+        .catch((e) => {
+          this.Logout(this, e);
+        });
+      this.arrayElements = response.data;
+      this.name = "";
+      this.emitter.emit("showLoader", false);
+    },
+  },
+};
 </script>

@@ -22,7 +22,7 @@
     "@vue/compiler-sfc": "^3.5.14",
     "@vue/devtools-api": "^8.1.5",
     "axios": "^1.6.0",
-    "bootstrap": "^5.3.6",
+    "bootstrap": "^5.3.8",
     "copy-to-clipboard": "^3.3.3",
     "element-plus": "^2.5.4",
     "jsoneditor": "^9.10.2",

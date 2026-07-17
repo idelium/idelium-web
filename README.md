@@ -59,6 +59,22 @@ guards use a local authentication hint only to improve navigation; the API is
 the authorization boundary and must validate the session, role, and tenant on
 every request.
 
+### Routable platform tabs
+
+The platform administration page keeps each tab reachable through a stable URL,
+so browser reloads and shared links preserve the selected tab:
+
+| Tab | Route |
+| --- | --- |
+| Platforms | `/platforms` or `/platforms/platforms` |
+| Operating systems | `/platforms/os` |
+| Operating-system versions | `/platforms/os-version` |
+| Browsers | `/platforms/browsers` |
+| Browser versions | `/platforms/browser-version` |
+| Brands | `/platforms/brands` |
+| Models | `/platforms/models` |
+| Locations | `/platforms/locations` |
+
 ## Requirements
 
 - Node.js 22.17.0, matching CI and the container build.

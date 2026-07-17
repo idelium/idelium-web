@@ -24,4 +24,11 @@ describe("route smoke checks", () => {
     await router.push("/projects");
     expect(router.currentRoute.value.name).toBe("projects");
   });
+
+  it("opens a platform tab route for an authenticated session", async () => {
+    useSessionStore(pinia).establishSession();
+    await router.push("/platforms/os");
+    expect(router.currentRoute.value.name).toBe("platforms");
+    expect(router.currentRoute.value.params.tab).toBe("os");
+  });
 });
