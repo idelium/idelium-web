@@ -1,13 +1,36 @@
 @import url(https://fonts.googleapis.com/css?family=Concert+One|Roboto+Slab|Open+Sans:400italic,700italic,400,700);
 //@import '~vue-context/dist/css/vue-context.css';
 //@import '~vue-cool-select/dist/themes/bootstrap.css';
-@import '../styles/app.scss';
+@import "../styles/app.scss";
 @import "../../node_modules/vue-select/dist/vue-select.css";
-.vs__dropdown-option {
-  color: black!important;
+
+:root {
+  --idelium-bg: #171922;
+  --idelium-bg-soft: #242732;
+  --idelium-surface: rgba(35, 38, 49, 0.92);
+  --idelium-surface-solid: #2d303b;
+  --idelium-surface-muted: #383b47;
+  --idelium-border: rgba(255, 255, 255, 0.1);
+  --idelium-border-strong: rgba(255, 255, 255, 0.18);
+  --idelium-text: #f4f4f5;
+  --idelium-text-muted: #b8bcc8;
+  --idelium-primary: #ff7a18;
+  --idelium-primary-strong: #ff5a2e;
+  --idelium-danger: #dc3545;
+  --idelium-success: #20c997;
+  --idelium-shadow: 0 22px 48px rgba(0, 0, 0, 0.26);
 }
 
-$font-stack: 'Roboto Slab', serif;
+body {
+  background: var(--idelium-bg);
+  color: var(--idelium-text);
+}
+
+.vs__dropdown-option {
+  color: black !important;
+}
+
+$font-stack: "Roboto Slab", serif;
 
 .personal {
   background: rgb(212, 211, 211);
@@ -18,7 +41,7 @@ $font-stack: 'Roboto Slab', serif;
   background: unset !important;
   color: white !important;
 }
-.list-group-item[aria-expanded='true'] {
+.list-group-item[aria-expanded="true"] {
   background-color: black !important;
   border-color: #aed248;
 }
@@ -38,18 +61,18 @@ $font-stack: 'Roboto Slab', serif;
 }
 
 .col-form-label {
-  font-family: 'Arial', sans-serif;
+  font-family: "Arial", sans-serif;
   font-size: 10px !important;
   letter-spacing: 2px !important;
 }
 .card-title {
-  font-family: 'Arial', sans-serif;
+  font-family: "Arial", sans-serif;
   font-size: 10px !important;
   letter-spacing: 2px !important;
 }
 
 .costum * {
-  font-family: 'Arial', sans-serif;
+  font-family: "Arial", sans-serif;
   font-size: 10px !important;
   letter-spacing: 2px;
 }
@@ -59,6 +82,30 @@ $font-stack: 'Roboto Slab', serif;
   --bs-table-bg: transparent;
   --bs-table-striped-bg: rgba(255, 255, 255, 0.025);
   --bs-table-border-color: rgba(255, 255, 255, 0.14);
+}
+.card,
+.modal-content {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.035), transparent),
+    var(--idelium-surface);
+  border: 1px solid var(--idelium-border);
+  border-radius: 1rem;
+  box-shadow: var(--idelium-shadow);
+  color: var(--idelium-text);
+}
+.card-header,
+.modal-header {
+  background: rgba(255, 255, 255, 0.035);
+  border-bottom: 1px solid var(--idelium-border);
+}
+.modal-footer {
+  border-top: 1px solid var(--idelium-border);
+}
+.card-title,
+.modal-title {
+  color: var(--idelium-text);
+  font-weight: 800;
+  text-transform: uppercase;
 }
 .costum th {
   color: #f4f0ec !important;
@@ -71,8 +118,15 @@ $font-stack: 'Roboto Slab', serif;
   padding: 0.85rem 0.75rem;
   vertical-align: middle;
 }
+.table.costum {
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid var(--idelium-border);
+  border-radius: 1rem;
+  overflow: hidden;
+}
 .table.costum > thead > tr > th {
-  color: #f8f4ef !important;
+  background: rgba(255, 255, 255, 0.055);
+  color: #ffffff !important;
   font-weight: 700;
 }
 .table.costum > tbody > tr > td,
@@ -81,23 +135,48 @@ $font-stack: 'Roboto Slab', serif;
   color: #f1ede8 !important;
   font-weight: 600;
 }
+.table.costum > tbody > tr {
+  transition: background-color 0.16s ease;
+}
+.table.costum > tbody > tr:hover {
+  background: rgba(255, 255, 255, 0.045);
+}
 optgroup {
-  font-family: 'Arial', sans-serif;
+  font-family: "Arial", sans-serif;
   font-size: 14px;
   letter-spacing: 2px;
   text-transform: uppercase;
 }
 .nav-tabs .nav-link {
-  font-family: 'Arial', sans-serif;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-family: "Arial", sans-serif;
   font-size: 10px;
   letter-spacing: 2px;
+  margin-right: 0.35rem;
+  padding: 0.65rem 1rem;
   text-transform: uppercase;
 }
+.nav-tabs {
+  border-bottom: 1px solid var(--idelium-border);
+  gap: 0.25rem;
+}
 .nav-link {
-  color: #efcfcf !important;
+  color: var(--idelium-text-muted) !important;
 }
 .nav-tabs .nav-link.active {
-    color: #fff !important;
+  background: linear-gradient(
+    135deg,
+    var(--idelium-primary),
+    var(--idelium-primary-strong)
+  );
+  border-color: rgba(255, 255, 255, 0.12);
+  color: #101218 !important;
+  font-weight: 800;
+}
+.nav-tabs .nav-link:hover {
+  border-color: var(--idelium-border-strong);
+  color: #ffffff !important;
 }
 .bodyLoader {
   position: absolute;
@@ -176,7 +255,7 @@ table > tr > td:first-child {
 
 #sidebar-wrapper .sidebar-heading {
   padding: 0rem 0rem;
-  font: 'Arial Bold', sans-serif;
+  font: "Arial Bold", sans-serif;
   font-size: 1.2rem;
   text-transform: uppercase;
   text-align: center;
@@ -188,8 +267,32 @@ table > tr > td:first-child {
   color: white !important;
   padding: 5px 10px !important;
   font-size: 10px !important;
-  border-radius: 5px;
+  border-radius: 0.65rem;
   text-transform: uppercase !important;
+}
+
+.btn-primary {
+  background: linear-gradient(
+    135deg,
+    var(--idelium-primary),
+    var(--idelium-primary-strong)
+  ) !important;
+  border-color: transparent !important;
+  color: #111318 !important;
+  font-weight: 800;
+  box-shadow: 0 10px 22px rgba(249, 128, 8, 0.24);
+}
+
+.btn-success {
+  background: rgba(32, 201, 151, 0.15) !important;
+  border-color: rgba(32, 201, 151, 0.35) !important;
+  color: #b7f7df !important;
+}
+
+.btn-danger {
+  background: rgba(220, 53, 69, 0.18) !important;
+  border-color: rgba(220, 53, 69, 0.36) !important;
+  color: #ffd6db !important;
 }
 
 #btn-group-sm > .btn,
@@ -283,17 +386,32 @@ table > tr > td:first-child {
   margin-bottom: 20px;
 }
 .form-control {
-  background-color: #b4b9c5 !important;
-  color: black !important;
+  background-color: rgba(255, 255, 255, 0.92) !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  border-radius: 0.75rem !important;
+  color: #111318 !important;
+  min-height: 2.25rem;
+}
+.form-select,
+select {
+  border-radius: 0.75rem;
+}
+.form-control:focus,
+.form-select:focus,
+select:focus {
+  border-color: rgba(249, 128, 8, 0.72) !important;
+  box-shadow: 0 0 0 0.2rem rgba(249, 128, 8, 0.18) !important;
 }
 .form-control:disabled,
 .form-control[readonly] {
-  background-color: #345779 !important;
+  background-color: var(--idelium-surface-muted) !important;
+  color: var(--idelium-text-muted) !important;
   opacity: 1;
 }
 .form-select:disabled,
 .form-select[readonly] {
-  background-color: #345779 !important;
+  background-color: var(--idelium-surface-muted) !important;
+  color: var(--idelium-text-muted) !important;
   opacity: 1;
 }
 /* v-select */
@@ -302,6 +420,7 @@ table > tr > td:first-child {
 }
 .vs__dropdown-toggle {
   background: #fff;
+  border-radius: 0.75rem;
 }
 
 .paneColumn {

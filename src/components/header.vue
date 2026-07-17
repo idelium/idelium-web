@@ -1,30 +1,34 @@
 <template>
   <div class="titleLogo info costum header">
-    <span class="burger" v-on:click="sideBar()"
-      ><font-awesome-icon icon="bars" style="font-size: 24px"
-    /></span>
-    <img
-      src="@/assets/idelium.png"
-      style="width: 10rem; margin-top: 15px; margin-left: 10px; margin-right: -2px"
-    />
-    <div class="dropdown" style="float: right; margin-top: 14px">
+    <button
+      type="button"
+      class="btn btn-link burger"
+      aria-label="Toggle sidebar"
+      v-on:click="sideBar()"
+    >
+      <font-awesome-icon icon="bars" />
+    </button>
+    <img src="@/assets/idelium.png" class="header-logo" alt="Idelium" />
+    <div class="dropdown header-action">
       <button
-        class="btn btn-link dropdown-toggle"
+        class="btn btn-link dropdown-toggle header-icon-button"
         type="button"
-        id="dropdownMenuButton2"
+        id="userMenuButton"
         data-bs-toggle="dropdown"
         aria-expanded="false"
       >
-        <font-awesome-icon
-          icon="user-circle"
-          style="margin-left: 0px; font-size: 24px !important"
-        />
+        <font-awesome-icon icon="user-circle" />
       </button>
-      <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton2">
+      <ul
+        class="dropdown-menu dropdown-menu-end"
+        aria-labelledby="userMenuButton"
+      >
         <li>
-          <a class="dropdown-item active" v-on:click="$router.push({ path: '/profile' })">{{
-            language[config.currentLanguage].Header.profile
-          }}</a>
+          <a
+            class="dropdown-item active"
+            v-on:click="$router.push({ path: '/profile' })"
+            >{{ language[config.currentLanguage].Header.profile }}</a
+          >
         </li>
         <li><hr class="dropdown-divider" /></li>
         <li>
@@ -34,46 +38,53 @@
         </li>
       </ul>
     </div>
-    <div class="dropdown" style="float: right; margin-top: 18px">
+    <div class="dropdown header-action">
       <button
-        class="btn btn-link dropdown-toggle"
+        class="btn btn-link dropdown-toggle header-icon-button"
         type="button"
-        id="dropdownMenuButton2"
+        id="languageMenuButton"
         data-bs-toggle="dropdown"
         aria-expanded="false"
       >
-        <country-flag
-          :country="config.currentLanguage"
-          style="float: left; margin-top: -12px; margin-right: 0px"
-        />
+        <country-flag :country="config.currentLanguage" class="language-flag" />
       </button>
-      <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton2">
+      <ul
+        class="dropdown-menu dropdown-menu-end"
+        aria-labelledby="languageMenuButton"
+      >
         <li v-for="(lang, index) in Object.keys(language)" :key="index">
           <a class="dropdown-item" href="#" v-on:click="changeLang(lang)">
             <country-flag
               :country="lang"
               size="small"
-              style="float: left; margin-top: -12px; margin-right: -10px"
+              class="language-flag-menu"
             />
-            <span style="float: left"></span
-            >{{ language[config.currentLanguage].Header.languages[lang] }}</a
+            {{ language[config.currentLanguage].Header.languages[lang] }}</a
           >
         </li>
       </ul>
     </div>
 
     <div class="project" v-if="arrayProjects.length != 0">
-      {{ language[config.currentLanguage].Header.project }}:
-      <select v-model="projectSelected" style="font-size: 14px !important">
-        <option v-for="(project, index) in arrayProjects" v-bind:key="index" :value="project.id">
+      <span>{{ language[config.currentLanguage].Header.project }}</span>
+      <select v-model="projectSelected" class="header-select">
+        <option
+          v-for="(project, index) in arrayProjects"
+          v-bind:key="index"
+          :value="project.id"
+        >
           {{ project.name }}
         </option>
       </select>
     </div>
     <div class="project" v-if="arrayCostumers.length != 0">
-      {{ language[config.currentLanguage].Header.costumer }}:
-      <select v-model="costumerSelected" style="font-size: 14px !important">
-        <option v-for="(costumer, index) in arrayCostumers" v-bind:key="index" :value="costumer.id">
+      <span>{{ language[config.currentLanguage].Header.costumer }}</span>
+      <select v-model="costumerSelected" class="header-select">
+        <option
+          v-for="(costumer, index) in arrayCostumers"
+          v-bind:key="index"
+          :value="costumer.id"
+        >
           {{ costumer.costumer }}
         </option>
       </select>
@@ -81,18 +92,26 @@
         type="button"
         v-on:click="changeCostumer(costumerSelected)"
         class="btn btn-success btn-sm"
-        style="margin-right: 10px; margin-left: 10px"
       >
         {{ language[config.currentLanguage].Header.btnChangeCostumer }}
       </button>
     </div>
-    <br />
-    <hr style="margin-top: 25px" />
   </div>
 </template>
 <style scoped>
 .header {
-  background-color: rgb(14, 14, 14);
+  align-items: center;
+  background: rgba(14, 16, 24, 0.88);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.18);
+  display: flex;
+  gap: 0.8rem;
+  min-height: 72px;
+  padding: 0 1.2rem;
+  position: sticky;
+  top: 0;
+  z-index: 12;
 }
 
 .sub-menu {
@@ -111,13 +130,52 @@
   border-radius: 0.25rem;
 }
 .burger {
-  margin-top: 19px;
-  margin-left: 5px;
-  float: left;
+  align-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 0.75rem;
+  color: #f4f4f5 !important;
+  display: inline-flex;
+  height: 2.35rem;
+  justify-content: center;
+  margin: 0;
+  width: 2.35rem;
   cursor: pointer;
 }
+.burger svg {
+  font-size: 1rem !important;
+}
+.header-logo {
+  width: 9.5rem;
+}
+.header-action {
+  margin-left: 0.2rem;
+  order: 4;
+}
+.header-action:first-of-type {
+  margin-left: auto;
+}
+.header-icon-button {
+  align-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 999px;
+  color: #f4f4f5 !important;
+  display: inline-flex;
+  height: 2.35rem;
+  justify-content: center;
+  min-width: 2.35rem;
+}
+.header-icon-button svg {
+  font-size: 1.2rem !important;
+}
+.language-flag {
+  margin-top: -0.7rem;
+}
+.language-flag-menu {
+  margin-right: -0.35rem;
+  margin-top: -0.7rem;
+}
 .titleLogo {
-  border-bottom: 5px red;
+  border-bottom: 0;
 }
 @media only screen and (max-width: 600px) {
   .info {
@@ -133,29 +191,64 @@
 }
 
 .project {
-  margin-top: 22px;
-  margin-left: 5px;
-  margin-right: 5px;
-  float: right;
-  font-family: 'Arial', sans-serif;
-  font-size: 12px;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  color: rgba(244, 244, 245, 0.76);
+  display: flex;
+  gap: 0.55rem;
+  font-family: "Arial", sans-serif;
+  font-size: 0.62rem;
+  font-weight: 800;
   letter-spacing: 2px;
+  margin-left: 0;
+  padding: 0.35rem 0.45rem 0.35rem 0.85rem;
   text-transform: uppercase;
+}
+.project + .project {
+  margin-left: 0;
+}
+.header-select {
+  appearance: none;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  color: #ffffff;
+  font-size: 0.74rem !important;
+  min-width: 8.5rem;
+  padding: 0.35rem 0.8rem;
+}
+.header-select option {
+  background: #191b24;
+  color: #ffffff;
+}
+
+@media only screen and (max-width: 1024px) {
+  .header {
+    flex-wrap: wrap;
+    min-height: auto;
+    padding-bottom: 0.75rem;
+    padding-top: 0.75rem;
+  }
+  .project {
+    margin-left: 0;
+  }
 }
 </style>
 
 <script>
-import apiClient from '@/services/apiClient'
-import { useSessionStore } from '@/stores/session'
-import CountryFlag from 'vue-country-flag-next'
+import apiClient from "@/services/apiClient";
+import { useSessionStore } from "@/stores/session";
+import CountryFlag from "vue-country-flag-next";
 
 export default {
-  name: 'HeaderComponent',
+  name: "HeaderComponent",
   components: {
-    CountryFlag
+    CountryFlag,
   },
   setup() {
-    return { session: useSessionStore() }
+    return { session: useSessionStore() };
   },
   data() {
     return {
@@ -163,149 +256,168 @@ export default {
       arrayCostumers: [],
       projectSelected: null,
       costumerSelected: null,
-      showSubMenu: false
-    }
+      showSubMenu: false,
+    };
   },
   created() {
-    this.getHeaders()
-    this.emitter.on('updateListProject', (msg) => {
-      this.arrayProjects = msg
+    this.getHeaders();
+    this.emitter.on("updateListProject", (msg) => {
+      this.arrayProjects = msg;
       if (this.projectSelected == null && this.arrayProjects.length > 0)
-        this.projectSelected = this.arrayProjects[0].id
-    })
+        this.projectSelected = this.arrayProjects[0].id;
+    });
   },
   watch: {
     projectSelected() {
-      this.session.selectProject(this.projectSelected)
-      this.refreshComponents(true)
+      this.session.selectProject(this.projectSelected);
+      this.refreshComponents(true);
     },
     costumerSelected() {
       //this.changeCostumer(this.costumerSelected)
-    }
+    },
   },
   methods: {
     changeLang(lang) {
-      this.config.currentLanguage = lang
-      localStorage.langSelected = lang
-      this.emitter.emit('refreshSideBar')
-      if (this.$route.name == 'plugins') this.emitter.emit('refreshPlugin', false)
-      if (this.$route.name == 'steps') this.emitter.emit('refreshStep', false)
-      if (this.$route.name == 'environments') this.emitter.emit('refreshEnvironment', false)
-      if (this.$route.name == 'tests') this.emitter.emit('refreshTest', false)
-      if (this.$route.name == 'testcycles') this.emitter.emit('refreshTestCycle', false)
-      if (this.$route.name == 'testsperformed')
-        this.emitter.emit('refreshTestCyclePerformed', false)
-      if (this.$route.name == 'projects') this.emitter.emit('refreshProject', false)
-      if (this.$route.name == 'apikey') this.emitter.emit('refreshApiKey', false)
-      if (this.$route.name == 'costumers') this.emitter.emit('refreshCostumer', false)
-      if (this.$route.name == 'accounts') this.emitter.emit('refreshAccount', false)
-      if (this.$route.name == 'profile') this.emitter.emit('refreshProfile', false)
-      if (this.$route.name == 'platforms') this.emitter.emit('refreshPlatform', false)
-      if (this.$route.name == 'testlauncher') this.emitter.emit('refreshTestLauncher', false)
+      this.config.currentLanguage = lang;
+      localStorage.langSelected = lang;
+      this.emitter.emit("refreshSideBar");
+      if (this.$route.name == "plugins")
+        this.emitter.emit("refreshPlugin", false);
+      if (this.$route.name == "steps") this.emitter.emit("refreshStep", false);
+      if (this.$route.name == "environments")
+        this.emitter.emit("refreshEnvironment", false);
+      if (this.$route.name == "tests") this.emitter.emit("refreshTest", false);
+      if (this.$route.name == "testcycles")
+        this.emitter.emit("refreshTestCycle", false);
+      if (this.$route.name == "testsperformed")
+        this.emitter.emit("refreshTestCyclePerformed", false);
+      if (this.$route.name == "projects")
+        this.emitter.emit("refreshProject", false);
+      if (this.$route.name == "apikey")
+        this.emitter.emit("refreshApiKey", false);
+      if (this.$route.name == "costumers")
+        this.emitter.emit("refreshCostumer", false);
+      if (this.$route.name == "accounts")
+        this.emitter.emit("refreshAccount", false);
+      if (this.$route.name == "profile")
+        this.emitter.emit("refreshProfile", false);
+      if (this.$route.name == "platforms")
+        this.emitter.emit("refreshPlatform", false);
+      if (this.$route.name == "testlauncher")
+        this.emitter.emit("refreshTestLauncher", false);
 
-      this.$forceUpdate()
-      this.refreshComponents()
+      this.$forceUpdate();
+      this.refreshComponents();
     },
     refreshComponents(isProjectChange = false) {
-      if (this.$route.name == 'plugins') this.emitter.emit('refreshPlugin', true)
-      if (this.$route.name == 'steps') this.emitter.emit('refreshStep', true)
-      if (this.$route.name == 'environments') this.emitter.emit('refreshEnvironment', true)
-      if (this.$route.name == 'tests') this.emitter.emit('refreshTest', true)
-      if (this.$route.name == 'testcycles') this.emitter.emit('refreshTestCycle', true)
-      if (this.$route.name == 'testsperformed') this.emitter.emit('refreshTestCyclePerformed', true)
-      if (isProjectChange == false || this.$route.name == 'projects')
-        this.emitter.emit('refreshProject', true)
-      if (this.$route.name == 'apikey') this.emitter.emit('refreshApiKey', true)
-      if (this.$route.name == 'profile') this.emitter.emit('refreshProfile', true)
-      if (this.$route.name == 'platforms') this.emitter.emit('refreshPlatform', true)
-      if (this.$route.name == 'testlauncher') this.emitter.emit('refreshTestLauncher', true)
+      if (this.$route.name == "plugins")
+        this.emitter.emit("refreshPlugin", true);
+      if (this.$route.name == "steps") this.emitter.emit("refreshStep", true);
+      if (this.$route.name == "environments")
+        this.emitter.emit("refreshEnvironment", true);
+      if (this.$route.name == "tests") this.emitter.emit("refreshTest", true);
+      if (this.$route.name == "testcycles")
+        this.emitter.emit("refreshTestCycle", true);
+      if (this.$route.name == "testsperformed")
+        this.emitter.emit("refreshTestCyclePerformed", true);
+      if (isProjectChange == false || this.$route.name == "projects")
+        this.emitter.emit("refreshProject", true);
+      if (this.$route.name == "apikey")
+        this.emitter.emit("refreshApiKey", true);
+      if (this.$route.name == "profile")
+        this.emitter.emit("refreshProfile", true);
+      if (this.$route.name == "platforms")
+        this.emitter.emit("refreshPlatform", true);
+      if (this.$route.name == "testlauncher")
+        this.emitter.emit("refreshTestLauncher", true);
     },
     changeCostumer(id) {
       apiClient
         .put(
-          this.config.serviceBaseUrl + this.config.url.header + '/' + id,
+          this.config.serviceBaseUrl + this.config.url.header + "/" + id,
           {},
           {
-            headers: this.setHeaders()
-          }
+            headers: this.setHeaders(),
+          },
         )
         .then((response) => {
-          this.emitter.emit('showLoader', false)
-          this.projectSelected = null
-          this.session.selectCustomer(id)
-          this.session.updateSessionId(response.data.session)
-          this.refreshComponents()
-          this.getProjects()
+          this.emitter.emit("showLoader", false);
+          this.projectSelected = null;
+          this.session.selectCustomer(id);
+          this.session.updateSessionId(response.data.session);
+          this.refreshComponents();
+          this.getProjects();
         })
         .catch((e) => {
           //this.Logut(this)
-          this.error = e
-        })
+          this.error = e;
+        });
     },
     getProjects() {
       apiClient
         .get(this.config.serviceBaseUrl + this.config.url.projects, {
-          headers: this.setHeaders()
+          headers: this.setHeaders(),
         })
         .then((response) => {
-          this.emitter.emit('showLoader', false)
-          this.arrayProjects = response.data
-          this.session.setProjectAvailability(this.arrayProjects)
+          this.emitter.emit("showLoader", false);
+          this.arrayProjects = response.data;
+          this.session.setProjectAvailability(this.arrayProjects);
           if (this.projectSelected == null && this.arrayProjects.length > 0)
-            this.projectSelected = this.arrayProjects[0].id
+            this.projectSelected = this.arrayProjects[0].id;
         })
         .catch((e) => {
-          this.Logout(this, e)
-          this.error = e
-        })
+          this.Logout(this, e);
+          this.error = e;
+        });
     },
 
     getHeaders() {
-      this.emitter.emit('showLoader', true)
+      this.emitter.emit("showLoader", true);
       apiClient
         .get(this.config.serviceBaseUrl + this.config.url.header, {
-          headers: this.setHeaders()
+          headers: this.setHeaders(),
         })
         .then((response) => {
-          this.emitter.emit('showLoader', false)
-          this.arrayProjects = response.data.projects
-          this.session.setProjectAvailability(this.arrayProjects)
+          this.emitter.emit("showLoader", false);
+          this.arrayProjects = response.data.projects;
+          this.session.setProjectAvailability(this.arrayProjects);
           if (this.projectSelected == null && this.arrayProjects.length > 0)
-            this.projectSelected = this.arrayProjects[0].id
-          if (response.data.costumers) this.arrayCostumers = response.data.costumers
+            this.projectSelected = this.arrayProjects[0].id;
+          if (response.data.costumers)
+            this.arrayCostumers = response.data.costumers;
           if (this.costumerSelected == null && this.arrayCostumers.length > 0)
-            this.costumerSelected = this.arrayCostumers[0].id
+            this.costumerSelected = this.arrayCostumers[0].id;
         })
         .catch((e) => {
           //this.Logut(this)
-          this.error = e
-        })
+          this.error = e;
+        });
     },
     sideBar() {
-      this.emitter.emit('sideBar', 'toggled')
-      this.emitter.emit('showIcon', null)
+      this.emitter.emit("sideBar", "toggled");
+      this.emitter.emit("showIcon", null);
     },
     logout() {
       this.$confirm(
         this.language[this.config.currentLanguage].Header.confirmLogout,
-        '',
-        'warning'
-      ).then(() => this.actionLogout())
+        "",
+        "warning",
+      ).then(() => this.actionLogout());
     },
     actionLogout() {
       apiClient
         .post(this.config.serviceBaseUrl + this.config.url.logout, null, {
-          headers: this.setHeaders()
+          headers: this.setHeaders(),
         })
         .then(() => {
-          this.Logout(this)
+          this.Logout(this);
         })
         .catch(() => {
-          this.Logout(this)
-        })
-    }
-  }
-}
+          this.Logout(this);
+        });
+    },
+  },
+};
 </script>
 
 <style scoped>

@@ -12,7 +12,9 @@
           :disabled="isEnvironmentOrderTabDisabled"
           v-on:click="openTab('order')"
         >
-          {{ language[config.currentLanguage].Environments.tabOrderEnvironments }}
+          {{
+            language[config.currentLanguage].Environments.tabOrderEnvironments
+          }}
         </button>
         <button
           :class="tabButtonClass('new')"
@@ -41,76 +43,89 @@
           <div class="col">
             <table class="table table-striped costum">
               <thead>
-                <th scope="col">
-                  {{ language[config.currentLanguage].Environments.id }}
-                </th>
-                <th scope="col">
-                  {{ language[config.currentLanguage].Environments.code }}
-                </th>
-                <th scope="col">
-                  {{ language[config.currentLanguage].Environments.description }}
-                </th>
-                <th scope="col"></th>
-                <th scope="col"></th>
-                <th scope="col"></th>
+                <tr>
+                  <th scope="col">
+                    {{ language[config.currentLanguage].Environments.id }}
+                  </th>
+                  <th scope="col">
+                    {{ language[config.currentLanguage].Environments.code }}
+                  </th>
+                  <th scope="col">
+                    {{
+                      language[config.currentLanguage].Environments.description
+                    }}
+                  </th>
+                  <th scope="col"></th>
+                  <th scope="col"></th>
+                  <th scope="col"></th>
+                </tr>
               </thead>
-              <!-- draggable v-model="listEnvironments" tag="tbody" -->
-              <tr v-for="(item, index) in listEnvironments" :key="item.name">
-                <td>
-                  {{ item.id }}
-                </td>
-                <td>
-                  <button
-                    type="button"
-                    class="btn btn-link btn-sm"
-                    v-on:click="getJson(item.id, item.code)"
-                  >
-                    {{ item.code }}
-                  </button>
-                </td>
-                <td>
-                  <button
-                    type="button"
-                    class="btn btn-link btn-sm"
-                    v-on:click="getJson(item.id, item.code)"
-                  >
-                    {{ item.description }}
-                  </button>
-                </td>
-                <td>
-                  <span
-                    id="clone"
-                    class="text-success"
-                    v-on:click="duplicateEnvironment(index)"
-                    style="cursor: pointer"
-                    ><font-awesome-icon icon="clone" style="font-size: 1rem"
-                  /></span>
-                </td>
-                <td>
-                  <span
-                    class="text-danger"
-                    v-on:click="deleteEnvironment(index)"
-                    style="cursor: pointer"
-                    ><font-awesome-icon icon="trash" style="font-size: 1rem"
-                  /></span>
-                </td>
-                <td>
-                  <span
-                    class="text-primary"
-                    v-on:click="downloadEnvironment(index)"
-                    style="cursor: pointer"
-                    ><font-awesome-icon icon="download" style="font-size: 1rem"
-                  /></span>
-                </td>
-              </tr>
-              <!--/draggable-->
+              <tbody>
+                <!-- draggable v-model="listEnvironments" tag="tbody" -->
+                <tr v-for="(item, index) in listEnvironments" :key="item.name">
+                  <td>
+                    {{ item.id }}
+                  </td>
+                  <td>
+                    <button
+                      type="button"
+                      class="btn btn-link btn-sm"
+                      v-on:click="getJson(item.id, item.code)"
+                    >
+                      {{ item.code }}
+                    </button>
+                  </td>
+                  <td>
+                    <button
+                      type="button"
+                      class="btn btn-link btn-sm"
+                      v-on:click="getJson(item.id, item.code)"
+                    >
+                      {{ item.description }}
+                    </button>
+                  </td>
+                  <td>
+                    <span
+                      id="clone"
+                      class="text-success"
+                      v-on:click="duplicateEnvironment(index)"
+                      style="cursor: pointer"
+                      ><font-awesome-icon icon="clone" style="font-size: 1rem"
+                    /></span>
+                  </td>
+                  <td>
+                    <span
+                      class="text-danger"
+                      v-on:click="deleteEnvironment(index)"
+                      style="cursor: pointer"
+                      ><font-awesome-icon icon="trash" style="font-size: 1rem"
+                    /></span>
+                  </td>
+                  <td>
+                    <span
+                      class="text-primary"
+                      v-on:click="downloadEnvironment(index)"
+                      style="cursor: pointer"
+                      ><font-awesome-icon
+                        icon="download"
+                        style="font-size: 1rem"
+                    /></span>
+                  </td>
+                </tr>
+                <!--/draggable-->
+              </tbody>
             </table>
           </div>
           <div class="col-sm-1" />
         </div>
         <!-- end content tab -->
       </div>
-      <div :class="tabPaneClass('new')" id="nav-newenv" role="tabpanel" aria-labelledby="newenv-tab">
+      <div
+        :class="tabPaneClass('new')"
+        id="nav-newenv"
+        role="tabpanel"
+        aria-labelledby="newenv-tab"
+      >
         <!-- start content tab -->
         <div class="row">
           <!--b-col sm="2">
@@ -122,7 +137,8 @@
               type="text"
               class="form-control"
               :placeholder="
-                language[config.currentLanguage].Environments.placeholderDescriptionEnvironment
+                language[config.currentLanguage].Environments
+                  .placeholderDescriptionEnvironment
               "
             />
           </div>
@@ -131,7 +147,10 @@
               v-model="environmentNameFile"
               type="text"
               class="form-control"
-              :placeholder="language[config.currentLanguage].Environments.placeholderFileName"
+              :placeholder="
+                language[config.currentLanguage].Environments
+                  .placeholderFileName
+              "
               :disabled="environmentDescription.length == 0"
             />
           </div>
@@ -152,9 +171,14 @@
               class="btn btn-success btn-sm"
               style="float: right"
               v-on:click="savePreSave(true)"
-              :disabled="environmentDescription.length == 0 || environmentNameFile.length == 0"
+              :disabled="
+                environmentDescription.length == 0 ||
+                environmentNameFile.length == 0
+              "
             >
-              {{ language[config.currentLanguage].Environments.btnSaveEnvironment }}
+              {{
+                language[config.currentLanguage].Environments.btnSaveEnvironment
+              }}
             </button>
           </div>
         </div>
@@ -195,7 +219,10 @@
             ></button>
           </div>
           <div class="modal-body">
-            <div class="alert alert-danger" v-if="errorNewVersionMessage != null">
+            <div
+              class="alert alert-danger"
+              v-if="errorNewVersionMessage != null"
+            >
               {{ errorNewVersionMessage }}
             </div>
             {{ codeSelected }}
@@ -283,21 +310,21 @@
 </style>
 
 <script>
-import { Modal, Button } from 'bootstrap'
-import JsonEditor from '../components/JsonEditor.vue'
-import apiClient from '@/services/apiClient'
-import { getSelectedProjectId } from '@/stores/session'
-import { buildEnvironmentPayload } from '@/domain/workflowPayloads'
+import { Modal, Button } from "bootstrap";
+import JsonEditor from "../components/JsonEditor.vue";
+import apiClient from "@/services/apiClient";
+import { getSelectedProjectId } from "@/stores/session";
+import { buildEnvironmentPayload } from "@/domain/workflowPayloads";
 //import draggable from 'vuedraggable'
-import download from '@/shared/download'
-import { routableTabs } from '@/shared/routableTabs'
-import wizard from './environments/wizard.vue'
-import param from './environments/environmentsParameter'
+import download from "@/shared/download";
+import { routableTabs } from "@/shared/routableTabs";
+import wizard from "./environments/wizard.vue";
+import param from "./environments/environmentsParameter";
 
 export default {
-  name: 'EnvironmentsComponent',
+  name: "EnvironmentsComponent",
   inheritAttrs: false,
-  mixins: [routableTabs('order', ['order', 'new'])],
+  mixins: [routableTabs("order", ["order", "new"])],
   data: () => {
     return {
       enabled: true,
@@ -313,145 +340,146 @@ export default {
       jsonResumeNameSelected: null,
       btnSaveEnable: false,
       options: {
-        mode: 'code',
-        modes: ['tree', 'code']
+        mode: "code",
+        modes: ["tree", "code"],
       },
       modeOptions: [
-        { text: 'wizard', value: 'wizard' },
-        { text: 'json editor', value: 'json' }
+        { text: "wizard", value: "wizard" },
+        { text: "json editor", value: "json" },
       ],
-      modeSelected: 'wizard',
-      environmentDescription: '',
-      environmentNameFile: '',
-      loadJsonToEdit: '',
+      modeSelected: "wizard",
+      environmentDescription: "",
+      environmentNameFile: "",
+      loadJsonToEdit: "",
       errorNewVersionMessage: null,
-      skeletonJsonType: 'web',
+      skeletonJsonType: "web",
       codeSelected: null,
       defaultJson: {
-        projectId: 'idProject',
-        environment: 'BS',
-        base_url: 'https://example.com',
-        url: 'https://example.com/#/live',
+        projectId: "idProject",
+        environment: "BS",
+        base_url: "https://example.com",
+        url: "https://example.com/#/live",
         xpath_check_url: "//td[@class='lead']",
-        username: 'user',
-        password: 'password',
-        userAgent: '<user agent>',
-        browser: 'chrome',
-        device: 'Nexus 5',
-        deviceType: 'Smartphone',
-        accept_self_certificate: true
+        username: "user",
+        password: "password",
+        userAgent: "<user agent>",
+        browser: "chrome",
+        device: "Nexus 5",
+        deviceType: "Smartphone",
+        accept_self_certificate: true,
       },
       defaultAppJson: {
-        projectId: 'id project',
-        environment: 'environment',
-        os: 'android',
-        appiumServer: 'http://localhost:4723/wd/hub',
+        projectId: "id project",
+        environment: "environment",
+        os: "android",
+        appiumServer: "http://localhost:4723/wd/hub",
         appiumDesiredCaps: {
           uiautomator2ServerInstallTimeout: 100000,
           androidInstallTimeout: 100000,
-          platformName: '<platform Android or iOS>',
-          platformVersion: 'for example 8.1',
-          deviceName: 'Android Emulator',
-          appPackage: 'for example it.idelium.app.name.dev',
-          app: '/your_build_path/example.(apk or ipa)'
+          platformName: "<platform Android or iOS>",
+          platformVersion: "for example 8.1",
+          deviceName: "Android Emulator",
+          appPackage: "for example it.idelium.app.name.dev",
+          app: "/your_build_path/example.(apk or ipa)",
         },
         isRealDevice: true,
-        idJsonSelected: null
-      }
-    }
+        idJsonSelected: null,
+      },
+    };
   },
   options: {},
   computed: {
     strippedContent() {
-      let regex = /(<([^>]+)>)/gi
-      return this.comment.content.rendered.replace(regex, '')
+      let regex = /(<([^>]+)>)/gi;
+      return this.comment.content.rendered.replace(regex, "");
     },
     draggingInfo() {
-      return this.dragging ? 'under drag' : ''
+      return this.dragging ? "under drag" : "";
     },
     isEnvironmentOrderTabDisabled() {
-      return this.environmentsLoaded && this.listEnvironments.length === 0
-    }
+      return this.environmentsLoaded && this.listEnvironments.length === 0;
+    },
   },
   watch: {
     $route() {
-      this.page = 0
-      this.$forceUpdate()
-    }
+      this.page = 0;
+      this.$forceUpdate();
+    },
   },
   mounted() {
-    this.modalElem = new Modal(document.getElementById('myModal'))
-    this.buttonElem = new Button(document.getElementById('nav-newenv-tab'))
-    this.getEnvironments()
+    this.modalElem = new Modal(document.getElementById("myModal"));
+    this.buttonElem = new Button(document.getElementById("nav-newenv-tab"));
+    this.getEnvironments();
     setTimeout(
       function () {
-        this.$refs.wizard.generateJson(null)
+        this.$refs.wizard.generateJson(null);
       }.bind(this),
-      100
-    )
+      100,
+    );
   },
   created() {
-    this.emitter.on('refreshEnvironment', (msg) => {
-      if (msg == true) this.getEnvironments()
-      else this.$forceUpdate()
-    })
+    this.emitter.on("refreshEnvironment", (msg) => {
+      if (msg == true) this.getEnvironments();
+      else this.$forceUpdate();
+    });
   },
   methods: {
     redirectEmptyEnvironments() {
-      if (this.isEnvironmentOrderTabDisabled && this.isActiveTab('order')) {
-        this.openTab('new')
+      if (this.isEnvironmentOrderTabDisabled && this.isActiveTab("order")) {
+        this.openTab("new");
       }
     },
     changeViewMode() {
-      if (this.modeSelected == 'wizard') {
+      if (this.modeSelected == "wizard") {
         setTimeout(
           function () {
-            this.$refs.wizard.putJson(this.rememberJson)
+            this.$refs.wizard.putJson(this.rememberJson);
           }.bind(this),
-          100
-        )
+          100,
+        );
       }
     },
     isLetter(e) {
-      let char = String.fromCharCode(e.keyCode) // Get the character
-      if (/^[A-Za-z]+$/.test(char) || char == '_' || char == '-') return true
+      let char = String.fromCharCode(e.keyCode); // Get the character
+      if (/^[A-Za-z]+$/.test(char) || char == "_" || char == "-") return true;
       // Match with regex
-      else e.preventDefault() // If not match, don't add to input text
+      else e.preventDefault(); // If not match, don't add to input text
     },
     deleteEnvironment(index) {
       this.$confirm(
-        this.language[this.config.currentLanguage].Environments.confirmationDelete +
+        this.language[this.config.currentLanguage].Environments
+          .confirmationDelete +
           this.listEnvironments[index].code +
-          ' ?',
-        '',
-        'warning'
-      ).then(() => this.deleteAction(index))
+          " ?",
+        "",
+        "warning",
+      ).then(() => this.deleteAction(index));
     },
     deleteAction(index) {
-      this.emitter.emit('showLoader', true)
+      this.emitter.emit("showLoader", true);
       apiClient
         .delete(
           this.config.serviceBaseUrl +
             this.config.url.environments +
-            '/' +
+            "/" +
             getSelectedProjectId() +
-            '/' +
+            "/" +
             this.listEnvironments[index].id,
           {
-            headers: this.setHeaders()
-          }
+            headers: this.setHeaders(),
+          },
         )
         .then((response) => {
-          this.btnSaveEnable = false
-          this.listEnvironments = response.data
-          this.environmentsLoaded = true
-          this.redirectEmptyEnvironments()
-          this.emitter.emit('showLoader', false)
+          this.btnSaveEnable = false;
+          this.listEnvironments = response.data;
+          this.environmentsLoaded = true;
+          this.redirectEmptyEnvironments();
+          this.emitter.emit("showLoader", false);
         })
         .catch((e) => {
-          this.Logout(this, e)
-          this.error = e
-        })
+          this.Logout(this, e);
+          this.error = e;
+        });
     },
     duplicateEnvironment(index) {
       this.getJson(
@@ -459,8 +487,8 @@ export default {
         this.listEnvironments[index].code,
         this.listEnvironments[index].description,
         true,
-        false
-      )
+        false,
+      );
     },
     downloadEnvironment(index) {
       this.getJson(
@@ -468,103 +496,113 @@ export default {
         this.listEnvironments[index].code,
         this.listEnvironments[index].description,
         false,
-        true
-      )
+        true,
+      );
     },
-    getJson(id, code = null, description = null, isDuplicate = false, isDownload = false) {
-      this.emitter.emit('showLoader', true)
+    getJson(
+      id,
+      code = null,
+      description = null,
+      isDuplicate = false,
+      isDownload = false,
+    ) {
+      this.emitter.emit("showLoader", true);
       apiClient
         .get(
           this.config.serviceBaseUrl +
             this.config.url.environments +
-            '/' +
+            "/" +
             getSelectedProjectId() +
-            '/' +
+            "/" +
             id,
           {
-            headers: this.setHeaders()
-          }
+            headers: this.setHeaders(),
+          },
         )
         .then((response) => {
-          this.emitter.emit('showLoader', false)
+          this.emitter.emit("showLoader", false);
           if (isDuplicate == false) {
             if (isDownload == false) {
-              this.jsonResumeNameSelected = id
-              this.modalElem.show()
-              this.resumeJson = JSON.parse(response.data.config)
-              this.idJsonSelecteds = id
-              this.codeSelected = code
+              this.jsonResumeNameSelected = id;
+              this.modalElem.show();
+              this.resumeJson = JSON.parse(response.data.config);
+              this.idJsonSelecteds = id;
+              this.codeSelected = code;
             } else {
-              download.file(code + '.json', response.data.config, 'application/json')
+              download.file(
+                code + ".json",
+                response.data.config,
+                "application/json",
+              );
             }
           } else {
-            this.openTab('new')
-            this.loadJsonToEdit = JSON.parse(response.data.config)
-            this.jsonEnvironments = this.loadJsonToEdit
-            this.environmentDescription = description + '(copy)'
-            this.environmentNameFile = code + '_copy'
+            this.openTab("new");
+            this.loadJsonToEdit = JSON.parse(response.data.config);
+            this.jsonEnvironments = this.loadJsonToEdit;
+            this.environmentDescription = description + "(copy)";
+            this.environmentNameFile = code + "_copy";
           }
         })
         .catch((e) => {
-          this.Logout(this, e)
-          this.error = e
-        })
+          this.Logout(this, e);
+          this.error = e;
+        });
     },
     getEnvironments() {
-      this.emitter.emit('showLoader', true)
+      this.emitter.emit("showLoader", true);
       apiClient
         .get(
           this.config.serviceBaseUrl +
             this.config.url.environments +
-            '/' +
+            "/" +
             getSelectedProjectId(),
           {
-            headers: this.setHeaders()
-          }
+            headers: this.setHeaders(),
+          },
         )
         .then((response) => {
-          this.emitter.emit('showLoader', false)
-          this.listEnvironments = response.data
-          this.environmentsLoaded = true
-          this.redirectEmptyEnvironments()
+          this.emitter.emit("showLoader", false);
+          this.listEnvironments = response.data;
+          this.environmentsLoaded = true;
+          this.redirectEmptyEnvironments();
         })
         .catch((e) => {
-          this.Logout(this, e)
-          this.error = e
-        })
+          this.Logout(this, e);
+          this.error = e;
+        });
     },
     changeJson: function (json) {
-      this.jsonEnvironments = json
-      this.rememberJson = json
+      this.jsonEnvironments = json;
+      this.rememberJson = json;
     },
     changeWizardJson: function (json) {
-      this.loadJsonToEdit = this.jsonEnvironments = json
-      this.saveJson(true)
+      this.loadJsonToEdit = this.jsonEnvironments = json;
+      this.saveJson(true);
     },
     changeJsonResume: function (json) {
-      this.jsonResumeEnvironments = json
-      this.btnSaveEnable = true
-      this.saveJson(true)
+      this.jsonResumeEnvironments = json;
+      this.btnSaveEnable = true;
+      this.saveJson(true);
     },
     savePreSave(isNew) {
-      if (this.modeSelected == 'json') {
-        this.saveJson(isNew)
+      if (this.modeSelected == "json") {
+        this.saveJson(isNew);
       } else {
-        this.$refs.wizard.generateJson(false)
+        this.$refs.wizard.generateJson(false);
       }
     },
     saveJson(isNew = null) {
-      let fileName = null
-      let jsonObject = null
+      let fileName = null;
+      let jsonObject = null;
       if (isNew == false) {
-        fileName = this.jsonResumeNameSelected
-        jsonObject = this.jsonResumeEnvironments
+        fileName = this.jsonResumeNameSelected;
+        jsonObject = this.jsonResumeEnvironments;
       } else {
-        fileName = this.environmentNameFile.toLowerCase()
+        fileName = this.environmentNameFile.toLowerCase();
         //jsonObject=this.loadJsonToEdit
-        jsonObject = this.jsonEnvironments
+        jsonObject = this.jsonEnvironments;
       }
-      this.emitter.emit('showLoader', true)
+      this.emitter.emit("showLoader", true);
       apiClient
         .post(
           this.config.serviceBaseUrl + this.config.url.environments,
@@ -572,88 +610,89 @@ export default {
             code: fileName,
             config: jsonObject,
             description: this.environmentDescription,
-            projectId: getSelectedProjectId()
+            projectId: getSelectedProjectId(),
           }),
           {
-            headers: this.setHeaders()
-          }
+            headers: this.setHeaders(),
+          },
         )
         .then((response) => {
-          this.emitter.emit('showLoader', false)
-          this.btnSaveEnable = false
-          this.modalElem.hide()
-          this.loadJsonToEdit = this.generateJson(param.selenium)
+          this.emitter.emit("showLoader", false);
+          this.btnSaveEnable = false;
+          this.modalElem.hide();
+          this.loadJsonToEdit = this.generateJson(param.selenium);
 
-          this.listEnvironments = response.data
-          this.environmentsLoaded = true
+          this.listEnvironments = response.data;
+          this.environmentsLoaded = true;
         })
         .catch((e) => {
-          this.Logout(this, e)
-          this.error = e
-        })
+          this.Logout(this, e);
+          this.error = e;
+        });
     },
     updateJson() {
-      this.emitter.emit('showLoader', true)
+      this.emitter.emit("showLoader", true);
       apiClient
         .put(
           this.config.serviceBaseUrl +
             this.config.url.environments +
-            '/' +
+            "/" +
             getSelectedProjectId() +
-            '/' +
+            "/" +
             this.idJsonSelecteds,
           {
-            config: JSON.stringify(this.jsonResumeEnvironments)
+            config: JSON.stringify(this.jsonResumeEnvironments),
           },
           {
-            headers: this.setHeaders()
-          }
+            headers: this.setHeaders(),
+          },
         )
         .then(
           (response) => {
-            this.emitter.emit('showLoader', false)
-            this.btnSaveEnable = false
-            this.modalElem.hide()
-            this.loadJsonToEdit = this.generateJson(param.selenium)
-            this.listEnvironments = response.data
-            this.environmentsLoaded = true
+            this.emitter.emit("showLoader", false);
+            this.btnSaveEnable = false;
+            this.modalElem.hide();
+            this.loadJsonToEdit = this.generateJson(param.selenium);
+            this.listEnvironments = response.data;
+            this.environmentsLoaded = true;
           },
           {
-            headers: this.setHeaders()
-          }
+            headers: this.setHeaders(),
+          },
         )
         .catch((e) => {
-          this.Logout(this, e)
-          this.error = e
-        })
+          this.Logout(this, e);
+          this.error = e;
+        });
     },
     changeSkeleton(skeleton) {
-      if (skeleton == 'web') {
-        this.loadJsonToEdit = this.generateJson(param.selenium)
-      } else if (skeleton == 'webservice') {
-        this.loadJsonToEdit = this.generateJson(param.webservice)
+      if (skeleton == "web") {
+        this.loadJsonToEdit = this.generateJson(param.selenium);
+      } else if (skeleton == "webservice") {
+        this.loadJsonToEdit = this.generateJson(param.webservice);
       } else {
-        this.loadJsonToEdit = this.generateJson(param.appium)
+        this.loadJsonToEdit = this.generateJson(param.appium);
       }
     },
     generateJson(json) {
-      let jsonCreated = {}
-      let subParameter = false
-      let jsonSub = {}
+      let jsonCreated = {};
+      let subParameter = false;
+      let jsonSub = {};
       for (let i in json) {
-        if (json[i].typeName == 'uiautomator2ServerInstallTimeout') subParameter = true
-        if (subParameter == true) jsonSub[json[i].typeName] = json[i].default
-        else jsonCreated[json[i].typeName] = json[i].default
+        if (json[i].typeName == "uiautomator2ServerInstallTimeout")
+          subParameter = true;
+        if (subParameter == true) jsonSub[json[i].typeName] = json[i].default;
+        else jsonCreated[json[i].typeName] = json[i].default;
       }
-      if (subParameter == true) jsonCreated['appiumDesiredCaps'] = jsonSub
-      return jsonCreated
-    }
+      if (subParameter == true) jsonCreated["appiumDesiredCaps"] = jsonSub;
+      return jsonCreated;
+    },
   },
   components: {
     wizard,
     //draggable,
-    JsonEditor
-  }
-}
+    JsonEditor,
+  },
+};
 // @ts-ignore
 </script>

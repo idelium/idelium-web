@@ -1,9 +1,9 @@
 <template>
-  <div>
-    <div class="row">
-      <div class="col" fluid="lg">
-        <div class="welcome">
-          <img src="@/assets/idelium.png" style="width: 16rem" />
+  <div class="login-page">
+    <div class="login-shell">
+      <section class="welcome">
+        <div class="welcome-card">
+          <img src="@/assets/idelium.png" class="login-logo" alt="Idelium" />
           <p class="infoLogin">
             {{ language[config.currentLanguage].Login.welcome }}
           </p>
@@ -11,9 +11,9 @@
             {{ language[config.currentLanguage].Login.welcomeMessage }}
           </p>
         </div>
-      </div>
-      <div class="col" fluid="lg">
-        <div class="formLogin">
+      </section>
+      <section class="formLogin">
+        <div class="login-card">
           <div class="login">
             <p class="infoLogin messageLogin">
               {{ language[config.currentLanguage].Login.info }}
@@ -68,38 +68,103 @@
               class="btn btn-primary loginbutton"
               v-on:click="auth()"
               size="sm"
-              style="min-width: 100%"
             >
               {{ language[config.currentLanguage].Login.btnLogin }}
             </button>
           </div>
         </div>
-      </div>
+      </section>
     </div>
   </div>
 </template>
 <style scoped>
-.formLogin {
-  position: absolute;
-  border-left: 1px solid #d8d8d8;
-  padding: 60px;
-  top: 30vh;
+.login-page {
+  align-items: center;
+  background:
+    radial-gradient(
+      circle at 18% 20%,
+      rgba(249, 128, 8, 0.22),
+      transparent 24rem
+    ),
+    radial-gradient(
+      circle at 88% 12%,
+      rgba(255, 90, 46, 0.16),
+      transparent 28rem
+    ),
+    linear-gradient(135deg, #11131a 0%, #242733 52%, #30333e 100%);
+  color: #f4f4f5;
+  display: flex;
+  min-height: 100vh;
+  padding: 2rem;
 }
 
-.login {
+.login-shell {
+  display: grid;
+  gap: 2rem;
+  grid-template-columns: minmax(0, 1.05fr) minmax(22rem, 0.75fr);
+  margin: 0 auto;
+  max-width: 1180px;
+  width: 100%;
 }
+
+.formLogin {
+  align-items: center;
+  display: flex;
+}
+
+.login-card,
+.welcome-card {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.055), transparent),
+    rgba(28, 31, 41, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1.4rem;
+  box-shadow: 0 28px 72px rgba(0, 0, 0, 0.32);
+  width: 100%;
+}
+
+.login-card {
+  padding: 2.2rem;
+}
+
 .welcome {
-  padding: 60px;
+  align-items: center;
+  display: flex;
+}
+
+.welcome-card {
+  overflow: hidden;
+  padding: 3rem;
+  position: relative;
+}
+
+.welcome-card::after {
+  background: linear-gradient(
+    135deg,
+    rgba(249, 128, 8, 0.24),
+    rgba(255, 90, 46, 0)
+  );
+  border-radius: 999px;
+  content: "";
+  height: 18rem;
   position: absolute;
-  top: 30vh;
-  left: 30vh;
-  max-width: 30rem;
+  right: -7rem;
+  top: -7rem;
+  width: 18rem;
+}
+
+.login-logo {
+  margin-bottom: 2.5rem;
+  max-width: 16rem;
+  width: 65%;
 }
 .errorMessage {
+  display: block;
+  min-height: 1.4rem;
   text-transform: uppercase;
-  text-align: center;
-  font-size: 20px;
-  color: red;
+  text-align: left;
+  font-size: 0.8rem;
+  color: #ff8a8a;
 }
 .center {
   /*margin: auto; */
@@ -110,8 +175,10 @@
 
 .loginbutton {
   align-content: right;
-  margin-top: 30px;
+  margin-top: 1.6rem;
   font-size: 1rem !important;
+  min-width: 100%;
+  padding: 0.85rem 1rem !important;
 }
 .buttonEye {
   font-size: 1rem;
@@ -121,25 +188,34 @@
 }
 .password {
   align-content: right;
-  margin-top: 30px;
+  margin-top: 1.1rem;
   font-size: 1rem !important;
 }
 .username {
   align-content: right;
-  margin-top: 30px;
+  margin-top: 1.1rem;
   font-size: 1rem !important;
 }
 .remember-password {
-  color: #f4f4f5;
+  color: rgba(244, 244, 245, 0.8);
   font-size: 0.9rem;
-  margin-top: 10px;
+  margin-top: 0.8rem;
 }
 .remember-password label {
   cursor: pointer;
 }
 .infoLogin {
   text-align: left;
-  font-size: 2.2rem;
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+.welcomeMessage {
+  color: rgba(244, 244, 245, 0.72);
+  font-size: 1rem;
+  line-height: 1.7;
+  max-width: 34rem;
 }
 .titleLogin {
   text-align: center;
@@ -149,32 +225,41 @@
 .form-control::placeholder {
   /* Chrome, Firefox, Opera, Safari 10.1+ */
   text-transform: uppercase;
-  font-size: 20px !important;
+  font-size: 0.78rem !important;
 }
 
 .form-control:-ms-input-placeholder {
   /* Internet Explorer 10-11 */
   text-transform: uppercase;
-  font-size: 20px !important;
+  font-size: 0.78rem !important;
 }
 
 .form-control::-ms-input-placeholder {
   /* Microsoft Edge */
   text-transform: uppercase;
-  font-size: 20px !important;
+  font-size: 0.78rem !important;
+}
+@media only screen and (max-width: 900px) {
+  .login-page {
+    padding: 1rem;
+  }
+  .login-shell {
+    grid-template-columns: 1fr;
+  }
+  .welcome-card,
+  .login-card {
+    padding: 1.5rem;
+  }
 }
 @media only screen and (max-width: 600px) {
   .formLogin {
     position: relative;
     border-left: 0px solid #d8d8d8;
     padding: 0px;
-    top: -10vh;
     max-width: 70wh;
   }
   .welcome {
     position: relative;
-    top: 0vh;
-    left: 0vh;
     max-width: 70vh;
   }
   .login {
@@ -199,13 +284,10 @@
     position: relative;
     border-left: 0px solid #d8d8d8;
     padding: 0px;
-    top: -35vh;
     max-width: 70wh;
   }
   .welcome {
     position: relative;
-    top: 0vh;
-    left: 0vh;
     max-width: 70vh;
   }
   .welcomeMessage {
@@ -336,7 +418,7 @@ export default {
       }
     },
     ask() {
-      alert("Non riesci ad entrare ? Chiedi in segreteria");
+      alert("Need help signing in? Contact your administrator.");
     },
   },
 };
