@@ -2,7 +2,7 @@ import { createRouter, createWebHistory } from "vue-router";
 import { pinia } from "@/stores/pinia";
 import { useSessionStore } from "@/stores/session";
 import steps from "@/view/steps.vue";
-const container = () => import("@/components/container.vue");
+const tablerLayout = () => import("@/layouts/TablerLayout.vue");
 const pages = () => import("@/components/pages.vue");
 const profile = () => import("@/view/profile.vue");
 const apikey = () => import("@/view/apikey.vue");
@@ -26,7 +26,7 @@ const router = createRouter({
     {
       path: "/",
       name: "Container",
-      component: container,
+      component: tablerLayout,
       meta: { requiresAuth: true },
       redirect: { path: "/projects" },
       children: [

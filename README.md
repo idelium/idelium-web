@@ -36,6 +36,8 @@ local HTTPS stack.
 - Vitest, Vue Test Utils, jsdom, and V8 coverage.
 - ESLint and Prettier for static checks and formatting.
 - Element Plus, Bootstrap, Font Awesome, Konva, and Ace Editor for UI features.
+- A Tabler-style authenticated application shell for the sidebar, topbar, and
+  page body layout.
 
 The exact dependency graph is locked in `package-lock.json`. Always use
 `npm ci` in CI and for reproducible local installs.
@@ -235,6 +237,7 @@ src/
 ├── assets/       Static images, icons, and style inputs
 ├── components/   Shared application shell and UI components
 ├── domain/       Pure domain transformations
+├── layouts/      Top-level authenticated and page layout containers
 ├── languages/    User-interface dictionaries
 ├── router/       Routes and navigation guards
 ├── services/     Centralized HTTP and integration services

@@ -65,4 +65,18 @@ describe("test-cycle creation component", () => {
       }),
     );
   });
+
+  it("marks the current tab as active", () => {
+    api.get.mockResolvedValue({ data: [] });
+    useSessionStore(pinia).selectProject(9);
+
+    const wrapper = mountTestCycles();
+
+    expect(wrapper.find("#nav-tabTitleModify-tab").classes()).toContain(
+      "active",
+    );
+    expect(
+      wrapper.find("#nav-tabTitleNewTestCycle-tab").classes(),
+    ).not.toContain("active");
+  });
 });
