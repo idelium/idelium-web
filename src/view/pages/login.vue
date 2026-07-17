@@ -273,11 +273,6 @@ export default {
             password: this.password,
             token: token,
           },
-          {
-            headers: {
-              xsrfHeaderName: "X-CSRFToken",
-            },
-          },
         );
         this.session.establishSession();
         await this.$router.push({ name: this.$route.query.back || "projects" });

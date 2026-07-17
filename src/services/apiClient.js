@@ -8,6 +8,9 @@ let handlingUnauthorized = false;
 
 export const apiClient = axios.create({
   withCredentials: true,
+  withXSRFToken: true,
+  xsrfCookieName: "XSRF-TOKEN",
+  xsrfHeaderName: "X-XSRF-TOKEN",
   headers: {
     Accept: "application/json",
     "Content-Type": "application/json",

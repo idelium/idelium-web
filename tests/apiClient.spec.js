@@ -22,6 +22,9 @@ describe("central API client", () => {
 
     const response = await apiClient.get("/resource");
     expect(response.config.withCredentials).toBe(true);
+    expect(response.config.withXSRFToken).toBe(true);
+    expect(apiClient.defaults.xsrfCookieName).toBe("XSRF-TOKEN");
+    expect(apiClient.defaults.xsrfHeaderName).toBe("X-XSRF-TOKEN");
     expect(response.config.headers.Authorization).toBeUndefined();
     expect(response.config.headers.Session).toBeUndefined();
   });
