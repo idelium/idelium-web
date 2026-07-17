@@ -108,6 +108,133 @@ $font-stack: "Roboto Slab", serif;
   text-transform: uppercase;
 }
 
+.modal-backdrop.show {
+  background:
+    radial-gradient(circle at top, rgba(255, 122, 24, 0.12), transparent 34rem),
+    #05070c;
+  opacity: 0.82;
+}
+
+.modal.fade .modal-dialog {
+  transform: translateY(1rem) scale(0.985);
+  transition:
+    transform 0.2s ease-out,
+    opacity 0.2s ease-out;
+}
+
+.modal.show .modal-dialog {
+  transform: translateY(0) scale(1);
+}
+
+.modal-dialog:not(.modal-xl):not(.modal-lg) {
+  max-width: 42rem;
+}
+
+.modal-content {
+  backdrop-filter: blur(22px);
+  border-color: rgba(255, 255, 255, 0.14);
+  overflow: hidden;
+}
+
+.modal-header {
+  align-items: center;
+  gap: 1rem;
+  min-height: 4.5rem;
+  padding: 1rem 1.25rem;
+}
+
+.modal-title {
+  align-items: center;
+  display: inline-flex;
+  font-size: 0.9rem !important;
+  gap: 0.55rem;
+  letter-spacing: 0.14em !important;
+  line-height: 1.2;
+}
+
+.modal-body {
+  padding: 1.25rem;
+}
+
+.modal-footer {
+  background: rgba(0, 0, 0, 0.12);
+  gap: 0.75rem;
+  justify-content: flex-end;
+  padding: 1rem 1.25rem;
+}
+
+.modal .btn-close {
+  background-color: rgba(255, 255, 255, 0.82);
+  border-radius: 999px;
+  opacity: 0.75;
+  padding: 0.55rem;
+}
+
+.modal .btn-close:hover {
+  opacity: 1;
+}
+
+.modal .form-label,
+.modal .col-form-label,
+.modal label {
+  color: rgba(255, 255, 255, 0.72);
+  display: inline-block;
+  font-size: 0.72rem !important;
+  font-weight: 800;
+  letter-spacing: 0.12em !important;
+  margin-bottom: 0.35rem;
+  text-transform: uppercase;
+}
+
+.modal .form-control,
+.modal .form-select,
+.modal select,
+.modal textarea,
+.modal .vs__dropdown-toggle {
+  background: rgba(12, 15, 24, 0.78) !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  border-radius: 0.75rem !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
+  color: #f8fafc !important;
+  min-height: 2.55rem;
+}
+
+.modal .form-control::placeholder,
+.modal textarea::placeholder {
+  color: rgba(255, 255, 255, 0.38) !important;
+}
+
+.modal .form-control:focus,
+.modal .form-select:focus,
+.modal select:focus,
+.modal textarea:focus,
+.modal .vs__dropdown-toggle:focus-within {
+  background: rgba(12, 15, 24, 0.94) !important;
+  border-color: rgba(255, 122, 24, 0.72) !important;
+  box-shadow:
+    0 0 0 0.18rem rgba(255, 122, 24, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.045) !important;
+}
+
+.modal .form-control:disabled,
+.modal .form-control[readonly],
+.modal .form-select:disabled,
+.modal .form-select[readonly] {
+  background: rgba(55, 60, 75, 0.72) !important;
+  color: rgba(255, 255, 255, 0.52) !important;
+}
+
+.modal .alert {
+  border-radius: 0.85rem;
+  font-weight: 700;
+}
+
+.modal .jsoneditor,
+.modal .jsoneditor-menu,
+.modal .ace_editor {
+  border-radius: 0.75rem;
+}
+
 .idelium-tabler-container > .info,
 .idelium-tabler-container > .costum,
 .idelium-tabler-container > div {

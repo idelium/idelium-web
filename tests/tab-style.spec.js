@@ -12,4 +12,13 @@ describe("shared tab styling", () => {
     expect(styles).toContain("var(--idelium-primary)");
     expect(styles).toContain(".nav-tabs .nav-link:disabled");
   });
+
+  it("uses enterprise modal and form styling", () => {
+    const styles = readFileSync(customVarsPath, "utf8");
+
+    expect(styles).toContain(".modal.fade .modal-dialog");
+    expect(styles).toContain(".modal-backdrop.show");
+    expect(styles).toContain(".modal .form-control");
+    expect(styles).toContain("backdrop-filter: blur");
+  });
 });

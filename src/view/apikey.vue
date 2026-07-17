@@ -165,7 +165,7 @@ export default {
         })
     },
     goGithub() {
-      window.open('https://github.com/idelium/idelium-cli', '_blank')
+      window.open('https://pypi.org/project/idelium/', '_blank')
     },
     downloadKey() {
       download.file('idelium', this.apikey, 'plain/text')
