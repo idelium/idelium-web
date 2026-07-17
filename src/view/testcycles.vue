@@ -237,49 +237,7 @@
 }
 
 .testcycles-tab {
-  background: rgba(255, 255, 255, 0.025) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  border-bottom-color: rgba(255, 255, 255, 0.1) !important;
-  border-radius: 0.85rem 0.85rem 0 0 !important;
-  color: rgba(244, 244, 245, 0.48) !important;
-  font-weight: 800 !important;
   min-width: 11rem;
-  padding: 0.8rem 1.15rem !important;
-  position: relative;
-  transform: translateY(1px);
-}
-
-.testcycles-tab.active {
-  background: linear-gradient(135deg, #ff8a00, #ff5a2e) !important;
-  border-color: rgba(255, 122, 24, 0.9) !important;
-  border-bottom-color: rgba(255, 122, 24, 0.9) !important;
-  box-shadow:
-    0 0.75rem 1.6rem rgba(255, 122, 24, 0.22),
-    inset 0 -0.12rem 0 rgba(0, 0, 0, 0.18);
-  color: #101218 !important;
-  transform: translateY(0);
-  z-index: 2;
-}
-
-.testcycles-tab.active::after {
-  background: linear-gradient(90deg, #ff8a00, #ff5a2e);
-  bottom: -1px;
-  content: "";
-  height: 4px;
-  left: 0;
-  position: absolute;
-  right: 0;
-}
-
-.testcycles-tab:not(.active):hover {
-  background: rgba(255, 255, 255, 0.06) !important;
-  color: rgba(244, 244, 245, 0.82) !important;
-}
-
-.testcycles-tab:disabled {
-  color: rgba(244, 244, 245, 0.34) !important;
-  cursor: not-allowed;
-  opacity: 0.68;
 }
 
 .testcycles-tab-content {
