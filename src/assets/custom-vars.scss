@@ -52,7 +52,16 @@ $font-stack: 'Roboto Slab', serif;
   font-family: 'Arial', sans-serif;
   font-size: 10px !important;
   letter-spacing: 2px;
-  --bs-table-color:#BDB3AD;
+}
+.costum {
+  --bs-table-color: #e8e4e0;
+  --bs-table-striped-color: #e8e4e0;
+}
+.costum th {
+  color: #f4f0ec !important;
+}
+.costum td {
+  color: #e8e4e0 !important;
 }
 optgroup {
   font-family: 'Arial', sans-serif;

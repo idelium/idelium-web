@@ -2,49 +2,44 @@
   <nav>
     <div class="nav nav-tabs" id="nav-tab" role="tablist">
       <button
-        class="nav-link active"
+        :class="tabButtonClass('list')"
         id="nav-home-tab"
-        data-bs-toggle="tab"
-        data-bs-target="#nav-home"
         type="button"
         role="tab"
         aria-controls="nav-home"
-        aria-selected="true"
-        v-on:click="listPlugin()"
+        :aria-selected="isActiveTab('list')"
+        v-on:click="openTab('list'); listPlugin()"
       >
         {{ language[config.currentLanguage].Plugins.tabListPlugins }}
       </button>
       <button
-        class="nav-link"
+        :class="tabButtonClass('new')"
         ref="tab2"
         id="nav-newplugin-tab"
-        data-bs-toggle="tab"
-        data-bs-target="#nav-newplugin"
         type="button"
         role="tab"
         aria-controls="nav-newplugin"
-        aria-selected="false"
-        v-on:click="newPlugin()"
+        :aria-selected="isActiveTab('new')"
+        v-on:click="openTab('new'); newPlugin()"
       >
         {{ language[config.currentLanguage].Plugins.tabNewPlugin }}
       </button>
       <button
-        class="nav-link"
+        :class="tabButtonClass('import')"
         id="nav-import-tab"
         ref="test"
-        data-bs-toggle="tab"
-        data-bs-target="#nav-import"
         type="button"
         role="tab"
         aria-controls="nav-import"
-        aria-selected="false"
+        :aria-selected="isActiveTab('import')"
+        v-on:click="openTab('import')"
       >
         {{ language[config.currentLanguage].Plugins.tabTitleImportPlugin }}
       </button>
     </div>
   </nav>
   <div class="tab-content" id="pills-tabContent">
-    <div class="tab-pane fade show active" id="nav-home" role="tabpanel" aria-labelledby="home-tab">
+    <div :class="tabPaneClass('list')" id="nav-home" role="tabpanel" aria-labelledby="home-tab">
       <!-- start home tab -->
       <div class="row">
         <div class="col-sm-1" />
@@ -98,7 +93,7 @@
       </div>
       <!-- end home tab -->
     </div>
-    <div class="tab-pane fade" id="nav-newplugin" role="tabpanel" aria-labelledby="newplugin-tab">
+    <div :class="tabPaneClass('new')" id="nav-newplugin" role="tabpanel" aria-labelledby="newplugin-tab">
       <!-- start newplugin tab -->
       <div class="row">
         <div class="col col-sm-1" />
@@ -149,7 +144,7 @@
       </div>
       <!-- end newplugin tab -->
     </div>
-    <div class="tab-pane fade" id="nav-import" role="tabpanel" aria-labelledby="import-tab">
+    <div :class="tabPaneClass('import')" id="nav-import" role="tabpanel" aria-labelledby="import-tab">
       <!-- start import tab -->
       <importplugin ref="selenium" v-on:importPlugin="importPlugin" />
       <!-- end import tab -->
@@ -265,10 +260,12 @@ import { VAceEditor } from 'vue3-ace-editor'
 
 import importplugin from './plugin/importPlugin.vue'
 import download from '@/shared/download'
+import { routableTabs } from '@/shared/routableTabs'
 
 export default {
   name: 'PluginsComponent',
   inheritAttrs: false,
+  mixins: [routableTabs('list', ['list', 'new', 'import'])],
   data: () => {
     return {
       modalElem: null,
@@ -314,11 +311,14 @@ export default {
     this.listPlugin()
   },
   methods: {
+    onRoutableTabChange(tab) {
+      if (tab === 'new' && this.textNew === 'new') this.newPlugin()
+    },
     importPlugin(value) {
       this.showEditor = false
       this.textNew = value
       this.tabIndex = 1
-      this.$refs.tab2.click()
+      this.openTab('new')
       setTimeout(
         function () {
           this.showEditor = true

@@ -31,4 +31,17 @@ describe("route smoke checks", () => {
     expect(router.currentRoute.value.name).toBe("platforms");
     expect(router.currentRoute.value.params.tab).toBe("os");
   });
+
+  it.each([
+    ["/environments/new", "environments", "new"],
+    ["/plugins/import", "plugins", "import"],
+    ["/steps/new", "steps", "new"],
+    ["/tests/import", "tests", "import"],
+    ["/testcycles/new", "testcycles", "new"],
+  ])("opens %s as a routable tab", async (path, name, tab) => {
+    useSessionStore(pinia).establishSession();
+    await router.push(path);
+    expect(router.currentRoute.value.name).toBe(name);
+    expect(router.currentRoute.value.params.tab).toBe(tab);
+  });
 });

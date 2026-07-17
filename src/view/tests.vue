@@ -6,52 +6,46 @@
         <div class="card">
           <div class="nav nav-tabs" id="nav-tab" role="tablist">
             <button
-              class="nav-link active"
+              :class="tabButtonClass('modify')"
               id="nav-tabTitleModify-tab"
-              data-bs-toggle="tab"
-              data-bs-target="#nav-tabTitleModify"
               type="button"
               role="tab"
               aria-controls="nav-tabTitleModify"
-              :aria-selected="'false'"
+              :aria-selected="isActiveTab('modify')"
               ref="home"
               :disabled="arrayTests.length == 0"
-              v-on:click="tabOpen = 0"
+              v-on:click="openTab('modify')"
             >
               {{ language[config.currentLanguage].Tests.tabTitleModify }}
             </button>
             <button
-              class="nav-link"
+              :class="tabButtonClass('new')"
               id="nav-tabTitleNewTest-tab"
-              data-bs-toggle="tab"
-              data-bs-target="#nav-tabTitleNewTest"
               type="button"
               role="tab"
               ref="tabTitleNewTest"
               aria-controls="nav-tabTitleNewTest"
-              :aria-selected="'false'"
-              v-on:click="tabOpen = 1"
+              :aria-selected="isActiveTab('new')"
+              v-on:click="openTab('new')"
             >
               {{ language[config.currentLanguage].Tests.tabTitleNewTest }}
             </button>
             <button
-              class="nav-link"
+              :class="tabButtonClass('import')"
               id="nav-tabTitleImportTest-tab"
-              data-bs-toggle="tab"
-              data-bs-target="#nav-tabTitleImportTest"
               type="button"
               role="tab"
               ref="tabTitleImportTest"
               aria-controls="nav-tabTitleImportTest"
-              :aria-selected="'false'"
-              v-on:click="tabOpen = 2"
+              :aria-selected="isActiveTab('import')"
+              v-on:click="openTab('import')"
             >
               {{ language[config.currentLanguage].Tests.tabTitleImportTest }}
             </button>
           </div>
           <div class="tab-content" id="pills-tabContent">
             <div
-              class="tab-pane fade show active"
+              :class="tabPaneClass('modify')"
               id="nav-tabTitleModify"
               role="tabpanel"
               aria-labelledby="tabTitleModify-tab"
@@ -88,7 +82,7 @@
               <!-- end tabTitleModify tab -->
             </div>
             <div
-              class="tab-pane fade"
+              :class="tabPaneClass('new')"
               id="nav-tabTitleNewTest"
               role="tabpanel"
               aria-labelledby="tabTitleNewTest-tab"
@@ -118,7 +112,7 @@
               <!-- end tabTitleModify tab -->
             </div>
             <div
-              class="tab-pane fade"
+              :class="tabPaneClass('import')"
               id="nav-tabTitleImportTest"
               role="tabpanel"
               aria-labelledby="tabTitleImportTest-tab"
@@ -335,6 +329,7 @@ import { buildTestPayload } from '@/domain/workflowPayloads'
 
 import draggable from 'vuedraggable'
 import importSelenium from './tests/importSelenium.vue'
+import { routableTabs } from '@/shared/routableTabs'
 
 export default {
   name: 'TestsComponent',
@@ -342,6 +337,7 @@ export default {
     draggable,
     importSelenium
   },
+  mixins: [routableTabs('modify', ['modify', 'new', 'import'])],
   data() {
     return {
       delay: 1000,
@@ -399,6 +395,9 @@ export default {
     }
   },
   methods: {
+    onRoutableTabChange(tab) {
+      this.tabOpen = ['modify', 'new', 'import'].indexOf(tab)
+    },
     cancelUpload() {
       this.$refs.selenium.showUploadComponent()
       this.seleniumImport = {}
@@ -532,7 +531,7 @@ export default {
           this.arrayStepsImported = []
           this.cancelUpload()
           this.getSteps()
-          this.$refs.home.click()
+          this.openTab('modify')
         })
         .catch((e) => {
           this.Logout(this, e)

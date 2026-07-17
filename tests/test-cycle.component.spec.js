@@ -9,14 +9,13 @@ import { pinia } from "@/stores/pinia";
 import { useSessionStore } from "@/stores/session";
 
 describe("test-cycle creation component", () => {
-  it("submits a project-scoped cycle payload", async () => {
-    api.get.mockResolvedValue({ data: [] });
-    api.post.mockResolvedValue({ data: [] });
-    useSessionStore(pinia).selectProject(9);
-    const wrapper = shallowMount(TestCycles, {
+  function mountTestCycles(overrides = {}) {
+    return shallowMount(TestCycles, {
       global: {
         plugins: [pinia],
         mocks: {
+          $route: { name: "testcycles", params: {} },
+          $router: { push: vi.fn(), replace: vi.fn() },
           config: {
             currentLanguage: "gb",
             serviceBaseUrl: "/api/",
@@ -26,9 +25,17 @@ describe("test-cycle creation component", () => {
           emitter: { on: vi.fn(), emit: vi.fn() },
           setHeaders: () => ({}),
           Logout: vi.fn(),
+          ...overrides,
         },
       },
     });
+  }
+
+  it("submits a project-scoped cycle payload", async () => {
+    api.get.mockResolvedValue({ data: [] });
+    api.post.mockResolvedValue({ data: [] });
+    useSessionStore(pinia).selectProject(9);
+    const wrapper = mountTestCycles();
     await wrapper.setData({
       newNameTestCycle: " Release ",
       newDescriptionTestCycle: " Smoke ",
@@ -42,5 +49,20 @@ describe("test-cycle creation component", () => {
       config: '[{"id":1}]',
       idProject: 9,
     });
+  });
+
+  it("opens the new tab when there are no test cycles to modify", async () => {
+    const router = { push: vi.fn(), replace: vi.fn() };
+    api.get.mockResolvedValue({ data: [] });
+    useSessionStore(pinia).selectProject(9);
+
+    mountTestCycles({ $router: router });
+
+    await vi.waitFor(() =>
+      expect(router.push).toHaveBeenCalledWith({
+        name: "testcycles",
+        params: { tab: "new" },
+      }),
+    );
   });
 });

@@ -3,27 +3,25 @@
     <nav>
       <div class="nav nav-tabs" id="nav-tab" role="tablist">
         <button
-          class="nav-link active"
+          :class="tabButtonClass('order')"
           id="nav-home-tab"
-          data-bs-toggle="tab"
-          data-bs-target="#nav-home"
           type="button"
           role="tab"
           aria-controls="nav-home"
-          :aria-selected="'false'"
+          :aria-selected="isActiveTab('order')"
+          v-on:click="openTab('order')"
         >
           {{ language[config.currentLanguage].Environments.tabOrderEnvironments }}
         </button>
         <button
-          class="nav-link"
+          :class="tabButtonClass('new')"
           id="nav-newenv-tab"
-          data-bs-toggle="tab"
-          data-bs-target="#nav-newenv"
           ref="tab2"
           type="button"
           role="tab"
           aria-controls="nav-newenv"
-          :aria-selected="'true'"
+          :aria-selected="isActiveTab('new')"
+          v-on:click="openTab('new')"
         >
           {{ language[config.currentLanguage].Environments.tabNewEnvironment }}
         </button>
@@ -31,7 +29,7 @@
     </nav>
     <div class="tab-content" id="pills-tabContent">
       <div
-        class="tab-pane fade show active"
+        :class="tabPaneClass('order')"
         id="nav-home"
         role="tabpanel"
         aria-labelledby="home-tab"
@@ -111,7 +109,7 @@
         </div>
         <!-- end content tab -->
       </div>
-      <div class="tab-pane fade" id="nav-newenv" role="tabpanel" aria-labelledby="newenv-tab">
+      <div :class="tabPaneClass('new')" id="nav-newenv" role="tabpanel" aria-labelledby="newenv-tab">
         <!-- start content tab -->
         <div class="row">
           <!--b-col sm="2">
@@ -291,12 +289,14 @@ import { getSelectedProjectId } from '@/stores/session'
 import { buildEnvironmentPayload } from '@/domain/workflowPayloads'
 //import draggable from 'vuedraggable'
 import download from '@/shared/download'
+import { routableTabs } from '@/shared/routableTabs'
 import wizard from './environments/wizard.vue'
 import param from './environments/environmentsParameter'
 
 export default {
   name: 'EnvironmentsComponent',
   inheritAttrs: false,
+  mixins: [routableTabs('order', ['order', 'new'])],
   data: () => {
     return {
       enabled: true,
@@ -486,8 +486,7 @@ export default {
               download.file(code + '.json', response.data.config, 'application/json')
             }
           } else {
-            //this.$refs.newEnvironment.activate()
-            this.$refs.tab2.click()
+            this.openTab('new')
             this.loadJsonToEdit = JSON.parse(response.data.config)
             this.jsonEnvironments = this.loadJsonToEdit
             this.environmentDescription = description + '(copy)'

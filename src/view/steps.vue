@@ -2,35 +2,32 @@
   <div>
     <div class="nav nav-tabs" id="nav-tab" role="tablist">
       <button
-        class="nav-link active"
+        :class="tabButtonClass('order')"
         id="nav-tabOrderSteps-tab"
-        data-bs-toggle="tab"
-        data-bs-target="#nav-tabOrderSteps"
         type="button"
         role="tab"
         aria-controls="nav-tabOrderSteps"
-        :aria-selected="'false'"
-        v-on:click="getSteps()"
+        :aria-selected="isActiveTab('order')"
+        v-on:click="openTab('order'); getSteps()"
       >
         {{ language[config.currentLanguage].Steps.tabOrderSteps }}
       </button>
       <button
-        class="nav-link"
+        :class="tabButtonClass('new')"
         id="nav-tabNewStep-tab"
-        data-bs-toggle="tab"
-        data-bs-target="#nav-tabNewStep"
         type="button"
         role="tab"
         ref="tabNewStep"
         aria-controls="nav-tabNewStep"
-        :aria-selected="'false'"
+        :aria-selected="isActiveTab('new')"
+        v-on:click="openTab('new')"
       >
         {{ language[config.currentLanguage].Steps.tabNewStep }}
       </button>
     </div>
     <div class="tab-content" id="pills-tabContent">
       <div
-        class="tab-pane fade show active"
+        :class="tabPaneClass('order')"
         id="nav-tabOrderSteps"
         role="tabpanel"
         aria-labelledby="tabOrderSteps-tab"
@@ -126,7 +123,7 @@
         <!-- end tabOrderSteps tab -->
       </div>
       <div
-        class="tab-pane fade"
+        :class="tabPaneClass('new')"
         id="nav-tabNewStep"
         role="tabpanel"
         aria-labelledby="tabNewStep-tab"
@@ -341,6 +338,7 @@ import draggable from 'vuedraggable'
 import JsonEditor from '../components/JsonEditor.vue'
 import wizard from './steps/wizard.vue'
 import download from '@/shared/download'
+import { routableTabs } from '@/shared/routableTabs'
 
 let templateJson = {
   name: '<nome step>',
@@ -358,6 +356,7 @@ let templateJson = {
 export default {
   name: 'StepsComponent',
   inheritAttrs: false,
+  mixins: [routableTabs('order', ['order', 'new'])],
   data: () => {
     return {
       enabled: true,
@@ -541,7 +540,7 @@ export default {
               download.file(response.data.name + '.json', response.data.config, 'application/json')
             }
           } else {
-            this.$refs.tabNewStep.click()
+            this.openTab('new')
             this.loadJsonToEdit = JSON.parse(response.data.config)
             this.jsonSteps = this.loadJsonToEdit
             this.stepDescription = stepDescription + '(copy)'

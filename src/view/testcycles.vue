@@ -6,38 +6,34 @@
         <div class="card">
           <div class="nav nav-tabs" id="nav-tab" role="tablist">
             <button
-              class="nav-link active"
+              :class="tabButtonClass('modify')"
               id="nav-tabTitleModify-tab"
-              data-bs-toggle="tab"
-              data-bs-target="#nav-tabTitleModify"
               type="button"
               role="tab"
               aria-controls="nav-tabTitleModify"
-              :aria-selected="'false'"
+              :aria-selected="isActiveTab('modify')"
               ref="home"
               :disabled="arrayTestCycles.length == 0"
-              v-on:click="getTestCycles(1)"
+              v-on:click="openTab('modify'); getTestCycles(1)"
             >
               {{ language[config.currentLanguage].TestCycles.tabTitleModify }}
             </button>
             <button
-              class="nav-link"
+              :class="tabButtonClass('new')"
               id="nav-tabTitleNewTestCycle-tab"
-              data-bs-toggle="tab"
-              data-bs-target="#nav-tabTitleNewTestCycle"
               type="button"
               role="tab"
               ref="tabTitleNewTestCycle"
               aria-controls="nav-tabTitleNewTestCycle"
-              :aria-selected="'false'"
-              v-on:click="tabOpen = 1"
+              :aria-selected="isActiveTab('new')"
+              v-on:click="openTab('new')"
             >
               {{ language[config.currentLanguage].TestCycles.tabTitleNewTestCycle }}
             </button>
           </div>
           <div class="tab-content" id="pills-tabContent">
             <div
-              class="tab-pane fade show active"
+              :class="tabPaneClass('modify')"
               id="nav-tabTitleModify"
               role="tabpanel"
               aria-labelledby="tabTitleModify-tab"
@@ -97,7 +93,7 @@
               <!-- end tabTitleModify tab -->
             </div>
             <div
-              class="tab-pane fade show active"
+              :class="tabPaneClass('new')"
               id="nav-tabTitleNewTestCycle"
               role="tabpanel"
               aria-labelledby="tabTitleNewTestCycle-tab"
@@ -211,12 +207,14 @@ import { buildTestCyclePayload } from '@/domain/workflowPayloads'
 
 import draggable from 'vuedraggable'
 import copy from 'copy-to-clipboard'
+import { routableTabs } from '@/shared/routableTabs'
 
 export default {
   name: 'TestCyclesComponent',
   components: {
     draggable
   },
+  mixins: [routableTabs('modify', ['modify', 'new'])],
   data() {
     return {
       delay: 1000,
@@ -310,11 +308,17 @@ export default {
             objectTc.name = objectTc.name + '(' + objectTc.id + ')'
             this.arrayTestCycles.push(objectTc)
           }
+          this.redirectEmptyTestCycles()
         })
         .catch((e) => {
           this.Logout(this, e)
           this.error = e
         })
+    },
+    redirectEmptyTestCycles() {
+      if (this.arrayTestCycles.length === 0 && this.isActiveTab('modify')) {
+        this.openTab('new')
+      }
     },
     setCommandLine() {
       this.commandLine =
