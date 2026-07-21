@@ -55,10 +55,14 @@
                 </button>
               </td>
               <td>
-                <button v-on:click="copyClipboard(costumer.apiKey, costumer.costumer)" class="btn btn-link btn-sm">
+                <button
+                  v-on:click="copyClipboard(costumer.apiKey, costumer.costumer)"
+                  class="btn btn-link btn-sm"
+                  :title="language[config.currentLanguage].Actions.copy"
+                >
                   {{ costumer.apiKey.substring(0, 10) + '..' }}
                   <font-awesome-icon
-                    class="text-success"
+                    class="idelium-action-icon idelium-action-icon--copy"
                     icon="copy"
                     style="margin-left: 5px; font-size: 20px; float: right"
                   />
@@ -148,11 +152,12 @@ export default {
     },
 
     deleteCostumer(id) {
-      this.$confirm(
-        this.language[this.config.currentLanguage].Costumers.textDelete,
-        '',
-        'warning'
-      ).then(() => this.deleteAction(id))
+      return this.$showConfirm({
+        message: this.language[this.config.currentLanguage].Costumers.textDelete,
+        variant: 'warning'
+      }).then((confirmed) => {
+        if (confirmed) this.deleteAction(id)
+      })
     },
     deleteAction(id) {
       this.emitter.emit('showLoader', true)

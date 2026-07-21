@@ -18,9 +18,13 @@
           (isActiveMenuItem(item.link) ? 'active' : '')
         "
         v-on:click="go(item.link, item.isActiveEmptyDb)"
+        :title="language[config.currentLanguage].Sidebar[item.name]"
       >
         <span class="idelium-sidebar-icon">
-          <font-awesome-icon :icon="item.icon" :class="item.class" />
+          <font-awesome-icon
+            :icon="item.icon"
+            :class="'idelium-action-icon--navigation ' + item.class"
+          />
         </span>
         <span class="idelium-sidebar-text">
           {{ language[config.currentLanguage].Sidebar[item.name] }}
@@ -66,7 +70,10 @@ export default {
         return;
       }
 
-      alert("Please insert your first project");
+      this.$showAlert({
+        message: this.language[this.config.currentLanguage].Dialog.firstProjectRequired,
+        variant: "warning",
+      });
       this.$router.push({ path: "/projects" });
     },
     getSidebar() {

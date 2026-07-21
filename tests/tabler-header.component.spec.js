@@ -36,9 +36,16 @@ describe("tabler header component", () => {
           },
           language: {
             gb: {
+              Actions: {
+                toggleSidebar: "Toggle sidebar",
+                userMenu: "User menu",
+              },
               Header: {
                 btnChangeCostumer: "Change customer",
                 confirmLogout: "Confirm logout",
+                confirmLogoutAction: "Log out",
+                confirmLogoutTitle: "End current session",
+                cancelLogout: "Stay signed in",
                 costumer: "Customer",
                 languages: { gb: "English" },
                 logOut: "Log out",
@@ -66,5 +73,26 @@ describe("tabler header component", () => {
       {},
       { headers: {} },
     );
+  });
+
+  it("opens an enterprise logout modal instead of the system confirmation", async () => {
+    const wrapper = mountHeader();
+
+    wrapper.vm.logout();
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.vm.logoutModalVisible).toBe(true);
+    expect(wrapper.vm.$confirm).not.toHaveBeenCalled();
+  });
+
+  it("executes logout only after the modal is confirmed", async () => {
+    const wrapper = mountHeader();
+    const actionLogout = vi.spyOn(wrapper.vm, "actionLogout").mockImplementation(() => {});
+
+    wrapper.vm.logout();
+    wrapper.vm.confirmLogout();
+
+    expect(wrapper.vm.logoutModalVisible).toBe(false);
+    expect(actionLogout).toHaveBeenCalled();
   });
 });

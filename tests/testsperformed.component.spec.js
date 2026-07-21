@@ -36,6 +36,9 @@ describe("tests performed component", () => {
           },
           language: {
             gb: {
+              Actions: {
+                refresh: "Refresh",
+              },
               TestsPerformed: {
                 pageEyebrow: "Execution insights",
                 pageTitle: "Tests performed",

@@ -429,6 +429,37 @@ optgroup {
   cursor: not-allowed;
   opacity: 0.68;
 }
+.idelium-action-icon {
+  font-size: 1rem;
+}
+.idelium-action-icon--copy {
+  color: #22c55e !important;
+}
+.idelium-action-icon--delete,
+.idelium-action-icon--remove {
+  color: #ef4444 !important;
+}
+.idelium-action-icon--download {
+  color: #60a5fa !important;
+}
+.idelium-action-icon--duplicate {
+  color: #22c55e !important;
+}
+.idelium-action-icon--edit {
+  color: #f59e0b !important;
+}
+.idelium-action-icon--expand,
+.idelium-action-icon--refresh {
+  color: #38bdf8 !important;
+}
+.idelium-action-icon--launch {
+  color: #22c55e !important;
+}
+.idelium-action-icon--navigation,
+.idelium-action-icon--user,
+.idelium-action-icon--visibility {
+  color: #e5e7eb !important;
+}
 .bodyLoader {
   position: fixed;
   inset: 0;

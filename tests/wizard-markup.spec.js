@@ -16,13 +16,14 @@ describe("wizard markup", () => {
     expect(source).toContain(":id=\"'environment-param-' + index\"");
   });
 
-  it("keys draggable step transition-group children", () => {
+  it("uses stable draggable item keys without a transition-group wrapper", () => {
     const source = readSource("src/view/steps/wizard.vue");
 
-    expect(source).toContain('tag="transition-group"');
+    expect(source).not.toContain('tag="transition-group"');
     expect(source).toContain('item-key="__key"');
     expect(source).toContain(':key="element.__key"');
     expect(source).toContain("createStepKey()");
+    expect(source).toContain('type="button"');
   });
 
   it("uses unique step wizard ids for new and edit forms", () => {

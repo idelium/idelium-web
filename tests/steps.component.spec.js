@@ -40,6 +40,7 @@ describe("steps component", () => {
               Steps: {
                 tabOrderSteps: "Order Steps",
                 tabNewStep: "New Step",
+                confirmationDelete: "Delete step ",
               },
               Platforms: {
                 ManagePlatform: {
@@ -53,6 +54,8 @@ describe("steps component", () => {
           emitter: { on: vi.fn(), emit: vi.fn() },
           setHeaders: () => ({}),
           Logout: vi.fn(),
+          $showConfirm: vi.fn(),
+          $showAlert: vi.fn(),
           ...overrides,
         },
       },
@@ -73,5 +76,30 @@ describe("steps component", () => {
       }),
     );
     expect(wrapper.find("#nav-tabOrderSteps-tab").attributes("disabled")).toBeDefined();
+  });
+
+  it("clears the loader when steps cannot load without a selected project", () => {
+    const emitter = { on: vi.fn(), emit: vi.fn() };
+    useSessionStore(pinia).selectProject(null);
+
+    const wrapper = mountSteps({ emitter });
+
+    expect(wrapper.vm.getSteps()).toBe(false);
+    expect(emitter.emit).toHaveBeenCalledWith("showLoader", true);
+    expect(emitter.emit).toHaveBeenCalledWith("showLoader", false);
+  });
+
+  it("uses an enterprise confirmation before deleting a step", async () => {
+    const showConfirm = vi.fn().mockResolvedValue(false);
+    const wrapper = mountSteps({ $showConfirm: showConfirm });
+    const deleteAction = vi.spyOn(wrapper.vm, "deleteAction");
+
+    await wrapper.vm.deleteStep({ id: 7, name: "Open browser" });
+
+    expect(showConfirm).toHaveBeenCalledWith({
+      message: "Delete step Open browser",
+      variant: "warning",
+    });
+    expect(deleteAction).not.toHaveBeenCalled();
   });
 });

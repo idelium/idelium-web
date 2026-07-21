@@ -87,28 +87,38 @@
                   <td>
                     <span
                       id="clone"
-                      class="text-success"
+                      class="idelium-action-icon--duplicate"
                       v-on:click="duplicateEnvironment(index)"
+                      :title="language[config.currentLanguage].Actions.duplicate"
+                      role="button"
                       style="cursor: pointer"
-                      ><font-awesome-icon icon="clone" style="font-size: 1rem"
+                      ><font-awesome-icon
+                        icon="clone"
+                        class="idelium-action-icon idelium-action-icon--duplicate"
                     /></span>
                   </td>
                   <td>
                     <span
-                      class="text-danger"
+                      class="idelium-action-icon--delete"
                       v-on:click="deleteEnvironment(index)"
+                      :title="language[config.currentLanguage].Actions.delete"
+                      role="button"
                       style="cursor: pointer"
-                      ><font-awesome-icon icon="trash" style="font-size: 1rem"
+                      ><font-awesome-icon
+                        icon="trash"
+                        class="idelium-action-icon idelium-action-icon--delete"
                     /></span>
                   </td>
                   <td>
                     <span
-                      class="text-primary"
+                      class="idelium-action-icon--download"
                       v-on:click="downloadEnvironment(index)"
+                      :title="language[config.currentLanguage].Actions.download"
+                      role="button"
                       style="cursor: pointer"
                       ><font-awesome-icon
                         icon="download"
-                        style="font-size: 1rem"
+                        class="idelium-action-icon idelium-action-icon--download"
                     /></span>
                   </td>
                 </tr>
@@ -447,14 +457,16 @@ export default {
       else e.preventDefault(); // If not match, don't add to input text
     },
     deleteEnvironment(index) {
-      this.$confirm(
-        this.language[this.config.currentLanguage].Environments
-          .confirmationDelete +
+      return this.$showConfirm({
+        message:
+          this.language[this.config.currentLanguage].Environments
+            .confirmationDelete +
           this.listEnvironments[index].code +
           " ?",
-        "",
-        "warning",
-      ).then(() => this.deleteAction(index));
+        variant: "warning",
+      }).then((confirmed) => {
+        if (confirmed) this.deleteAction(index);
+      });
     },
     deleteAction(index) {
       this.emitter.emit("showLoader", true);

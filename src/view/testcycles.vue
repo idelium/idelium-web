@@ -95,8 +95,13 @@
                 type="button"
                 class="btn btn-link testcycles-copy-button"
                 v-on:click="copyClipboard(commandLine)"
+                :title="language[config.currentLanguage].Actions.copy"
               >
-                <font-awesome-icon icon="copy" alt="copy clipboard" />
+                <font-awesome-icon
+                  icon="copy"
+                  class="idelium-action-icon--copy"
+                  alt="copy clipboard"
+                />
               </button>
             </div>
             <code class="commandLine">{{ commandLine }}</code>
@@ -199,8 +204,12 @@
                 type="button"
                 class="testcycles-remove"
                 v-on:click="deleteItem(index)"
+                :title="language[config.currentLanguage].Actions.remove"
               >
-                <font-awesome-icon icon="times-circle" class="iconClass" />
+                <font-awesome-icon
+                  icon="times-circle"
+                  class="iconClass idelium-action-icon--remove"
+                />
               </button>
             </div>
           </template>

@@ -2,6 +2,31 @@ export default {
   Loader: {
     waitMessage: 'Caricamento in corso....'
   },
+  Dialog: {
+    alertTitle: 'Attenzione',
+    cancel: 'Annulla',
+    confirm: 'Conferma',
+    confirmTitle: 'Conferma azione',
+    firstProjectRequired: 'Crea o seleziona il primo progetto prima di aprire questa sezione.',
+    helpSignIn: "Hai bisogno di aiuto per accedere? Contatta l'amministratore.",
+    ok: 'OK',
+    operationFailed: "L'operazione non può essere completata. Riprova."
+  },
+  Actions: {
+    copy: 'Copia',
+    delete: 'Elimina',
+    download: 'Scarica',
+    duplicate: 'Duplica',
+    edit: 'Modifica',
+    expand: 'Espandi',
+    launch: 'Avvia',
+    refresh: 'Aggiorna',
+    remove: 'Rimuovi',
+    showPassword: 'Mostra password',
+    hidePassword: 'Nascondi password',
+    toggleSidebar: 'Apri o chiudi menu',
+    userMenu: 'Menu utente'
+  },
   Sidebar: {
     account: 'account',
     costumers: 'clienti',
@@ -23,7 +48,10 @@ export default {
     language: 'Lingua',
     profile: 'Profilo',
     btnChangeCostumer: 'Cambia cliente',
-    confirmLogout: 'Vuoi finire la sessione ?',
+    confirmLogoutTitle: 'Termina la sessione corrente',
+    confirmLogout: 'Vuoi uscire dalla console Idelium?',
+    cancelLogout: 'Resta connesso',
+    confirmLogoutAction: 'Esci',
     languages: {
       it: 'italiano',
       gb: 'inglese'

@@ -44,9 +44,15 @@
                 type="button"
                 class="input-group-text password"
                 v-on:click="showPassword = !showPassword"
+                :title="
+                  showPassword == true
+                    ? language[config.currentLanguage].Actions.hidePassword
+                    : language[config.currentLanguage].Actions.showPassword
+                "
               >
                 <font-awesome-icon
                   :icon="showPassword == true ? 'eye-slash' : 'eye'"
+                  class="idelium-action-icon--visibility"
                   id="password-addon"
                 />
               </button>
@@ -418,7 +424,9 @@ export default {
       }
     },
     ask() {
-      alert("Need help signing in? Contact your administrator.");
+      this.$showAlert({
+        message: this.language[this.config.currentLanguage].Dialog.helpSignIn,
+      });
     },
   },
 };

@@ -3,10 +3,11 @@
     <button
       type="button"
       class="btn btn-link burger"
-      aria-label="Toggle sidebar"
+      :aria-label="language[config.currentLanguage].Actions.toggleSidebar"
+      :title="language[config.currentLanguage].Actions.toggleSidebar"
       v-on:click="sideBar()"
     >
-      <font-awesome-icon icon="bars" />
+      <font-awesome-icon icon="bars" class="idelium-action-icon--navigation" />
     </button>
     <img src="@/assets/idelium.png" class="header-logo" alt="Idelium" />
     <div class="dropdown header-action">
@@ -16,8 +17,10 @@
         id="userMenuButton"
         data-bs-toggle="dropdown"
         aria-expanded="false"
+        :aria-label="language[config.currentLanguage].Actions.userMenu"
+        :title="language[config.currentLanguage].Actions.userMenu"
       >
-        <font-awesome-icon icon="user-circle" />
+        <font-awesome-icon icon="user-circle" class="idelium-action-icon--user" />
       </button>
       <ul
         class="dropdown-menu dropdown-menu-end"
@@ -97,6 +100,15 @@
       </button>
     </div>
   </div>
+  <LogoutConfirmModal
+    :visible="logoutModalVisible"
+    :title="language[config.currentLanguage].Header.confirmLogoutTitle"
+    :message="language[config.currentLanguage].Header.confirmLogout"
+    :cancel-label="language[config.currentLanguage].Header.cancelLogout"
+    :confirm-label="language[config.currentLanguage].Header.confirmLogoutAction"
+    v-on:cancel="cancelLogout"
+    v-on:confirm="confirmLogout"
+  />
 </template>
 <style scoped>
 .header {
@@ -241,11 +253,13 @@
 import apiClient from "@/services/apiClient";
 import { useSessionStore } from "@/stores/session";
 import CountryFlag from "vue-country-flag-next";
+import LogoutConfirmModal from "@/components/shared/LogoutConfirmModal.vue";
 
 export default {
   name: "HeaderComponent",
   components: {
     CountryFlag,
+    LogoutConfirmModal,
   },
   setup() {
     return { session: useSessionStore() };
@@ -257,6 +271,7 @@ export default {
       projectSelected: null,
       costumerSelected: null,
       showSubMenu: false,
+      logoutModalVisible: false,
     };
   },
   created() {
@@ -398,11 +413,14 @@ export default {
       this.emitter.emit("showIcon", null);
     },
     logout() {
-      this.$confirm(
-        this.language[this.config.currentLanguage].Header.confirmLogout,
-        "",
-        "warning",
-      ).then(() => this.actionLogout());
+      this.logoutModalVisible = true;
+    },
+    cancelLogout() {
+      this.logoutModalVisible = false;
+    },
+    confirmLogout() {
+      this.logoutModalVisible = false;
+      this.actionLogout();
     },
     actionLogout() {
       apiClient

@@ -19,6 +19,7 @@
             <timeline
               ref="timeline"
               :steps="arrayStep"
+              :expand-label="language[config.currentLanguage].Actions.expand"
               v-on:showImage="showImage"
             />
             <div class="stepTable">

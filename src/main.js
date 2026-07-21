@@ -162,6 +162,33 @@ app.config.globalProperties.language = {
 app.config.globalProperties.$isAuthenticated = { value: false }
 
 app.config.globalProperties.config.productionTip = false
+app.config.globalProperties.$showAlert = function (options = {}) {
+  const labels = this.language?.[this.config?.currentLanguage]?.Dialog || {}
+  return new Promise((resolve) => {
+    emitter.emit('enterprise-dialog:show', {
+      confirmLabel: options.confirmLabel || labels.ok || 'OK',
+      message: options.message || '',
+      resolver: resolve,
+      title: options.title || labels.alertTitle || 'Attention',
+      type: 'alert',
+      variant: options.variant || 'info'
+    })
+  })
+}
+app.config.globalProperties.$showConfirm = function (options = {}) {
+  const labels = this.language?.[this.config?.currentLanguage]?.Dialog || {}
+  return new Promise((resolve) => {
+    emitter.emit('enterprise-dialog:show', {
+      cancelLabel: options.cancelLabel || labels.cancel || 'Cancel',
+      confirmLabel: options.confirmLabel || labels.confirm || 'Confirm',
+      message: options.message || '',
+      resolver: resolve,
+      title: options.title || labels.confirmTitle || 'Confirm action',
+      type: 'confirm',
+      variant: options.variant || 'warning'
+    })
+  })
+}
 app.config.globalProperties.Logout = (object, e = null) => {
   object.emitter.emit('showLoader', false)
   const status = e?.response?.status || 401

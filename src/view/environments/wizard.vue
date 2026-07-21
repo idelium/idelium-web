@@ -82,8 +82,13 @@
           />
         </div>
         <div class="col">
-          <span class="text-danger" v-on:click="deleteEnv(index)" style="cursor: pointer"
-            ><font-awesome-icon icon="trash" style="font-size: 1rem"
+          <span
+            class="idelium-action-icon--delete"
+            v-on:click="deleteEnv(index)"
+            :title="language[config.currentLanguage].Actions.delete"
+            role="button"
+            style="cursor: pointer"
+            ><font-awesome-icon icon="trash" class="idelium-action-icon"
           /></span>
         </div>
       </div>

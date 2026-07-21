@@ -16,8 +16,12 @@
         type="button"
         class="btn btn-outline-light testsperformed-refresh"
         v-on:click="getTestCycles()"
+        :title="language[config.currentLanguage].Actions.refresh"
       >
-        <font-awesome-icon icon="history" class="iconClass" />
+        <font-awesome-icon
+          icon="history"
+          class="iconClass idelium-action-icon--refresh"
+        />
         {{ language[config.currentLanguage].TestsPerformed.refresh }}
       </button>
     </section>
@@ -69,9 +73,10 @@
             v-bind:key="testCycle.id"
             type="button"
             v-on:click="getTestCyclesDate(testCycle.id)"
+            :title="language[config.currentLanguage].TestsPerformed.selectRun"
           >
             <span class="testsperformed-item-icon">
-              <font-awesome-icon icon="sync" />
+              <font-awesome-icon icon="sync" class="idelium-action-icon--refresh" />
             </span>
             <span class="testsperformed-item-main">
               <strong>{{ testCycle.name }}</strong>
@@ -101,8 +106,9 @@
             class="btn btn-sm btn-outline-light testsperformed-icon-button"
             :disabled="testCycleSelected == null"
             v-on:click="getTestCyclesDate(testCycleSelected)"
+            :title="language[config.currentLanguage].Actions.refresh"
           >
-            <font-awesome-icon icon="history" />
+            <font-awesome-icon icon="history" class="idelium-action-icon--refresh" />
           </button>
         </div>
         <div
@@ -119,9 +125,10 @@
             v-bind:key="testCycleDate.id"
             type="button"
             v-on:click="getTest(testCycleDate.id)"
+            :title="language[config.currentLanguage].TestsPerformed.openDetails"
           >
             <span class="testsperformed-item-icon">
-              <font-awesome-icon icon="clock" />
+              <font-awesome-icon icon="clock" class="idelium-action-icon--refresh" />
             </span>
             <span class="testsperformed-item-main">
               <strong>{{ testCycleDate.date }}</strong>
@@ -156,6 +163,7 @@
             v-bind:key="test.id"
             type="button"
             v-on:click="getStep(test.id, test.name)"
+            :title="language[config.currentLanguage].TestsPerformed.viewDetails"
           >
             <span :class="['testsperformed-status', getVariant(test.status)]">
               {{ getStatusLabel(test.status) }}

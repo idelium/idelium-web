@@ -54,8 +54,12 @@
                   type="button"
                   class="btn btn-success btn-sm"
                   v-on:click="launchTest(test.id)"
+                  :title="language[config.currentLanguage].Actions.launch"
                 >
-                  <font-awesome-icon icon="rocket" style="font-size: 1rem" />{{
+                  <font-awesome-icon
+                    icon="rocket"
+                    class="idelium-action-icon idelium-action-icon--launch"
+                  />{{
                     language[config.currentLanguage].TestLauncher.launchtest
                   }}
                 </button>

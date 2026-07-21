@@ -183,12 +183,17 @@
                     "
                   >
                     <span style="text-transform: uppercase">{{ element.description }}</span>
-                    <a
-                      href="#"
+                    <button
+                      type="button"
+                      class="tests-icon-action"
                       v-on:click="deleteItem(index)"
-                      style="text-decoration: none; float: right"
-                      ><font-awesome-icon icon="times-circle" class="deleteIcon iconClass"
-                    /></a>
+                      :title="language[config.currentLanguage].Actions.remove"
+                    >
+                      <font-awesome-icon
+                        icon="times-circle"
+                        class="deleteIcon iconClass idelium-action-icon--remove"
+                      />
+                    </button>
                   </div>
                 </div>
               </template>
@@ -260,12 +265,17 @@
                           {{ target[0] }}
                         </option>
                       </select>
-                      <a
-                        href="#"
+                      <button
+                        type="button"
+                        class="tests-icon-action"
                         v-on:click="deleteItemImported(index)"
-                        style="text-decoration: none; float: right"
-                        ><font-awesome-icon icon="times-circle" class="deleteIcon iconClass"
-                      /></a>
+                        :title="language[config.currentLanguage].Actions.remove"
+                      >
+                        <font-awesome-icon
+                          icon="times-circle"
+                          class="deleteIcon iconClass idelium-action-icon--remove"
+                        />
+                      </button>
                     </div>
                   </div>
                 </template>
@@ -376,6 +386,12 @@
   color: white;
   font-size: 12px;
   margin-right: -0.6rem;
+}
+.tests-icon-action {
+  background: transparent;
+  border: 0;
+  float: right;
+  padding: 0;
 }
 .modal-dialog {
   min-width: 80vw;
@@ -656,7 +672,12 @@ export default {
         })
         .catch((e) => {
           //this.Logout(this)
-          alert(e)
+          this.$showAlert({
+            message:
+              e?.message ||
+              this.language[this.config.currentLanguage].Dialog.operationFailed,
+            variant: 'danger'
+          })
           this.error = e
         })
     },

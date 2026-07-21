@@ -82,26 +82,38 @@
                        <div class="col col-lg-1">
                         <span
                           id="clone"
-                          class="text-success"
+                          class="idelium-action-icon--duplicate"
                           v-on:click="duplicateStep(element)"
+                          :title="language[config.currentLanguage].Actions.duplicate"
+                          role="button"
                           style="cursor: pointer"
-                          ><font-awesome-icon icon="clone" style="font-size: 1rem"
+                          ><font-awesome-icon
+                            icon="clone"
+                            class="idelium-action-icon idelium-action-icon--duplicate"
                         /></span>
                        </div>
                        <div class="col col-lg-1">
                         <span
-                          class="text-primary"
+                          class="idelium-action-icon--download"
                           v-on:click="downloadStep(element)"
+                          :title="language[config.currentLanguage].Actions.download"
+                          role="button"
                           style="cursor: pointer"
-                          ><font-awesome-icon icon="download" style="font-size: 1rem"
+                          ><font-awesome-icon
+                            icon="download"
+                            class="idelium-action-icon idelium-action-icon--download"
                         /></span>
                        </div>
                        <div class="col col-lg-1">
                         <span
-                          class="text-danger"
+                          class="idelium-action-icon--delete"
                           v-on:click="deleteStep(element)"
+                          :title="language[config.currentLanguage].Actions.delete"
+                          role="button"
                           style="cursor: pointer"
-                          ><font-awesome-icon icon="trash" style="font-size: 1rem"
+                          ><font-awesome-icon
+                            icon="trash"
+                            class="idelium-action-icon idelium-action-icon--delete"
                         /></span>
                        </div>
                     </div>
@@ -441,6 +453,9 @@ export default {
     this.loadJsonToEdit = this.defaultJson
     this.modalElem = new Modal(document.getElementById('myModal'))
   },
+  beforeUnmount() {
+    this.emitter.emit('showLoader', false)
+  },
   created() {
     this.emitter.on('refreshStep', (msg) => {
       if (msg == true) this.getSteps()
@@ -487,11 +502,12 @@ export default {
       else this.isLetterEditCheck = false
     },
     deleteStep(element) {
-      this.$confirm(
-        this.language[this.config.currentLanguage].Steps.confirmationDelete + element.name,
-        '',
-        'warning'
-      ).then(() => this.deleteAction(element))
+      return this.$showConfirm({
+        message: this.language[this.config.currentLanguage].Steps.confirmationDelete + element.name,
+        variant: 'warning'
+      }).then((confirmed) => {
+        if (confirmed) this.deleteAction(element)
+      })
     },
     deleteAction(element) {
       apiClient
@@ -570,6 +586,7 @@ export default {
     getSteps() {
       this.emitter.emit('showLoader', true)
       if (getSelectedProjectId() === null || getSelectedProjectId() === undefined) {
+        this.emitter.emit('showLoader', false)
         return false
       }
       apiClient
@@ -613,11 +630,17 @@ export default {
         this.jsonSteps = this.defaultJson
       }
       if (this.stepDescription.length == 0 || this.stepNameFile.length == 0) {
-        alert(this.language[this.config.currentLanguage].Steps.errorMessageInputEmpty)
+        this.$showAlert({
+          message: this.language[this.config.currentLanguage].Steps.errorMessageInputEmpty,
+          variant: 'warning'
+        })
         return false
       }
       if (regex.test(this.stepNameFile)) {
-        alert(this.language[this.config.currentLanguage].Steps.errorCharactersError)
+        this.$showAlert({
+          message: this.language[this.config.currentLanguage].Steps.errorCharactersError,
+          variant: 'warning'
+        })
         return false
       }
       this.emitter.emit('showLoader', true)

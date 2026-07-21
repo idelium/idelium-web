@@ -19,7 +19,21 @@ describe("project selection component", () => {
             serviceBaseUrl: "/api/",
             url: { header: "header" },
           },
-          language: { gb: { Header: { languages: {} } } },
+          language: {
+            gb: {
+              Actions: {
+                toggleSidebar: "Toggle sidebar",
+                userMenu: "User menu",
+              },
+              Header: {
+                cancelLogout: "Stay signed in",
+                confirmLogout: "Confirm logout",
+                confirmLogoutAction: "Log out",
+                confirmLogoutTitle: "End current session",
+                languages: {},
+              },
+            },
+          },
           emitter: { on: vi.fn(), emit: vi.fn() },
           setHeaders: () => ({}),
           $route: { name: "projects" },
@@ -36,6 +50,7 @@ describe("logout component flow", () => {
     api.get.mockResolvedValue({ data: { projects: [], costumers: [] } });
     api.post.mockResolvedValue({ data: null });
     const logout = vi.fn();
+    const confirm = vi.fn();
     const wrapper = shallowMount(Header, {
       global: {
         plugins: [createPinia()],
@@ -45,10 +60,25 @@ describe("logout component flow", () => {
             serviceBaseUrl: "/api/",
             url: { header: "header", logout: "logout" },
           },
-          language: { gb: { Header: { languages: {} } } },
+          language: {
+            gb: {
+              Actions: {
+                toggleSidebar: "Toggle sidebar",
+                userMenu: "User menu",
+              },
+              Header: {
+                cancelLogout: "Stay signed in",
+                confirmLogout: "Confirm logout",
+                confirmLogoutAction: "Log out",
+                confirmLogoutTitle: "End current session",
+                languages: {},
+              },
+            },
+          },
           emitter: { on: vi.fn(), emit: vi.fn() },
           setHeaders: () => ({}),
           Logout: logout,
+          $confirm: confirm,
           $route: { name: "projects" },
         },
       },
@@ -61,5 +91,48 @@ describe("logout component flow", () => {
       headers: {},
     });
     expect(logout).toHaveBeenCalled();
+  });
+
+  it("opens the enterprise logout modal without the system confirmation", async () => {
+    api.get.mockResolvedValue({ data: { projects: [], costumers: [] } });
+    const confirm = vi.fn();
+    const wrapper = shallowMount(Header, {
+      global: {
+        plugins: [createPinia()],
+        mocks: {
+          config: {
+            currentLanguage: "gb",
+            serviceBaseUrl: "/api/",
+            url: { header: "header", logout: "logout" },
+          },
+          language: {
+            gb: {
+              Actions: {
+                toggleSidebar: "Toggle sidebar",
+                userMenu: "User menu",
+              },
+              Header: {
+                cancelLogout: "Stay signed in",
+                confirmLogout: "Confirm logout",
+                confirmLogoutAction: "Log out",
+                confirmLogoutTitle: "End current session",
+                languages: {},
+              },
+            },
+          },
+          emitter: { on: vi.fn(), emit: vi.fn() },
+          setHeaders: () => ({}),
+          Logout: vi.fn(),
+          $confirm: confirm,
+          $route: { name: "projects" },
+        },
+      },
+    });
+
+    wrapper.vm.logout();
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.vm.logoutModalVisible).toBe(true);
+    expect(confirm).not.toHaveBeenCalled();
   });
 });

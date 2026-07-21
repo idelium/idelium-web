@@ -79,8 +79,12 @@
                   style="float: right"
                   size="sm"
                   v-on:click="listPlugin()"
+                  :title="language[config.currentLanguage].Actions.refresh"
                 >
-                  <font-awesome-icon icon="plus" />
+                  <font-awesome-icon
+                    icon="plus"
+                    class="idelium-action-icon idelium-action-icon--refresh"
+                  />
                   {{ language[config.currentLanguage].Steps.wizard.addStep }}
                 </button>
               </div>
@@ -133,8 +137,12 @@
                         size="sm"
                         v-on:click="addEditTypeStep(true)"
                         :disabled="isBtnAddStepTypeDisabled"
+                        :title="language[config.currentLanguage].Steps.wizard.step.addStepType"
                       >
-                        <font-awesome-icon icon="plus" />
+                        <font-awesome-icon
+                          icon="plus"
+                          class="idelium-action-icon idelium-action-icon--duplicate"
+                        />
                         {{ language[config.currentLanguage].Steps.wizard.step.addStepType }}
                       </button>
                       <button
@@ -269,8 +277,6 @@
                       <div class="draggableBlock">
                         <draggable
                           v-model="arrayStepTypeToAdd"
-                          tag="transition-group"
-                          :component-data="{ name: 'fade' }"
                           item-key="__key"
                         >
                           <template #item="{ element, index }">
@@ -279,13 +285,18 @@
                               :key="element.__key"
                             >
                               <span v-on:click="editStepType(element)">{{ element.note }}</span>
-                              <a
-                                href="#"
+                              <button
+                                type="button"
+                                class="step-delete-button"
                                 v-on:click="deleteStepType(index)"
-                                style="text-decoration: none"
+                                :aria-label="'Delete step type ' + element.note"
+                                :title="language[config.currentLanguage].Actions.remove"
                               >
-                                <font-awesome-icon icon="times-circle" class="deleteIcon" />
-                              </a>
+                                <font-awesome-icon
+                                  icon="times-circle"
+                                  class="deleteIcon idelium-action-icon--remove"
+                                />
+                              </button>
                             </div>
                           </template>
                         </draggable>
@@ -376,6 +387,11 @@
   margin-top: 8px;
   margin-bottom: 10px;
   right: 5px !important;
+}
+.step-delete-button {
+  background: transparent;
+  border: 0;
+  padding: 0;
 }
 .fade-in {
   animation: fadeIn ease 1s;
@@ -493,6 +509,7 @@ import { classifyPostmanDocument } from '@/domain/postmanResults'
 import JsonEditor from '../../components/JsonEditor.vue'
 import FileUpload from 'vue-upload-component'
 import draggable from 'vuedraggable'
+import { markRaw } from 'vue'
 
 export default {
   name: 'WizardTool',
@@ -622,12 +639,13 @@ export default {
       try {
         const postman = classifyPostmanDocument(await newFile.file.text())
         if (postman.type === 'environment') {
-          this.postmanJson.environment = postman.document
+          this.postmanJson.environment = markRaw(postman.document)
           this.showOverriteLabel = true
         } else {
-          this.postmanJson.collection = postman.document
+          this.postmanJson.collection = markRaw(postman.document)
           this.note = postman.document.info.name
           this.addEditTypeStep(true, this.postmanJson)
+          this.files = []
         }
       } catch {
         this.errortext =
@@ -773,7 +791,10 @@ export default {
           this.arraySyntax[i].type == 'postman_collection' ||
           this.arraySyntax[i].type == 'postman_environment'
         ) {
-          objectToStore[this.arraySyntax[i].typeName] = upload
+          objectToStore[this.arraySyntax[i].typeName] = markRaw({
+            environment: upload?.environment || null,
+            collection: upload?.collection || null
+          })
           this.postmanJson = { environment: null, collection: null }
           this.showOverriteLabel = false
         }
@@ -838,7 +859,6 @@ export default {
     },
     listPlugin() {
       this.emitter.emit('showLoader', true)
-      //alert(this.config.timeChecksession)
       apiClient
         .get(
           this.config.serviceBaseUrl +

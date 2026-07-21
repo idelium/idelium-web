@@ -4,10 +4,11 @@
       <button
         type="button"
         class="idelium-icon-button"
-        aria-label="Toggle sidebar"
+        :aria-label="language[config.currentLanguage].Actions.toggleSidebar"
+        :title="language[config.currentLanguage].Actions.toggleSidebar"
         v-on:click="sideBar()"
       >
-        <font-awesome-icon icon="bars" />
+        <font-awesome-icon icon="bars" class="idelium-action-icon--navigation" />
       </button>
       <img
         src="@/assets/idelium.png"
@@ -56,16 +57,20 @@
     <div class="idelium-header-actions">
       <div class="dropdown">
         <button
-          class="idelium-icon-button dropdown-toggle"
+          class="idelium-icon-button idelium-language-button dropdown-toggle"
           type="button"
           id="tablerLanguageMenuButton"
           data-bs-toggle="dropdown"
           aria-expanded="false"
+          :aria-label="language[config.currentLanguage].Header.language"
+          :title="language[config.currentLanguage].Header.language"
         >
-          <country-flag
-            :country="config.currentLanguage"
-            class="language-flag"
-          />
+          <span class="idelium-flag-frame">
+            <country-flag
+              :country="config.currentLanguage"
+              class="language-flag"
+            />
+          </span>
         </button>
         <ul
           class="dropdown-menu dropdown-menu-end"
@@ -91,8 +96,10 @@
           id="tablerUserMenuButton"
           data-bs-toggle="dropdown"
           aria-expanded="false"
+          :aria-label="language[config.currentLanguage].Actions.userMenu"
+          :title="language[config.currentLanguage].Actions.userMenu"
         >
-          <font-awesome-icon icon="user-circle" />
+          <font-awesome-icon icon="user-circle" class="idelium-action-icon--user" />
         </button>
         <ul
           class="dropdown-menu dropdown-menu-end"
@@ -116,17 +123,28 @@
       </div>
     </div>
   </header>
+  <LogoutConfirmModal
+    :visible="logoutModalVisible"
+    :title="language[config.currentLanguage].Header.confirmLogoutTitle"
+    :message="language[config.currentLanguage].Header.confirmLogout"
+    :cancel-label="language[config.currentLanguage].Header.cancelLogout"
+    :confirm-label="language[config.currentLanguage].Header.confirmLogoutAction"
+    v-on:cancel="cancelLogout"
+    v-on:confirm="confirmLogout"
+  />
 </template>
 
 <script>
 import apiClient from "@/services/apiClient";
 import { useSessionStore } from "@/stores/session";
 import CountryFlag from "vue-country-flag-next";
+import LogoutConfirmModal from "@/components/shared/LogoutConfirmModal.vue";
 
 export default {
   name: "TablerHeader",
   components: {
     CountryFlag,
+    LogoutConfirmModal,
   },
   setup() {
     return { session: useSessionStore() };
@@ -137,6 +155,7 @@ export default {
       arrayCostumers: [],
       projectSelected: null,
       costumerSelected: null,
+      logoutModalVisible: false,
     };
   },
   created() {
@@ -271,11 +290,14 @@ export default {
       this.emitter.emit("sideBar", "toggled");
     },
     logout() {
-      this.$confirm(
-        this.language[this.config.currentLanguage].Header.confirmLogout,
-        "",
-        "warning",
-      ).then(() => this.actionLogout());
+      this.logoutModalVisible = true;
+    },
+    cancelLogout() {
+      this.logoutModalVisible = false;
+    },
+    confirmLogout() {
+      this.logoutModalVisible = false;
+      this.actionLogout();
     },
     actionLogout() {
       apiClient
@@ -296,14 +318,16 @@ export default {
 <style scoped>
 .idelium-tabler-header {
   align-items: center;
-  background: rgba(12, 14, 22, 0.92);
-  backdrop-filter: blur(16px);
+  background:
+    linear-gradient(180deg, rgba(15, 17, 26, 0.98), rgba(10, 12, 20, 0.96)),
+    radial-gradient(circle at 12% 0%, rgba(255, 122, 24, 0.08), transparent 18rem);
+  backdrop-filter: blur(18px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 16px 38px rgba(0, 0, 0, 0.22);
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.28);
   display: flex;
-  gap: 1rem;
+  gap: 1.15rem;
   min-height: 76px;
-  padding: 0 1.25rem;
+  padding: 0 1rem 0 1.25rem;
   position: sticky;
   top: 0;
   z-index: 20;
@@ -319,36 +343,56 @@ export default {
 
 .idelium-header-left {
   flex: 0 0 auto;
-  gap: 0.85rem;
+  gap: 0.9rem;
+  min-width: 0;
+  position: relative;
+}
+
+.idelium-header-left::after {
+  background: rgba(255, 255, 255, 0.08);
+  content: "";
+  height: 2.15rem;
+  margin-left: 0.1rem;
+  width: 1px;
 }
 
 .idelium-header-logo {
-  width: 9.75rem;
+  display: block;
+  flex: 0 0 auto;
+  height: 2.35rem;
+  object-fit: contain;
+  width: 9.65rem;
 }
 
 .idelium-header-context {
   flex: 1 1 auto;
   gap: 0.65rem;
+  justify-content: flex-start;
   min-width: 0;
 }
 
 .idelium-header-actions {
   flex: 0 0 auto;
-  gap: 0.55rem;
+  gap: 0.6rem;
+  margin-left: auto;
 }
 
 .idelium-icon-button {
   align-items: center;
-  background: rgba(255, 255, 255, 0.055);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 0.85rem;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.035));
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 0.95rem;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 0.75rem 1.8rem rgba(0, 0, 0, 0.22);
   color: #f8fafc;
   cursor: pointer;
   display: inline-flex;
-  height: 2.55rem;
+  height: 2.75rem;
   justify-content: center;
-  min-width: 2.55rem;
-  padding: 0 0.75rem;
+  min-width: 2.75rem;
+  padding: 0;
   transition:
     background-color 0.18s ease,
     border-color 0.18s ease,
@@ -361,13 +405,40 @@ export default {
   transform: translateY(-1px);
 }
 
+.idelium-icon-button.dropdown-toggle::after {
+  border-top-color: rgba(255, 255, 255, 0.72);
+  margin-left: 0.35rem;
+  transform: translateY(1px);
+}
+
+.idelium-language-button {
+  gap: 0.35rem;
+  padding: 0 0.55rem;
+  width: auto;
+}
+
+.idelium-flag-frame {
+  align-items: center;
+  border-radius: 0.35rem;
+  display: inline-flex;
+  height: 1.45rem;
+  justify-content: center;
+  overflow: hidden;
+  width: 1.95rem;
+}
+
 .idelium-context-field {
-  background: rgba(255, 255, 255, 0.055);
-  border: 1px solid rgba(255, 255, 255, 0.09);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.035));
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 999px;
-  gap: 0.55rem;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 0.9rem 2rem rgba(0, 0, 0, 0.18);
+  gap: 0.6rem;
+  height: 2.75rem;
   min-width: 0;
-  padding: 0.38rem 0.48rem 0.38rem 0.85rem;
+  padding: 0.22rem 0.28rem 0.22rem 0.9rem;
 }
 
 .idelium-context-field span,
@@ -376,19 +447,23 @@ export default {
   font-size: 0.62rem;
   font-weight: 800;
   letter-spacing: 0.14rem;
+  line-height: 1;
   text-transform: uppercase;
   white-space: nowrap;
 }
 
 .idelium-context-field select {
   appearance: none;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.085);
+  border: 1px solid rgba(255, 255, 255, 0.11);
   border-radius: 999px;
   color: #ffffff;
-  font-size: 0.78rem;
-  min-width: 9rem;
-  padding: 0.38rem 0.85rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  height: 2.15rem;
+  line-height: 1;
+  min-width: 8.8rem;
+  padding: 0 2rem 0 0.9rem;
 }
 
 .idelium-context-field option {
@@ -406,7 +481,11 @@ export default {
 }
 
 .language-flag {
-  margin-top: -0.7rem;
+  display: block;
+  line-height: 0;
+  margin: 0;
+  transform: translateY(-0.18rem) scale(0.72);
+  transform-origin: center;
 }
 
 .language-flag-menu {
@@ -425,6 +504,10 @@ export default {
   .idelium-header-context {
     flex-basis: 100%;
     order: 3;
+  }
+
+  .idelium-header-left::after {
+    display: none;
   }
 }
 </style>

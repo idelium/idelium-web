@@ -57,11 +57,15 @@
               </td>
               <td>
                 <span
-                  class="text-danger"
+                  class="idelium-action-icon--delete"
                   :disabled="project.username == 'admin'"
                   v-on:click="deleteProject(project.id)"
+                  :title="language[config.currentLanguage].Actions.delete"
+                  role="button"
                   style="cursor: pointer"
-                  ><font-awesome-icon icon="trash" style="font-size: 1rem"
+                  ><font-awesome-icon
+                    icon="trash"
+                    class="idelium-action-icon idelium-action-icon--delete"
                 /></span>
               </td>
             </tr>
@@ -113,11 +117,12 @@ export default {
     },
 
     deleteProject(id) {
-      this.$confirm(
-        this.language[this.config.currentLanguage].Projects.textDelete,
-        '',
-        'warning'
-      ).then(() => this.deleteAction(id))
+      return this.$showConfirm({
+        message: this.language[this.config.currentLanguage].Projects.textDelete,
+        variant: 'warning'
+      }).then((confirmed) => {
+        if (confirmed) this.deleteAction(id)
+      })
     },
     deleteAction(id) {
       apiClient

@@ -146,8 +146,13 @@
               </select>
             </td>
             <td>
-              <span class="text-danger" v-on:click="deletePlatform(item.id)" style="cursor: pointer"
-                ><font-awesome-icon icon="trash" style="font-size: 1rem"
+              <span
+                class="idelium-action-icon--delete"
+                v-on:click="deletePlatform(item.id)"
+                :title="language[config.currentLanguage].Actions.delete"
+                role="button"
+                style="cursor: pointer"
+                ><font-awesome-icon icon="trash" class="idelium-action-icon"
               /></span>
             </td>
           </tr>
@@ -323,11 +328,14 @@ export default {
       this.emitter.emit('showLoader', false)
     },
     deletePlatform(id) {
-      this.$confirm(
-        this.language[this.config.currentLanguage].Platforms.ManagePlatform.confirmationPlatform,
-        '',
-        'warning'
-      ).then(() => this.actionDeletPlatform(id))
+      return this.$showConfirm({
+        message:
+          this.language[this.config.currentLanguage].Platforms.ManagePlatform
+            .confirmationPlatform,
+        variant: 'warning'
+      }).then((confirmed) => {
+        if (confirmed) this.actionDeletPlatform(id)
+      })
     },
     async actionDeletPlatform(id) {
       let response = commonCalls

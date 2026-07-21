@@ -50,8 +50,9 @@
             class="btn btn-outline-success apikey-secondary-action"
             v-on:click="copyClipboard(apikey)"
             :disabled="!apikey"
+            :title="language[config.currentLanguage].Actions.copy"
           >
-            <font-awesome-icon icon="copy" />
+            <font-awesome-icon icon="copy" class="idelium-action-icon--copy" />
             {{ language[config.currentLanguage].Apikey.btnCopyKey }}
           </button>
           <button
@@ -59,8 +60,9 @@
             class="btn btn-outline-primary apikey-secondary-action"
             v-on:click="downloadKey()"
             :disabled="!apikey"
+            :title="language[config.currentLanguage].Actions.download"
           >
-            <font-awesome-icon icon="download" />
+            <font-awesome-icon icon="download" class="idelium-action-icon--download" />
             {{ language[config.currentLanguage].Apikey.btnDownloadConfig }}
           </button>
           <button
@@ -359,11 +361,12 @@ export default {
         })
     },
     generateKey() {
-      this.$confirm(
-        this.language[this.config.currentLanguage].Apikey.confirmGenerateMessage,
-        '',
-        'warning'
-      ).then(() => this.generateAction())
+      return this.$showConfirm({
+        message: this.language[this.config.currentLanguage].Apikey.confirmGenerateMessage,
+        variant: 'warning'
+      }).then((confirmed) => {
+        if (confirmed) this.generateAction()
+      })
     },
     generateAction() {
       apiClient

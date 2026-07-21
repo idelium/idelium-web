@@ -1,8 +1,17 @@
 <template>
   <div class="timeline">
-    <span @click="toggle" style="float: right; cursor: pointer"
-      ><font-awesome-icon icon="expand-arrows-alt" @click="toggle"
-    /></span>
+    <button
+      type="button"
+      class="timeline-expand-action"
+      v-on:click="toggle"
+      :title="expandLabel"
+      :aria-label="expandLabel"
+    >
+      <font-awesome-icon
+        icon="expand-arrows-alt"
+        class="idelium-action-icon--expand"
+      />
+    </button>
     <v-stage :config="configKonva" v-if="showMe == true">
       <v-layer>
         <v-rect
@@ -34,6 +43,13 @@
   width: 100%;
   max-height: 35vh;
 }
+.timeline-expand-action {
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  float: right;
+  padding: 0;
+}
 </style>
 <script>
 let TIME_LINE_WIDTH = 40;
@@ -43,6 +59,10 @@ let MARGIN_RECT = 6;
 export default {
   props: {
     steps: Array,
+    expandLabel: {
+      type: String,
+      default: "Expand",
+    },
   },
   data() {
     return {

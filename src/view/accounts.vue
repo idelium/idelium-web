@@ -137,11 +137,12 @@ export default {
       this.rolesToModify = name
     },
     deleteAccount(id) {
-      this.$confirm(
-        this.language[this.config.currentLanguage].Accounts.confirmDeleteAccount,
-        '',
-        'warning'
-      ).then(() => this.deleteAction(id))
+      return this.$showConfirm({
+        message: this.language[this.config.currentLanguage].Accounts.confirmDeleteAccount,
+        variant: 'warning'
+      }).then((confirmed) => {
+        if (confirmed) this.deleteAction(id)
+      })
     },
     deleteAction(id) {
       this.emitter.emit('showLoader', true)

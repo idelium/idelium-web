@@ -91,18 +91,22 @@
                 </td>
                 <td>
                   <span
-                    class="text-danger"
+                    class="idelium-action-icon--delete"
                     v-on:click="deletePlugin(index)"
+                    :title="language[config.currentLanguage].Actions.delete"
+                    role="button"
                     style="cursor: pointer"
-                    ><font-awesome-icon icon="trash" style="font-size: 1rem"
+                    ><font-awesome-icon icon="trash" class="idelium-action-icon"
                   /></span>
                 </td>
                 <td>
                   <span
-                    class="text-primary"
+                    class="idelium-action-icon--download"
                     v-on:click="downloadPlugin(index)"
+                    :title="language[config.currentLanguage].Actions.download"
+                    role="button"
                     style="cursor: pointer"
-                    ><font-awesome-icon icon="download" style="font-size: 1rem"
+                    ><font-awesome-icon icon="download" class="idelium-action-icon"
                   /></span>
                 </td>
               </tr>
@@ -441,7 +445,6 @@ export default {
       );
     },
     getPlugin(id, name, isDownload = false) {
-      //alert(this.config.timeChecksession)
       this.showEditorResume = false;
       apiClient
         .get(
@@ -476,13 +479,15 @@ export default {
         });
     },
     deletePlugin(index) {
-      this.$confirm(
-        this.language[this.config.currentLanguage].Plugins.confirmationDelete +
+      return this.$showConfirm({
+        message:
+          this.language[this.config.currentLanguage].Plugins.confirmationDelete +
           this.listPlugins[index].name +
           " ?",
-        "",
-        "warning",
-      ).then(() => this.deleteAction(index));
+        variant: "warning",
+      }).then((confirmed) => {
+        if (confirmed) this.deleteAction(index);
+      });
     },
     deleteAction(index) {
       this.emitter.emit("showLoader", true);
@@ -575,7 +580,6 @@ export default {
     },
     listPlugin() {
       this.emitter.emit("showLoader", true);
-      //alert(this.config.timeChecksession)
       apiClient
         .get(
           this.config.serviceBaseUrl +
