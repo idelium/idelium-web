@@ -30,6 +30,14 @@ describe("apikey component", () => {
                 info: "Use this key with idelium-cli.",
                 btnGenerateKey: "Generate new key",
                 btnDownloadKey: "Download idelium-cli",
+                btnCopyKey: "Copy key",
+                btnDownloadConfig: "Download key",
+                cliEyebrow: "Idelium CLI",
+                credentialEyebrow: "Credential",
+                statusActive: "Active",
+                packageEyebrow: "Package",
+                cliTitle: "Idelium CLI",
+                cliInfo: "Install the CLI from PyPI.",
                 keyCopy: "Key copied",
                 confirmGenerateMessage: "Generate a new key?",
               },
@@ -47,7 +55,11 @@ describe("apikey component", () => {
     api.get.mockResolvedValue({ data: { apiKey: "token" } });
     const wrapper = mountApikey();
 
-    await wrapper.findAll("button")[1].trigger("click");
+    const downloadButton = wrapper
+      .findAll("button")
+      .find((button) => button.text().includes("Download idelium-cli"));
+
+    await downloadButton.trigger("click");
 
     expect(window.open).toHaveBeenCalledWith(
       "https://pypi.org/project/idelium/",

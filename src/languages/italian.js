@@ -253,6 +253,15 @@ export default {
     keyCopy: 'chiave copiata',
     confirmGenerateMessage:
       'La generazione della nuova chiave comporta un aggiornamento anche dei parametri per idelium-cl, confermi ?',
+    cliEyebrow: 'Idelium CLI',
+    credentialEyebrow: 'Credenziale',
+    statusActive: 'Attiva',
+    packageEyebrow: 'Pacchetto',
+    cliTitle: 'Idelium CLI',
+    cliInfo:
+      'Installa e aggiorna il client da riga di comando da PyPI, poi posiziona il file della chiave scaricato nella tua home directory.',
+    btnCopyKey: 'Copia chiave',
+    btnDownloadConfig: 'Scarica chiave',
     btnDownloadKey: 'scarica idelium-cli'
   },
   Profile: {

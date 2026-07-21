@@ -1,0 +1,13 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="512" height="512" rx="112" fill="#0f111a"/>
+  <path d="M132 170C132 149.013 149.013 132 170 132H248C316.483 132 372 187.517 372 256C372 324.483 316.483 380 248 380H170C149.013 380 132 362.987 132 342V170Z" fill="url(#idelium-gradient)"/>
+  <path d="M180 180V332H248C290.526 332 325 297.526 325 255C325 212.474 290.526 180 248 180H180Z" fill="#0f111a"/>
+  <rect x="72" y="172" width="42" height="208" rx="20" fill="#ff3838"/>
+  <rect x="72" y="132" width="42" height="32" rx="12" fill="#ff3838"/>
+  <defs>
+    <linearGradient id="idelium-gradient" x1="132" y1="132" x2="372" y2="380" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ff3838"/>
+      <stop offset="1" stop-color="#ff7a18"/>
+    </linearGradient>
+  </defs>
+</svg>

@@ -7,6 +7,11 @@ import vue from "@vitejs/plugin-vue";
 
 export default defineConfig({
   plugins: [vue()],
+  preview: {
+    headers: {
+      "Cache-Control": "no-store",
+    },
+  },
   css: {
     preprocessorOptions: {
       scss: {
@@ -19,8 +24,11 @@ export default defineConfig({
     __APP_VERSION__: JSON.stringify(process.env.npm_package_version),
   },
   server: {
+    headers: {
+      "Cache-Control": "no-store",
+    },
     proxy: {
-      "/api": {
+      "^/api(?:/|$)": {
         target: "https://localhost",
         changeOrigin: true,
         secure: false,

@@ -1,8 +1,11 @@
 <template>
   <aside class="idelium-tabler-sidebar" :class="{ 'is-collapsed': collapsed }">
     <div class="idelium-sidebar-brand">
-      <span class="idelium-sidebar-title">Idelium</span>
-      <span class="idelium-sidebar-subtitle">Enterprise Console</span>
+      <img class="idelium-sidebar-logo" src="/idelium-icon.svg" alt="" />
+      <span class="idelium-sidebar-brand-copy">
+        <span class="idelium-sidebar-title">Idelium</span>
+        <span class="idelium-sidebar-subtitle">Enterprise Console</span>
+      </span>
     </div>
 
     <nav class="idelium-sidebar-nav" aria-label="Main navigation">
@@ -120,11 +123,26 @@ export default {
 }
 
 .idelium-sidebar-brand {
+  align-items: center;
+  display: flex;
+  gap: 0.8rem;
+  min-height: 76px;
+  padding: 1.35rem 1.2rem 1rem;
+}
+
+.idelium-sidebar-logo {
+  border-radius: 1rem;
+  box-shadow: 0 12px 28px rgba(255, 91, 38, 0.22);
+  flex: 0 0 44px;
+  height: 44px;
+  width: 44px;
+}
+
+.idelium-sidebar-brand-copy {
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
-  min-height: 76px;
-  padding: 1.35rem 1.2rem 1rem;
+  min-width: 0;
 }
 
 .idelium-sidebar-title {
@@ -208,15 +226,12 @@ export default {
 
 .is-collapsed .idelium-sidebar-brand {
   align-items: center;
+  justify-content: center;
   padding-left: 0.5rem;
   padding-right: 0.5rem;
 }
 
-.is-collapsed .idelium-sidebar-title {
-  font-size: 0.72rem;
-  letter-spacing: 0.08rem;
-}
-
+.is-collapsed .idelium-sidebar-brand-copy,
 .is-collapsed .idelium-sidebar-subtitle,
 .is-collapsed .idelium-sidebar-text {
   display: none;
@@ -234,6 +249,13 @@ export default {
     width: 86px;
   }
 
+  .idelium-sidebar-brand {
+    justify-content: center;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+
+  .idelium-sidebar-brand-copy,
   .idelium-sidebar-subtitle,
   .idelium-sidebar-text {
     display: none;

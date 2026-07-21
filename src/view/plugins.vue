@@ -1,5 +1,5 @@
 <template>
-  <nav>
+  <nav class="plugins-tabs-container">
     <div class="nav nav-tabs" id="nav-tab" role="tablist">
       <button
         :class="tabButtonClass('list')"
@@ -53,7 +53,7 @@
       aria-labelledby="home-tab"
     >
       <!-- start home tab -->
-      <div class="row">
+      <div class="row plugins-new-toolbar">
         <div class="col-sm-1" />
         <div class="col">
           <table class="table table-striped costum">
@@ -120,31 +120,27 @@
       aria-labelledby="newplugin-tab"
     >
       <!-- start newplugin tab -->
-      <div class="row">
-        <div class="col col-sm-1" />
-        <div class="col col-sm-4">
+      <div class="row plugins-new-toolbar">
+        <div class="col-12 col-lg-4">
           <input
             v-model="descriptionNewFile"
             placeholder="name of plugin"
-            class="form-control"
-            style="float: right; margin-left: 5px; margin-top: 5px"
+            class="form-control plugins-new-control"
           />
         </div>
-        <div class="col">
+        <div class="col-12 col-lg">
           <input
             v-model="nameNewFile"
             placeholder="name of plugin"
-            class="form-control"
-            style="float: right; margin-left: 5px; margin-top: 5px"
+            class="form-control plugins-new-control"
             v-on:keypress="isLetter($event)"
             :disabled="descriptionNewFile.length == 0"
           />
         </div>
-        <div class="col">
+        <div class="col-12 col-lg-auto">
           <button
             type="button"
-            class="btn btn-success btn-sm"
-            style="margin-left: 5px; margin-top: 5px"
+            class="btn btn-success btn-sm plugins-save-button"
             v-on:click="savePlugin(nameNewFile, textNew, descriptionNewFile)"
             :disabled="
               descriptionNewFile.length == 0 || nameNewFile.length == 0
@@ -153,21 +149,17 @@
             Save
           </button>
         </div>
-        <div class="col-sm-1" />
       </div>
-      <div class="row">
-        <div class="col-sm-1" />
-        <div class="col">
-          <!--ace-editor ref="new" v-model="textNew" v-if="showEditor==true" style="margin-top:10px;min-height:80vh;;max-height:80vh;"></ace-editor-->
+      <div class="row plugins-editor-row">
+        <div class="col plugins-editor-column">
           <v-ace-editor
             v-model:value="textNew"
+            class="plugins-code-editor"
             lang="python"
             theme="chrome"
-            style="margin-top: 10px; min-height: 80vh; max-height: 80vh"
             v-if="showEditor == true"
           />
         </div>
-        <div class="col-sm-1" />
       </div>
       <!-- end newplugin tab -->
     </div>
@@ -286,6 +278,55 @@
 .ghost {
   opacity: 0.5;
   background: #c8ebfb;
+}
+
+.plugins-tabs-container {
+  margin: 0 auto;
+  max-width: 1280px;
+  width: 100%;
+}
+
+.plugins-new-toolbar {
+  --bs-gutter-x: 1rem;
+  --bs-gutter-y: 1rem;
+  align-items: end;
+  flex: 0 0 auto;
+  margin-bottom: 1rem;
+}
+
+.plugins-new-control {
+  height: 3rem;
+  margin: 0;
+}
+
+.plugins-save-button {
+  height: 2.5rem;
+  min-width: 7rem;
+}
+
+.plugins-editor-row {
+  --bs-gutter-x: 0;
+  min-height: 0;
+}
+
+.plugins-editor-column {
+  min-height: 0;
+}
+
+.plugins-code-editor {
+  border-radius: 0.9rem;
+  height: clamp(22rem, calc(100vh - 31rem), 42rem);
+  height: clamp(22rem, calc(100dvh - 31rem), 42rem);
+  min-height: 0;
+  overflow: hidden;
+  width: 100%;
+}
+
+@media only screen and (max-width: 760px) {
+  .plugins-code-editor {
+    height: clamp(20rem, calc(100vh - 27rem), 34rem);
+    height: clamp(20rem, calc(100dvh - 27rem), 34rem);
+  }
 }
 </style>
 

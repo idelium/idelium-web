@@ -252,6 +252,15 @@ export default {
     keyCopy: 'key copy on clipboard',
     confirmGenerateMessage:
       'The generation of the new key also involves an update of the parameters for idelium-cl, confirm?',
+    cliEyebrow: 'Idelium CLI',
+    credentialEyebrow: 'Credential',
+    statusActive: 'Active',
+    packageEyebrow: 'Package',
+    cliTitle: 'Idelium CLI',
+    cliInfo:
+      'Install and update the command-line client from PyPI, then place the downloaded key file in your home directory.',
+    btnCopyKey: 'Copy key',
+    btnDownloadConfig: 'Download key',
     btnDownloadKey: 'download idelium-cli'
   },
   Profile: {
