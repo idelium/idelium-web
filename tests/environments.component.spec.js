@@ -46,6 +46,11 @@ describe("environments component", () => {
           },
           language: {
             gb: {
+              Actions: {
+                delete: "Delete",
+                download: "Download",
+                duplicate: "Duplicate",
+              },
               Environments: {
                 tabOrderEnvironments: "Order Environments",
                 tabNewEnvironment: "New Environment",

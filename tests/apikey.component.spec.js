@@ -25,6 +25,11 @@ describe("apikey component", () => {
           },
           language: {
             gb: {
+              Actions: {
+                copy: "Copy",
+                download: "Download",
+                refresh: "Refresh",
+              },
               Apikey: {
                 title: "Your Idelium Key",
                 info: "Use this key with idelium-cli.",

@@ -46,7 +46,7 @@ describe("profile component", () => {
       },
     });
 
-    expect(wrapper.find("article.card").exists()).toBe(true);
+    expect(wrapper.find("article.profile-card").exists()).toBe(true);
     expect(wrapper.findComponent({ name: "b-card" }).exists()).toBe(false);
   });
 });

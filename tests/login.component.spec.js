@@ -21,6 +21,10 @@ function mountLogin() {
         },
         language: {
           gb: {
+            Actions: {
+              hidePassword: "Hide password",
+              showPassword: "Show password",
+            },
             Login: {
               welcome: "Welcome",
               welcomeMessage: "Hello",

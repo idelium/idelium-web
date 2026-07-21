@@ -1,136 +1,221 @@
 export default {
   webservice: [
     {
-      typeName: 'base_url',
-      default: '',
+      typeName: "base_url",
+      default: "",
       mandatory: false,
-      type: 'string',
-      placeholder: 'https://www.example.com'
-    }
+      type: "string",
+      placeholder: "https://www.example.com",
+    },
   ],
   selenium: [
     {
-      typeName: 'base_url',
-      default: '',
+      typeName: "base_url",
+      default: "",
       mandatory: false,
-      type: 'string',
-      placeholder: 'https://www.example.com'
+      type: "string",
+      placeholder: "https://www.example.com",
     },
     {
-      typeName: 'url',
-      default: '',
+      typeName: "url",
+      default: "",
       mandatory: false,
-      type: 'string',
-      placeholder: 'https://www.example.com/en/blog'
+      type: "string",
+      placeholder: "https://www.example.com/en/blog",
     },
     {
-      typeName: 'xpath_check_url',
-      default: '',
+      typeName: "xpath_check_url",
+      default: "",
       mandatory: false,
-      type: 'string',
-      placeholder: ''
+      type: "string",
+      placeholder: "",
     },
     {
-      typeName: 'userAgent',
-      default: '',
+      typeName: "userAgent",
+      default: "",
       mandatory: false,
-      type: 'string',
-      placeholder: ''
+      type: "string",
+      placeholder: "",
     },
     {
-      typeName: 'browser',
+      typeName: "browser",
       mandatory: false,
-      type: 'options',
-      default: 'chrome',
-      options: ['chrome', 'firefox', 'iexplorer', 'edge', 'safari', 'opera']
+      type: "options",
+      default: "chrome",
+      options: ["chrome", "firefox", "iexplorer", "edge", "safari", "opera"],
     },
     {
-      typeName: 'device',
+      typeName: "device",
       mandatory: false,
-      type: 'string',
-      placeholder: ''
+      type: "string",
+      placeholder: "",
     },
     {
-      typeName: 'deviceType',
+      typeName: "deviceType",
       mandatory: false,
-      type: 'string',
-      placeholder: ''
+      type: "string",
+      placeholder: "",
     },
     {
-      typeName: 'accept_self_certificate',
+      typeName: "accept_self_certificate",
       mandatory: false,
-      type: 'boolean',
+      type: "boolean",
       default: false,
-      placeholder: ''
-    }
+      placeholder: "",
+    },
+    {
+      typeName: "seleniumHeadless",
+      mandatory: false,
+      type: "boolean",
+      default: false,
+      uiOnly: true,
+      placeholder: "",
+    },
+    {
+      typeName: "seleniumProxyUrl",
+      mandatory: false,
+      type: "string",
+      default: "",
+      uiOnly: true,
+      placeholder: "http://proxy.example.test:8080",
+    },
+    {
+      typeName: "seleniumDownloadDirectory",
+      mandatory: false,
+      type: "string",
+      default: "",
+      uiOnly: true,
+      placeholder: "/tmp/idelium-downloads",
+    },
+    {
+      typeName: "seleniumLocale",
+      mandatory: false,
+      type: "string",
+      default: "",
+      uiOnly: true,
+      placeholder: "en-US",
+    },
+    {
+      typeName: "seleniumBiDiEnabled",
+      mandatory: false,
+      type: "boolean",
+      default: false,
+      uiOnly: true,
+      placeholder: "",
+    },
+    {
+      typeName: "seleniumGridUrl",
+      mandatory: false,
+      type: "string",
+      default: "",
+      placeholder: "http://selenium-grid:4444",
+    },
+    {
+      typeName: "seleniumGridCapabilities",
+      mandatory: false,
+      type: "json",
+      default: {
+        platformName: "linux",
+        webSocketUrl: false,
+      },
+      placeholder: '{"platformName":"linux","webSocketUrl":true}',
+    },
   ],
   appium: [
     {
-      typeName: 'os',
-      type: 'options',
-      default: 'android',
+      typeName: "os",
+      type: "options",
+      default: "android",
       mandatory: true,
-      options: ['android', 'ios', 'windows']
+      options: ["android", "ios", "windows"],
     },
     {
-      typeName: 'appiumServer',
-      type: 'string',
+      typeName: "appiumServer",
+      type: "string",
       mandatory: true,
-      default: 'http://localhost:4723/wd/hub',
-      placeholder: 'for ex: http://localhost:4723/wd/hub'
+      default: "http://localhost:4723/wd/hub",
+      placeholder: "for ex: http://localhost:4723/wd/hub",
     },
     {
-      typeName: 'isRealDevice',
-      type: 'boolean',
+      typeName: "isRealDevice",
+      type: "boolean",
       default: false,
-      mandatory: false
+      mandatory: false,
     },
     {
-      typeName: 'uiautomator2ServerInstallTimeout',
-      mandatory: true,
-      type: 'int',
-      default: 100000
+      typeName: "appiumRequiredDrivers",
+      type: "json",
+      default: ["uiautomator2"],
+      mandatory: false,
+      placeholder: '["uiautomator2"]',
     },
     {
-      typeName: 'androidInstallTimeout',
-      type: 'int',
-      mandatory: true,
-      default: 100000
+      typeName: "appiumRequiredPlugins",
+      type: "json",
+      default: [],
+      mandatory: false,
+      placeholder: '["images"]',
     },
     {
-      typeName: 'platformName',
-      type: 'options',
-      default: 'android',
-      mandatory: true,
-      options: ['android', 'ios']
+      typeName: "appiumMobileCommandsAllowed",
+      type: "json",
+      default: [],
+      mandatory: false,
+      placeholder: '["customPluginCommand"]',
     },
     {
-      typeName: 'platformVersion',
-      type: 'string',
+      typeName: "uiautomator2ServerInstallTimeout",
       mandatory: true,
-      default: '',
-      placeholder: 'for example 8.1'
+      type: "int",
+      default: 100000,
     },
     {
-      typeName: 'deviceName',
-      type: 'string',
+      typeName: "androidInstallTimeout",
+      type: "int",
       mandatory: true,
-      default: '',
-      placeholder: 'put a string for describe the device'
+      default: 100000,
     },
     {
-      typeName: 'appPackage',
-      type: 'string',
+      typeName: "automationName",
+      type: "options",
+      default: "UiAutomator2",
       mandatory: true,
-      default: '',
-      placeholder: 'put a string for describe the device'
+      options: ["UiAutomator2", "Espresso", "XCUITest"],
     },
     {
-      typeName: 'app',
-      type: 'string',
+      typeName: "platformName",
+      type: "options",
+      default: "android",
       mandatory: true,
-      default: '',
-      placeholder: '/your_build_path/example.(apk or ipa)'
-    }
-  ]
-}
+      options: ["android", "ios"],
+    },
+    {
+      typeName: "platformVersion",
+      type: "string",
+      mandatory: true,
+      default: "",
+      placeholder: "for example 8.1",
+    },
+    {
+      typeName: "deviceName",
+      type: "string",
+      mandatory: true,
+      default: "",
+      placeholder: "put a string for describe the device",
+    },
+    {
+      typeName: "appPackage",
+      type: "string",
+      mandatory: true,
+      default: "",
+      placeholder: "put a string for describe the device",
+    },
+    {
+      typeName: "app",
+      type: "string",
+      mandatory: true,
+      default: "",
+      placeholder: "/your_build_path/example.(apk or ipa)",
+    },
+  ],
+};

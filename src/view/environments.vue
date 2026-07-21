@@ -697,8 +697,12 @@ export default {
       for (let i in json) {
         if (json[i].typeName == "uiautomator2ServerInstallTimeout")
           subParameter = true;
-        if (subParameter == true) jsonSub[json[i].typeName] = json[i].default;
-        else jsonCreated[json[i].typeName] = json[i].default;
+        const defaultValue =
+          json[i].type == "json"
+            ? JSON.parse(JSON.stringify(json[i].default))
+            : json[i].default;
+        if (subParameter == true) jsonSub[json[i].typeName] = defaultValue;
+        else jsonCreated[json[i].typeName] = defaultValue;
       }
       if (subParameter == true) jsonCreated["appiumDesiredCaps"] = jsonSub;
       return jsonCreated;
