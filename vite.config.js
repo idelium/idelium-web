@@ -24,8 +24,14 @@ export default defineConfig({
     __APP_VERSION__: JSON.stringify(process.env.npm_package_version),
   },
   server: {
+    host: "127.0.0.1",
     headers: {
       "Cache-Control": "no-store",
+    },
+    hmr: {
+      clientPort: 5173,
+      host: "127.0.0.1",
+      protocol: "ws",
     },
     proxy: {
       "^/api(?:/|$)": {

@@ -430,18 +430,17 @@ optgroup {
   opacity: 0.68;
 }
 .bodyLoader {
-  position: absolute;
-  top: 0px;
-  left: 0px;
-  background-color: #28292d;
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(circle at 50% 35%, rgba(255, 122, 24, 0.12), transparent 18rem),
+    rgba(10, 12, 18, 0.32);
+  backdrop-filter: blur(2px);
   padding: 0;
   margin: 0;
-  height: 100vh;
-  width: 100vw;
   display: flex;
   align-items: center;
   justify-content: center;
-  opacity: 0.9;
   z-index: 99;
 }
 

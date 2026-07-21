@@ -8,7 +8,13 @@
       <TablerHeader />
       <main class="idelium-tabler-body">
         <div class="idelium-tabler-container">
-          <router-view class="info" />
+          <router-view v-slot="{ Component, route }">
+            <transition name="idelium-page">
+              <div :key="route.fullPath" class="idelium-page-frame info">
+                <component :is="Component" />
+              </div>
+            </transition>
+          </router-view>
         </div>
       </main>
     </div>
@@ -34,6 +40,7 @@ export default {
   data() {
     return {
       isSidebarCollapsed: false,
+      loaderTimer: null,
       showLoader: false,
     };
   },
@@ -42,11 +49,23 @@ export default {
   },
   created() {
     this.emitter.on("showLoader", (msg) => {
-      this.showLoader = msg;
+      if (msg) {
+        window.clearTimeout(this.loaderTimer);
+        this.loaderTimer = window.setTimeout(() => {
+          this.showLoader = true;
+        }, 250);
+        return;
+      }
+
+      window.clearTimeout(this.loaderTimer);
+      this.showLoader = false;
     });
     this.emitter.on("sideBar", () => {
       this.isSidebarCollapsed = !this.isSidebarCollapsed;
     });
+  },
+  beforeUnmount() {
+    window.clearTimeout(this.loaderTimer);
   },
 };
 </script>
@@ -84,7 +103,48 @@ export default {
   margin: 0 auto;
   max-width: 1480px;
   min-height: 100%;
+  position: relative;
   width: 100%;
+}
+
+.idelium-page-frame {
+  min-height: 100%;
+}
+
+.idelium-page-enter-active,
+.idelium-page-leave-active {
+  transition:
+    opacity 0.16s ease,
+    transform 0.16s ease;
+}
+
+.idelium-page-enter-from {
+  opacity: 0;
+  transform: translateY(0.25rem);
+}
+
+.idelium-page-leave-active {
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+  width: 100%;
+}
+
+.idelium-page-leave-to {
+  opacity: 0;
+  transform: translateY(-0.2rem);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .idelium-page-enter-active,
+  .idelium-page-leave-active {
+    transition: none;
+  }
+
+  .idelium-page-enter-from,
+  .idelium-page-leave-to {
+    transform: none;
+  }
 }
 
 @media only screen and (max-width: 600px) {

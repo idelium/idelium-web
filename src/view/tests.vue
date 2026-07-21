@@ -1,8 +1,7 @@
 <template>
-  <div class="costum">
+  <div class="costum tests-page">
     <div class="row">
-      <div class="col-sm-1" />
-      <div class="col-sm-10">
+      <div class="col-12">
         <div class="card">
           <div class="nav nav-tabs" id="nav-tab" role="tablist">
             <button
@@ -123,7 +122,7 @@
             </div>
           </div>
         </div>
-        <div class="row" v-if="tabOpen != 2">
+        <div class="row tests-workspace" v-if="tabOpen != 2">
           <div class="col-sm-6">
             <span style="font-size: 16px !important">{{
               language[config.currentLanguage].Tests.steps
@@ -137,12 +136,11 @@
             />
 
             <draggable
-              class="dragArea list-group"
+              class="dragArea list-group tests-steps-list"
               :list="arraySteps"
               :group="{ name: 'people', pull: 'clone', put: false }"
               @change="log"
               :sort="false"
-              style="height: 70vh !important; overflow-y: auto !important"
               item-key="id"
             >
               <template #item="{ element }">
@@ -152,14 +150,13 @@
               </template>
             </draggable>
           </div>
-          <div class="col-sm-1"></div>
-          <div class="col-sm-4" style="border-style: dashed; overflow-y: auto">
+          <div class="col-sm-1 tests-workspace-spacer"></div>
+          <div class="col-sm-5 tests-selected-panel">
             <span style="font-size: 16px !important">{{
               language[config.currentLanguage].Tests.stepsToDo
             }}</span>
             <draggable
-              class="dragArea list-group"
-              style="min-height: 75vh; max-height: 75vh"
+              class="dragArea list-group tests-selected-list"
               :list="arrayStepsSelectedDragged"
               group="people"
               :drop="true"
@@ -198,10 +195,9 @@
             </draggable>
           </div>
         </div>
-        <div class="row" v-if="tabOpen == 2">
-          <div class="col-sm-2" />
-          <div class="col-sm-7 text-truncate">
-            <div style="height: 70vh; overflow-y: auto; text-overflow: ellipsis">
+        <div class="row tests-import-workspace" v-if="tabOpen == 2">
+          <div class="col-sm-8 text-truncate">
+            <div class="tests-import-list-wrapper">
               <draggable
                 class="dragArea list-group"
                 :list="arrayStepsImported"
@@ -297,19 +293,84 @@
               {{ language[config.currentLanguage].Tests.btnCancel }}
             </button>
           </div>
-          <div class="col-sm-1"></div>
         </div>
       </div>
-      <div class="col-sm-1" />
     </div>
   </div>
 </template>
 <style scoped>
+.tests-page {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 76px - 3rem);
+  height: calc(100dvh - 76px - 3rem);
+  max-width: 100%;
+  min-height: 0;
+  overflow: hidden;
+  width: 100%;
+}
+
+.tests-page > .row,
+.tests-page > .row > .col-12 {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.tests-page .card {
+  flex: 0 0 auto;
+}
+
 .formTest {
   margin: 10px;
   width: 98%;
   text-transform: uppercase;
 }
+
+.tests-workspace,
+.tests-import-workspace {
+  flex: 1 1 auto;
+  margin-top: 1rem;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.tests-workspace > .col-sm-6,
+.tests-import-workspace > .col-sm-8,
+.tests-selected-panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.tests-steps-list,
+.tests-selected-list,
+.tests-import-list-wrapper {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.tests-workspace-spacer {
+  max-width: 2rem;
+}
+
+.tests-selected-panel {
+  border: 1px dashed rgba(255, 122, 24, 0.45);
+  border-radius: 1rem;
+  overflow: hidden;
+  padding-bottom: 0.75rem;
+}
+
+.tests-selected-list {
+  border-radius: 0.9rem;
+}
+
+.tests-import-list-wrapper {
+  text-overflow: ellipsis;
+}
+
 .deleteIcon {
   float: right;
   color: white;
@@ -319,6 +380,25 @@
 .modal-dialog {
   min-width: 80vw;
   margin: 1.75rem auto;
+}
+
+@media only screen and (max-width: 760px) {
+  .tests-page {
+    height: auto;
+    min-height: calc(100vh - 76px - 3rem);
+    min-height: calc(100dvh - 76px - 3rem);
+    overflow: visible;
+  }
+
+  .tests-steps-list,
+  .tests-selected-list,
+  .tests-import-list-wrapper {
+    min-height: 20rem;
+  }
+
+  .tests-workspace-spacer {
+    display: none;
+  }
 }
 </style>
 
