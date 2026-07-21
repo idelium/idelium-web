@@ -137,76 +137,155 @@
         aria-labelledby="newenv-tab"
       >
         <!-- start content tab -->
-        <div class="row">
-          <!--b-col sm="2">
-                            <select v-model="modeSelected" :options="modeOptions" v-on:change="changeViewMode()" class="form-control"/>
-                          </b-col-->
-          <div class="col">
-            <input
-              v-model="environmentDescription"
-              type="text"
-              class="form-control"
-              :placeholder="
-                language[config.currentLanguage].Environments
-                  .placeholderDescriptionEnvironment
-              "
-            />
-          </div>
-          <div class="col">
-            <input
-              v-model="environmentNameFile"
-              type="text"
-              class="form-control"
-              :placeholder="
-                language[config.currentLanguage].Environments
-                  .placeholderFileName
-              "
-              :disabled="environmentDescription.length == 0"
-            />
-          </div>
-          <div class="col">
-            <select
-              class="form-control"
-              v-model="skeletonJsonType"
-              @change="changeSkeleton(skeletonJsonType)"
-            >
-              <option value="web">Web</option>
-              <option value="app">App</option>
-              <option value="webservice">Webservice</option>
-            </select>
-          </div>
-          <div class="col">
+        <section class="idelium-environment-form">
+          <div class="idelium-environment-form__header">
+            <div>
+              <span class="idelium-environment-form__eyebrow">
+                {{ language[config.currentLanguage].Environments.formEyebrow }}
+              </span>
+              <h2>
+                {{ language[config.currentLanguage].Environments.formTitle }}
+              </h2>
+              <p>
+                {{
+                  language[config.currentLanguage].Environments
+                    .formDescription
+                }}
+              </p>
+            </div>
             <button
               type="button"
-              class="btn btn-success btn-sm"
-              style="float: right"
+              class="btn btn-success btn-sm idelium-environment-form__save"
               v-on:click="savePreSave(true)"
-              :disabled="
-                environmentDescription.length == 0 ||
-                environmentNameFile.length == 0
-              "
+              :disabled="isEnvironmentSaveDisabled"
             >
+              <font-awesome-icon icon="plus" />
               {{
                 language[config.currentLanguage].Environments.btnSaveEnvironment
               }}
             </button>
           </div>
-        </div>
-        <wizard
-          ref="wizard"
-          v-if="modeSelected == 'wizard'"
-          :json="jsonEnvironments"
-          :environmentType="skeletonJsonType"
-          v-on:changeWizardJson="changeWizardJson"
-        />
-        <json-editor
-          ref="editor"
-          style="height: 800px"
-          :onChange="changeJson"
-          :options="options"
-          :json="loadJsonToEdit"
-          v-if="modeSelected == 'json'"
-        />
+
+          <div class="idelium-environment-form__grid">
+            <div class="idelium-environment-form__field">
+              <label class="form-label" for="environment-description">
+                {{
+                  language[config.currentLanguage].Environments
+                    .environmentDescriptionLabel
+                }}
+              </label>
+              <input
+                id="environment-description"
+                v-model="environmentDescription"
+                type="text"
+                class="form-control"
+                :placeholder="
+                  language[config.currentLanguage].Environments
+                    .placeholderDescriptionEnvironment
+                "
+              />
+              <div class="form-text">
+                {{
+                  language[config.currentLanguage].Environments
+                    .environmentDescriptionHelp
+                }}
+              </div>
+            </div>
+            <div class="idelium-environment-form__field">
+              <label class="form-label" for="environment-code">
+                {{
+                  language[config.currentLanguage].Environments
+                    .environmentCodeLabel
+                }}
+              </label>
+              <input
+                id="environment-code"
+                v-model="environmentNameFile"
+                type="text"
+                class="form-control"
+                :placeholder="
+                  language[config.currentLanguage].Environments
+                    .placeholderFileName
+                "
+                :disabled="environmentDescription.length == 0"
+              />
+              <div class="form-text">
+                {{
+                  language[config.currentLanguage].Environments
+                    .environmentCodeHelp
+                }}
+              </div>
+            </div>
+            <div class="idelium-environment-form__field">
+              <label class="form-label" for="environment-template">
+                {{
+                  language[config.currentLanguage].Environments
+                    .environmentTypeLabel
+                }}
+              </label>
+              <select
+                id="environment-template"
+                class="form-select"
+                v-model="skeletonJsonType"
+                @change="changeSkeleton(skeletonJsonType)"
+              >
+                <option value="web">
+                  {{ language[config.currentLanguage].Environments.typeWeb }}
+                </option>
+                <option value="app">
+                  {{ language[config.currentLanguage].Environments.typeApp }}
+                </option>
+                <option value="webservice">
+                  {{
+                    language[config.currentLanguage].Environments
+                      .typeWebservice
+                  }}
+                </option>
+              </select>
+              <div class="form-text">
+                {{
+                  language[config.currentLanguage].Environments
+                    .environmentTypeHelp
+                }}
+              </div>
+            </div>
+          </div>
+
+          <div class="idelium-environment-form__builder">
+            <div class="idelium-environment-form__builder-header">
+              <div>
+                <span class="idelium-environment-form__eyebrow">
+                  {{
+                    language[config.currentLanguage].Environments.builderEyebrow
+                  }}
+                </span>
+                <h3>
+                  {{
+                    language[config.currentLanguage].Environments.builderTitle
+                  }}
+                </h3>
+              </div>
+              <span class="idelium-environment-form__badge">
+                {{ skeletonJsonType }}
+              </span>
+            </div>
+            <wizard
+              ref="wizard"
+              v-if="modeSelected == 'wizard'"
+              :json="jsonEnvironments"
+              :environmentType="skeletonJsonType"
+              v-on:changeWizardJson="changeWizardJson"
+            />
+            <json-editor
+              ref="editor"
+              class="idelium-environment-form__editor"
+              :onChange="changeJson"
+              :options="options"
+              :json="loadJsonToEdit"
+              v-if="modeSelected == 'json'"
+            />
+          </div>
+        </section>
         <!-- end content tab -->
       </div>
     </div>
@@ -317,6 +396,154 @@
 .buttons {
   margin-top: 35px;
 }
+
+.idelium-environment-form {
+  background:
+    radial-gradient(circle at top right, rgba(255, 122, 24, 0.16), transparent 28rem),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.045), transparent),
+    rgba(35, 38, 49, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 1rem;
+  box-shadow: 0 1.4rem 3rem rgba(0, 0, 0, 0.22);
+  color: #f8fafc;
+  margin: 0 auto;
+  padding: 1.25rem;
+  width: 100%;
+}
+
+.idelium-environment-form__header {
+  align-items: flex-start;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+
+.idelium-environment-form__eyebrow {
+  color: rgba(255, 255, 255, 0.62);
+  display: inline-block;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  margin-bottom: 0.35rem;
+  text-transform: uppercase;
+}
+
+.idelium-environment-form h2,
+.idelium-environment-form h3 {
+  color: #ffffff;
+  font-family: Arial, sans-serif;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.idelium-environment-form h2 {
+  font-size: 1rem;
+}
+
+.idelium-environment-form h3 {
+  font-size: 0.82rem;
+}
+
+.idelium-environment-form p {
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  margin: 0.45rem 0 0;
+  max-width: 48rem;
+}
+
+.idelium-environment-form__save {
+  align-items: center;
+  border-radius: 0.85rem;
+  display: inline-flex;
+  font-weight: 900;
+  gap: 0.45rem;
+  letter-spacing: 0.1em;
+  min-height: 2.65rem;
+  padding: 0.55rem 1rem;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.idelium-environment-form__grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 0.9fr) minmax(14rem, 0.7fr);
+  margin-bottom: 1.25rem;
+}
+
+.idelium-environment-form__field {
+  min-width: 0;
+}
+
+.idelium-environment-form .form-label {
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.72rem !important;
+  font-weight: 800;
+  letter-spacing: 0.12em !important;
+  margin-bottom: 0.35rem;
+  text-transform: uppercase;
+}
+
+.idelium-environment-form .form-text {
+  color: rgba(255, 255, 255, 0.56);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  margin-top: 0.45rem;
+}
+
+.idelium-environment-form__builder {
+  background: rgba(12, 15, 24, 0.34);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1rem;
+  padding: 1rem;
+}
+
+.idelium-environment-form__builder-header {
+  align-items: center;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.idelium-environment-form__badge {
+  background: rgba(255, 122, 24, 0.14);
+  border: 1px solid rgba(255, 122, 24, 0.34);
+  border-radius: 999px;
+  color: #ffb36f;
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  padding: 0.35rem 0.7rem;
+  text-transform: uppercase;
+}
+
+.idelium-environment-form__editor {
+  height: min(42rem, 58vh);
+}
+
+@media (max-width: 1100px) {
+  .idelium-environment-form__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .idelium-environment-form__header,
+  .idelium-environment-form__builder-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .idelium-environment-form__save {
+    justify-content: center;
+    width: 100%;
+  }
+}
 </style>
 
 <script>
@@ -409,6 +636,12 @@ export default {
     },
     isEnvironmentOrderTabDisabled() {
       return this.environmentsLoaded && this.listEnvironments.length === 0;
+    },
+    isEnvironmentSaveDisabled() {
+      return (
+        this.environmentDescription.length == 0 ||
+        this.environmentNameFile.length == 0
+      );
     },
   },
   watch: {

@@ -77,6 +77,24 @@ export default {
   Environments: {
     tabOrderEnvironments: "Ordinamento Ambienti",
     tabNewEnvironment: "Nuovo Ambiente",
+    formEyebrow: "Configurazione ambiente",
+    formTitle: "Crea ambiente",
+    formDescription:
+      "Definisci i metadati dell'ambiente, scegli il template runtime e completa la configurazione generata prima del salvataggio.",
+    environmentDescriptionLabel: "Descrizione",
+    environmentDescriptionHelp:
+      "Usa un nome chiaro che spieghi dove viene utilizzato questo ambiente.",
+    environmentCodeLabel: "Codice",
+    environmentCodeHelp:
+      "Usa un codice tecnico breve; verrà normalizzato prima del salvataggio.",
+    environmentTypeLabel: "Template runtime",
+    environmentTypeHelp:
+      "Scegli il template coerente con il runtime di automazione.",
+    builderEyebrow: "Builder configurazione",
+    builderTitle: "Parametri ambiente",
+    typeWeb: "Web",
+    typeApp: "App mobile",
+    typeWebservice: "Web service",
     placeholderDescriptionEnvironment: "Descrizione Ambiente",
     placeholderFileName: "Codice",
     btnSaveEnvironment: "Aggiungi Environment",
@@ -155,20 +173,28 @@ export default {
     },
     catalog: {
       compatibilityTitle: "Compatibilità",
+      groups: {
+        advanced: "Selenium avanzato",
+        appiumAdvanced: "Appium avanzato",
+        basic: "Step base",
+      },
       steps: {
         wait_for_next_step: {
           label: "Attendi una condizione",
           note: "Compatibile con le attese esplicite Selenium e con condizioni su URL e titolo pagina.",
         },
         selenium_command: {
+          group: "advanced",
           label: "Comando Selenium avanzato",
           note: "Copre navigazione browser, cookie, alert, finestre, script, upload file e shadow DOM supportati dal runtime CLI.",
         },
         selenium_actions: {
+          group: "advanced",
           label: "Catena azioni Selenium",
           note: "Usa definizioni JSON per interazioni pointer, tastiera e azioni utente composite.",
         },
         appium_mobile_command: {
+          group: "appiumAdvanced",
           label: "Comando mobile Appium",
           note: "Esegue comandi mobile Appium, inclusi quelli esposti dai plugin Appium installati.",
         },
@@ -318,6 +344,13 @@ export default {
     titleAddModal: "Aggiungi progetto",
     titleFirstAddModal: "Aggiungi il tuo primo progetto",
     titleModifyModal: "Modifica progetto",
+    formHelp:
+      "Crea un workspace progetto inserendo i campi gestiti da Idelium.",
+    placeholderName: "Codice o nome progetto",
+    placeholderDescription: "Descrivi lo scope del progetto",
+    projectNameHelp: "Usa un nome progetto breve e riconoscibile.",
+    projectDescriptionHelp: "Descrivi cosa contiene o valida questo progetto.",
+    projectIsDuplicated: "Esiste già un progetto con questo nome",
   },
   Tests: {
     tabTitleModify: "Modifica Test",
@@ -444,6 +477,22 @@ export default {
     btnModify: "modifica",
     confirmDeleteAccount: "Vuoi cancellare l'account ?",
     accountExist: "L'account già esiste",
+    formHelp: "Crea un account compilando solo i campi gestiti da Idelium.",
+    createFormHelp:
+      "Questa form crea l'account di accesso e assegna cliente e ruolo usati al primo accesso.",
+    modifyFormHelp:
+      "Questa form aggiorna solo i campi profilo account modificabili e salvati da Idelium.",
+    placeholderEmail: "utente@example.com",
+    placeholderName: "Nome completo",
+    placeholderPassword: "Password",
+    placeholderConfirmPassword: "Conferma password",
+    placeholderRole: "Seleziona un ruolo",
+    placeholderCostumer: "Seleziona un cliente",
+    emailHelp: "L'indirizzo email viene usato come account di accesso.",
+    nameHelp:
+      "Usa il nome visualizzato nelle liste account e nelle viste profilo.",
+    passwordHelp:
+      "Usa una password conforme alla policy configurata in Idelium.",
     modal: {
       titleModal: "Dettagli del account",
       modifyAccount: "Modifica account",

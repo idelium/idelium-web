@@ -35,10 +35,22 @@ describe("steps wizard Postman import", () => {
               Steps: {
                 catalog: {
                   compatibilityTitle: "Compatibility",
+                  groups: {
+                    advanced: "Advanced Selenium",
+                    basic: "Basic steps",
+                  },
                   steps: {
+                    open_browser: {
+                      label: "Open browser",
+                    },
                     selenium_command: {
+                      group: "advanced",
                       label: "Advanced Selenium command",
                       note: "Covers browser automation scenarios.",
+                    },
+                    selenium_actions: {
+                      group: "advanced",
+                      label: "Selenium action chain",
                     },
                   },
                   fields: {
@@ -88,10 +100,22 @@ describe("steps wizard Postman import", () => {
               Steps: {
                 catalog: {
                   compatibilityTitle: "Compatibilità",
+                  groups: {
+                    advanced: "Selenium avanzato",
+                    basic: "Step base",
+                  },
                   steps: {
+                    open_browser: {
+                      label: "Apri browser",
+                    },
                     selenium_command: {
+                      group: "advanced",
                       label: "Comando Selenium avanzato",
                       note: "Copre scenari di automazione browser.",
+                    },
+                    selenium_actions: {
+                      group: "advanced",
+                      label: "Catena azioni Selenium",
                     },
                   },
                   fields: {
@@ -224,5 +248,24 @@ describe("steps wizard Postman import", () => {
     );
     expect(step.name).toBe("selenium_command");
     expect(syntax.typeName).toBe("operation");
+  });
+
+  it("groups basic and advanced catalog options", () => {
+    const wrapper = mountWizard();
+    wrapper.vm.stepsType = [
+      { name: "open_browser", syntax: [] },
+      { name: "selenium_command", syntax: [] },
+      { name: "selenium_actions", syntax: [] },
+    ];
+
+    expect(wrapper.vm.showStepOptionGroup(wrapper.vm.stepsType[0])).toBe(true);
+    expect(wrapper.vm.stepOptionGroupLabel(wrapper.vm.stepsType[0])).toBe(
+      "Basic steps",
+    );
+    expect(wrapper.vm.showStepOptionGroup(wrapper.vm.stepsType[1])).toBe(true);
+    expect(wrapper.vm.stepOptionGroupLabel(wrapper.vm.stepsType[1])).toBe(
+      "Advanced Selenium",
+    );
+    expect(wrapper.vm.showStepOptionGroup(wrapper.vm.stepsType[2])).toBe(false);
   });
 });

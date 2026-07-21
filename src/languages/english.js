@@ -77,6 +77,24 @@ export default {
   Environments: {
     tabOrderEnvironments: "Sorting Environments",
     tabNewEnvironment: "New Environment",
+    formEyebrow: "Environment setup",
+    formTitle: "Create environment",
+    formDescription:
+      "Define the environment metadata, choose the runtime template, and complete the generated configuration before saving.",
+    environmentDescriptionLabel: "Description",
+    environmentDescriptionHelp:
+      "Use a clear name that explains where this environment is used.",
+    environmentCodeLabel: "Code",
+    environmentCodeHelp:
+      "Use a short technical code; it is normalized before being persisted.",
+    environmentTypeLabel: "Runtime template",
+    environmentTypeHelp:
+      "Choose the template that matches the automation runtime.",
+    builderEyebrow: "Configuration builder",
+    builderTitle: "Environment parameters",
+    typeWeb: "Web",
+    typeApp: "Mobile app",
+    typeWebservice: "Web service",
     placeholderDescriptionEnvironment: "Environment Description",
     placeholderFileName: "Code",
     btnSaveEnvironment: "Add Environment",
@@ -153,20 +171,28 @@ export default {
     },
     catalog: {
       compatibilityTitle: "Compatibility",
+      groups: {
+        advanced: "Advanced Selenium",
+        appiumAdvanced: "Advanced Appium",
+        basic: "Basic steps",
+      },
       steps: {
         wait_for_next_step: {
           label: "Wait for condition",
           note: "Compatible with Selenium explicit waits and URL/title wait conditions.",
         },
         selenium_command: {
+          group: "advanced",
           label: "Advanced Selenium command",
           note: "Covers browser navigation, cookies, alerts, windows, scripts, file upload, and shadow DOM scenarios supported by the CLI runtime.",
         },
         selenium_actions: {
+          group: "advanced",
           label: "Selenium action chain",
           note: "Use JSON action definitions for pointer, keyboard, and composite user interactions.",
         },
         appium_mobile_command: {
+          group: "appiumAdvanced",
           label: "Appium mobile command",
           note: "Runs Appium mobile commands, including commands exposed by installed Appium plugins.",
         },
@@ -305,17 +331,24 @@ export default {
     id: "#",
     project: "project",
     description: "description",
-    titleAlert: "Attenzione",
+    titleAlert: "Attention",
     btnCancel: "cancel",
     btnDelete: "delete",
     btnModify: "update",
     btnModalModifyProject: "modify project",
-    btnAddProject: "Add progetto",
+    btnAddProject: "Add project",
     textDelete:
       "Attention, by deleting the project you delete all the tests and the steps associated with it. Do you want to continue ?",
     titleAddModal: "Add project",
     titleModifyModal: "Modify project",
-    titleFirstAddModal: "Add your firstproject",
+    titleFirstAddModal: "Add your first project",
+    formHelp:
+      "Create a project workspace by entering the fields managed by Idelium.",
+    placeholderName: "Project code or name",
+    placeholderDescription: "Describe the project scope",
+    projectNameHelp: "Use a short, recognizable project name.",
+    projectDescriptionHelp: "Describe what this project contains or validates.",
+    projectIsDuplicated: "A project with this name already exists",
   },
   Tests: {
     tabTitleModify: "Modify Test",
@@ -327,7 +360,7 @@ export default {
     btnCancel: "Cancel",
     placeholderFilterStep: "search test",
     placeholderNameTest: " test",
-    placeholderDescriptionTest: "descrizone del test",
+    placeholderDescriptionTest: "Test description",
     steps: "Steps available",
     stepsToDo: "Selected Step",
     selectTest: "-- select a test --",
@@ -430,7 +463,7 @@ export default {
     confirmPassword: "confirm password",
   },
   Accounts: {
-    newAccount: "Nuovo Account",
+    newAccount: "New account",
     id: "#",
     name: "name",
     account: "account",
@@ -442,6 +475,22 @@ export default {
     btnModify: "modify",
     confirmDeleteAccount: "Do you want to delete this account ?",
     accountExist: "Account exist",
+    formHelp:
+      "Create an account by filling only the fields managed by Idelium.",
+    createFormHelp:
+      "This form creates the sign-in account and assigns the customer and role used at first access.",
+    modifyFormHelp:
+      "This form updates only the editable account profile fields saved by Idelium.",
+    placeholderEmail: "user@example.com",
+    placeholderName: "Full name",
+    placeholderPassword: "Password",
+    placeholderConfirmPassword: "Confirm password",
+    placeholderRole: "Select a role",
+    placeholderCostumer: "Select a customer",
+    emailHelp: "The email address is used as the sign-in account.",
+    nameHelp: "Use the display name shown in account lists and profile views.",
+    passwordHelp:
+      "Use a password that satisfies the configured Idelium password policy.",
     modal: {
       titleModal: "Account details",
       modifyAccount: "Modify account",

@@ -52,8 +52,29 @@ describe("environments component", () => {
                 duplicate: "Duplicate",
               },
               Environments: {
+                builderEyebrow: "Configuration builder",
+                builderTitle: "Environment parameters",
+                btnSaveEnvironment: "Add environment",
+                environmentCodeHelp:
+                  "Use a short technical code; it is normalized before being persisted.",
+                environmentCodeLabel: "Code",
+                environmentDescriptionHelp:
+                  "Use a clear name that explains where this environment is used.",
+                environmentDescriptionLabel: "Description",
+                environmentTypeHelp:
+                  "Choose the template that matches the automation runtime.",
+                environmentTypeLabel: "Runtime template",
+                formDescription:
+                  "Define the environment metadata, choose the runtime template, and complete the generated configuration before saving.",
+                formEyebrow: "Environment setup",
+                formTitle: "Create environment",
+                placeholderDescriptionEnvironment: "Environment description",
+                placeholderFileName: "Code",
                 tabOrderEnvironments: "Order Environments",
                 tabNewEnvironment: "New Environment",
+                typeApp: "Mobile app",
+                typeWeb: "Web",
+                typeWebservice: "Web service",
               },
             },
           },
@@ -98,5 +119,30 @@ describe("environments component", () => {
     expect(modal.hide).toHaveBeenCalled();
     wrapper.unmount();
     host.remove();
+  });
+
+  it("renders the new environment tab as an enterprise form", () => {
+    api.get.mockResolvedValue({ data: [{ id: 1, code: "dev" }] });
+    const wrapper = mountEnvironments({
+      $route: { name: "environments", params: { tab: "new" } },
+    });
+
+    expect(wrapper.find(".idelium-environment-form").exists()).toBe(true);
+    expect(wrapper.find(".idelium-environment-form__header h2").text()).toBe(
+      "Create environment",
+    );
+    expect(wrapper.find("label[for='environment-description']").text()).toBe(
+      "Description",
+    );
+    expect(wrapper.find("label[for='environment-code']").text()).toBe("Code");
+    expect(wrapper.find("label[for='environment-template']").text()).toBe(
+      "Runtime template",
+    );
+    expect(wrapper.find("#environment-template").classes()).toContain(
+      "form-select",
+    );
+    expect(wrapper.find(".idelium-environment-form__save").text()).toContain(
+      "Add environment",
+    );
   });
 });

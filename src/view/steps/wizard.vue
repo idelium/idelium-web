@@ -143,10 +143,32 @@
                       <v-select
                         :options="stepsType"
                         v-model="stepTypeSelected"
-                        class="costum"
+                        class="costum idelium-step-type-select"
                         style="float: left; min-width: 100%"
                         :get-option-label="stepOptionLabel"
-                      ></v-select>
+                      >
+                        <template #option="option">
+                          <div
+                            class="step-option-group"
+                            v-if="showStepOptionGroup(option)"
+                          >
+                            {{ stepOptionGroupLabel(option) }}
+                          </div>
+                          <div class="step-option-row">
+                            <span class="step-option-label">
+                              {{ stepOptionLabel(option) }}
+                            </span>
+                            <span class="step-option-technical">
+                              {{ option.name }}
+                            </span>
+                          </div>
+                        </template>
+                        <template #selected-option="option">
+                          <span class="step-option-label">
+                            {{ stepOptionLabel(option) }}
+                          </span>
+                        </template>
+                      </v-select>
                     </div>
                     <div class="col">
                       <button
@@ -439,6 +461,31 @@
   border-radius: 0.5rem;
   padding: 0.65rem 0.75rem;
 }
+.step-option-group {
+  color: var(--idelium-primary, #ff6b1a);
+  font-size: 0.64rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  margin: 0.25rem 0 0.4rem;
+  text-transform: uppercase;
+}
+.step-option-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+.step-option-label {
+  color: #f8fafc;
+  font-weight: 700;
+}
+.step-option-technical {
+  color: var(--idelium-text-muted, #b9bdc8);
+  font-family:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    "Courier New", monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+}
 .form-check-label {
   font-size: 10px !important;
 }
@@ -724,6 +771,23 @@ export default {
       if (option == null) return "";
       return (
         this.catalogTranslations().steps?.[option.name]?.label || option.name
+      );
+    },
+    stepOptionGroup(option) {
+      return this.catalogTranslations().steps?.[option.name]?.group || "basic";
+    },
+    stepOptionGroupLabel(option) {
+      const group = this.stepOptionGroup(option);
+      return this.catalogTranslations().groups?.[group] || group;
+    },
+    showStepOptionGroup(option) {
+      const index = this.stepsType.findIndex(
+        (step) => step.name == option.name,
+      );
+      if (index <= 0) return index == 0;
+      return (
+        this.stepOptionGroup(this.stepsType[index - 1]) !=
+        this.stepOptionGroup(option)
       );
     },
     syntaxLabel(syntax) {
