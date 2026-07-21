@@ -183,8 +183,12 @@
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
+  height: calc(100vh - 76px - 3rem);
+  height: calc(100dvh - 76px - 3rem);
   margin: 0 auto;
-  max-width: 1440px;
+  max-width: 100%;
+  min-height: 0;
+  overflow: hidden;
   width: 100%;
 }
 
@@ -195,6 +199,7 @@
     linear-gradient(135deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.025));
   border: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
+  flex: 0 0 auto;
   justify-content: space-between;
   padding: 1.35rem;
 }
@@ -231,6 +236,7 @@
 
 .testsperformed-summary {
   display: grid;
+  flex: 0 0 auto;
   gap: 1rem;
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
@@ -249,12 +255,17 @@
 
 .testsperformed-workspace {
   display: grid;
+  flex: 1 1 auto;
   gap: 1rem;
   grid-template-columns: minmax(16rem, 0.85fr) minmax(16rem, 0.95fr) minmax(24rem, 1.6fr);
+  min-height: 0;
+  overflow: hidden;
 }
 
 .testsperformed-panel {
-  min-height: 34rem;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
   overflow: hidden;
   padding: 1rem;
 }
@@ -284,7 +295,11 @@
 .testsperformed-test-grid {
   display: flex;
   flex-direction: column;
+  flex: 1 1 auto;
   gap: 0.65rem;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 0.25rem;
 }
 
 .testsperformed-item,
@@ -337,9 +352,7 @@
 }
 
 .testsperformed-test-grid {
-  max-height: 32rem;
-  overflow-y: auto;
-  padding-right: 0.25rem;
+  max-height: none;
 }
 
 .testsperformed-test-card {
@@ -388,14 +401,16 @@
   border-radius: 0.9rem;
   color: rgba(255, 255, 255, 0.58);
   display: flex;
+  flex: 1 1 auto;
   justify-content: center;
   min-height: 10rem;
+  overflow: hidden;
   padding: 1.25rem;
   text-align: center;
 }
 
 .testsperformed-empty-large {
-  min-height: 24rem;
+  min-height: 10rem;
 }
 
 .testsperformed-icon-button:disabled {
@@ -407,12 +422,25 @@
 }
 
 @media (max-width: 1180px) {
+  .testsperformed-page {
+    height: auto;
+    min-height: calc(100vh - 76px - 3rem);
+    min-height: calc(100dvh - 76px - 3rem);
+    overflow: visible;
+  }
+
   .testsperformed-workspace {
     grid-template-columns: 1fr;
+    overflow: visible;
   }
 
   .testsperformed-panel {
     min-height: auto;
+  }
+
+  .testsperformed-list,
+  .testsperformed-test-grid {
+    max-height: 24rem;
   }
 }
 

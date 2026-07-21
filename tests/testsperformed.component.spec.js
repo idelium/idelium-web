@@ -77,6 +77,8 @@ describe("tests performed component", () => {
 
     expect(wrapper.find(".testsperformed-hero").exists()).toBe(true);
     expect(wrapper.findAll(".testsperformed-metric")).toHaveLength(3);
+    expect(wrapper.find(".testsperformed-workspace").exists()).toBe(true);
+    expect(wrapper.findAll(".testsperformed-panel")).toHaveLength(3);
     expect(wrapper.findComponent({ name: "splitpanes" }).exists()).toBe(false);
     expect(wrapper.text()).toContain("Select a run first.");
   });
