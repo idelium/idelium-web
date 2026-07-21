@@ -223,13 +223,16 @@
 }
 .header-select {
   appearance: none;
-  background: rgba(255, 255, 255, 0.08);
+  background:
+    url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23f8fafc' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e")
+      right 0.75rem center / 0.72rem 0.72rem no-repeat,
+    rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 999px;
   color: #ffffff;
   font-size: 0.74rem !important;
   min-width: 8.5rem;
-  padding: 0.35rem 0.8rem;
+  padding: 0.35rem 2rem 0.35rem 0.8rem;
 }
 .header-select option {
   background: #191b24;

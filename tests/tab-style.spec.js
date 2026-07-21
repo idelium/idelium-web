@@ -21,4 +21,31 @@ describe("shared tab styling", () => {
     expect(styles).toContain(".modal .form-control");
     expect(styles).toContain("backdrop-filter: blur");
   });
+
+  it("renders native select controls with enterprise styling", () => {
+    const styles = readFileSync(customVarsPath, "utf8");
+
+    expect(styles).toContain("select.form-control");
+    expect(styles).toContain("appearance: none !important");
+    expect(styles).toContain("viewBox='0 0 16 16'");
+    expect(styles).toContain("select option");
+  });
+
+  it("renders vue-select controls with enterprise styling", () => {
+    const styles = readFileSync(customVarsPath, "utf8");
+
+    expect(styles).toContain(".vs__dropdown-toggle");
+    expect(styles).toContain(".vs__dropdown-menu");
+    expect(styles).toContain(".vs__dropdown-option--highlight");
+    expect(styles).toContain("Enterprise v-select");
+  });
+
+  it("renders the steps ordering grid with enterprise data-table styling", () => {
+    const styles = readFileSync(customVarsPath, "utf8");
+
+    expect(styles).toContain(".idelium-tabler-container .idelium-steps-grid");
+    expect(styles).toContain(".idelium-steps-grid__header");
+    expect(styles).toContain(".idelium-steps-grid__row:hover");
+    expect(styles).toContain(".idelium-steps-grid__link");
+  });
 });

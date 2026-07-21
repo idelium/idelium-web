@@ -37,8 +37,8 @@
         <div class="row">
           <div class="col-sm-1" />
           <div class="col">
-            <div class="paneColumn">
-                    <div class="row">
+            <div class="paneColumn idelium-steps-grid">
+                    <div class="row idelium-steps-grid__header">
                        <div class="col col col-lg-1">
                       {{ language[config.currentLanguage].Steps.colId }}
                        </div>
@@ -57,14 +57,14 @@
                   item-key="id"
                 >
                   <template #item="{ element }">
-                    <div class="row">
+                    <div class="row idelium-steps-grid__row">
                        <div class="col col-lg-1">
                         {{element.id}}
                         </div>
                        <div class="col col col-lg-4">
                         <button
                           type="button"
-                          class="btn btn-link btn-sm"
+                          class="btn btn-link btn-sm idelium-steps-grid__link"
                           v-on:click="getJson(element.id)"
                         >
                           {{ element.name }}
@@ -73,7 +73,7 @@
                        <div class="col col col-lg-4">
                         <button
                           type="button"
-                          class="btn btn-link btn-sm"
+                          class="btn btn-link btn-sm idelium-steps-grid__link"
                           v-on:click="getJson(element.id)"
                         >
                           {{ element.description }}

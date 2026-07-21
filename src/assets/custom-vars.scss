@@ -27,7 +27,13 @@ body {
 }
 
 .vs__dropdown-option {
-  color: black !important;
+  background: #1d202a !important;
+  color: #f8fafc !important;
+}
+
+.vs__dropdown-option--highlight {
+  background: linear-gradient(135deg, var(--idelium-primary), var(--idelium-primary-strong)) !important;
+  color: #111318 !important;
 }
 
 $font-stack: "Roboto Slab", serif;
@@ -323,6 +329,117 @@ $font-stack: "Roboto Slab", serif;
   border: 1px solid var(--idelium-border);
   border-radius: 1rem;
   padding: 0.9rem;
+}
+
+.idelium-tabler-container .idelium-steps-grid {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.01)),
+    rgba(17, 20, 31, 0.72);
+  border-color: rgba(255, 255, 255, 0.13);
+  box-shadow:
+    0 18px 48px rgba(0, 0, 0, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  overflow: hidden;
+  padding: 0;
+}
+
+.idelium-steps-grid__header,
+.idelium-steps-grid__row {
+  align-items: center;
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.idelium-steps-grid__header {
+  background:
+    linear-gradient(90deg, rgba(255, 122, 24, 0.12), transparent 42%),
+    rgba(255, 255, 255, 0.055);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  color: #f8f5f2;
+  font-family: "Arial", sans-serif;
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.22em;
+  min-height: 3rem;
+  text-transform: uppercase;
+}
+
+.idelium-steps-grid__header > [class*="col"],
+.idelium-steps-grid__row > [class*="col"] {
+  align-items: center;
+  display: flex;
+  min-height: 3rem;
+  padding: 0.7rem 0.85rem;
+}
+
+.idelium-steps-grid__header > [class*="col"]:first-child,
+.idelium-steps-grid__row > [class*="col"]:first-child {
+  justify-content: center;
+}
+
+.idelium-steps-grid__row {
+  background: rgba(255, 255, 255, 0.026);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.075);
+  color: #f0ece8;
+  transition:
+    background-color 0.16s ease,
+    box-shadow 0.16s ease,
+    transform 0.16s ease;
+}
+
+.idelium-steps-grid__row:nth-child(even) {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.idelium-steps-grid__row:hover {
+  background: rgba(255, 122, 24, 0.09);
+  box-shadow: inset 3px 0 0 var(--idelium-primary);
+  transform: translateX(2px);
+}
+
+.idelium-steps-grid__link {
+  color: #f7f4ef !important;
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  padding-left: 0;
+  text-align: left;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.idelium-steps-grid__link:hover,
+.idelium-steps-grid__link:focus-visible {
+  color: #ffffff !important;
+  text-decoration: underline;
+  text-decoration-color: var(--idelium-primary);
+  text-underline-offset: 0.28rem;
+}
+
+.idelium-steps-grid__row .idelium-action-icon {
+  filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.28));
+}
+
+.idelium-steps-grid + .btn {
+  margin-top: 1rem;
+}
+
+@media (max-width: 991.98px) {
+  .idelium-steps-grid__header {
+    display: none;
+  }
+
+  .idelium-steps-grid__row {
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 0.85rem;
+    margin: 0.65rem;
+    padding: 0.35rem;
+  }
+
+  .idelium-steps-grid__row > [class*="col"] {
+    justify-content: flex-start !important;
+    min-height: 2.4rem;
+  }
 }
 .costum th {
   color: #f4f0ec !important;
@@ -674,8 +791,35 @@ table > tr > td:first-child {
   min-height: 2.25rem;
 }
 .form-select,
+select.form-control,
 select {
-  border-radius: 0.75rem;
+  appearance: none !important;
+  background:
+    url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23f8fafc' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e")
+      right 0.85rem center / 0.78rem 0.78rem no-repeat,
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.035)),
+    #262934 !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  border-radius: 0.85rem !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    0 0.7rem 1.5rem rgba(0, 0, 0, 0.14);
+  color: #f8fafc !important;
+  min-height: 2.45rem;
+  padding-right: 2.35rem !important;
+}
+
+.form-select option,
+select.form-control option,
+select option {
+  background: #1d202a;
+  color: #f8fafc;
+}
+
+.form-select:hover,
+select.form-control:hover,
+select:hover {
+  border-color: rgba(255, 255, 255, 0.22) !important;
 }
 .form-control:focus,
 .form-select:focus,
@@ -695,13 +839,59 @@ select:focus {
   color: var(--idelium-text-muted) !important;
   opacity: 1;
 }
-/* v-select */
-.vs__search {
-  background-color: #fff;
-}
+/* Enterprise v-select */
 .vs__dropdown-toggle {
-  background: #fff;
-  border-radius: 0.75rem;
+  appearance: none !important;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.035)),
+    #262934 !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  border-radius: 0.85rem !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    0 0.7rem 1.5rem rgba(0, 0, 0, 0.14);
+  min-height: 2.45rem;
+}
+
+.vs--open .vs__dropdown-toggle,
+.vs__dropdown-toggle:focus-within {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.045)),
+    #262934 !important;
+  border-color: rgba(249, 128, 8, 0.72) !important;
+  box-shadow:
+    0 0 0 0.2rem rgba(249, 128, 8, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+}
+
+.vs__selected,
+.vs__search,
+.vs__search:focus {
+  background: transparent !important;
+  color: #f8fafc !important;
+}
+
+.vs__selected {
+  font-weight: 700;
+}
+
+.vs__actions {
+  padding-right: 0.65rem !important;
+}
+
+.vs__clear,
+.vs__open-indicator {
+  fill: #f8fafc !important;
+}
+
+.vs__dropdown-menu {
+  background: #1d202a !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  border-radius: 0.85rem !important;
+  box-shadow: 0 1rem 2.5rem rgba(0, 0, 0, 0.32) !important;
+  color: #f8fafc !important;
+  margin-top: 0.35rem !important;
+  overflow: hidden;
 }
 
 .paneColumn {
