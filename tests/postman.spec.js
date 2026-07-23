@@ -12,6 +12,7 @@ import {
 const labels = {
   id: "#",
   status: "status",
+  request: "request",
   method: "method",
   url: "url",
   assertions: "assertions",
@@ -26,15 +27,22 @@ describe("Postman web integration", () => {
     const [result] = parsePostmanResults(
       JSON.stringify([
         {
+          name: "GET Request",
           status: 200,
           method: "get",
-          url: "/users",
+          url: { raw: "https://example.test/users" },
           passed: true,
           assertions: [{ passed: true }],
         },
       ]),
     );
-    expect(result).toMatchObject({ status: 200, method: "GET", passed: true });
+    expect(result).toMatchObject({
+      name: "GET Request",
+      status: 200,
+      method: "GET",
+      url: "https://example.test/users",
+      passed: true,
+    });
     expect(statusVariant(result)).toBe("success");
   });
 
@@ -81,9 +89,22 @@ describe("Postman web integration", () => {
 
   it("renders results and emits the selected response", async () => {
     const results = parsePostmanResults([
-      { status: 500, method: "post", response: { error: true } },
+      {
+        name: "Create user",
+        status: 500,
+        method: "post",
+        url: {
+          protocol: "https",
+          host: ["example", "test"],
+          path: ["users"],
+          query: [{ key: "page", value: "1" }],
+        },
+        response: { error: true },
+      },
     ]);
     const wrapper = mount(PostmanResultTable, { props: { results, labels } });
+    expect(wrapper.text()).toContain("Create user");
+    expect(wrapper.text()).toContain("https://example.test/users?page=1");
     await wrapper.get("button").trigger("click");
     expect(wrapper.emitted("show-response")[0][0]).toEqual(results[0]);
     expect(formatPostmanResponse(results[0].response)).toContain(

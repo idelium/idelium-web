@@ -7,6 +7,7 @@
       <tr>
         <th scope="col">{{ labels.id }}</th>
         <th scope="col">{{ labels.status }}</th>
+        <th scope="col">{{ labels.request }}</th>
         <th scope="col">{{ labels.method }}</th>
         <th scope="col">{{ labels.url }}</th>
         <th scope="col">{{ labels.assertions }}</th>
@@ -23,8 +24,13 @@
             result.status
           }}</span>
         </td>
+        <td class="postman-request-cell">
+          <span :title="result.name">{{ result.name || "—" }}</span>
+        </td>
         <td>{{ result.method }}</td>
-        <td>{{ result.url }}</td>
+        <td class="postman-url-cell">
+          <span :title="result.url">{{ result.url || "—" }}</span>
+        </td>
         <td>{{ assertionSummary(result) }}</td>
         <td class="postman-diagnostic-cell">
           <span v-if="result.diagnostic" class="postman-diagnostic-message">
@@ -71,6 +77,33 @@ function assertionSummary(result) {
 .postman-diagnostic-cell {
   max-width: 34rem;
   white-space: normal;
+}
+
+.postman-request-cell {
+  max-width: 15rem;
+}
+
+.postman-url-cell {
+  max-width: 25rem;
+}
+
+.postman-request-cell span,
+.postman-url-cell span {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.postman-url-cell span {
+  color: #9fd3ff;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+  font-size: 0.74rem;
+  letter-spacing: 0.02em;
+  text-transform: none;
 }
 
 .postman-diagnostic-message {

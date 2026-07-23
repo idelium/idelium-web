@@ -18,7 +18,7 @@ export function parsePostmanResults(value) {
     name: entry.name || entry.requestName || "",
     status: Number(entry.status ?? entry.status_code ?? 0),
     method: String(entry.method || entry.request?.method || "").toUpperCase(),
-    url: entry.url || entry.request?.url || "",
+    url: normalizePostmanUrl(entry.url || entry.request?.url || ""),
     time: entry.time ?? entry.elapsed ?? null,
     passed:
       entry.passed !== false &&
@@ -27,6 +27,29 @@ export function parsePostmanResults(value) {
     diagnostic: firstFailedAssertionMessage(entry.assertions),
     response: entry.response ?? entry.body ?? null,
   }));
+}
+
+export function normalizePostmanUrl(value) {
+  if (!value) return "";
+  if (typeof value === "string") return value;
+  if (typeof value.raw === "string") return value.raw;
+  if (Array.isArray(value.path) && Array.isArray(value.host)) {
+    const protocol = value.protocol ? `${value.protocol}://` : "";
+    const host = value.host.join(".");
+    const path = value.path.join("/");
+    const query = Array.isArray(value.query)
+      ? value.query
+          .filter((entry) => entry?.key)
+          .map((entry) => {
+            const key = encodeURIComponent(entry.key);
+            const itemValue = entry.value == null ? "" : entry.value;
+            return `${key}=${encodeURIComponent(itemValue)}`;
+          })
+          .join("&")
+      : "";
+    return `${protocol}${host}${path ? `/${path}` : ""}${query ? `?${query}` : ""}`;
+  }
+  return String(value);
 }
 
 export function firstFailedAssertionMessage(assertions) {

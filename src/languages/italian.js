@@ -321,6 +321,7 @@ export default {
   Postman: {
     id: "#",
     status: "status",
+    request: "request",
     method: "method",
     url: "url",
     assertions: "asserzioni",
