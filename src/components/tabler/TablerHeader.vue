@@ -8,7 +8,10 @@
         :title="language[config.currentLanguage].Actions.toggleSidebar"
         v-on:click="sideBar()"
       >
-        <font-awesome-icon icon="bars" class="idelium-action-icon--navigation" />
+        <font-awesome-icon
+          icon="bars"
+          class="idelium-action-icon--navigation"
+        />
       </button>
       <img
         src="@/assets/idelium.png"
@@ -99,7 +102,10 @@
           :aria-label="language[config.currentLanguage].Actions.userMenu"
           :title="language[config.currentLanguage].Actions.userMenu"
         >
-          <font-awesome-icon icon="user-circle" class="idelium-action-icon--user" />
+          <font-awesome-icon
+            icon="user-circle"
+            class="idelium-action-icon--user"
+          />
         </button>
         <ul
           class="dropdown-menu dropdown-menu-end"
@@ -137,6 +143,7 @@
 <script>
 import apiClient from "@/services/apiClient";
 import { useSessionStore } from "@/stores/session";
+import { isProjectScopedRouteName } from "@/router/projectRoutes";
 import CountryFlag from "vue-country-flag-next";
 import LogoutConfirmModal from "@/components/shared/LogoutConfirmModal.vue";
 
@@ -169,10 +176,46 @@ export default {
   watch: {
     projectSelected() {
       this.session.selectProject(this.projectSelected);
+      this.syncProjectRouteFromSelection();
       this.refreshComponents(true);
+    },
+    "$route.params.projectId"() {
+      this.syncProjectSelectionFromRoute();
     },
   },
   methods: {
+    syncProjectSelectionFromRoute() {
+      const routeProjectId = this.$route.params?.projectId;
+      if (!routeProjectId || this.arrayProjects.length === 0) return;
+
+      const routeProject = this.arrayProjects.find(
+        (project) => String(project.id) === String(routeProjectId),
+      );
+      if (!routeProject) {
+        this.projectSelected = this.arrayProjects[0].id;
+        return;
+      }
+      if (String(this.projectSelected) === String(routeProject.id)) return;
+
+      this.projectSelected = routeProject.id;
+    },
+    syncProjectRouteFromSelection() {
+      if (!isProjectScopedRouteName(this.$route.name) || !this.projectSelected)
+        return;
+      if (
+        String(this.$route.params?.projectId) === String(this.projectSelected)
+      )
+        return;
+
+      this.$router.replace({
+        name: this.$route.name,
+        params: {
+          ...(this.$route.params || {}),
+          projectId: this.projectSelected,
+        },
+        query: this.$route.query,
+      });
+    },
     changeLang(lang) {
       this.config.currentLanguage = lang;
       localStorage.langSelected = lang;
@@ -257,6 +300,7 @@ export default {
           this.emitter.emit("showLoader", false);
           this.arrayProjects = response.data;
           this.session.setProjectAvailability(this.arrayProjects);
+          this.syncProjectSelectionFromRoute();
           if (this.projectSelected == null && this.arrayProjects.length > 0)
             this.projectSelected = this.arrayProjects[0].id;
         })
@@ -275,6 +319,7 @@ export default {
           this.emitter.emit("showLoader", false);
           this.arrayProjects = response.data.projects;
           this.session.setProjectAvailability(this.arrayProjects);
+          this.syncProjectSelectionFromRoute();
           if (this.projectSelected == null && this.arrayProjects.length > 0)
             this.projectSelected = this.arrayProjects[0].id;
           if (response.data.costumers)
@@ -320,7 +365,11 @@ export default {
   align-items: center;
   background:
     linear-gradient(180deg, rgba(15, 17, 26, 0.98), rgba(10, 12, 20, 0.96)),
-    radial-gradient(circle at 12% 0%, rgba(255, 122, 24, 0.08), transparent 18rem);
+    radial-gradient(
+      circle at 12% 0%,
+      rgba(255, 122, 24, 0.08),
+      transparent 18rem
+    );
   backdrop-filter: blur(18px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 0 18px 42px rgba(0, 0, 0, 0.28);
@@ -379,8 +428,11 @@ export default {
 
 .idelium-icon-button {
   align-items: center;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.035));
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.075),
+    rgba(255, 255, 255, 0.035)
+  );
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 0.95rem;
   box-shadow:
@@ -428,8 +480,11 @@ export default {
 }
 
 .idelium-context-field {
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.035));
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.07),
+    rgba(255, 255, 255, 0.035)
+  );
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 999px;
   box-shadow:

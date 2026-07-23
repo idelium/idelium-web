@@ -9,7 +9,10 @@
         aria-controls="nav-tabOrderSteps"
         :aria-selected="isActiveTab('order')"
         :disabled="isStepOrderTabDisabled"
-        v-on:click="openTab('order'); getSteps()"
+        v-on:click="
+          openTab('order');
+          getSteps();
+        "
       >
         {{ language[config.currentLanguage].Steps.tabOrderSteps }}
       </button>
@@ -38,87 +41,91 @@
           <div class="col-sm-1" />
           <div class="col">
             <div class="paneColumn idelium-steps-grid">
-                    <div class="row idelium-steps-grid__header">
-                       <div class="col col col-lg-1">
-                      {{ language[config.currentLanguage].Steps.colId }}
-                       </div>
-                       <div class="col col col-lg-4">
-                      {{ language[config.currentLanguage].Steps.colName }}
-                       </div>
-                       <div class="col col col-lg-4">
-                      {{ language[config.currentLanguage].Steps.colDescription }}
-                       </div>
-                       <div class="col col-lg-3"></div>
+              <div class="row idelium-steps-grid__header">
+                <div class="col col col-lg-1">
+                  {{ language[config.currentLanguage].Steps.colId }}
+                </div>
+                <div class="col col col-lg-4">
+                  {{ language[config.currentLanguage].Steps.colName }}
+                </div>
+                <div class="col col col-lg-4">
+                  {{ language[config.currentLanguage].Steps.colDescription }}
+                </div>
+                <div class="col col-lg-3"></div>
+              </div>
+              <draggable
+                v-model="listSteps"
+                @change="moveElement"
+                :component-data="{ name: 'fade' }"
+                item-key="id"
+              >
+                <template #item="{ element }">
+                  <div class="row idelium-steps-grid__row">
+                    <div class="col col-lg-1">
+                      {{ element.id }}
                     </div>
-                <draggable
-                  v-model="listSteps"
-                  @change="moveElement"
-                  :component-data="{ name: 'fade' }"
-                  item-key="id"
-                >
-                  <template #item="{ element }">
-                    <div class="row idelium-steps-grid__row">
-                       <div class="col col-lg-1">
-                        {{element.id}}
-                        </div>
-                       <div class="col col col-lg-4">
-                        <button
-                          type="button"
-                          class="btn btn-link btn-sm idelium-steps-grid__link"
-                          v-on:click="getJson(element.id)"
-                        >
-                          {{ element.name }}
-                        </button>
-                       </div>
-                       <div class="col col col-lg-4">
-                        <button
-                          type="button"
-                          class="btn btn-link btn-sm idelium-steps-grid__link"
-                          v-on:click="getJson(element.id)"
-                        >
-                          {{ element.description }}
-                        </button>
-                       </div>
-                       <div class="col col-lg-1">
-                        <span
-                          id="clone"
-                          class="idelium-action-icon--duplicate"
-                          v-on:click="duplicateStep(element)"
-                          :title="language[config.currentLanguage].Actions.duplicate"
-                          role="button"
-                          style="cursor: pointer"
-                          ><font-awesome-icon
-                            icon="clone"
-                            class="idelium-action-icon idelium-action-icon--duplicate"
-                        /></span>
-                       </div>
-                       <div class="col col-lg-1">
-                        <span
-                          class="idelium-action-icon--download"
-                          v-on:click="downloadStep(element)"
-                          :title="language[config.currentLanguage].Actions.download"
-                          role="button"
-                          style="cursor: pointer"
-                          ><font-awesome-icon
-                            icon="download"
-                            class="idelium-action-icon idelium-action-icon--download"
-                        /></span>
-                       </div>
-                       <div class="col col-lg-1">
-                        <span
-                          class="idelium-action-icon--delete"
-                          v-on:click="deleteStep(element)"
-                          :title="language[config.currentLanguage].Actions.delete"
-                          role="button"
-                          style="cursor: pointer"
-                          ><font-awesome-icon
-                            icon="trash"
-                            class="idelium-action-icon idelium-action-icon--delete"
-                        /></span>
-                       </div>
+                    <div class="col col col-lg-4">
+                      <button
+                        type="button"
+                        class="btn btn-link btn-sm idelium-steps-grid__link"
+                        v-on:click="getJson(element.id)"
+                      >
+                        {{ element.name }}
+                      </button>
                     </div>
-                  </template>
-                </draggable>
+                    <div class="col col col-lg-4">
+                      <button
+                        type="button"
+                        class="btn btn-link btn-sm idelium-steps-grid__link"
+                        v-on:click="getJson(element.id)"
+                      >
+                        {{ element.description }}
+                      </button>
+                    </div>
+                    <div class="col col-lg-1">
+                      <span
+                        id="clone"
+                        class="idelium-action-icon--duplicate"
+                        v-on:click="duplicateStep(element)"
+                        :title="
+                          language[config.currentLanguage].Actions.duplicate
+                        "
+                        role="button"
+                        style="cursor: pointer"
+                        ><font-awesome-icon
+                          icon="clone"
+                          class="idelium-action-icon idelium-action-icon--duplicate"
+                      /></span>
+                    </div>
+                    <div class="col col-lg-1">
+                      <span
+                        class="idelium-action-icon--download"
+                        v-on:click="downloadStep(element)"
+                        :title="
+                          language[config.currentLanguage].Actions.download
+                        "
+                        role="button"
+                        style="cursor: pointer"
+                        ><font-awesome-icon
+                          icon="download"
+                          class="idelium-action-icon idelium-action-icon--download"
+                      /></span>
+                    </div>
+                    <div class="col col-lg-1">
+                      <span
+                        class="idelium-action-icon--delete"
+                        v-on:click="deleteStep(element)"
+                        :title="language[config.currentLanguage].Actions.delete"
+                        role="button"
+                        style="cursor: pointer"
+                        ><font-awesome-icon
+                          icon="trash"
+                          class="idelium-action-icon idelium-action-icon--delete"
+                      /></span>
+                    </div>
+                  </div>
+                </template>
+              </draggable>
             </div>
             <button
               type="button"
@@ -144,8 +151,15 @@
         <!-- start tabOrderSteps tab -->
         <div class="row">
           <div class="col-sm-2">
-            <select v-model="modeSelected" class="form-select form-select-sm form-control">
-              <option v-for="item in modeOptions" v-bind:key="item" :value="item.value">
+            <select
+              v-model="modeSelected"
+              class="form-select form-select-sm form-control"
+            >
+              <option
+                v-for="item in modeOptions"
+                v-bind:key="item"
+                :value="item.value"
+              >
                 {{ item.text }}
               </option>
             </select>
@@ -155,7 +169,10 @@
               v-model="stepDescription"
               type="text"
               class="form-control form-control-sm"
-              :placeholder="language[config.currentLanguage].Steps.placeholderDescriptionStep"
+              :placeholder="
+                language[config.currentLanguage].Steps
+                  .placeholderDescriptionStep
+              "
             />
           </div>
           <!--div class="col">
@@ -175,7 +192,9 @@
               size="sm"
               style="float: right"
               v-on:click="saveStep()"
-              :disabled="stepDescription.length == 0 || stepNameFile.length == 0"
+              :disabled="
+                stepDescription.length == 0 || stepNameFile.length == 0
+              "
             >
               {{ language[config.currentLanguage].Steps.btnSaveStep }}
             </button>
@@ -214,8 +233,8 @@
           <div class="modal-header">
             <h5 class="modal-title" id="exampleModalLabel">
               {{
-                language[config.currentLanguage].Platforms.ManagePlatform.modalAddPlatform
-                  .modalTitle
+                language[config.currentLanguage].Platforms.ManagePlatform
+                  .modalAddPlatform.modalTitle
               }}
             </h5>
             <button
@@ -229,7 +248,11 @@
             <p />
             <div class="col-sm-2">
               <select v-model="modeEditSelected" class="form-control">
-                <option v-for="item in modeOptions" v-bind:key="item" :value="item.value">
+                <option
+                  v-for="item in modeOptions"
+                  v-bind:key="item"
+                  :value="item.value"
+                >
                   {{ item.text }}
                 </option>
               </select>
@@ -239,7 +262,10 @@
                 v-model="stepEditDescription"
                 type="text"
                 class="form-control"
-                :placeholder="language[config.currentLanguage].Steps.placeholderDescriptionStep"
+                :placeholder="
+                  language[config.currentLanguage].Steps
+                    .placeholderDescriptionStep
+                "
               />
             </div>
             <div class="col">
@@ -247,7 +273,9 @@
                 v-model="stepEditNameFile"
                 type="text"
                 class="form-control"
-                :placeholder="language[config.currentLanguage].Steps.placeholderFileName"
+                :placeholder="
+                  language[config.currentLanguage].Steps.placeholderFileName
+                "
                 v-on:keypress="isLetter($event, true)"
                 :disabled="stepEditDescription.length == 0"
               />
@@ -344,34 +372,35 @@
 </style>
 
 <script>
-import apiClient from '@/services/apiClient'
-import { getSelectedProjectId } from '@/stores/session'
-import { buildStepPayload } from '@/domain/workflowPayloads'
-import { Modal } from 'bootstrap'
+import apiClient from "@/services/apiClient";
+import { getSelectedProjectId } from "@/stores/session";
+import { buildStepPayload } from "@/domain/workflowPayloads";
+import { Modal } from "bootstrap";
 
-import draggable from 'vuedraggable'
-import JsonEditor from '../components/JsonEditor.vue'
-import wizard from './steps/wizard.vue'
-import download from '@/shared/download'
-import { routableTabs } from '@/shared/routableTabs'
+import draggable from "vuedraggable";
+import JsonEditor from "../components/JsonEditor.vue";
+import wizard from "./steps/wizard.vue";
+import download from "@/shared/download";
+import { routableTabs } from "@/shared/routableTabs";
+import { normalizeEditableStepConfig } from "@/domain/stepConfig";
 
 let templateJson = {
-  name: '<nome step>',
+  name: "<nome step>",
   failedExit: true,
   attachScreenshot: true,
   steps: [
     {
-      stepType: '',
-      xpath: '',
-      note: ''
-    }
-  ]
-}
+      stepType: "",
+      xpath: "",
+      note: "",
+    },
+  ],
+};
 
 export default {
-  name: 'StepsComponent',
+  name: "StepsComponent",
   inheritAttrs: false,
-  mixins: [routableTabs('order', ['order', 'new'])],
+  mixins: [routableTabs("order", ["order", "new"])],
   data: () => {
     return {
       enabled: true,
@@ -384,266 +413,313 @@ export default {
       jsonResumeSteps: null,
       resumeJson: null,
       jsonResumeNameSelected: null,
+      routeStepIdOpened: null,
       btnSaveEnable: false,
       idResume: null,
       options: {
-        mode: 'code',
-        modes: ['tree', 'code']
+        mode: "code",
+        modes: ["tree", "code"],
       },
       modeOptions: [
-        { text: 'wizard', value: 'wizard' },
-        { text: 'json editor', value: 'json' }
+        { text: "wizard", value: "wizard" },
+        { text: "json editor", value: "json" },
       ],
-      modeSelected: 'wizard',
-      modeEditSelected: 'wizard',
-      stepDescription: '',
-      stepNameFile: '',
-      stepEditDescription: '',
-      stepEditNameFile: '',
-      loadJsonToEdit: '',
-      loadEditJsonToEdit: '',
+      modeSelected: "wizard",
+      modeEditSelected: "wizard",
+      stepDescription: "",
+      stepNameFile: "",
+      stepEditDescription: "",
+      stepEditNameFile: "",
+      loadJsonToEdit: "",
+      loadEditJsonToEdit: "",
       defaultJson: templateJson,
       isLetterCheck: false,
       btnSaveOrderDisabled: true,
-      isLetterEditCheck: false
-    }
+      isLetterEditCheck: false,
+    };
   },
   options: {},
   computed: {
     strippedContent() {
-      let regex = /(<([^>]+)>)/gi
-      return this.comment.content.rendered.replace(regex, '')
+      let regex = /(<([^>]+)>)/gi;
+      return this.comment.content.rendered.replace(regex, "");
     },
     draggingInfo() {
-      return this.dragging ? 'under drag' : ''
+      return this.dragging ? "under drag" : "";
     },
     isStepOrderTabDisabled() {
-      return this.stepsLoaded && this.listSteps.length === 0
-    }
+      return this.stepsLoaded && this.listSteps.length === 0;
+    },
   },
   watch: {
     modeSelected() {
-      if (this.modeSelected == 'wizard') {
-        this.syncWizardJson()
+      if (this.modeSelected == "wizard") {
+        this.syncWizardJson();
       }
     },
     modeEditSelected() {
-      if (this.modeSelected == 'wizard') {
-        this.syncEditWizardJson()
+      if (this.modeSelected == "wizard") {
+        this.syncEditWizardJson();
       }
     },
     jsonSteps() {
-      if (this.jsonSteps != null) this.stepDescription = this.jsonSteps.name
+      if (this.jsonSteps != null) this.stepDescription = this.jsonSteps.name;
     },
     jsonEditSteps() {
-      if (this.jsonEditSteps != null) this.stepEditDescription = this.jsonEditSteps.name
+      if (this.jsonEditSteps != null)
+        this.stepEditDescription = this.jsonEditSteps.name;
     },
     stepDescription() {
       if (this.isLetterCheck == false) {
-        let stringToReplace = this.stepDescription.replace(/[^\w\s]/gi, '').toLowerCase()
-        this.stepNameFile = stringToReplace.replace(/ /g, '_')
+        let stringToReplace = this.stepDescription
+          .replace(/[^\w\s]/gi, "")
+          .toLowerCase();
+        this.stepNameFile = stringToReplace.replace(/ /g, "_");
       }
     },
     $route() {
-      this.$forceUpdate()
-    }
+      this.openRoutedStepForEdit();
+      this.$forceUpdate();
+    },
   },
   mounted() {
-    this.getSteps()
-    this.loadJsonToEdit = this.defaultJson
-    this.modalElem = new Modal(document.getElementById('myModal'))
+    this.getSteps();
+    this.loadJsonToEdit = this.defaultJson;
+    this.modalElem = new Modal(document.getElementById("myModal"));
+    this.openRoutedStepForEdit();
   },
   beforeUnmount() {
-    this.emitter.emit('showLoader', false)
+    this.emitter.emit("showLoader", false);
   },
   created() {
-    this.emitter.on('refreshStep', (msg) => {
-      if (msg == true) this.getSteps()
-      else this.$forceUpdate()
-    })
+    this.emitter.on("refreshStep", (msg) => {
+      if (msg == true) this.getSteps();
+      else this.$forceUpdate();
+    });
   },
   methods: {
+    currentProjectId() {
+      return this.$route?.params?.projectId || getSelectedProjectId();
+    },
+    routedStepId() {
+      return this.$route?.query?.stepId || this.$route?.query?.id || null;
+    },
+    openRoutedStepForEdit() {
+      const stepId = this.routedStepId();
+      if (stepId == null || this.routeStepIdOpened === String(stepId)) return;
+
+      this.routeStepIdOpened = String(stepId);
+      this.getJson(stepId);
+    },
     redirectEmptySteps() {
-      if (this.isStepOrderTabDisabled && this.isActiveTab('order')) {
-        this.openTab('new')
+      if (this.isStepOrderTabDisabled && this.isActiveTab("order")) {
+        this.openTab("new");
       }
     },
     moveElement(e) {
-      this.btnSaveOrderDisabled = false
+      this.btnSaveOrderDisabled = false;
     },
     syncWizardJson() {
       setTimeout(
         function () {
-          this.$refs.wizard.changeJsonEditor()
+          this.$refs.wizard.changeJsonEditor();
         }.bind(this),
-        100
-      )
+        100,
+      );
     },
     syncEditWizardJson() {
       setTimeout(
         function () {
-          this.$refs.wizardEdit.changeJsonEditor()
+          this.$refs.wizardEdit.changeJsonEditor();
         }.bind(this),
-        500
-      )
+        500,
+      );
     },
     setStepDescription(e) {
-      this.stepDescription = e
+      this.stepDescription = e;
     },
     setEditStepDescription() {
-      this.stepEditDescription
+      this.stepEditDescription;
     },
     isLetter(e, isEdit = false) {
-      let char = String.fromCharCode(e.keyCode) // Get the character
-      if (/^[A-Za-z]+$/.test(char) || char == '_' || char == '-') return true
+      let char = String.fromCharCode(e.keyCode); // Get the character
+      if (/^[A-Za-z]+$/.test(char) || char == "_" || char == "-") return true;
       // Match with regex
-      else e.preventDefault() // If not match, don't add to input text
-      if (isEdit == false) this.isLetterCheck = true
-      else this.isLetterEditCheck = false
+      else e.preventDefault(); // If not match, don't add to input text
+      if (isEdit == false) this.isLetterCheck = true;
+      else this.isLetterEditCheck = false;
     },
     deleteStep(element) {
       return this.$showConfirm({
-        message: this.language[this.config.currentLanguage].Steps.confirmationDelete + element.name,
-        variant: 'warning'
+        message:
+          this.language[this.config.currentLanguage].Steps.confirmationDelete +
+          element.name,
+        variant: "warning",
       }).then((confirmed) => {
-        if (confirmed) this.deleteAction(element)
-      })
+        if (confirmed) this.deleteAction(element);
+      });
     },
     deleteAction(element) {
       apiClient
         .delete(
           this.config.serviceBaseUrl +
             this.config.url.steps +
-            '/' +
-            getSelectedProjectId() +
-            '/' +
+            "/" +
+            this.currentProjectId() +
+            "/" +
             element.id,
           {
-            headers: this.setHeaders()
-          }
+            headers: this.setHeaders(),
+          },
         )
         .then((response) => {
-          this.btnSaveEnable = false
-          const index = this.listSteps.findIndex((item) => item.id == element.id)
-          this.listSteps.splice(index, 1)
-          this.stepsLoaded = true
-          this.redirectEmptySteps()
-          this.modalElem.hide()
+          this.btnSaveEnable = false;
+          const index = this.listSteps.findIndex(
+            (item) => item.id == element.id,
+          );
+          this.listSteps.splice(index, 1);
+          this.stepsLoaded = true;
+          this.redirectEmptySteps();
+          this.modalElem.hide();
         })
         .catch((e) => {
-          this.Logout(this, e)
-        })
+          this.Logout(this, e);
+        });
     },
     duplicateStep(element) {
-      this.getJson(element.id, element.name, element.description, true, false)
+      this.getJson(element.id, element.name, element.description, true, false);
     },
     downloadStep(element) {
-      this.getJson(element.id, element.name, element.description, false, true)
+      this.getJson(element.id, element.name, element.description, false, true);
     },
-    getJson(id, name = null, stepDescription = null, isDuplicate = false, isDownload = false) {
-      this.emitter.emit('showLoader', true)
+    getJson(
+      id,
+      name = null,
+      stepDescription = null,
+      isDuplicate = false,
+      isDownload = false,
+    ) {
+      this.emitter.emit("showLoader", true);
       apiClient
         .get(
           this.config.serviceBaseUrl +
             this.config.url.steps +
-            '/' +
-            getSelectedProjectId() +
-            '/' +
+            "/" +
+            this.currentProjectId() +
+            "/" +
             id,
           {
-            headers: this.setHeaders()
-          }
+            headers: this.setHeaders(),
+          },
         )
         .then((response) => {
-          this.emitter.emit('showLoader', false)
+          this.emitter.emit("showLoader", false);
           if (isDuplicate == false) {
             if (isDownload == false) {
-              this.jsonResumeNameSelected = name
-              this.stepEditDescription = response.data.description
-              this.stepEditNameFile = response.data.name
-              this.resumeJson = JSON.parse(response.data.config)
-              this.jsonEditSteps = this.resumeJson
-              this.idResume = id
-              this.modalElem.show()
-              this.syncEditWizardJson()
+              this.jsonResumeNameSelected = name;
+              this.stepEditDescription = response.data.description;
+              this.stepEditNameFile = response.data.name;
+              this.resumeJson = normalizeEditableStepConfig(
+                response.data.config,
+                response.data.description || response.data.name,
+              );
+              this.jsonEditSteps = this.resumeJson;
+              this.jsonResumeSteps = this.resumeJson;
+              this.idResume = id;
+              this.modalElem.show();
+              this.syncEditWizardJson();
             } else {
-              download.file(response.data.name + '.json', response.data.config, 'application/json')
+              download.file(
+                response.data.name + ".json",
+                response.data.config,
+                "application/json",
+              );
             }
           } else {
-            this.openTab('new')
-            this.loadJsonToEdit = JSON.parse(response.data.config)
-            this.jsonSteps = this.loadJsonToEdit
-            this.stepDescription = stepDescription + '(copy)'
-            this.stepNameFile = name + '_copy'
-            this.idResume = null
-            this.syncWizardJson()
+            this.openTab("new");
+            this.loadJsonToEdit = JSON.parse(response.data.config);
+            this.jsonSteps = this.loadJsonToEdit;
+            this.stepDescription = stepDescription + "(copy)";
+            this.stepNameFile = name + "_copy";
+            this.idResume = null;
+            this.syncWizardJson();
           }
         })
         .catch((e) => {
-          this.Logout(this, e)
-        })
+          this.Logout(this, e);
+        });
     },
     getSteps() {
-      this.emitter.emit('showLoader', true)
-      if (getSelectedProjectId() === null || getSelectedProjectId() === undefined) {
-        this.emitter.emit('showLoader', false)
-        return false
+      this.emitter.emit("showLoader", true);
+      if (
+        this.currentProjectId() === null ||
+        this.currentProjectId() === undefined
+      ) {
+        this.emitter.emit("showLoader", false);
+        return false;
       }
       apiClient
         .get(
-          this.config.serviceBaseUrl + this.config.url.steps + '/' + getSelectedProjectId(),
+          this.config.serviceBaseUrl +
+            this.config.url.steps +
+            "/" +
+            this.currentProjectId(),
           {
-            headers: this.setHeaders()
-          }
+            headers: this.setHeaders(),
+          },
         )
         .then((response) => {
-          this.emitter.emit('showLoader', false)
-          this.listSteps = response.data
-          this.stepsLoaded = true
-          this.redirectEmptySteps()
+          this.emitter.emit("showLoader", false);
+          this.listSteps = response.data;
+          this.stepsLoaded = true;
+          this.redirectEmptySteps();
         })
         .catch((e) => {
-          this.Logout(this, e)
-          this.error = e
-        })
+          this.Logout(this, e);
+          this.error = e;
+        });
     },
     changeJson(json) {
-      this.jsonSteps = json
+      this.jsonSteps = json;
     },
     syncJson: function (json) {
-      this.loadJsonToEdit = json
-      this.jsonSteps = json
+      this.loadJsonToEdit = json;
+      this.jsonSteps = json;
     },
     syncEditJson: function (json) {
-      this.loadEditJsonToEdit = json
-      this.jsonEditSteps = json
-      this.jsonResumeSteps = json
-      this.btnSaveEnable = true
+      this.loadEditJsonToEdit = json;
+      this.jsonEditSteps = json;
+      this.jsonResumeSteps = json;
+      this.btnSaveEnable = true;
     },
     changeJsonResume: function (json) {
-      this.jsonResumeSteps = json
-      this.btnSaveEnable = true
+      this.jsonResumeSteps = json;
+      this.btnSaveEnable = true;
     },
     saveStep() {
-      let regex = RegExp('[-*#+=;:\/,~ \.\$ ]+')
+      let regex = RegExp("[-*#+=;:\/,~ \.\$ ]+");
       if (this.jsonSteps == null) {
-        this.jsonSteps = this.defaultJson
+        this.jsonSteps = this.defaultJson;
       }
       if (this.stepDescription.length == 0 || this.stepNameFile.length == 0) {
         this.$showAlert({
-          message: this.language[this.config.currentLanguage].Steps.errorMessageInputEmpty,
-          variant: 'warning'
-        })
-        return false
+          message:
+            this.language[this.config.currentLanguage].Steps
+              .errorMessageInputEmpty,
+          variant: "warning",
+        });
+        return false;
       }
       if (regex.test(this.stepNameFile)) {
         this.$showAlert({
-          message: this.language[this.config.currentLanguage].Steps.errorCharactersError,
-          variant: 'warning'
-        })
-        return false
+          message:
+            this.language[this.config.currentLanguage].Steps
+              .errorCharactersError,
+          variant: "warning",
+        });
+        return false;
       }
-      this.emitter.emit('showLoader', true)
+      this.emitter.emit("showLoader", true);
       apiClient
         .post(
           this.config.serviceBaseUrl + this.config.url.steps,
@@ -651,89 +727,89 @@ export default {
             description: this.stepDescription,
             name: this.stepNameFile,
             config: this.jsonSteps,
-            projectId: getSelectedProjectId()
+            projectId: this.currentProjectId(),
           }),
           {
-            headers: this.setHeaders()
-          }
+            headers: this.setHeaders(),
+          },
         )
         .then((response) => {
           this.listSteps.push({
             id: response.data.id,
             name: this.stepNameFile.toLowerCase(),
-            description: this.stepDescription.toLowerCase()
-          })
-          this.stepsLoaded = true
-          this.stepDescription = ''
-          this.stepNameFile = ''
-          this.jsonSteps = null
+            description: this.stepDescription.toLowerCase(),
+          });
+          this.stepsLoaded = true;
+          this.stepDescription = "";
+          this.stepNameFile = "";
+          this.jsonSteps = null;
           //this.saveOrderSteps()
-          this.isLetterCheck = false
-          this.loadJsonToEdit = this.defaultJson
-          this.emitter.emit('showLoader', false)
+          this.isLetterCheck = false;
+          this.loadJsonToEdit = this.defaultJson;
+          this.emitter.emit("showLoader", false);
         })
         .catch((e) => {
-          this.Logout(this, e)
-          this.error = e
-        })
+          this.Logout(this, e);
+          this.error = e;
+        });
     },
     saveOrderSteps() {
-      this.emitter.emit('showLoader', true)
+      this.emitter.emit("showLoader", true);
       apiClient
         .post(
           this.config.serviceBaseUrl +
             this.config.url.steps +
-            '/' +
-            getSelectedProjectId() +
-            '/updateorder',
+            "/" +
+            this.currentProjectId() +
+            "/updateorder",
           {
-            order: this.listSteps
+            order: this.listSteps,
           },
           {
-            headers: this.setHeaders()
-          }
+            headers: this.setHeaders(),
+          },
         )
         .then((response) => {
-          this.emitter.emit('showLoader', false)
-          this.btnSaveOrderDisabled = true
+          this.emitter.emit("showLoader", false);
+          this.btnSaveOrderDisabled = true;
         })
         .catch((e) => {
-          this.Logout(this, e)
-        })
+          this.Logout(this, e);
+        });
     },
     updateStep() {
-      this.emitter.emit('showLoader', true)
+      this.emitter.emit("showLoader", true);
       apiClient
         .put(
           this.config.serviceBaseUrl +
             this.config.url.steps +
-            '/' +
-            getSelectedProjectId() +
-            '/' +
+            "/" +
+            this.currentProjectId() +
+            "/" +
             this.idResume,
           {
             description: this.stepEditDescription.toLowerCase(),
             name: this.stepEditNameFile.toLowerCase(),
-            config: JSON.stringify(this.jsonResumeSteps)
+            config: JSON.stringify(this.jsonResumeSteps),
           },
           {
-            headers: this.setHeaders()
-          }
+            headers: this.setHeaders(),
+          },
         )
         .then((response) => {
-          this.btnSaveEnable = false
-          this.modalElem.hide()
-          this.listSteps = response.data
-          this.stepsLoaded = true
-          this.emitter.emit('showLoader', false)
+          this.btnSaveEnable = false;
+          this.modalElem.hide();
+          this.listSteps = response.data;
+          this.stepsLoaded = true;
+          this.emitter.emit("showLoader", false);
         })
-        .catch()
-    }
+        .catch();
+    },
   },
   components: {
     draggable,
     JsonEditor,
-    wizard
-  }
-}
+    wizard,
+  },
+};
 </script>

@@ -37,6 +37,11 @@
 <script>
 import apiClient from "@/services/apiClient";
 import { getSelectedProjectId } from "@/stores/session";
+import {
+  isProjectScopedRouteName,
+  selectedProjectPath,
+  selectedProjectRoute,
+} from "@/router/projectRoutes";
 
 export default {
   name: "TablerSidebar",
@@ -59,19 +64,30 @@ export default {
   },
   methods: {
     isActiveMenuItem(link) {
-      const itemPath = "/" + link;
+      const projectId = getSelectedProjectId();
+      const itemPath = selectedProjectPath(link, projectId);
       const currentPath = this.$router.currentRoute.value.path;
 
-      return currentPath === itemPath || currentPath.startsWith(itemPath + "/");
+      if (currentPath === itemPath || currentPath.startsWith(itemPath + "/")) {
+        return true;
+      }
+
+      return (
+        isProjectScopedRouteName(link) &&
+        this.$router.currentRoute.value.name === link
+      );
     },
     go(link, active) {
-      if (getSelectedProjectId() != undefined || active == true) {
-        this.$router.push({ path: "/" + link });
+      const projectId = getSelectedProjectId();
+      if (projectId != undefined || active == true) {
+        this.$router.push(selectedProjectRoute(link, projectId));
         return;
       }
 
       this.$showAlert({
-        message: this.language[this.config.currentLanguage].Dialog.firstProjectRequired,
+        message:
+          this.language[this.config.currentLanguage].Dialog
+            .firstProjectRequired,
         variant: "warning",
       });
       this.$router.push({ path: "/projects" });

@@ -1,5 +1,5 @@
 import { shallowMount } from "@vue/test-utils";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const api = vi.hoisted(() => ({ get: vi.fn() }));
 const modal = vi.hoisted(() => ({ show: vi.fn(), hide: vi.fn() }));
@@ -12,6 +12,12 @@ import { pinia } from "@/stores/pinia";
 import { useSessionStore } from "@/stores/session";
 
 describe("steps component", () => {
+  beforeEach(() => {
+    api.get.mockReset();
+    modal.show.mockReset();
+    modal.hide.mockReset();
+  });
+
   function mountSteps(overrides = {}) {
     return shallowMount(Steps, {
       global: {
@@ -75,7 +81,9 @@ describe("steps component", () => {
         params: { tab: "new" },
       }),
     );
-    expect(wrapper.find("#nav-tabOrderSteps-tab").attributes("disabled")).toBeDefined();
+    expect(
+      wrapper.find("#nav-tabOrderSteps-tab").attributes("disabled"),
+    ).toBeDefined();
   });
 
   it("clears the loader when steps cannot load without a selected project", () => {
@@ -101,5 +109,79 @@ describe("steps component", () => {
       variant: "warning",
     });
     expect(deleteAction).not.toHaveBeenCalled();
+  });
+
+  it("loads routed step edits from the project id in the URL", async () => {
+    const routedStep = {
+      name: "checkout_flow",
+      description: "Checkout flow",
+      config: JSON.stringify({
+        name: "Checkout flow",
+        failedExit: true,
+        attachScreenshot: true,
+        steps: [{ stepType: "open_browser", note: "Open browser" }],
+      }),
+    };
+    api.get.mockImplementation((url) => {
+      if (url === "/api/steps/3/16")
+        return Promise.resolve({ data: routedStep });
+      return Promise.resolve({ data: [] });
+    });
+    useSessionStore(pinia).selectProject(9);
+
+    const wrapper = mountSteps({
+      $route: {
+        name: "steps",
+        params: { projectId: "3", tab: "order" },
+        query: { stepId: "16" },
+      },
+    });
+
+    await vi.waitFor(() =>
+      expect(api.get).toHaveBeenCalledWith("/api/steps/3/16", {
+        headers: {},
+      }),
+    );
+    expect(wrapper.vm.idResume).toBe("16");
+    expect(wrapper.vm.stepEditNameFile).toBe("checkout_flow");
+    expect(wrapper.vm.jsonResumeSteps.name).toBe("Checkout flow");
+    expect(modal.show).toHaveBeenCalled();
+  });
+
+  it("shows schema-driven step content when editing an order row", async () => {
+    const routedStep = {
+      name: "submit_button",
+      description: "Submit button",
+      config: JSON.stringify({
+        runtime: "selenium",
+        schemaVersion: "selenium.webdriver.v2",
+        command: "click",
+        target: "#submit",
+      }),
+    };
+    api.get.mockResolvedValue({ data: routedStep });
+    useSessionStore(pinia).selectProject(3);
+
+    const wrapper = mountSteps({
+      $route: {
+        name: "steps",
+        params: { projectId: "3", tab: "order" },
+        query: {},
+      },
+    });
+
+    await wrapper.vm.getJson(17);
+
+    expect(wrapper.vm.idResume).toBe(17);
+    expect(wrapper.vm.resumeJson.editorType).toBe("selenium");
+    expect(wrapper.vm.resumeJson.steps[0]).toEqual(
+      expect.objectContaining({
+        stepType: "selenium_command",
+        operation: "click",
+        target: "#submit",
+      }),
+    );
+    expect(wrapper.vm.jsonResumeSteps).toEqual(wrapper.vm.resumeJson);
+    expect(modal.show).toHaveBeenCalled();
   });
 });

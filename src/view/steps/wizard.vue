@@ -844,6 +844,9 @@ export default {
       if (this.jsonFromEditor_prop == {}) return false;
       else {
         this.jsonFromEditor = this.jsonFromEditor_prop;
+        if (this.jsonFromEditor.editorType) {
+          this.typeOfWrapperSelected = this.jsonFromEditor.editorType;
+        }
         this.initWrapperArray();
       }
       this.name = this.jsonFromEditor.name;

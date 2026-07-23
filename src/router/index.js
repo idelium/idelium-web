@@ -1,6 +1,10 @@
 import { createRouter, createWebHistory } from "vue-router";
 import { pinia } from "@/stores/pinia";
 import { useSessionStore } from "@/stores/session";
+import {
+  isProjectScopedRouteName,
+  legacyProjectRouteRedirect,
+} from "@/router/projectRoutes";
 import steps from "@/view/steps.vue";
 const tablerLayout = () => import("@/layouts/TablerLayout.vue");
 const pages = () => import("@/components/pages.vue");
@@ -31,46 +35,46 @@ const router = createRouter({
       redirect: { path: "/projects" },
       children: [
         {
-          path: "testsperformed",
+          path: "projects/:projectId/testsperformed",
           name: "testsperformed",
           component: testsperformed,
-          meta: { requiresAuth: true },
+          meta: { projectScoped: true, requiresAuth: true },
         },
         {
-          path: "testlauncher",
+          path: "projects/:projectId/testlauncher",
           name: "testlauncher",
           component: testlauncher,
-          meta: { requiresAuth: true },
+          meta: { projectScoped: true, requiresAuth: true },
         },
         {
-          path: "testcycles/:tab?",
+          path: "projects/:projectId/testcycles/:tab?",
           name: "testcycles",
           component: testcycles,
-          meta: { requiresAuth: true },
+          meta: { projectScoped: true, requiresAuth: true },
         },
         {
-          path: "tests/:tab?",
+          path: "projects/:projectId/tests/:tab?",
           name: "tests",
           component: tests,
-          meta: { requiresAuth: true },
+          meta: { projectScoped: true, requiresAuth: true },
         },
         {
-          path: "steps/:tab?",
+          path: "projects/:projectId/steps/:tab?",
           name: "steps",
           component: steps,
-          meta: { requiresAuth: true },
+          meta: { projectScoped: true, requiresAuth: true },
         },
         {
-          path: "plugins/:tab?",
+          path: "projects/:projectId/plugins/:tab?",
           name: "plugins",
           component: plugins,
-          meta: { requiresAuth: true },
+          meta: { projectScoped: true, requiresAuth: true },
         },
         {
-          path: "environments/:tab?",
+          path: "projects/:projectId/environments/:tab?",
           name: "environments",
           component: environments,
-          meta: { requiresAuth: true },
+          meta: { projectScoped: true, requiresAuth: true },
         },
         {
           path: "projects",
@@ -103,16 +107,88 @@ const router = createRouter({
           meta: { requiresAuth: true },
         },
         {
-          path: "platforms/:tab?",
+          path: "projects/:projectId/platforms/:tab?",
           name: "platforms",
           component: platforms,
-          meta: { requiresAuth: true },
+          meta: { projectScoped: true, requiresAuth: true },
+        },
+        {
+          path: "testsperformed",
+          redirect: legacyProjectRouteRedirect,
+          meta: {
+            projectRouteName: "testsperformed",
+            requiresAuth: true,
+          },
+        },
+        {
+          path: "testlauncher",
+          redirect: legacyProjectRouteRedirect,
+          meta: {
+            projectRouteName: "testlauncher",
+            requiresAuth: true,
+          },
+        },
+        {
+          path: "testcycles/:tab?",
+          redirect: legacyProjectRouteRedirect,
+          meta: {
+            projectRouteName: "testcycles",
+            requiresAuth: true,
+          },
+        },
+        {
+          path: "tests/:tab?",
+          redirect: legacyProjectRouteRedirect,
+          meta: {
+            projectRouteName: "tests",
+            requiresAuth: true,
+          },
+        },
+        {
+          path: "steps/:tab?",
+          redirect: legacyProjectRouteRedirect,
+          meta: {
+            projectRouteName: "steps",
+            requiresAuth: true,
+          },
+        },
+        {
+          path: "plugins/:tab?",
+          redirect: legacyProjectRouteRedirect,
+          meta: {
+            projectRouteName: "plugins",
+            requiresAuth: true,
+          },
+        },
+        {
+          path: "environments/:tab?",
+          redirect: legacyProjectRouteRedirect,
+          meta: {
+            projectRouteName: "environments",
+            requiresAuth: true,
+          },
+        },
+        {
+          path: "platforms/:tab?",
+          redirect: legacyProjectRouteRedirect,
+          meta: {
+            projectRouteName: "platforms",
+            requiresAuth: true,
+          },
+        },
+        {
+          path: "projects/:projectId/postman/:id",
+          name: "postman",
+          component: postman,
+          meta: { projectScoped: true, requiresAuth: true },
         },
         {
           path: "postman/:id",
-          name: "postman",
-          component: postman,
-          meta: { requiresAuth: true },
+          redirect: legacyProjectRouteRedirect,
+          meta: {
+            projectRouteName: "postman",
+            requiresAuth: true,
+          },
         },
       ],
     },
@@ -153,6 +229,23 @@ router.beforeEach((to) => {
   }
   if (to.name !== "projects" && to.name !== "Login" && session.hasNoProjects) {
     return { name: "projects" };
+  }
+  if (to.meta.projectScoped === true && to.params.projectId) {
+    session.selectProject(to.params.projectId);
+  }
+  if (
+    isProjectScopedRouteName(to.name) &&
+    !to.params.projectId &&
+    session.selectedProjectId
+  ) {
+    return {
+      name: to.name,
+      params: {
+        ...to.params,
+        projectId: session.selectedProjectId,
+      },
+      query: to.query,
+    };
   }
   return true;
 });

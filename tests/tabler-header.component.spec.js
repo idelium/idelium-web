@@ -15,15 +15,19 @@ vi.mock("@/stores/session", () => ({
 import TablerHeader from "@/components/tabler/TablerHeader.vue";
 
 describe("tabler header component", () => {
-  function mountHeader() {
-    api.get.mockResolvedValue({ data: { projects: [], costumers: [] } });
+  function mountHeader(
+    route = { name: "projects", params: {} },
+    headerData = { projects: [], costumers: [] },
+  ) {
+    api.get.mockResolvedValue({ data: headerData });
     api.put.mockResolvedValue({ data: { session: "updated-session" } });
+    const router = { push: vi.fn(), replace: vi.fn() };
 
-    return shallowMount(TablerHeader, {
+    const wrapper = shallowMount(TablerHeader, {
       global: {
         mocks: {
-          $route: { name: "projects" },
-          $router: { push: vi.fn() },
+          $route: route,
+          $router: router,
           $confirm: vi.fn(),
           config: {
             currentLanguage: "gb",
@@ -60,6 +64,8 @@ describe("tabler header component", () => {
         },
       },
     });
+    wrapper.router = router;
+    return wrapper;
   }
 
   it("changes customer even when the session store has no updateSessionId action", async () => {
@@ -87,12 +93,52 @@ describe("tabler header component", () => {
 
   it("executes logout only after the modal is confirmed", async () => {
     const wrapper = mountHeader();
-    const actionLogout = vi.spyOn(wrapper.vm, "actionLogout").mockImplementation(() => {});
+    const actionLogout = vi
+      .spyOn(wrapper.vm, "actionLogout")
+      .mockImplementation(() => {});
 
     wrapper.vm.logout();
     wrapper.vm.confirmLogout();
 
     expect(wrapper.vm.logoutModalVisible).toBe(false);
     expect(actionLogout).toHaveBeenCalled();
+  });
+
+  it("updates the project id in the current project-scoped route", async () => {
+    const wrapper = mountHeader({
+      name: "tests",
+      params: { projectId: "1", tab: "new" },
+      query: { order: "name" },
+    });
+
+    await wrapper.setData({ projectSelected: 2 });
+
+    expect(wrapper.router.replace).toHaveBeenCalledWith({
+      name: "tests",
+      params: { projectId: 2, tab: "new" },
+      query: { order: "name" },
+    });
+  });
+
+  it("falls back to the first available project when the route id is unavailable", async () => {
+    const wrapper = mountHeader(
+      {
+        name: "tests",
+        params: { projectId: "999", tab: "new" },
+        query: {},
+      },
+      {
+        projects: [
+          { id: 3, name: "demo" },
+          { id: 4, name: "qa" },
+        ],
+        costumers: [],
+      },
+    );
+    await flushPromises();
+
+    wrapper.vm.syncProjectSelectionFromRoute();
+
+    expect(wrapper.vm.projectSelected).toBe(3);
   });
 });

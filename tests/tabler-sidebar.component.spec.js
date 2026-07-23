@@ -1,5 +1,7 @@
 import { shallowMount } from "@vue/test-utils";
 import { describe, expect, it, vi } from "vitest";
+import { pinia } from "@/stores/pinia";
+import { useSessionStore } from "@/stores/session";
 
 const api = vi.hoisted(() => ({ get: vi.fn() }));
 
@@ -32,7 +34,8 @@ describe("tabler sidebar component", () => {
   }
 
   it("keeps a menu item active for routable child tabs", () => {
-    const wrapper = mountSidebar("/plugins/import");
+    useSessionStore(pinia).selectProject(7);
+    const wrapper = mountSidebar("/projects/7/plugins/import");
 
     expect(wrapper.vm.isActiveMenuItem("plugins")).toBe(true);
     expect(wrapper.vm.isActiveMenuItem("environments")).toBe(false);

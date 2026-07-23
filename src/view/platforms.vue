@@ -311,14 +311,17 @@ export default {
         this.startActiveTab();
         return;
       }
-      this.$router.push({ name: "platforms", params: { tab } });
+      this.$router.push({
+        name: "platforms",
+        params: { ...this.$route.params, tab },
+      });
     },
     syncTabFromRoute() {
       const tab = this.$route.params.tab || DEFAULT_TAB;
       if (!PLATFORM_TABS[tab]) {
         this.$router.replace({
           name: "platforms",
-          params: { tab: DEFAULT_TAB },
+          params: { ...this.$route.params, tab: DEFAULT_TAB },
         });
         return;
       }

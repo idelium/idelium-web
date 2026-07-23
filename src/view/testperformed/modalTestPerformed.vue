@@ -148,7 +148,11 @@ export default {
     showPostmanCollection(index) {
       this.modalElem.hide();
       this.$router.push({
-        path: "/postman/" + this.arrayStep[index].testDoneId,
+        name: "postman",
+        params: {
+          ...this.$route.params,
+          id: this.arrayStep[index].testDoneId,
+        },
       });
     },
     getVariant(status) {
