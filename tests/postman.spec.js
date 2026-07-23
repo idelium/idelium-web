@@ -15,6 +15,7 @@ const labels = {
   method: "method",
   url: "url",
   assertions: "assertions",
+  diagnostic: "diagnostic",
   time: "time",
   response: "response",
   showResponse: "show response",
@@ -35,6 +36,33 @@ describe("Postman web integration", () => {
     );
     expect(result).toMatchObject({ status: 200, method: "GET", passed: true });
     expect(statusVariant(result)).toBe("success");
+  });
+
+  it("surfaces failed Newman diagnostics directly in the result table", () => {
+    const [result] = parsePostmanResults([
+      {
+        name: "Newman",
+        status: 0,
+        method: "NEWMAN",
+        passed: false,
+        assertions: [
+          {
+            name: "newman",
+            passed: false,
+            message:
+              "Newman is required to run this Postman collection but was not found on PATH. Install it with `npm install -g newman`.",
+          },
+        ],
+      },
+    ]);
+
+    const wrapper = mount(PostmanResultTable, {
+      props: { results: [result], labels },
+    });
+
+    expect(result.diagnostic).toContain("npm install -g newman");
+    expect(wrapper.text()).toContain("Newman is required");
+    expect(wrapper.text()).toContain("npm install -g newman");
   });
 
   it("normalizes single result objects and invalid payloads safely", () => {

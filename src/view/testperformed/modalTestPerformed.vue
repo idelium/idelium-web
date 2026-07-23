@@ -73,10 +73,10 @@
                         <button
                           type="button"
                           :class="
-                            'btn btn-' + getVariant(step.status) + ' buttonTest'
+                            'btn btn-' + getStepVariant(step) + ' buttonTest'
                           "
                         >
-                          {{ getStatusText(step.status) }}
+                          {{ getStepStatusText(step) }}
                         </button>
                       </td>
                       <td>
@@ -354,6 +354,22 @@ export default {
         variant = "failed";
       }
       return variant;
+    },
+    isPostmanStepFailed(step) {
+      const results = this.postmanResults(step);
+      return results.some((result) => result.passed === false);
+    },
+    getStepVariant(step) {
+      if (step?.type === "postman" && this.isPostmanStepFailed(step)) {
+        return "danger";
+      }
+      return this.getVariant(step?.status);
+    },
+    getStepStatusText(step) {
+      if (step?.type === "postman" && this.isPostmanStepFailed(step)) {
+        return "failed";
+      }
+      return this.getStatusText(step?.status);
     },
     postmanLabel(key, fallback) {
       return (

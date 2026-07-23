@@ -102,4 +102,38 @@ describe("tests performed component", () => {
     expect(wrapper.text()).toContain("Passed");
     expect(wrapper.text()).toContain("Failed");
   });
+
+  it("shows failed for Postman cards when the execution payload failed", async () => {
+    api.get.mockResolvedValue({ data: [] });
+    const wrapper = mountTestsPerformed();
+
+    wrapper.vm.arrayTest = [
+      {
+        id: 17,
+        name: "postman",
+        status: 1,
+        type: "postman",
+        data: JSON.stringify([
+          {
+            name: "Newman",
+            method: "NEWMAN",
+            status: 0,
+            passed: false,
+            assertions: [
+              {
+                name: "newman",
+                passed: false,
+                message: "Newman was not found on PATH.",
+              },
+            ],
+          },
+        ]),
+      },
+    ];
+    await wrapper.vm.$nextTick();
+
+    const statusBadge = wrapper.get(".testsperformed-status");
+    expect(statusBadge.text()).toBe("Failed");
+    expect(statusBadge.classes()).toContain("danger");
+  });
 });

@@ -10,6 +10,7 @@
         <th scope="col">{{ labels.method }}</th>
         <th scope="col">{{ labels.url }}</th>
         <th scope="col">{{ labels.assertions }}</th>
+        <th scope="col">{{ labels.diagnostic }}</th>
         <th scope="col">{{ labels.time }}</th>
         <th scope="col">{{ labels.response }}</th>
       </tr>
@@ -25,6 +26,12 @@
         <td>{{ result.method }}</td>
         <td>{{ result.url }}</td>
         <td>{{ assertionSummary(result) }}</td>
+        <td class="postman-diagnostic-cell">
+          <span v-if="result.diagnostic" class="postman-diagnostic-message">
+            {{ result.diagnostic }}
+          </span>
+          <span v-else class="postman-diagnostic-empty">—</span>
+        </td>
         <td>{{ result.time }}</td>
         <td>
           <button
@@ -59,3 +66,21 @@ function assertionSummary(result) {
   return `${passed}/${result.assertions.length}`;
 }
 </script>
+
+<style scoped>
+.postman-diagnostic-cell {
+  max-width: 34rem;
+  white-space: normal;
+}
+
+.postman-diagnostic-message {
+  color: #ffb8a3;
+  display: inline-block;
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.postman-diagnostic-empty {
+  color: rgba(255, 255, 255, 0.35);
+}
+</style>

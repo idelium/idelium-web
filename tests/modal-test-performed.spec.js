@@ -52,6 +52,7 @@ function mountModal() {
               method: "method",
               url: "url",
               assertions: "assertions",
+              diagnostic: "diagnostic",
               response: "response",
               showResponse: "show response",
               time: "time",
@@ -105,6 +106,43 @@ describe("performed test details modal", () => {
 
     await wrapper.get(".postman-response").trigger("click");
     expect(wrapper.text()).toContain('"ok": true');
+  });
+
+  it("marks a Postman step as failed when the CLI result payload failed", async () => {
+    const wrapper = mountModal();
+
+    await wrapper.vm.showModal(
+      [
+        {
+          id: 17,
+          name: "postman",
+          status: 1,
+          type: "postman",
+          screenshots: "[]",
+          data: JSON.stringify([
+            {
+              name: "Newman",
+              status: 0,
+              method: "NEWMAN",
+              passed: false,
+              assertions: [
+                {
+                  name: "newman",
+                  passed: false,
+                  message: "Newman was not found on PATH.",
+                },
+              ],
+            },
+          ]),
+        },
+      ],
+      "postman",
+    );
+
+    expect(wrapper.vm.getStepVariant(wrapper.vm.arrayStep[0])).toBe("danger");
+    expect(wrapper.vm.getStepStatusText(wrapper.vm.arrayStep[0])).toBe(
+      "failed",
+    );
   });
 
   it("ignores invalid screenshot payloads without breaking the modal", () => {

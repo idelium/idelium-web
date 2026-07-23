@@ -324,6 +324,7 @@ export default {
     method: "method",
     url: "url",
     assertions: "asserzioni",
+    diagnostic: "diagnostica",
     response: "response",
     showResponse: " visualizza response",
     time: "time",

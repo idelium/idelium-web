@@ -54,20 +54,27 @@
         <div class="testsperformed-panel-header">
           <div>
             <span class="testsperformed-section-title">
-              {{ language[config.currentLanguage].TestsPerformed.columnTestCycle }}
+              {{
+                language[config.currentLanguage].TestsPerformed.columnTestCycle
+              }}
             </span>
             <p class="testsperformed-helper">
               {{ language[config.currentLanguage].TestsPerformed.selectCycle }}
             </p>
           </div>
-          <span class="testsperformed-counter">{{ arrayTestCycles.length }}</span>
+          <span class="testsperformed-counter">{{
+            arrayTestCycles.length
+          }}</span>
         </div>
-        <div v-if="arrayTestCycles.length > 0" class="list-group testsperformed-list">
+        <div
+          v-if="arrayTestCycles.length > 0"
+          class="list-group testsperformed-list"
+        >
           <button
             :class="[
               'list-group-item',
               'testsperformed-item',
-              { active: testCycleSelected == testCycle.id }
+              { active: testCycleSelected == testCycle.id },
             ]"
             v-for="testCycle in arrayTestCycles"
             v-bind:key="testCycle.id"
@@ -76,7 +83,10 @@
             :title="language[config.currentLanguage].TestsPerformed.selectRun"
           >
             <span class="testsperformed-item-icon">
-              <font-awesome-icon icon="sync" class="idelium-action-icon--refresh" />
+              <font-awesome-icon
+                icon="sync"
+                class="idelium-action-icon--refresh"
+              />
             </span>
             <span class="testsperformed-item-main">
               <strong>{{ testCycle.name }}</strong>
@@ -108,7 +118,10 @@
             v-on:click="getTestCyclesDate(testCycleSelected)"
             :title="language[config.currentLanguage].Actions.refresh"
           >
-            <font-awesome-icon icon="history" class="idelium-action-icon--refresh" />
+            <font-awesome-icon
+              icon="history"
+              class="idelium-action-icon--refresh"
+            />
           </button>
         </div>
         <div
@@ -119,7 +132,7 @@
             :class="[
               'list-group-item',
               'testsperformed-item',
-              { active: testCycleDateSelected == testCycleDate.id }
+              { active: testCycleDateSelected == testCycleDate.id },
             ]"
             v-for="testCycleDate in arrayTestCyclesDate"
             v-bind:key="testCycleDate.id"
@@ -128,7 +141,10 @@
             :title="language[config.currentLanguage].TestsPerformed.openDetails"
           >
             <span class="testsperformed-item-icon">
-              <font-awesome-icon icon="clock" class="idelium-action-icon--refresh" />
+              <font-awesome-icon
+                icon="clock"
+                class="idelium-action-icon--refresh"
+              />
             </span>
             <span class="testsperformed-item-main">
               <strong>{{ testCycleDate.date }}</strong>
@@ -165,8 +181,8 @@
             v-on:click="getStep(test.id, test.name)"
             :title="language[config.currentLanguage].TestsPerformed.viewDetails"
           >
-            <span :class="['testsperformed-status', getVariant(test.status)]">
-              {{ getStatusLabel(test.status) }}
+            <span :class="['testsperformed-status', getTestVariant(test)]">
+              {{ getTestStatusLabel(test) }}
             </span>
             <strong>{{ test.name }}</strong>
             <span class="testsperformed-detail-link">
@@ -203,8 +219,16 @@
 .testsperformed-hero {
   align-items: center;
   background:
-    radial-gradient(circle at top left, rgba(255, 107, 30, 0.18), transparent 32rem),
-    linear-gradient(135deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.025));
+    radial-gradient(
+      circle at top left,
+      rgba(255, 107, 30, 0.18),
+      transparent 32rem
+    ),
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.075),
+      rgba(255, 255, 255, 0.025)
+    );
   border: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
   flex: 0 0 auto;
@@ -265,7 +289,10 @@
   display: grid;
   flex: 1 1 auto;
   gap: 1rem;
-  grid-template-columns: minmax(16rem, 0.85fr) minmax(16rem, 0.95fr) minmax(24rem, 1.6fr);
+  grid-template-columns: minmax(16rem, 0.85fr) minmax(16rem, 0.95fr) minmax(
+      24rem,
+      1.6fr
+    );
   min-height: 0;
   overflow: hidden;
 }
@@ -339,7 +366,11 @@
 }
 
 .testsperformed-item.active {
-  background: linear-gradient(135deg, rgba(255, 107, 30, 0.26), rgba(255, 139, 35, 0.1));
+  background: linear-gradient(
+    135deg,
+    rgba(255, 107, 30, 0.26),
+    rgba(255, 139, 35, 0.1)
+  );
   border-color: rgba(255, 107, 30, 0.7);
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
   color: #ffffff !important;
@@ -466,15 +497,16 @@
 </style>
 
 <script>
-import modalTestPerformed from './testperformed/modalTestPerformed.vue'
+import modalTestPerformed from "./testperformed/modalTestPerformed.vue";
 
-import apiClient from '@/services/apiClient'
-import { getSelectedProjectId } from '@/stores/session'
+import apiClient from "@/services/apiClient";
+import { parsePostmanResults } from "@/domain/postmanResults";
+import { getSelectedProjectId } from "@/stores/session";
 
 export default {
-  name: 'TestsPerformedComponent',
+  name: "TestsPerformedComponent",
   components: {
-    modalTestPerformed
+    modalTestPerformed,
   },
   data() {
     return {
@@ -485,120 +517,165 @@ export default {
       arrayTest: [],
       testSelected: null,
       spinreverse: null,
-      spinreverseDate: null
-    }
+      spinreverseDate: null,
+    };
   },
   watch: {
     $route() {
-      this.$forceUpdate()
-    }
+      this.$forceUpdate();
+    },
   },
   created() {
-    this.getTestCycles()
-    this.emitter.on('refreshTestCyclePerformed', (msg) => {
-      if (msg == true) this.getTestCycles()
-      else this.$forceUpdate()
-    })
+    this.getTestCycles();
+    this.emitter.on("refreshTestCyclePerformed", (msg) => {
+      if (msg == true) this.getTestCycles();
+      else this.$forceUpdate();
+    });
   },
   methods: {
     getVariant(status) {
-      let variant = null
+      let variant = null;
       if (status == 0) {
-        variant = 'secondary'
+        variant = "secondary";
       } else if (status == 1) {
-        variant = 'success'
+        variant = "success";
       } else {
-        variant = 'danger'
+        variant = "danger";
       }
-      return variant
+      return variant;
     },
     getStatusLabel(status) {
       if (status == 0) {
-        return this.language[this.config.currentLanguage].TestsPerformed.statusPending
+        return this.language[this.config.currentLanguage].TestsPerformed
+          .statusPending;
       }
       if (status == 1) {
-        return this.language[this.config.currentLanguage].TestsPerformed.statusPassed
+        return this.language[this.config.currentLanguage].TestsPerformed
+          .statusPassed;
       }
-      return this.language[this.config.currentLanguage].TestsPerformed.statusFailed
+      return this.language[this.config.currentLanguage].TestsPerformed
+        .statusFailed;
+    },
+    postmanResults(test) {
+      if (test?.type !== "postman") {
+        return [];
+      }
+      return parsePostmanResults(test.postmanData ?? test.data ?? []);
+    },
+    isPostmanTestFailed(test) {
+      return this.postmanResults(test).some(
+        (result) => result.passed === false,
+      );
+    },
+    getTestVariant(test) {
+      if (this.isPostmanTestFailed(test)) {
+        return "danger";
+      }
+      return this.getVariant(test?.status);
+    },
+    getTestStatusLabel(test) {
+      if (this.isPostmanTestFailed(test)) {
+        return this.language[this.config.currentLanguage].TestsPerformed
+          .statusFailed;
+      }
+      return this.getStatusLabel(test?.status);
     },
     getTestCycles() {
-      this.spinreverse = 'spin-reverse'
-      this.arrayTestCyclesDate = []
-      this.arrayTest = []
-      this.testCycleSelected = null
-      this.emitter.emit('showLoader', true)
+      this.spinreverse = "spin-reverse";
+      this.arrayTestCyclesDate = [];
+      this.arrayTest = [];
+      this.testCycleSelected = null;
+      this.emitter.emit("showLoader", true);
       apiClient
         .get(
           this.config.serviceBaseUrl +
             this.config.url.testcycles +
-            '/' +
+            "/" +
             getSelectedProjectId(),
           {
-            headers: this.setHeaders()
-          }
+            headers: this.setHeaders(),
+          },
         )
         .then((response) => {
-          this.spinreverse = null
-          this.emitter.emit('showLoader', false)
-          this.arrayTestCycles = response.data
+          this.spinreverse = null;
+          this.emitter.emit("showLoader", false);
+          this.arrayTestCycles = response.data;
         })
         .catch((e) => {
-          this.Logout(this, e)
-          this.error = e
-        })
+          this.Logout(this, e);
+          this.error = e;
+        });
     },
     getTestCyclesDate(id) {
-      this.arrayTest = []
-      this.emitter.emit('showLoader', true)
-      this.spinreverseDate = 'spin-reverse'
+      this.arrayTest = [];
+      this.emitter.emit("showLoader", true);
+      this.spinreverseDate = "spin-reverse";
       apiClient
-        .get(this.config.serviceBaseUrl + this.config.url.getTestCyclePerformed + '/' + id, {
-          headers: this.setHeaders()
-        })
+        .get(
+          this.config.serviceBaseUrl +
+            this.config.url.getTestCyclePerformed +
+            "/" +
+            id,
+          {
+            headers: this.setHeaders(),
+          },
+        )
         .then((response) => {
-          this.emitter.emit('showLoader', false)
-          this.arrayTestCyclesDate = response.data
-          this.testCycleSelected = id
-          this.testCycleDateSelected = null
-          this.spinreverseDate = null
+          this.emitter.emit("showLoader", false);
+          this.arrayTestCyclesDate = response.data;
+          this.testCycleSelected = id;
+          this.testCycleDateSelected = null;
+          this.spinreverseDate = null;
         })
         .catch((e) => {
-          this.Logout(this, e)
-          this.error = e
-        })
+          this.Logout(this, e);
+          this.error = e;
+        });
     },
 
     getTest(id) {
-      this.emitter.emit('showLoader', true)
+      this.emitter.emit("showLoader", true);
       apiClient
-        .get(this.config.serviceBaseUrl + this.config.url.getTestPerformed + '/' + id, {
-          headers: this.setHeaders()
-        })
+        .get(
+          this.config.serviceBaseUrl +
+            this.config.url.getTestPerformed +
+            "/" +
+            id,
+          {
+            headers: this.setHeaders(),
+          },
+        )
         .then((response) => {
-          this.emitter.emit('showLoader', false)
-          this.arrayTest = response.data
-          this.testCycleDateSelected = id
+          this.emitter.emit("showLoader", false);
+          this.arrayTest = response.data;
+          this.testCycleDateSelected = id;
         })
         .catch((e) => {
-          this.Logout(this, e)
-          this.error = e
-        })
+          this.Logout(this, e);
+          this.error = e;
+        });
     },
     getStep(id, name) {
-      this.emitter.emit('showLoader', true)
+      this.emitter.emit("showLoader", true);
       apiClient
-        .get(this.config.serviceBaseUrl + this.config.url.getStepPerformed + '/' + id, {
-          headers: this.setHeaders()
-        })
+        .get(
+          this.config.serviceBaseUrl +
+            this.config.url.getStepPerformed +
+            "/" +
+            id,
+          {
+            headers: this.setHeaders(),
+          },
+        )
         .then((response) => {
-          this.emitter.emit('showLoader', false)
-          this.$refs.modalTestPerformed.showModal(response.data, name)
+          this.emitter.emit("showLoader", false);
+          this.$refs.modalTestPerformed.showModal(response.data, name);
         })
         .catch((e) => {
-          this.error = e
-          this.Logout(this, e)
-        })
-    }
-  }
-}
+          this.error = e;
+          this.Logout(this, e);
+        });
+    },
+  },
+};
 </script>

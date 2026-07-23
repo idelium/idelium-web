@@ -24,8 +24,17 @@ export function parsePostmanResults(value) {
       entry.passed !== false &&
       Number(entry.status ?? entry.status_code ?? 0) < 400,
     assertions: Array.isArray(entry.assertions) ? entry.assertions : [],
+    diagnostic: firstFailedAssertionMessage(entry.assertions),
     response: entry.response ?? entry.body ?? null,
   }));
+}
+
+export function firstFailedAssertionMessage(assertions) {
+  if (!Array.isArray(assertions)) return "";
+  const failedAssertion = assertions.find(
+    (assertion) => assertion?.passed === false && assertion?.message,
+  );
+  return failedAssertion?.message || "";
 }
 
 export function statusVariant(result) {
