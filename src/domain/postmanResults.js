@@ -1,6 +1,17 @@
 export function parsePostmanResults(value) {
-  const parsed = typeof value === "string" ? JSON.parse(value) : value;
-  const entries = Array.isArray(parsed) ? parsed : parsed?.results || [];
+  let parsed = value;
+  try {
+    parsed = typeof value === "string" ? JSON.parse(value) : value;
+  } catch {
+    parsed = [];
+  }
+  const entries = Array.isArray(parsed)
+    ? parsed
+    : Array.isArray(parsed?.results)
+      ? parsed.results
+      : parsed && typeof parsed === "object"
+        ? [parsed]
+        : [];
 
   return entries.map((entry, index) => ({
     id: entry.id || `${entry.method || "request"}-${index}`,

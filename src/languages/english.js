@@ -325,6 +325,18 @@ export default {
     response: "response",
     showResponse: " show response",
     time: "time",
+    executionResults: "Postman execution results",
+    executionResultsHelp:
+      "Review request status, assertions, timing, and response payloads captured by the CLI.",
+    emptyResults: "No Postman execution data is available for this step.",
+    fullDetails: "Open full Postman details",
+    responsePreview: "Response preview",
+    hideResponse: "Hide response",
+    detailsEyebrow: "Execution detail",
+    detailsTitle: "Postman details",
+    detailsDescription:
+      "Inspect every request executed by the Postman runtime, including status, assertions, duration, and response payload.",
+    requests: "requests",
   },
   Projects: {
     btnNewProject: "new project",

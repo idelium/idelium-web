@@ -225,7 +225,7 @@ router.beforeEach((to) => {
     to.meta.requiresAuth === true &&
     !session.isAuthenticated
   ) {
-    return { name: "Login", query: { back: to.name } };
+    return { name: "Login", query: { back: to.fullPath } };
   }
   if (to.name !== "projects" && to.name !== "Login" && session.hasNoProjects) {
     return { name: "projects" };

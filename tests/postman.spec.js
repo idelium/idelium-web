@@ -37,6 +37,11 @@ describe("Postman web integration", () => {
     expect(statusVariant(result)).toBe("success");
   });
 
+  it("normalizes single result objects and invalid payloads safely", () => {
+    expect(parsePostmanResults({ status: 200, method: "get" })).toHaveLength(1);
+    expect(parsePostmanResults("{not-json")).toEqual([]);
+  });
+
   it("distinguishes collections and environments", () => {
     expect(
       classifyPostmanDocument({ info: { name: "API" }, item: [] }).type,

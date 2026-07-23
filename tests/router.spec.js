@@ -16,7 +16,15 @@ describe("route smoke checks", () => {
   it("redirects an unauthorized main route to login", async () => {
     await router.push("/projects");
     expect(router.currentRoute.value.name).toBe("Login");
-    expect(router.currentRoute.value.query.back).toBe("projects");
+    expect(router.currentRoute.value.query.back).toBe("/projects");
+  });
+
+  it("preserves project-scoped URLs when redirecting unauthorized users to login", async () => {
+    await router.push("/projects/3/testsperformed");
+    expect(router.currentRoute.value.name).toBe("Login");
+    expect(router.currentRoute.value.query.back).toBe(
+      "/projects/3/testsperformed",
+    );
   });
 
   it("opens the main project route for an authenticated session", async () => {

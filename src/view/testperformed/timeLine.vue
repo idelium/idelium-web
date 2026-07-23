@@ -115,16 +115,22 @@ export default {
       this.ratio = 0;
       this.texts = [];
       this.lines = [];
+      if (!Array.isArray(this.steps) || this.steps.length === 0) return;
       let startTime = Date.parse(this.steps[0].created_at) / 1000;
       let endTime =
         Date.parse(this.steps[this.steps.length - 1].updated_at) / 1000;
+      if (!Number.isFinite(startTime)) startTime = 0;
+      if (!Number.isFinite(endTime)) endTime = startTime + 1;
       let elapsed = endTime - startTime;
+      if (!Number.isFinite(elapsed) || elapsed <= 0) elapsed = 1;
       let ratio = this.vw(TIME_LINE_WIDTH) / elapsed;
       this.configKonva.width = this.vw(TIME_LINE_WIDTH) + RECT_WIDTH;
       this.configKonva.height = (RECT_HEIGHT + 5) * (this.steps.length + 1);
       for (let i in this.steps) {
         let start = Date.parse(this.steps[i].created_at) / 1000;
         let end = Date.parse(this.steps[i].updated_at) / 1000;
+        if (!Number.isFinite(start)) start = startTime;
+        if (!Number.isFinite(end)) end = start;
         let fill = "green";
         if (this.steps[i].status == 2) {
           fill = "red";
@@ -158,6 +164,7 @@ export default {
         if (i < this.steps.length - 1) {
           let startNext =
             Date.parse(this.steps[parseInt(i) + 1].created_at) / 1000;
+          if (!Number.isFinite(startNext)) startNext = start;
           let line = {
             x: (start - startTime) * ratio + RECT_WIDTH,
             y: i * (RECT_HEIGHT + MARGIN_RECT) + MARGIN_RECT + 2,

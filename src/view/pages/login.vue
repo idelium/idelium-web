@@ -374,6 +374,13 @@ export default {
     csrf() {
       return apiClient.get(this.config.serviceBaseUrl + this.config.url.csrf);
     },
+    loginRedirectTarget() {
+      const back = this.$route.query.back;
+      if (typeof back === "string" && back.startsWith("/")) {
+        return { path: back };
+      }
+      return { name: back || "projects" };
+    },
     async auth() {
       if (this.email == "") {
         this.error = this.language[this.config.currentLanguage].Login.errorMail;
@@ -413,7 +420,7 @@ export default {
         );
         this.updateRememberedLogin();
         this.session.establishSession();
-        await this.$router.push({ name: this.$route.query.back || "projects" });
+        await this.$router.push(this.loginRedirectTarget());
       } catch {
         this.error =
           this.language[this.config.currentLanguage].Login.errorCredential;

@@ -128,6 +128,7 @@
 <script>
 import apiClient from "@/services/apiClient";
 import { getSelectedProjectId } from "@/stores/session";
+import { isProjectScopedRouteName } from "@/router/projectRoutes";
 
 export default {
   name: "SidebarComponent",
@@ -151,8 +152,13 @@ export default {
   },
   methods: {
     isActiveMenuItem(link) {
+      const currentRoute = this.$router.currentRoute.value;
+      if (!isProjectScopedRouteName(link)) {
+        return currentRoute.name === link;
+      }
+
       const itemPath = "/" + link;
-      const currentPath = this.$router.currentRoute.value.path;
+      const currentPath = currentRoute.path;
 
       return currentPath === itemPath || currentPath.startsWith(itemPath + "/");
     },

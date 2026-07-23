@@ -64,18 +64,20 @@ export default {
   },
   methods: {
     isActiveMenuItem(link) {
+      const currentRoute = this.$router.currentRoute.value;
+      if (!isProjectScopedRouteName(link)) {
+        return currentRoute.name === link;
+      }
+
       const projectId = getSelectedProjectId();
       const itemPath = selectedProjectPath(link, projectId);
-      const currentPath = this.$router.currentRoute.value.path;
+      const currentPath = currentRoute.path;
 
       if (currentPath === itemPath || currentPath.startsWith(itemPath + "/")) {
         return true;
       }
 
-      return (
-        isProjectScopedRouteName(link) &&
-        this.$router.currentRoute.value.name === link
-      );
+      return currentRoute.name === link;
     },
     go(link, active) {
       const projectId = getSelectedProjectId();

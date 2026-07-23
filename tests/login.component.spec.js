@@ -7,7 +7,7 @@ vi.mock("@/services/apiClient", () => ({ default: api }));
 
 import Login from "@/view/pages/login.vue";
 
-function mountLogin() {
+function mountLogin(route = { query: {} }) {
   const push = vi.fn();
   const emitter = { emit: vi.fn() };
   const wrapper = mount(Login, {
@@ -41,7 +41,7 @@ function mountLogin() {
           },
         },
         emitter,
-        $route: { query: {} },
+        $route: route,
         $router: { push },
         $isAuthenticated: { value: false },
       },
@@ -67,6 +67,21 @@ describe("login component", () => {
     await wrapper.get("#login").trigger("click");
     await vi.waitFor(() =>
       expect(push).toHaveBeenCalledWith({ name: "projects" }),
+    );
+  });
+
+  it("navigates back to the original project-scoped URL after login", async () => {
+    api.get.mockResolvedValue({});
+    api.post.mockResolvedValue({ data: { authenticated: true } });
+    const { wrapper, push } = mountLogin({
+      query: { back: "/projects/3/testsperformed" },
+    });
+    await wrapper.get("#username").setValue("user@example.com");
+    await wrapper.get("#password").setValue("password");
+    await wrapper.get("#login").trigger("click");
+
+    await vi.waitFor(() =>
+      expect(push).toHaveBeenCalledWith({ path: "/projects/3/testsperformed" }),
     );
   });
 
