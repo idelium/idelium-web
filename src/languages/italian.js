@@ -340,6 +340,7 @@ export default {
     detailsDescription:
       "Ispeziona ogni request eseguita dal runtime Postman, inclusi status, asserzioni, durata e payload response.",
     requests: "request",
+    backToTestsPerformed: "Torna ai test eseguiti",
   },
   Projects: {
     btnNewProject: "nuovo progetto",

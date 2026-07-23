@@ -17,10 +17,20 @@
           }}
         </p>
       </div>
-      <span class="postman-details-counter">
-        {{ dataTest.length }}
-        {{ postmanLabel("requests", "requests") }}
-      </span>
+      <div class="postman-details-actions">
+        <button
+          type="button"
+          class="btn btn-outline-light postman-details-back"
+          @click="goBackToTestsPerformed"
+        >
+          <font-awesome-icon icon="arrow-left" />
+          {{ postmanLabel("backToTestsPerformed", "Back to tests performed") }}
+        </button>
+        <span class="postman-details-counter">
+          {{ dataTest.length }}
+          {{ postmanLabel("requests", "requests") }}
+        </span>
+      </div>
     </section>
 
     <section class="card postman-details-card">
@@ -125,6 +135,21 @@
   white-space: nowrap;
 }
 
+.postman-details-actions {
+  align-items: center;
+  display: flex;
+  flex: 0 0 auto;
+  gap: 0.75rem;
+}
+
+.postman-details-back {
+  align-items: center;
+  border-color: rgba(255, 255, 255, 0.18);
+  display: inline-flex;
+  gap: 0.45rem;
+  white-space: nowrap;
+}
+
 .postman-details-card {
   display: flex;
   flex: 1 1 auto;
@@ -181,6 +206,18 @@
     align-items: flex-start;
     flex-direction: column;
     gap: 1rem;
+  }
+
+  .postman-details-actions {
+    align-items: stretch;
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .postman-details-back,
+  .postman-details-counter {
+    justify-content: center;
+    width: 100%;
   }
 
   .postman-details-card {
@@ -262,6 +299,17 @@ export default {
     },
     showModal(result) {
       this.$refs.modalPostmanResponseShow.showModal(result.response);
+    },
+    goBackToTestsPerformed() {
+      const projectId = this.$route.params.projectId;
+      if (projectId) {
+        this.$router.push({
+          name: "testsperformed",
+          params: { projectId },
+        });
+        return;
+      }
+      this.$router.push({ name: "testsperformed" });
     },
     postmanLabel(key, fallback) {
       return (

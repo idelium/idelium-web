@@ -8,9 +8,11 @@ vi.mock("@/services/apiClient", () => ({ default: api }));
 import ShowPostmanCollection from "@/view/testperformed/showPostmanCollection.vue";
 
 function mountPostmanDetails() {
+  const push = vi.fn();
   return shallowMount(ShowPostmanCollection, {
     global: {
       stubs: {
+        FontAwesomeIcon: { template: "<i />" },
         PostmanResultTable: {
           props: ["results", "labels"],
           template: '<div class="postman-table">{{ results.length }}</div>',
@@ -19,6 +21,7 @@ function mountPostmanDetails() {
       },
       mocks: {
         $route: { params: { projectId: 3, id: 44 } },
+        $router: { push },
         config: {
           currentLanguage: "gb",
           serviceBaseUrl: "/api/",
@@ -34,6 +37,7 @@ function mountPostmanDetails() {
               executionResultsHelp: "Review request results.",
               emptyResults: "No Postman execution data.",
               requests: "requests",
+              backToTestsPerformed: "Back to tests performed",
             },
           },
         },
@@ -75,5 +79,17 @@ describe("Postman details page", () => {
     expect(wrapper.text()).toContain("postman");
     expect(wrapper.vm.dataTest).toMatchObject([{ method: "GET", status: 200 }]);
     expect(wrapper.find(".postman-table").text()).toBe("1");
+  });
+
+  it("navigates back to the project-scoped tests performed page", async () => {
+    api.get.mockResolvedValue({ data: [] });
+
+    const wrapper = mountPostmanDetails();
+    await wrapper.get(".postman-details-back").trigger("click");
+
+    expect(wrapper.vm.$router.push).toHaveBeenCalledWith({
+      name: "testsperformed",
+      params: { projectId: 3 },
+    });
   });
 });
