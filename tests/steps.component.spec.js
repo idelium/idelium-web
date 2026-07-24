@@ -1,7 +1,7 @@
 import { shallowMount } from "@vue/test-utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const api = vi.hoisted(() => ({ get: vi.fn() }));
+const api = vi.hoisted(() => ({ get: vi.fn(), post: vi.fn(), put: vi.fn() }));
 const modal = vi.hoisted(() => ({ show: vi.fn(), hide: vi.fn() }));
 
 vi.mock("@/services/apiClient", () => ({ default: api }));
@@ -14,6 +14,8 @@ import { useSessionStore } from "@/stores/session";
 describe("steps component", () => {
   beforeEach(() => {
     api.get.mockReset();
+    api.post.mockReset();
+    api.put.mockReset();
     modal.show.mockReset();
     modal.hide.mockReset();
   });
@@ -47,6 +49,26 @@ describe("steps component", () => {
                 tabOrderSteps: "Order Steps",
                 tabNewStep: "New Step",
                 confirmationDelete: "Delete step ",
+                placeholderDescriptionStep: "Step description",
+                placeholderFileName: "File name",
+                btnSaveStep: "Save step",
+                btnSave: "Save",
+                btnCancel: "Cancel",
+                errorMessageInputEmpty: "Fields cannot be empty",
+                errorCharactersError: "File name contains invalid characters",
+                dsl: {
+                  sourceLabel: "Idelium DSL source",
+                  sourcePlaceholder: 'idelium 1.0\n\ntest "smoke" {\n}',
+                  sourceHelp: "Validate DSL before saving.",
+                  validate: "Validate DSL",
+                  line: "line",
+                  column: "column",
+                },
+              },
+              Actions: {
+                delete: "Delete",
+                download: "Download",
+                duplicate: "Duplicate",
               },
               Platforms: {
                 ManagePlatform: {
@@ -182,6 +204,91 @@ describe("steps component", () => {
       }),
     );
     expect(wrapper.vm.jsonResumeSteps).toEqual(wrapper.vm.resumeJson);
+    expect(modal.show).toHaveBeenCalled();
+  });
+
+  it("saves a valid DSL step with the project id from the route", async () => {
+    api.get.mockResolvedValue({ data: [] });
+    api.post.mockResolvedValue({ data: { id: 24 } });
+    useSessionStore(pinia).selectProject(9);
+
+    const wrapper = mountSteps({
+      $route: {
+        name: "steps",
+        params: { projectId: "3", tab: "new" },
+        query: {},
+      },
+    });
+    wrapper.vm.modeSelected = "dsl";
+    wrapper.vm.stepDescription = "DSL smoke";
+    wrapper.vm.stepNameFile = "dsl_smoke";
+    wrapper.vm.dslSource = 'idelium 1.0\n\ntest "smoke" {\n}\n';
+
+    await wrapper.vm.saveStep();
+
+    expect(api.post).toHaveBeenCalledWith(
+      "/api/steps",
+      expect.objectContaining({
+        idProject: "3",
+        name: "dsl_smoke",
+        config: JSON.stringify({
+          runtime: "dsl",
+          schemaVersion: "dsl.source.v1",
+          languageVersion: "1.0",
+          source: 'idelium 1.0\n\ntest "smoke" {\n}\n',
+        }),
+      }),
+      { headers: {} },
+    );
+  });
+
+  it("blocks DSL save when the language version is unsupported", async () => {
+    api.get.mockResolvedValue({ data: [] });
+    useSessionStore(pinia).selectProject(3);
+
+    const wrapper = mountSteps();
+    wrapper.vm.modeSelected = "dsl";
+    wrapper.vm.stepDescription = "DSL smoke";
+    wrapper.vm.stepNameFile = "dsl_smoke";
+    wrapper.vm.dslSource = 'idelium 2.0\n\ntest "smoke" {\n}\n';
+
+    expect(wrapper.vm.saveStep()).toBe(false);
+
+    expect(api.post).not.toHaveBeenCalled();
+    expect(wrapper.vm.dslDiagnostics[0]).toEqual(
+      expect.objectContaining({ code: "DSL_VERSION_UNSUPPORTED" }),
+    );
+  });
+
+  it("opens DSL source content when editing a persisted DSL step", async () => {
+    const source = 'idelium 1.0\n\ntest "checkout" {\n}\n';
+    api.get.mockResolvedValue({
+      data: {
+        name: "checkout_dsl",
+        description: "Checkout DSL",
+        config: JSON.stringify({
+          runtime: "dsl",
+          schemaVersion: "dsl.source.v1",
+          languageVersion: "1.0",
+          source,
+        }),
+      },
+    });
+    useSessionStore(pinia).selectProject(3);
+
+    const wrapper = mountSteps({
+      $route: {
+        name: "steps",
+        params: { projectId: "3", tab: "order" },
+        query: {},
+      },
+    });
+
+    await wrapper.vm.getJson(17);
+
+    expect(wrapper.vm.modeEditSelected).toBe("dsl");
+    expect(wrapper.vm.dslEditSource).toBe(source);
+    expect(wrapper.vm.jsonResumeSteps).toBeNull();
     expect(modal.show).toHaveBeenCalled();
   });
 });

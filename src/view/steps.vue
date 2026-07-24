@@ -209,9 +209,51 @@
           :json="loadJsonToEdit"
           minheight="30vh"
         />
+        <div
+          v-if="modeSelected == 'dsl'"
+          class="idelium-dsl-editor"
+          aria-live="polite"
+        >
+          <label class="form-label" for="step-dsl-source">
+            {{ language[config.currentLanguage].Steps.dsl.sourceLabel }}
+          </label>
+          <textarea
+            id="step-dsl-source"
+            v-model="dslSource"
+            class="form-control idelium-dsl-editor__source"
+            :placeholder="
+              language[config.currentLanguage].Steps.dsl.sourcePlaceholder
+            "
+            aria-describedby="step-dsl-help step-dsl-diagnostics"
+          ></textarea>
+          <div id="step-dsl-help" class="form-text">
+            {{ language[config.currentLanguage].Steps.dsl.sourceHelp }}
+          </div>
+          <button
+            type="button"
+            class="btn btn-outline-info btn-sm mt-3"
+            v-on:click="validateDsl('new')"
+          >
+            {{ language[config.currentLanguage].Steps.dsl.validate }}
+          </button>
+          <ul
+            v-if="dslDiagnostics.length > 0"
+            id="step-dsl-diagnostics"
+            class="idelium-dsl-editor__diagnostics"
+          >
+            <li v-for="diagnostic in dslDiagnostics" :key="diagnostic.code">
+              {{
+                formatDslDiagnostic(
+                  diagnostic,
+                  language[config.currentLanguage].Steps.dsl,
+                )
+              }}
+            </li>
+          </ul>
+        </div>
         <wizard
           ref="wizard"
-          v-if="modeSelected != 'json'"
+          v-if="modeSelected == 'wizard'"
           id-prefix="step-new"
           :jsonFromEditor="jsonSteps"
           v-on:setStepDescription="setStepDescription"
@@ -282,7 +324,7 @@
             </div>
             <wizard
               ref="wizardEdit"
-              v-if="modeEditSelected != 'json'"
+              v-if="modeEditSelected == 'wizard'"
               id-prefix="step-edit"
               :jsonFromEditor_prop="resumeJson"
               v-on:setStepDescription="setEditStepDescription"
@@ -297,6 +339,52 @@
               :options="options"
               :json="resumeJson"
             />
+            <div
+              v-if="modeEditSelected == 'dsl'"
+              class="idelium-dsl-editor"
+              aria-live="polite"
+            >
+              <label class="form-label" for="step-edit-dsl-source">
+                {{ language[config.currentLanguage].Steps.dsl.sourceLabel }}
+              </label>
+              <textarea
+                id="step-edit-dsl-source"
+                v-model="dslEditSource"
+                class="form-control idelium-dsl-editor__source"
+                :placeholder="
+                  language[config.currentLanguage].Steps.dsl.sourcePlaceholder
+                "
+                aria-describedby="step-edit-dsl-help step-edit-dsl-diagnostics"
+                v-on:input="btnSaveEnable = true"
+              ></textarea>
+              <div id="step-edit-dsl-help" class="form-text">
+                {{ language[config.currentLanguage].Steps.dsl.sourceHelp }}
+              </div>
+              <button
+                type="button"
+                class="btn btn-outline-info btn-sm mt-3"
+                v-on:click="validateDsl('edit')"
+              >
+                {{ language[config.currentLanguage].Steps.dsl.validate }}
+              </button>
+              <ul
+                v-if="dslEditDiagnostics.length > 0"
+                id="step-edit-dsl-diagnostics"
+                class="idelium-dsl-editor__diagnostics"
+              >
+                <li
+                  v-for="diagnostic in dslEditDiagnostics"
+                  :key="diagnostic.code"
+                >
+                  {{
+                    formatDslDiagnostic(
+                      diagnostic,
+                      language[config.currentLanguage].Steps.dsl,
+                    )
+                  }}
+                </li>
+              </ul>
+            </div>
             <p></p>
             <p></p>
             <div class="footer-modal">
@@ -369,6 +457,24 @@
   opacity: 0.5;
   background: #c8ebfb;
 }
+.idelium-dsl-editor {
+  margin-top: 1.5rem;
+}
+.idelium-dsl-editor__source {
+  min-height: 46vh;
+  resize: vertical;
+  font-family:
+    "JetBrains Mono", "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  letter-spacing: normal;
+}
+.idelium-dsl-editor__diagnostics {
+  margin-top: 1rem;
+  padding: 1rem 1.25rem;
+  border: 1px solid rgba(255, 97, 34, 0.55);
+  border-radius: 0.75rem;
+  color: #ffd8cc;
+  background: rgba(255, 97, 34, 0.08);
+}
 </style>
 
 <script>
@@ -383,6 +489,12 @@ import wizard from "./steps/wizard.vue";
 import download from "@/shared/download";
 import { routableTabs } from "@/shared/routableTabs";
 import { normalizeEditableStepConfig } from "@/domain/stepConfig";
+import {
+  buildDslSourcePayload,
+  extractDslSource,
+  isDslSourcePayload,
+  validateDslSource,
+} from "@/domain/dslValidation";
 
 let templateJson = {
   name: "<nome step>",
@@ -423,9 +535,14 @@ export default {
       modeOptions: [
         { text: "wizard", value: "wizard" },
         { text: "json editor", value: "json" },
+        { text: "DSL", value: "dsl" },
       ],
       modeSelected: "wizard",
       modeEditSelected: "wizard",
+      dslSource: 'idelium 1.0\n\ntest "smoke" {\n}\n',
+      dslEditSource: "",
+      dslDiagnostics: [],
+      dslEditDiagnostics: [],
       stepDescription: "",
       stepNameFile: "",
       stepEditDescription: "",
@@ -458,7 +575,7 @@ export default {
       }
     },
     modeEditSelected() {
-      if (this.modeSelected == "wizard") {
+      if (this.modeEditSelected == "wizard") {
         this.syncEditWizardJson();
       }
     },
@@ -541,6 +658,33 @@ export default {
     setEditStepDescription() {
       this.stepEditDescription;
     },
+    formatDslDiagnostic(diagnostic, labels) {
+      return `${labels.line} ${diagnostic.line}, ${labels.column} ${diagnostic.column}: ${diagnostic.message} ${diagnostic.remediation}`;
+    },
+    validateDsl(target = "new") {
+      const source = target === "edit" ? this.dslEditSource : this.dslSource;
+      const result = validateDslSource(source);
+      if (target === "edit") {
+        this.dslEditDiagnostics = result.diagnostics;
+      } else {
+        this.dslDiagnostics = result.diagnostics;
+      }
+      return result.valid;
+    },
+    currentStepConfigForSave() {
+      if (this.modeSelected === "dsl") {
+        if (!this.validateDsl("new")) return null;
+        return buildDslSourcePayload(this.dslSource);
+      }
+      return this.jsonSteps;
+    },
+    currentStepConfigForUpdate() {
+      if (this.modeEditSelected === "dsl") {
+        if (!this.validateDsl("edit")) return null;
+        return buildDslSourcePayload(this.dslEditSource);
+      }
+      return this.jsonResumeSteps;
+    },
     isLetter(e, isEdit = false) {
       let char = String.fromCharCode(e.keyCode); // Get the character
       if (/^[A-Za-z]+$/.test(char) || char == "_" || char == "-") return true;
@@ -619,15 +763,25 @@ export default {
               this.jsonResumeNameSelected = name;
               this.stepEditDescription = response.data.description;
               this.stepEditNameFile = response.data.name;
-              this.resumeJson = normalizeEditableStepConfig(
-                response.data.config,
-                response.data.description || response.data.name,
-              );
-              this.jsonEditSteps = this.resumeJson;
-              this.jsonResumeSteps = this.resumeJson;
+              if (isDslSourcePayload(response.data.config)) {
+                this.modeEditSelected = "dsl";
+                this.dslEditSource = extractDslSource(response.data.config);
+                this.dslEditDiagnostics = [];
+                this.resumeJson = null;
+                this.jsonEditSteps = null;
+                this.jsonResumeSteps = null;
+              } else {
+                this.modeEditSelected = "wizard";
+                this.resumeJson = normalizeEditableStepConfig(
+                  response.data.config,
+                  response.data.description || response.data.name,
+                );
+                this.jsonEditSteps = this.resumeJson;
+                this.jsonResumeSteps = this.resumeJson;
+                this.syncEditWizardJson();
+              }
               this.idResume = id;
               this.modalElem.show();
-              this.syncEditWizardJson();
             } else {
               download.file(
                 response.data.name + ".json",
@@ -701,6 +855,8 @@ export default {
       if (this.jsonSteps == null) {
         this.jsonSteps = this.defaultJson;
       }
+      const stepConfig = this.currentStepConfigForSave();
+      if (stepConfig === null) return false;
       if (this.stepDescription.length == 0 || this.stepNameFile.length == 0) {
         this.$showAlert({
           message:
@@ -726,7 +882,7 @@ export default {
           buildStepPayload({
             description: this.stepDescription,
             name: this.stepNameFile,
-            config: this.jsonSteps,
+            config: stepConfig,
             projectId: this.currentProjectId(),
           }),
           {
@@ -743,6 +899,8 @@ export default {
           this.stepDescription = "";
           this.stepNameFile = "";
           this.jsonSteps = null;
+          this.dslSource = 'idelium 1.0\n\ntest "smoke" {\n}\n';
+          this.dslDiagnostics = [];
           //this.saveOrderSteps()
           this.isLetterCheck = false;
           this.loadJsonToEdit = this.defaultJson;
@@ -778,6 +936,8 @@ export default {
         });
     },
     updateStep() {
+      const stepConfig = this.currentStepConfigForUpdate();
+      if (stepConfig === null) return false;
       this.emitter.emit("showLoader", true);
       apiClient
         .put(
@@ -790,7 +950,7 @@ export default {
           {
             description: this.stepEditDescription.toLowerCase(),
             name: this.stepEditNameFile.toLowerCase(),
-            config: JSON.stringify(this.jsonResumeSteps),
+            config: JSON.stringify(stepConfig),
           },
           {
             headers: this.setHeaders(),

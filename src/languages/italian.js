@@ -144,6 +144,15 @@ export default {
     colId: "id",
     colName: "nome",
     colDescription: "descrizione",
+    dsl: {
+      sourceLabel: "Sorgente Idelium DSL",
+      sourcePlaceholder: 'idelium 1.0\n\ntest "smoke" {\n}',
+      sourceHelp:
+        "Usa sorgente Idelium DSL versionato. La UI valida il documento prima del salvataggio; l'API resta il confine contrattuale autoritativo.",
+      validate: "Valida DSL",
+      line: "riga",
+      column: "colonna",
+    },
     wizard: {
       wizardTitle: "Step wizard",
       name: "Nome",
