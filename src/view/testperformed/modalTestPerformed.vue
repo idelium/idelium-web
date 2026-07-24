@@ -172,6 +172,109 @@
                         </section>
                       </td>
                     </tr>
+                    <tr
+                      v-else-if="
+                        step.type == 'selenium' ||
+                        step.type == 'seleniumOrAppium'
+                      "
+                      class="bidi-result-row"
+                    >
+                      <td colspan="6">
+                        <section class="bidi-result-panel">
+                          <div class="bidi-result-header">
+                            <div>
+                              <h6>
+                                {{
+                                  bidiLabel(
+                                    "executionResults",
+                                    "WebDriver BiDi diagnostics",
+                                  )
+                                }}
+                              </h6>
+                              <p>
+                                {{
+                                  bidiLabel(
+                                    "executionResultsHelp",
+                                    "Review console, network, JavaScript error, and SPA navigation metadata captured by the CLI.",
+                                  )
+                                }}
+                              </p>
+                            </div>
+                            <span class="bidi-result-counter">
+                              {{ bidiEventRows(step).length }}
+                            </span>
+                          </div>
+                          <div
+                            v-if="bidiEventRows(step).length > 0"
+                            class="bidi-result-table"
+                          >
+                            <table class="table table-striped costum">
+                              <thead>
+                                <tr>
+                                  <th scope="col">
+                                    {{ bidiLabel("artifact", "artifact") }}
+                                  </th>
+                                  <th scope="col">
+                                    {{ bidiLabel("event", "event") }}
+                                  </th>
+                                  <th scope="col">
+                                    {{ bidiLabel("url", "url") }}
+                                  </th>
+                                  <th scope="col">
+                                    {{ bidiLabel("message", "message") }}
+                                  </th>
+                                  <th scope="col">
+                                    {{ bidiLabel("status", "status") }}
+                                  </th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <tr
+                                  v-for="(event, eventIndex) in bidiEventRows(
+                                    step,
+                                  )"
+                                  :key="event.artifactName + '-' + eventIndex"
+                                >
+                                  <td>{{ event.artifactName }}</td>
+                                  <td>{{ event.type }}</td>
+                                  <td>
+                                    <span
+                                      :class="{
+                                        'bidi-redacted': isRedactedValue(
+                                          event.url,
+                                        ),
+                                      }"
+                                    >
+                                      {{ formatBidiValue(event.url) }}
+                                    </span>
+                                  </td>
+                                  <td>
+                                    <span
+                                      :class="{
+                                        'bidi-redacted': isRedactedValue(
+                                          event.message,
+                                        ),
+                                      }"
+                                    >
+                                      {{ formatBidiValue(event.message) }}
+                                    </span>
+                                  </td>
+                                  <td>{{ formatBidiValue(event.status) }}</td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </div>
+                          <div v-else class="bidi-empty-state">
+                            {{
+                              bidiLabel(
+                                "emptyResults",
+                                "No BiDi diagnostics are available for this step.",
+                              )
+                            }}
+                          </div>
+                        </section>
+                      </td>
+                    </tr>
                   </template>
                 </tbody>
               </table>
@@ -208,20 +311,23 @@
 .postman-result-row td {
   padding: 0;
 }
-.postman-result-panel {
+.postman-result-panel,
+.bidi-result-panel {
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 18px;
   margin: 0.75rem;
   padding: 1rem;
   background: rgba(15, 18, 28, 0.72);
 }
-.postman-result-header {
+.postman-result-header,
+.bidi-result-header {
   display: flex;
   justify-content: space-between;
   gap: 1rem;
   margin-bottom: 0.75rem;
 }
 .postman-result-header h6,
+.bidi-result-header h6,
 .postman-response-title {
   margin: 0;
   color: #f6f7fb;
@@ -231,11 +337,37 @@
   text-transform: uppercase;
 }
 .postman-result-header p,
-.postman-empty-state {
+.bidi-result-header p,
+.postman-empty-state,
+.bidi-empty-state {
   margin: 0.35rem 0 0;
   color: rgba(246, 247, 251, 0.72);
   font-size: 0.72rem;
   letter-spacing: 0.12em;
+}
+.bidi-result-counter {
+  align-items: center;
+  background: rgba(255, 109, 31, 0.12);
+  border: 1px solid rgba(255, 109, 31, 0.42);
+  border-radius: 999px;
+  color: #ffb184;
+  display: inline-flex;
+  font-size: 0.72rem;
+  font-weight: 800;
+  height: 2rem;
+  justify-content: center;
+  min-width: 2rem;
+  padding: 0 0.65rem;
+}
+.bidi-result-table {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  max-height: 24rem;
+  overflow: auto;
+}
+.bidi-redacted {
+  color: #ffb184;
+  font-weight: 800;
 }
 .postman-response-panel {
   margin-top: 1rem;
@@ -378,6 +510,67 @@ export default {
     },
     postmanResults(step) {
       return step?.type === "postman" ? parsePostmanResults(step.data) : [];
+    },
+    bidiLabel(key, fallback) {
+      return (
+        this.language?.[this.config.currentLanguage]?.Bidi?.[key] || fallback
+      );
+    },
+    safeStepData(step) {
+      if (step?.data && typeof step.data === "object") {
+        return step.data;
+      }
+      if (typeof step?.data !== "string" || step.data.length === 0) {
+        return {};
+      }
+      try {
+        const parsed = JSON.parse(step.data);
+        return parsed && typeof parsed === "object" && !Array.isArray(parsed)
+          ? parsed
+          : {};
+      } catch {
+        return {};
+      }
+    },
+    bidiArtifacts(step) {
+      const payload = this.safeStepData(step);
+      return [...(payload.bidiArtifacts || []), ...(payload.artifacts || [])]
+        .filter((artifact) =>
+          String(artifact?.type || "").startsWith(
+            "application/vnd.idelium.bidi.",
+          ),
+        )
+        .slice(0, 50);
+    },
+    bidiEventRows(step) {
+      return this.bidiArtifacts(step)
+        .flatMap((artifact) =>
+          (artifact?.data?.events || []).slice(0, 100).map((event) => ({
+            artifactName: artifact.name || artifact.type,
+            type: event?.type || "—",
+            url: event?.url || "—",
+            message:
+              event?.message ||
+              event?.text ||
+              event?.statusText ||
+              event?.requestId ||
+              "—",
+            status: event?.status ?? event?.level ?? "—",
+          })),
+        )
+        .slice(0, 100);
+    },
+    formatBidiValue(value) {
+      if (value === null || typeof value === "undefined" || value === "") {
+        return "—";
+      }
+      if (typeof value === "object") {
+        return JSON.stringify(value);
+      }
+      return String(value);
+    },
+    isRedactedValue(value) {
+      return this.formatBidiValue(value).includes("[REDACTED]");
     },
     showPostmanResponse(result) {
       this.postmanResponse = formatPostmanResponse(result?.response ?? null);

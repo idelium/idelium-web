@@ -341,6 +341,17 @@ export default {
     requests: "requests",
     backToTestsPerformed: "Back to tests performed",
   },
+  Bidi: {
+    artifact: "artifact",
+    event: "event",
+    url: "url",
+    message: "message",
+    status: "status",
+    executionResults: "WebDriver BiDi diagnostics",
+    executionResultsHelp:
+      "Review console, network, JavaScript error, and SPA navigation metadata captured by the CLI.",
+    emptyResults: "No BiDi diagnostics are available for this step.",
+  },
   Projects: {
     btnNewProject: "new project",
     id: "#",

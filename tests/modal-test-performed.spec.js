@@ -63,6 +63,16 @@ function mountModal() {
               responsePreview: "Response preview",
               hideResponse: "Hide response",
             },
+            Bidi: {
+              artifact: "artifact",
+              event: "event",
+              url: "url",
+              message: "message",
+              status: "status",
+              executionResults: "WebDriver BiDi diagnostics",
+              executionResultsHelp: "Review BiDi diagnostics.",
+              emptyResults: "No BiDi diagnostics.",
+            },
           },
         },
       },
@@ -143,6 +153,73 @@ describe("performed test details modal", () => {
     expect(wrapper.vm.getStepStatusText(wrapper.vm.arrayStep[0])).toBe(
       "failed",
     );
+  });
+
+  it("renders redacted WebDriver BiDi diagnostic events", async () => {
+    const wrapper = mountModal();
+
+    await wrapper.vm.showModal(
+      [
+        {
+          id: 18,
+          name: "selenium",
+          status: 1,
+          type: "selenium",
+          screenshots: "[]",
+          data: JSON.stringify({
+            runtime: "selenium",
+            schemaVersion: "selenium.bidi.diagnostics.v1",
+            artifacts: [
+              {
+                name: "bidi-diagnostics",
+                type: "application/vnd.idelium.bidi.diagnostics+json",
+                data: {
+                  schemaVersion: "1.0",
+                  events: [
+                    {
+                      type: "script.exceptionThrown",
+                      url: "https://example.test?token=%5BREDACTED%5D",
+                      message: "Authorization=[REDACTED]",
+                      status: "error",
+                    },
+                  ],
+                },
+              },
+            ],
+          }),
+        },
+      ],
+      "selenium",
+    );
+
+    expect(wrapper.text()).toContain("WebDriver BiDi diagnostics");
+    expect(wrapper.text()).toContain("script.exceptionThrown");
+    expect(wrapper.text()).toContain("Authorization=[REDACTED]");
+    expect(wrapper.find(".bidi-redacted").exists()).toBe(true);
+  });
+
+  it("shows an empty state when Selenium has no BiDi diagnostics", async () => {
+    const wrapper = mountModal();
+
+    await wrapper.vm.showModal(
+      [
+        {
+          id: 19,
+          name: "selenium",
+          status: 1,
+          type: "selenium",
+          screenshots: "[]",
+          data: JSON.stringify({
+            runtime: "selenium",
+            schemaVersion: "selenium.webdriver.v2",
+            commandTrace: [],
+          }),
+        },
+      ],
+      "selenium",
+    );
+
+    expect(wrapper.text()).toContain("No BiDi diagnostics.");
   });
 
   it("ignores invalid screenshot payloads without breaking the modal", () => {
