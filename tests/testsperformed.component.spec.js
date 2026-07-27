@@ -63,6 +63,10 @@ describe("tests performed component", () => {
                 emptyTests: "No tests.",
                 selectCycleFirst: "Select a cycle first.",
                 selectRunFirst: "Select a run first.",
+                downloadReport: "Download report",
+                reportUnavailable: "Report unavailable",
+                reportForRun: "for execution",
+                downloadFailed: "Report download failed.",
                 viewDetails: "View details",
                 statusPending: "Pending",
                 statusPassed: "Passed",
@@ -170,6 +174,108 @@ describe("tests performed component", () => {
     const statusBadge = wrapper.get(".testsperformed-status");
     expect(statusBadge.text()).toBe("Failed");
     expect(statusBadge.classes()).toContain("danger");
+  });
+
+  it("enables only API-advertised report formats and downloads with project context", async () => {
+    api.get.mockImplementation((url) => {
+      if (url.includes("testcycles-performed")) {
+        return Promise.resolve({
+          data: [
+            {
+              id: 44,
+              date: "2026-07-27",
+              reports: [
+                {
+                  format: "json",
+                  url: "reports/44.json",
+                  filename: "execution-44.json",
+                },
+                { format: "html", url: "reports/44.html" },
+              ],
+            },
+          ],
+        });
+      }
+      return Promise.resolve({ data: [] });
+    });
+    URL.createObjectURL = URL.createObjectURL || vi.fn();
+    URL.revokeObjectURL = URL.revokeObjectURL || vi.fn();
+    const createObjectURL = vi
+      .spyOn(URL, "createObjectURL")
+      .mockReturnValue("blob:report");
+    const revokeObjectURL = vi
+      .spyOn(URL, "revokeObjectURL")
+      .mockImplementation(() => {});
+    const click = vi
+      .spyOn(HTMLAnchorElement.prototype, "click")
+      .mockImplementation(() => {});
+
+    const wrapper = mountTestsPerformed();
+    await wrapper.vm.getTestCyclesDate(7);
+    await vi.waitFor(() =>
+      expect(wrapper.findAll(".testsperformed-report-button")).toHaveLength(4),
+    );
+
+    const buttons = wrapper.findAll(".testsperformed-report-button");
+    expect(buttons.map((button) => button.attributes("disabled"))).toEqual([
+      "",
+      undefined,
+      "",
+      undefined,
+    ]);
+    expect(buttons[1].attributes("aria-label")).toBe(
+      "Download report: JSON for execution #44",
+    );
+
+    api.get.mockResolvedValueOnce({
+      data: new Blob(["{}"], { type: "application/json" }),
+      headers: { "content-type": "application/json" },
+    });
+    await buttons[1].trigger("click");
+
+    await vi.waitFor(() =>
+      expect(api.get).toHaveBeenCalledWith("/api/reports/44.json", {
+        headers: {},
+        responseType: "blob",
+      }),
+    );
+    expect(click).toHaveBeenCalled();
+    expect(createObjectURL).toHaveBeenCalled();
+    expect(revokeObjectURL).toHaveBeenCalledWith("blob:report");
+  });
+
+  it("shows a visible report download error without exposing response payloads", async () => {
+    api.get.mockImplementation((url) => {
+      if (url.includes("testcycles-performed")) {
+        return Promise.resolve({
+          data: [
+            {
+              id: 45,
+              date: "2026-07-27",
+              availableReports: { json: { url: "reports/45.json" } },
+            },
+          ],
+        });
+      }
+      return Promise.resolve({ data: [] });
+    });
+    const logout = vi.fn();
+    const wrapper = mountTestsPerformed({ Logout: logout });
+    await wrapper.vm.getTestCyclesDate(7);
+    await vi.waitFor(() =>
+      expect(wrapper.findAll(".testsperformed-report-button")).toHaveLength(4),
+    );
+
+    api.get.mockRejectedValueOnce({
+      response: { status: 500, data: { secret: "do-not-render" } },
+    });
+    await wrapper.findAll(".testsperformed-report-button")[1].trigger("click");
+
+    await vi.waitFor(() =>
+      expect(wrapper.text()).toContain("Report download failed."),
+    );
+    expect(wrapper.text()).not.toContain("do-not-render");
+    expect(logout).toHaveBeenCalled();
   });
 
   it("renders parallel execution worker states and classified failures", async () => {

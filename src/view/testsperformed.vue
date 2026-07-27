@@ -281,6 +281,27 @@
             </span>
             <span class="testsperformed-item-main">
               <strong>{{ testCycleDate.date }}</strong>
+              <span class="testsperformed-report-toolbar">
+                <button
+                  v-for="format in reportFormats"
+                  v-bind:key="format"
+                  type="button"
+                  class="testsperformed-report-button"
+                  :disabled="!isReportFormatAvailable(testCycleDate, format)"
+                  :aria-label="reportButtonLabel(testCycleDate, format)"
+                  :title="reportButtonLabel(testCycleDate, format)"
+                  v-on:click.stop="downloadReport(testCycleDate, format)"
+                >
+                  {{ format.toUpperCase() }}
+                </button>
+              </span>
+              <span
+                v-if="reportDownloadErrorFor(testCycleDate.id)"
+                class="testsperformed-report-error"
+                role="alert"
+              >
+                {{ reportDownloadErrorFor(testCycleDate.id) }}
+              </span>
             </span>
           </button>
         </div>
@@ -657,6 +678,43 @@
   min-width: 0;
 }
 
+.testsperformed-report-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.55rem;
+}
+
+.testsperformed-report-button {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+  color: #dbeafe;
+  cursor: pointer;
+  font-size: 0.64rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  padding: 0.22rem 0.5rem;
+}
+
+.testsperformed-report-button:focus-visible {
+  outline: 2px solid #ffb37a;
+  outline-offset: 2px;
+}
+
+.testsperformed-report-button:disabled {
+  color: rgba(255, 255, 255, 0.36);
+  cursor: not-allowed;
+  opacity: 0.52;
+}
+
+.testsperformed-report-error {
+  color: #ffb0b8;
+  display: block;
+  font-size: 0.76rem;
+  margin-top: 0.45rem;
+}
+
 .testsperformed-test-grid {
   max-height: none;
 }
@@ -792,6 +850,8 @@ export default {
       parallelRuns: [],
       parallelRunPoller: null,
       parallelRunAbortController: null,
+      reportDownloadErrors: {},
+      reportFormats: ["junit", "json", "markdown", "html"],
     };
   },
   watch: {
@@ -936,6 +996,114 @@ export default {
       }
       if (run?.status === "failed") return labels.executionFailure;
       return null;
+    },
+    advertisedReports(run) {
+      const source =
+        run?.reports ?? run?.availableReports ?? run?.exports ?? [];
+      if (Array.isArray(source)) {
+        return source.reduce((reports, report) => {
+          const format = (report?.format || report?.type || "").toLowerCase();
+          if (format) reports[format] = report;
+          return reports;
+        }, {});
+      }
+      return Object.entries(source).reduce((reports, [format, report]) => {
+        reports[format.toLowerCase()] =
+          report === true ? { format, endpoint: null } : report;
+        return reports;
+      }, {});
+    },
+    reportDescriptor(run, format) {
+      return this.advertisedReports(run)[format] ?? null;
+    },
+    isReportFormatAvailable(run, format) {
+      return this.reportDescriptor(run, format) != null;
+    },
+    reportButtonLabel(run, format) {
+      const labels = this.language[this.config.currentLanguage].TestsPerformed;
+      const state = this.isReportFormatAvailable(run, format)
+        ? labels.downloadReport
+        : labels.reportUnavailable;
+      return `${state}: ${format.toUpperCase()} ${labels.reportForRun} #${run.id}`;
+    },
+    reportDownloadErrorFor(runId) {
+      return this.reportDownloadErrors[runId] || null;
+    },
+    reportUrl(run, format) {
+      const descriptor = this.reportDescriptor(run, format);
+      const rawUrl =
+        typeof descriptor === "string"
+          ? descriptor
+          : descriptor?.url || descriptor?.downloadUrl || descriptor?.endpoint;
+
+      if (rawUrl) {
+        return rawUrl.startsWith("http")
+          ? rawUrl
+          : this.config.serviceBaseUrl + rawUrl.replace(/^\/+/, "");
+      }
+
+      return (
+        this.config.serviceBaseUrl +
+        this.config.url.getTestCyclePerformed +
+        "/" +
+        run.testCycleId +
+        "/" +
+        run.id +
+        "/reports/" +
+        format
+      );
+    },
+    reportFilename(run, format) {
+      const descriptor = this.reportDescriptor(run, format);
+      if (descriptor?.filename) return descriptor.filename;
+
+      const extensions = {
+        html: "html",
+        json: "json",
+        junit: "xml",
+        markdown: "md",
+      };
+      return `idelium-run-${run.id}.${extensions[format] || format}`;
+    },
+    downloadBlob(filename, data, mimeType) {
+      const blob =
+        data instanceof Blob ? data : new Blob([data], { type: mimeType });
+      const objectUrl = URL.createObjectURL(blob);
+      const element = document.createElement("a");
+      element.href = objectUrl;
+      element.download = filename;
+      element.style.display = "none";
+      document.body.appendChild(element);
+      element.click();
+      document.body.removeChild(element);
+      URL.revokeObjectURL(objectUrl);
+    },
+    async downloadReport(run, format) {
+      if (!this.isReportFormatAvailable(run, format)) return;
+
+      const labels = this.language[this.config.currentLanguage].TestsPerformed;
+      this.reportDownloadErrors = {
+        ...this.reportDownloadErrors,
+        [run.id]: null,
+      };
+
+      try {
+        const response = await apiClient.get(this.reportUrl(run, format), {
+          headers: this.setHeaders(),
+          responseType: "blob",
+        });
+        this.downloadBlob(
+          this.reportFilename(run, format),
+          response.data,
+          response.headers?.["content-type"] || "application/octet-stream",
+        );
+      } catch (e) {
+        this.reportDownloadErrors = {
+          ...this.reportDownloadErrors,
+          [run.id]: labels.downloadFailed,
+        };
+        this.Logout(this, e);
+      }
     },
     async confirmCancelParallelRun(run) {
       const labels = this.language[this.config.currentLanguage].TestsPerformed;

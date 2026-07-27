@@ -515,6 +515,11 @@ export default {
     emptyTests: "Non ci sono test per questa esecuzione.",
     selectCycleFirst: "Seleziona prima un ciclo di test.",
     selectRunFirst: "Seleziona prima una esecuzione.",
+    downloadReport: "Scarica report",
+    reportUnavailable: "Report non disponibile",
+    reportForRun: "per esecuzione",
+    downloadFailed:
+      "Download del report non riuscito. Il payload protetto resta sul server.",
     viewDetails: "Vedi dettagli",
     statusPending: "In attesa",
     statusPassed: "Superato",

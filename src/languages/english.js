@@ -512,6 +512,11 @@ export default {
     emptyTests: "No tests are available for this execution.",
     selectCycleFirst: "Select a test cycle first.",
     selectRunFirst: "Select an execution first.",
+    downloadReport: "Download report",
+    reportUnavailable: "Report unavailable",
+    reportForRun: "for execution",
+    downloadFailed:
+      "Report download failed. The API kept the protected payload on the server.",
     viewDetails: "View details",
     statusPending: "Pending",
     statusPassed: "Passed",
