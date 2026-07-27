@@ -150,8 +150,46 @@ export default {
       sourceHelp:
         "Usa sorgente Idelium DSL versionato. La UI valida il documento prima del salvataggio; l'API resta il confine contrattuale autoritativo.",
       validate: "Valida DSL",
+      constructsTitle: "Guida autore DSL v1",
       line: "riga",
       column: "colonna",
+      constructs: {
+        variables: {
+          title: "Variabili e segreti",
+          description:
+            "Dichiara valori riutilizzabili e marca i segreti per non esporre dati sensibili nei diagnostics.",
+        },
+        interpolation: {
+          title: "Interpolazione",
+          description:
+            "Usa `${name}` dentro URL, locator, assertion e valori di input.",
+        },
+        conditions: {
+          title: "Condizioni",
+          description:
+            "Esegui blocchi annidati con controlli visible o hidden mantenendo diagnostics sugli step saltati.",
+        },
+        loops: {
+          title: "Loop limitati",
+          description:
+            "Ripeti flussi deterministici con limiti espliciti e sicuri per la CI.",
+        },
+        reuse: {
+          title: "Step riutilizzabili",
+          description:
+            "Definisci helper nominati e richiamali con parametri per evitare logica duplicata.",
+        },
+        assertions: {
+          title: "Assertion",
+          description:
+            "Valida visibilità, testo, valori, conteggi, URL e titolo con contratti risultato versionati.",
+        },
+        parameters: {
+          title: "Parametri runtime",
+          description:
+            "Tieni le credenziali fuori dal sorgente DSL e iniettale tramite parametri runtime protetti.",
+        },
+      },
     },
     wizard: {
       wizardTitle: "Step wizard",

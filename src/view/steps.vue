@@ -229,6 +229,22 @@
           <div id="step-dsl-help" class="form-text">
             {{ language[config.currentLanguage].Steps.dsl.sourceHelp }}
           </div>
+          <section
+            class="idelium-dsl-editor__constructs"
+            :aria-label="
+              language[config.currentLanguage].Steps.dsl.constructsTitle
+            "
+          >
+            <article
+              v-for="construct in localizedDslConstructs"
+              :key="construct.id"
+              class="idelium-dsl-editor__construct-card"
+            >
+              <h6>{{ construct.title }}</h6>
+              <p>{{ construct.description }}</p>
+              <code>{{ construct.statements[0] }}</code>
+            </article>
+          </section>
           <button
             type="button"
             class="btn btn-outline-info btn-sm mt-3"
@@ -242,6 +258,7 @@
             class="idelium-dsl-editor__diagnostics"
           >
             <li v-for="diagnostic in dslDiagnostics" :key="diagnostic.code">
+              <strong>{{ diagnostic.severity }}</strong>
               {{
                 formatDslDiagnostic(
                   diagnostic,
@@ -360,6 +377,22 @@
               <div id="step-edit-dsl-help" class="form-text">
                 {{ language[config.currentLanguage].Steps.dsl.sourceHelp }}
               </div>
+              <section
+                class="idelium-dsl-editor__constructs"
+                :aria-label="
+                  language[config.currentLanguage].Steps.dsl.constructsTitle
+                "
+              >
+                <article
+                  v-for="construct in localizedDslConstructs"
+                  :key="construct.id"
+                  class="idelium-dsl-editor__construct-card"
+                >
+                  <h6>{{ construct.title }}</h6>
+                  <p>{{ construct.description }}</p>
+                  <code>{{ construct.statements[0] }}</code>
+                </article>
+              </section>
               <button
                 type="button"
                 class="btn btn-outline-info btn-sm mt-3"
@@ -376,6 +409,7 @@
                   v-for="diagnostic in dslEditDiagnostics"
                   :key="diagnostic.code"
                 >
+                  <strong>{{ diagnostic.severity }}</strong>
                   {{
                     formatDslDiagnostic(
                       diagnostic,
@@ -475,6 +509,24 @@
   color: #ffd8cc;
   background: rgba(255, 97, 34, 0.08);
 }
+.idelium-dsl-editor__constructs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+.idelium-dsl-editor__construct-card {
+  padding: 0.875rem;
+  border: 1px solid rgba(83, 117, 255, 0.28);
+  border-radius: 0.75rem;
+  background: rgba(17, 24, 39, 0.05);
+}
+.idelium-dsl-editor__construct-card h6 {
+  margin: 0 0 0.375rem;
+}
+.idelium-dsl-editor__construct-card p {
+  margin: 0 0 0.5rem;
+}
 </style>
 
 <script>
@@ -493,6 +545,7 @@ import {
   buildDslSourcePayload,
   extractDslSource,
   isDslSourcePayload,
+  localizeDslConstructs,
   validateDslSource,
 } from "@/domain/dslValidation";
 
@@ -566,6 +619,11 @@ export default {
     },
     isStepOrderTabDisabled() {
       return this.stepsLoaded && this.listSteps.length === 0;
+    },
+    localizedDslConstructs() {
+      return localizeDslConstructs(
+        this.language[this.config.currentLanguage].Steps.dsl,
+      );
     },
   },
   watch: {

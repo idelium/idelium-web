@@ -148,8 +148,46 @@ export default {
       sourceHelp:
         "Use versioned Idelium DSL source. The UI validates the document before saving; the API remains the authoritative contract boundary.",
       validate: "Validate DSL",
+      constructsTitle: "DSL v1 authoring guide",
       line: "line",
       column: "column",
+      constructs: {
+        variables: {
+          title: "Variables and secrets",
+          description:
+            "Declare reusable values and mark secrets so diagnostics never expose sensitive runtime data.",
+        },
+        interpolation: {
+          title: "Interpolation",
+          description:
+            "Reference variables with `${name}` inside URLs, locators, assertions, and input values.",
+        },
+        conditions: {
+          title: "Conditions",
+          description:
+            "Gate nested statements with visible or hidden checks while preserving skipped-step diagnostics.",
+        },
+        loops: {
+          title: "Bounded loops",
+          description:
+            "Repeat deterministic flows with explicit limits that remain safe for CI execution.",
+        },
+        reuse: {
+          title: "Reusable steps",
+          description:
+            "Define named helper steps and call them with parameters to avoid duplicated logic.",
+        },
+        assertions: {
+          title: "Assertions",
+          description:
+            "Validate visibility, text, values, counts, URL, and title through versioned result contracts.",
+        },
+        parameters: {
+          title: "Runtime parameters",
+          description:
+            "Keep credentials outside saved DSL source and inject them through protected runtime parameters.",
+        },
+      },
     },
     wizard: {
       wizardTitle: "Step wizard",

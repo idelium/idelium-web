@@ -2,8 +2,10 @@ import { describe, expect, it } from "vitest";
 
 import {
   buildDslSourcePayload,
+  dslConstructCatalog,
   extractDslSource,
   isDslSourcePayload,
+  localizeDslConstructs,
   validateDslSource,
 } from "@/domain/dslValidation";
 
@@ -32,5 +34,75 @@ describe("DSL validation", () => {
 
     expect(isDslSourcePayload(JSON.stringify(payload))).toBe(true);
     expect(extractDslSource(JSON.stringify(payload))).toContain('test "smoke"');
+  });
+
+  it("returns lint severities, source locations, and remediation", () => {
+    const result = validateDslSource(
+      'idelium 1.0\n\ntest "smoke" {\n  open "http://example.invalid"\n  wait css "#ready" visible\n}\n',
+    );
+
+    expect(result.schemaVersion).toBe("dsl-lint-result.v1");
+    expect(result.valid).toBe(true);
+    expect(result.diagnostics).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          line: 4,
+          code: "DSL_OPEN_HTTP_URL",
+          severity: "warning",
+          remediation: expect.stringContaining("HTTPS"),
+        }),
+        expect.objectContaining({
+          line: 5,
+          code: "DSL_WAIT_TIMEOUT_IMPLICIT",
+          severity: "warning",
+        }),
+      ]),
+    );
+  });
+
+  it("redacts sensitive literals from diagnostics", () => {
+    const result = validateDslSource(
+      'idelium 1.0\n\ntest "smoke" {\n  write css "#password" value "password=secret"\n}\n',
+    );
+
+    expect(result.valid).toBe(false);
+    expect(result.diagnostics[0]).toEqual(
+      expect.objectContaining({
+        code: "DSL_SECRET_LITERAL",
+        severity: "error",
+      }),
+    );
+    expect(JSON.stringify(result)).not.toContain("password=secret");
+    expect(JSON.stringify(result)).toContain("[REDACTED]");
+  });
+
+  it("exposes a localized DSL v1 construct catalog", () => {
+    const constructs = dslConstructCatalog();
+    const localized = localizeDslConstructs({
+      constructs: {
+        variables: {
+          title: "Variables",
+          description: "Declare values.",
+        },
+      },
+    });
+
+    expect(constructs.map((construct) => construct.id)).toEqual(
+      expect.arrayContaining([
+        "variables",
+        "interpolation",
+        "conditions",
+        "loops",
+        "reuse",
+        "assertions",
+        "parameters",
+      ]),
+    );
+    expect(localized[0]).toEqual(
+      expect.objectContaining({
+        title: "Variables",
+        description: "Declare values.",
+      }),
+    );
   });
 });

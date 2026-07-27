@@ -61,8 +61,39 @@ describe("steps component", () => {
                   sourcePlaceholder: 'idelium 1.0\n\ntest "smoke" {\n}',
                   sourceHelp: "Validate DSL before saving.",
                   validate: "Validate DSL",
+                  constructsTitle: "DSL v1 authoring guide",
                   line: "line",
                   column: "column",
+                  constructs: {
+                    variables: {
+                      title: "Variables and secrets",
+                      description: "Declare reusable values.",
+                    },
+                    interpolation: {
+                      title: "Interpolation",
+                      description: "Reference variables.",
+                    },
+                    conditions: {
+                      title: "Conditions",
+                      description: "Gate nested statements.",
+                    },
+                    loops: {
+                      title: "Bounded loops",
+                      description: "Repeat deterministic flows.",
+                    },
+                    reuse: {
+                      title: "Reusable steps",
+                      description: "Avoid duplicated logic.",
+                    },
+                    assertions: {
+                      title: "Assertions",
+                      description: "Validate runtime state.",
+                    },
+                    parameters: {
+                      title: "Runtime parameters",
+                      description: "Inject protected values.",
+                    },
+                  },
                 },
               },
               Actions: {
@@ -290,5 +321,26 @@ describe("steps component", () => {
     expect(wrapper.vm.dslEditSource).toBe(source);
     expect(wrapper.vm.jsonResumeSteps).toBeNull();
     expect(modal.show).toHaveBeenCalled();
+  });
+
+  it("renders localized DSL construct guidance for enterprise authoring", async () => {
+    api.get.mockResolvedValue({ data: [] });
+    useSessionStore(pinia).selectProject(3);
+
+    const wrapper = mountSteps({
+      $route: {
+        name: "steps",
+        params: { projectId: "3", tab: "new" },
+        query: {},
+      },
+    });
+    wrapper.vm.modeSelected = "dsl";
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.text()).toContain("Variables and secrets");
+    expect(wrapper.text()).toContain("Reusable steps");
+    expect(wrapper.find("[aria-label='DSL v1 authoring guide']").exists()).toBe(
+      true,
+    );
   });
 });
