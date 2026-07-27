@@ -58,6 +58,20 @@ export default {
       it: "Italian",
     },
   },
+  ExecutionResult: {
+    executionResults: "Execution result details",
+    executionResultsHelp:
+      "Review canonical result metadata, traces, diagnostics, timing, and artifacts.",
+    runtime: "runtime",
+    schema: "schema",
+    duration: "duration",
+    diagnostics: "diagnostics",
+    artifacts: "artifacts",
+    trace: "trace",
+    page: "page",
+    emptyResults:
+      "No canonical execution result details are available for this step.",
+  },
   Login: {
     btnLogin: "enter",
     placePassword: "password",

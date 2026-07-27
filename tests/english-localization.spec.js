@@ -19,4 +19,11 @@ describe("English localization", () => {
       "versioned result contracts",
     );
   });
+
+  it("localizes execution result inspection labels", () => {
+    expect(english.ExecutionResult.executionResults).toBe(
+      "Execution result details",
+    );
+    expect(english.ExecutionResult.artifacts).toBe("artifacts");
+  });
 });

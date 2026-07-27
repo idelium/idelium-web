@@ -275,6 +275,142 @@
                         </section>
                       </td>
                     </tr>
+                    <tr
+                      v-if="hasExecutionResultDetails(step)"
+                      class="execution-result-row"
+                    >
+                      <td colspan="6">
+                        <section
+                          class="execution-result-panel"
+                          :aria-label="
+                            resultLabel(
+                              'executionResults',
+                              'Execution result details',
+                            )
+                          "
+                        >
+                          <div class="execution-result-header">
+                            <div>
+                              <h6>
+                                {{
+                                  resultLabel(
+                                    "executionResults",
+                                    "Execution result details",
+                                  )
+                                }}
+                              </h6>
+                              <p>
+                                {{
+                                  resultLabel(
+                                    "executionResultsHelp",
+                                    "Review canonical result metadata, traces, diagnostics, timing, and artifacts.",
+                                  )
+                                }}
+                              </p>
+                            </div>
+                            <span class="execution-result-counter">
+                              {{ stepArtifacts(step).length }}
+                            </span>
+                          </div>
+                          <div class="execution-result-grid">
+                            <article class="execution-result-card">
+                              <span>{{
+                                resultLabel("runtime", "runtime")
+                              }}</span>
+                              <strong>{{
+                                runtimeDetails(step).runtime
+                              }}</strong>
+                            </article>
+                            <article class="execution-result-card">
+                              <span>{{ resultLabel("schema", "schema") }}</span>
+                              <strong>{{
+                                runtimeDetails(step).schemaVersion
+                              }}</strong>
+                            </article>
+                            <article class="execution-result-card">
+                              <span>{{
+                                resultLabel("duration", "duration")
+                              }}</span>
+                              <strong>{{
+                                formatDuration(stepDuration(step))
+                              }}</strong>
+                            </article>
+                          </div>
+                          <div
+                            v-if="stepDiagnostics(step).length > 0"
+                            class="execution-result-diagnostics"
+                          >
+                            <h6>
+                              {{ resultLabel("diagnostics", "diagnostics") }}
+                            </h6>
+                            <ul>
+                              <li
+                                v-for="(
+                                  diagnostic, diagnosticIndex
+                                ) in stepDiagnostics(step)"
+                                :key="diagnosticIndex"
+                              >
+                                <strong>{{
+                                  diagnostic.code ||
+                                  diagnostic.level ||
+                                  "diagnostic"
+                                }}</strong>
+                                {{ diagnostic.message || "—" }}
+                              </li>
+                            </ul>
+                          </div>
+                          <div
+                            v-if="stepArtifacts(step).length > 0"
+                            class="execution-result-artifacts"
+                          >
+                            <h6>{{ resultLabel("artifacts", "artifacts") }}</h6>
+                            <ul>
+                              <li
+                                v-for="(
+                                  artifact, artifactIndex
+                                ) in stepArtifacts(step)"
+                                :key="artifactIndex"
+                              >
+                                <strong>{{
+                                  artifact.name || "artifact"
+                                }}</strong>
+                                {{ artifact.type || "unknown" }}
+                                <span v-if="artifact.path">
+                                  · {{ artifact.path }}</span
+                                >
+                              </li>
+                            </ul>
+                          </div>
+                          <div
+                            v-if="stepTrace(step) != null"
+                            class="execution-result-trace"
+                          >
+                            <h6>{{ resultLabel("trace", "trace") }}</h6>
+                            <p>
+                              {{ stepTrace(step).status || "—" }}
+                              ·
+                              {{
+                                stepTrace(step).identity?.kind ||
+                                stepTrace(step).kind ||
+                                "step"
+                              }}
+                            </p>
+                            <p v-if="stepTrace(step).page?.url">
+                              {{ resultLabel("page", "page") }}:
+                              {{ stepTrace(step).page.url }}
+                            </p>
+                          </div>
+                          <div v-else class="execution-result-empty">
+                            {{
+                              resultLabel(
+                                "emptyResults",
+                                "No canonical execution result details are available for this step.",
+                              )
+                            }}
+                          </div>
+                        </section>
+                      </td>
+                    </tr>
                   </template>
                 </tbody>
               </table>
@@ -312,7 +448,8 @@
   padding: 0;
 }
 .postman-result-panel,
-.bidi-result-panel {
+.bidi-result-panel,
+.execution-result-panel {
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 18px;
   margin: 0.75rem;
@@ -320,7 +457,8 @@
   background: rgba(15, 18, 28, 0.72);
 }
 .postman-result-header,
-.bidi-result-header {
+.bidi-result-header,
+.execution-result-header {
   display: flex;
   justify-content: space-between;
   gap: 1rem;
@@ -328,6 +466,10 @@
 }
 .postman-result-header h6,
 .bidi-result-header h6,
+.execution-result-header h6,
+.execution-result-diagnostics h6,
+.execution-result-artifacts h6,
+.execution-result-trace h6,
 .postman-response-title {
   margin: 0;
   color: #f6f7fb;
@@ -338,14 +480,18 @@
 }
 .postman-result-header p,
 .bidi-result-header p,
+.execution-result-header p,
 .postman-empty-state,
-.bidi-empty-state {
+.bidi-empty-state,
+.execution-result-empty,
+.execution-result-trace p {
   margin: 0.35rem 0 0;
   color: rgba(246, 247, 251, 0.72);
   font-size: 0.72rem;
   letter-spacing: 0.12em;
 }
-.bidi-result-counter {
+.bidi-result-counter,
+.execution-result-counter {
   align-items: center;
   background: rgba(255, 109, 31, 0.12);
   border: 1px solid rgba(255, 109, 31, 0.42);
@@ -368,6 +514,37 @@
 .bidi-redacted {
   color: #ffb184;
   font-weight: 800;
+}
+.execution-result-grid {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  margin-bottom: 1rem;
+}
+.execution-result-card {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  padding: 0.85rem;
+}
+.execution-result-card span {
+  color: rgba(246, 247, 251, 0.64);
+  display: block;
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.execution-result-card strong {
+  color: #f6f7fb;
+}
+.execution-result-diagnostics,
+.execution-result-artifacts,
+.execution-result-trace {
+  margin-top: 0.75rem;
+}
+.execution-result-diagnostics ul,
+.execution-result-artifacts ul {
+  margin: 0.5rem 0 0;
+  padding-left: 1.25rem;
 }
 .postman-response-panel {
   margin-top: 1rem;
@@ -516,6 +693,12 @@ export default {
         this.language?.[this.config.currentLanguage]?.Bidi?.[key] || fallback
       );
     },
+    resultLabel(key, fallback) {
+      return (
+        this.language?.[this.config.currentLanguage]?.ExecutionResult?.[key] ||
+        fallback
+      );
+    },
     safeStepData(step) {
       if (step?.data && typeof step.data === "object") {
         return step.data;
@@ -559,6 +742,62 @@ export default {
           })),
         )
         .slice(0, 100);
+    },
+    hasExecutionResultDetails(step) {
+      const payload = this.safeStepData(step);
+      return (
+        Boolean(payload.schemaVersion || payload.runtime || payload.trace) ||
+        this.stepDiagnostics(step).length > 0 ||
+        this.stepArtifacts(step).length > 0
+      );
+    },
+    runtimeDetails(step) {
+      const payload = this.safeStepData(step);
+      return {
+        runtime: payload.runtime || step?.type || "legacy",
+        schemaVersion: payload.schemaVersion || "legacy",
+      };
+    },
+    stepTrace(step) {
+      const payload = this.safeStepData(step);
+      return payload.trace || null;
+    },
+    stepDiagnostics(step) {
+      const payload = this.safeStepData(step);
+      const diagnostics = [
+        ...(Array.isArray(payload.diagnostics) ? payload.diagnostics : []),
+        ...(Array.isArray(payload.trace?.diagnostics)
+          ? payload.trace.diagnostics
+          : []),
+      ];
+      return diagnostics.slice(0, 25).map((diagnostic) => ({
+        code: this.formatBidiValue(diagnostic?.code || diagnostic?.level),
+        level: this.formatBidiValue(diagnostic?.level),
+        message: this.formatBidiValue(diagnostic?.message),
+      }));
+    },
+    stepArtifacts(step) {
+      const payload = this.safeStepData(step);
+      const artifacts = Array.isArray(payload.artifacts)
+        ? payload.artifacts
+        : [];
+      return artifacts.slice(0, 25).map((artifact) => ({
+        name: this.formatBidiValue(artifact?.name || "artifact"),
+        type: this.formatBidiValue(artifact?.type || "unknown"),
+        path: this.formatBidiValue(artifact?.path || ""),
+      }));
+    },
+    stepDuration(step) {
+      const payload = this.safeStepData(step);
+      return (
+        payload.durationMilliseconds ||
+        payload.trace?.timing?.durationMilliseconds ||
+        step?.durationMilliseconds ||
+        0
+      );
+    },
+    formatDuration(milliseconds) {
+      return `${Number(milliseconds || 0)} ms`;
     },
     formatBidiValue(value) {
       if (value === null || typeof value === "undefined" || value === "") {

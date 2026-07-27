@@ -73,6 +73,18 @@ function mountModal() {
               executionResultsHelp: "Review BiDi diagnostics.",
               emptyResults: "No BiDi diagnostics.",
             },
+            ExecutionResult: {
+              executionResults: "Execution result details",
+              executionResultsHelp: "Review canonical result details.",
+              runtime: "runtime",
+              schema: "schema",
+              duration: "duration",
+              diagnostics: "diagnostics",
+              artifacts: "artifacts",
+              trace: "trace",
+              page: "page",
+              emptyResults: "No canonical execution result details.",
+            },
           },
         },
       },
@@ -220,6 +232,88 @@ describe("performed test details modal", () => {
     );
 
     expect(wrapper.text()).toContain("No BiDi diagnostics.");
+  });
+
+  it("renders canonical execution result traces and artifacts safely", async () => {
+    const wrapper = mountModal();
+
+    await wrapper.vm.showModal(
+      [
+        {
+          id: 20,
+          name: "checkout",
+          status: 2,
+          type: "seleniumOrAppium",
+          screenshots: "[]",
+          data: JSON.stringify({
+            runtime: "selenium",
+            schemaVersion: "performed-step-result.v1",
+            durationMilliseconds: 143,
+            diagnostics: [
+              {
+                level: "error",
+                code: "IDELIUM_WEBDRIVER_TIMEOUT",
+                message: "Timeout waiting for token=[REDACTED]",
+              },
+            ],
+            artifacts: [
+              {
+                name: "failure-screenshot.png",
+                type: "image/png",
+                path: "screenshots/20.png",
+              },
+            ],
+            trace: {
+              status: "failed",
+              identity: { kind: "click" },
+              page: {
+                url: "https://example.test/checkout?token=%5BREDACTED%5D",
+              },
+              timing: { durationMilliseconds: 143 },
+              diagnostics: [
+                {
+                  level: "error",
+                  code: "IDELIUM_WEBDRIVER_TIMEOUT",
+                  message: "Timeout waiting for token=[REDACTED]",
+                },
+              ],
+            },
+          }),
+        },
+      ],
+      "checkout",
+    );
+
+    expect(wrapper.text()).toContain("Execution result details");
+    expect(wrapper.text()).toContain("performed-step-result.v1");
+    expect(wrapper.text()).toContain("143 ms");
+    expect(wrapper.text()).toContain("failure-screenshot.png");
+    expect(wrapper.text()).toContain("IDELIUM_WEBDRIVER_TIMEOUT");
+    expect(wrapper.text()).toContain("token=[REDACTED]");
+    expect(wrapper.text()).not.toContain("token=secret");
+  });
+
+  it("renders partial legacy result details without crashing", async () => {
+    const wrapper = mountModal();
+
+    await wrapper.vm.showModal(
+      [
+        {
+          id: 21,
+          name: "legacy",
+          status: 1,
+          type: "selenium",
+          screenshots: "[]",
+          data: JSON.stringify({ runtime: "selenium" }),
+        },
+      ],
+      "legacy",
+    );
+
+    expect(wrapper.text()).toContain("Execution result details");
+    expect(wrapper.text()).toContain("legacy");
+    expect(wrapper.vm.stepArtifacts(wrapper.vm.arrayStep[0])).toEqual([]);
+    expect(wrapper.vm.stepDiagnostics(wrapper.vm.arrayStep[0])).toEqual([]);
   });
 
   it("ignores invalid screenshot payloads without breaking the modal", () => {

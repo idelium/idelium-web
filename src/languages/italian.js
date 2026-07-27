@@ -58,6 +58,20 @@ export default {
       gb: "inglese",
     },
   },
+  ExecutionResult: {
+    executionResults: "Dettagli risultato esecuzione",
+    executionResultsHelp:
+      "Esamina metadati canonici, trace, diagnostics, tempi e artifact del risultato.",
+    runtime: "runtime",
+    schema: "schema",
+    duration: "durata",
+    diagnostics: "diagnostics",
+    artifacts: "artifact",
+    trace: "trace",
+    page: "pagina",
+    emptyResults:
+      "Non sono disponibili dettagli canonici del risultato per questo step.",
+  },
   Login: {
     btnLogin: "Entra",
     placePassword: "password",
