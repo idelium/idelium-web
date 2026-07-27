@@ -516,6 +516,38 @@ export default {
     statusPending: "Pending",
     statusPassed: "Passed",
     statusFailed: "Failed",
+    parallelRuns: "Parallel executions",
+    parallelRunsDescription:
+      "Monitor queued, active, completed, failed, and cancelled distributed runs from the server state.",
+    parallelRunLabel: "Run",
+    emptyParallelRuns:
+      "No parallel executions are currently tracked for this project.",
+    cancelRun: "Cancel run",
+    cancelRunTitle: "Cancel parallel execution?",
+    cancelRunMessage:
+      "Idelium will ask the server to cancel this run and then refresh the state returned by the API.",
+    confirmCancelRun: "Cancel execution",
+    keepRunning: "Keep running",
+    workerConcurrency: "Active",
+    workerCompleted: "Completed",
+    workerFailed: "Failed",
+    workerCancelled: "Cancelled",
+    parallelStatuses: {
+      queued: "Queued",
+      running: "Running",
+      cancelling: "Cancelling",
+      cancelled: "Cancelled",
+      completed: "Completed",
+      failed: "Failed",
+      unknown: "Unknown",
+    },
+    failureClasses: {
+      workerFailure: "Classified failure: one or more workers reported errors.",
+      cancelled:
+        "Classified cancellation: execution was stopped before completion.",
+      executionFailure:
+        "Classified failure: execution finished with a failed aggregate state.",
+    },
     stepId: "#",
     stepName: "Name step",
     stepStatus: "Step outcome",

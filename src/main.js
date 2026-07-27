@@ -145,6 +145,7 @@ app.config.globalProperties.config = {
     getTestCyclePerformed: "admin/testcyclesperfomed",
     getTestPerformed: "admin/testsperfomed",
     getStepPerformed: "admin/stepsperfomed",
+    parallelRuns: "admin/projects",
     platforms: "admin/platforms",
     login: "login",
     logout: "logout",

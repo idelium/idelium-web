@@ -47,6 +47,139 @@
         </span>
         <strong>{{ arrayTest.length }}</strong>
       </article>
+      <article class="card testsperformed-metric">
+        <span class="testsperformed-metric-label">
+          {{ language[config.currentLanguage].TestsPerformed.parallelRuns }}
+        </span>
+        <strong>{{ parallelRuns.length }}</strong>
+      </article>
+    </section>
+
+    <section class="card testsperformed-parallel-panel" aria-live="polite">
+      <div class="testsperformed-panel-header">
+        <div>
+          <span class="testsperformed-section-title">
+            {{ language[config.currentLanguage].TestsPerformed.parallelRuns }}
+          </span>
+          <p class="testsperformed-helper">
+            {{
+              language[config.currentLanguage].TestsPerformed
+                .parallelRunsDescription
+            }}
+          </p>
+        </div>
+        <button
+          type="button"
+          class="btn btn-sm btn-outline-light testsperformed-icon-button"
+          v-on:click="loadParallelRuns()"
+          :title="language[config.currentLanguage].Actions.refresh"
+        >
+          <font-awesome-icon
+            icon="history"
+            class="idelium-action-icon--refresh"
+          />
+        </button>
+      </div>
+      <div v-if="parallelRuns.length > 0" class="testsperformed-parallel-grid">
+        <article
+          v-for="run in parallelRuns"
+          v-bind:key="run.id"
+          class="testsperformed-parallel-card"
+        >
+          <div class="testsperformed-parallel-card-header">
+            <div>
+              <span
+                :class="[
+                  'testsperformed-status',
+                  parallelRunVariant(run.status),
+                ]"
+              >
+                {{ parallelRunStatusLabel(run.status) }}
+              </span>
+              <strong>
+                {{
+                  language[config.currentLanguage].TestsPerformed
+                    .parallelRunLabel
+                }}
+                #{{ run.id }}
+              </strong>
+            </div>
+            <button
+              v-if="canCancelParallelRun(run)"
+              type="button"
+              class="btn btn-sm btn-outline-light testsperformed-cancel-button"
+              v-on:click="confirmCancelParallelRun(run)"
+            >
+              {{ language[config.currentLanguage].TestsPerformed.cancelRun }}
+            </button>
+          </div>
+          <dl class="testsperformed-worker-metrics">
+            <div>
+              <dt>
+                {{
+                  language[config.currentLanguage].TestsPerformed
+                    .workerConcurrency
+                }}
+              </dt>
+              <dd>{{ run.activeWorkers }}/{{ run.requestedConcurrency }}</dd>
+            </div>
+            <div>
+              <dt>
+                {{
+                  language[config.currentLanguage].TestsPerformed
+                    .workerCompleted
+                }}
+              </dt>
+              <dd>{{ run.completedWorkers }}</dd>
+            </div>
+            <div>
+              <dt>
+                {{
+                  language[config.currentLanguage].TestsPerformed.workerFailed
+                }}
+              </dt>
+              <dd>{{ run.failedWorkers }}</dd>
+            </div>
+            <div>
+              <dt>
+                {{
+                  language[config.currentLanguage].TestsPerformed
+                    .workerCancelled
+                }}
+              </dt>
+              <dd>{{ run.cancelledWorkers }}</dd>
+            </div>
+          </dl>
+          <p
+            v-if="classifyParallelRunFailure(run)"
+            class="testsperformed-failure-classification"
+          >
+            {{ classifyParallelRunFailure(run) }}
+          </p>
+          <ul
+            v-if="parallelResultSummary(run).length > 0"
+            class="testsperformed-worker-list"
+          >
+            <li
+              v-for="worker in parallelResultSummary(run)"
+              v-bind:key="worker.workerId"
+            >
+              <span>{{ worker.workerId }}</span>
+              <span
+                :class="[
+                  'testsperformed-worker-state',
+                  parallelRunVariant(worker.status),
+                ]"
+              >
+                {{ parallelRunStatusLabel(worker.status) }}
+              </span>
+            </li>
+          </ul>
+        </article>
+      </div>
+      <div v-else class="testsperformed-empty testsperformed-empty-compact">
+        {{ language[config.currentLanguage].TestsPerformed.emptyParallelRuns }}
+      </div>
     </section>
 
     <section class="testsperformed-workspace">
@@ -270,7 +403,7 @@
   display: grid;
   flex: 0 0 auto;
   gap: 1rem;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
 .testsperformed-metric {
@@ -295,6 +428,140 @@
     );
   min-height: 0;
   overflow: hidden;
+}
+
+.testsperformed-parallel-panel {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  max-height: 20rem;
+  min-height: 12rem;
+  overflow: hidden;
+  padding: 1rem;
+}
+
+.testsperformed-parallel-grid {
+  display: grid;
+  gap: 0.85rem;
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+  overflow-y: auto;
+  padding-right: 0.25rem;
+}
+
+.testsperformed-parallel-card {
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.06), transparent),
+    rgba(9, 21, 37, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.95rem;
+  color: rgba(255, 255, 255, 0.86);
+  padding: 1rem;
+}
+
+.testsperformed-parallel-card-header {
+  align-items: flex-start;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
+.testsperformed-parallel-card-header strong {
+  color: #ffffff;
+  display: block;
+  margin-top: 0.55rem;
+}
+
+.testsperformed-cancel-button {
+  border-color: rgba(255, 143, 155, 0.42);
+  color: #ffd2d7;
+  white-space: nowrap;
+}
+
+.testsperformed-worker-metrics {
+  display: grid;
+  gap: 0.55rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: 1rem 0;
+}
+
+.testsperformed-worker-metrics div {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 0.65rem;
+  padding: 0.65rem;
+}
+
+.testsperformed-worker-metrics dt {
+  color: rgba(255, 255, 255, 0.54);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.testsperformed-worker-metrics dd {
+  color: #ffffff;
+  font-size: 1.1rem;
+  font-weight: 800;
+  margin: 0.25rem 0 0;
+}
+
+.testsperformed-failure-classification {
+  background: rgba(220, 53, 69, 0.12);
+  border: 1px solid rgba(220, 53, 69, 0.25);
+  border-radius: 0.75rem;
+  color: #ffb0b8;
+  margin: 0 0 0.85rem;
+  padding: 0.7rem;
+}
+
+.testsperformed-worker-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.testsperformed-worker-list li {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+.testsperformed-worker-state {
+  border-radius: 999px;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  padding: 0.22rem 0.5rem;
+  text-transform: uppercase;
+}
+
+.testsperformed-status.running,
+.testsperformed-worker-state.running {
+  background: rgba(13, 110, 253, 0.18);
+  color: #8ec5ff;
+}
+
+.testsperformed-worker-state.secondary {
+  background: rgba(148, 163, 184, 0.18);
+  color: #cbd5e1;
+}
+
+.testsperformed-worker-state.success {
+  background: rgba(25, 135, 84, 0.2);
+  color: #75d7a0;
+}
+
+.testsperformed-worker-state.danger {
+  background: rgba(220, 53, 69, 0.2);
+  color: #ff8f9b;
+}
+
+.testsperformed-empty-compact {
+  min-height: 7rem;
 }
 
 .testsperformed-panel {
@@ -493,6 +760,10 @@
   .testsperformed-summary {
     grid-template-columns: 1fr;
   }
+
+  .testsperformed-worker-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 </style>
 
@@ -518,19 +789,32 @@ export default {
       testSelected: null,
       spinreverse: null,
       spinreverseDate: null,
+      parallelRuns: [],
+      parallelRunPoller: null,
+      parallelRunAbortController: null,
     };
   },
   watch: {
     $route() {
+      this.stopParallelRunPolling();
+      this.loadParallelRuns();
+      this.startParallelRunPolling();
       this.$forceUpdate();
     },
   },
   created() {
     this.getTestCycles();
+    this.loadParallelRuns();
+    this.startParallelRunPolling();
     this.emitter.on("refreshTestCyclePerformed", (msg) => {
-      if (msg == true) this.getTestCycles();
-      else this.$forceUpdate();
+      if (msg == true) {
+        this.getTestCycles();
+        this.loadParallelRuns();
+      } else this.$forceUpdate();
     });
+  },
+  beforeUnmount() {
+    this.stopParallelRunPolling();
   },
   methods: {
     getVariant(status) {
@@ -579,6 +863,111 @@ export default {
           .statusFailed;
       }
       return this.getStatusLabel(test?.status);
+    },
+    parallelRunEndpoint(runId = null, suffix = "") {
+      const base =
+        this.config.serviceBaseUrl +
+        this.config.url.parallelRuns +
+        "/" +
+        getSelectedProjectId() +
+        "/parallel-runs";
+      return runId == null ? base + suffix : base + "/" + runId + suffix;
+    },
+    loadParallelRuns() {
+      this.cancelParallelRunRequest();
+      this.parallelRunAbortController =
+        typeof AbortController === "undefined" ? null : new AbortController();
+      apiClient
+        .get(this.parallelRunEndpoint(), {
+          headers: this.setHeaders(),
+          signal: this.parallelRunAbortController?.signal,
+        })
+        .then((response) => {
+          this.parallelRuns = Array.isArray(response.data) ? response.data : [];
+        })
+        .catch((e) => {
+          if (e?.code === "ERR_CANCELED") return;
+          this.Logout(this, e);
+          this.error = e;
+        });
+    },
+    startParallelRunPolling() {
+      if (this.parallelRunPoller != null) return;
+      this.parallelRunPoller = window.setInterval(() => {
+        this.loadParallelRuns();
+      }, this.config.timeCheck || 5000);
+    },
+    stopParallelRunPolling() {
+      if (this.parallelRunPoller != null) {
+        window.clearInterval(this.parallelRunPoller);
+        this.parallelRunPoller = null;
+      }
+      this.cancelParallelRunRequest();
+    },
+    cancelParallelRunRequest() {
+      this.parallelRunAbortController?.abort();
+      this.parallelRunAbortController = null;
+    },
+    parallelRunVariant(status) {
+      if (status === "completed") return "success";
+      if (status === "failed" || status === "cancelled") return "danger";
+      if (status === "running") return "running";
+      return "secondary";
+    },
+    parallelRunStatusLabel(status) {
+      const labels =
+        this.language[this.config.currentLanguage].TestsPerformed
+          .parallelStatuses;
+      return labels?.[status] || status || labels?.unknown || "Unknown";
+    },
+    canCancelParallelRun(run) {
+      return ["queued", "running", "cancelling"].includes(run?.status);
+    },
+    parallelResultSummary(run) {
+      return Array.isArray(run?.resultSummary) ? run.resultSummary : [];
+    },
+    classifyParallelRunFailure(run) {
+      const labels =
+        this.language[this.config.currentLanguage].TestsPerformed
+          .failureClasses;
+      if (run?.failedWorkers > 0) return labels.workerFailure;
+      if (run?.status === "cancelled" || run?.cancelledWorkers > 0) {
+        return labels.cancelled;
+      }
+      if (run?.status === "failed") return labels.executionFailure;
+      return null;
+    },
+    async confirmCancelParallelRun(run) {
+      const labels = this.language[this.config.currentLanguage].TestsPerformed;
+      const confirmed = await this.$showConfirm({
+        cancelLabel: labels.keepRunning,
+        confirmLabel: labels.confirmCancelRun,
+        message: labels.cancelRunMessage,
+        title: labels.cancelRunTitle,
+        variant: "warning",
+      });
+      if (!confirmed) return;
+
+      this.emitter.emit("showLoader", true);
+      apiClient
+        .post(
+          this.parallelRunEndpoint(run.id, "/cancel"),
+          {},
+          {
+            headers: this.setHeaders(),
+          },
+        )
+        .then((response) => {
+          this.emitter.emit("showLoader", false);
+          this.parallelRuns = this.parallelRuns.map((parallelRun) =>
+            parallelRun.id === run.id ? response.data : parallelRun,
+          );
+        })
+        .catch((e) => {
+          this.emitter.emit("showLoader", false);
+          this.Logout(this, e);
+          this.error = e;
+        });
     },
     getTestCycles() {
       this.spinreverse = "spin-reverse";
