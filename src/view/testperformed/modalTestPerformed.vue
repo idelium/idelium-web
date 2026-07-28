@@ -29,6 +29,60 @@
               :expand-label="language[config.currentLanguage].Actions.expand"
               v-on:showImage="showImage"
             />
+            <section
+              v-if="executionTimeline.length > 0"
+              class="execution-timeline-panel"
+              :aria-label="resultLabel('timeline', 'Execution timeline')"
+            >
+              <div class="execution-result-header">
+                <div>
+                  <h6>{{ resultLabel("timeline", "Execution timeline") }}</h6>
+                  <p>
+                    {{
+                      resultLabel(
+                        "timelineHelp",
+                        "Inspect each step state, duration, diagnostics, and available artifacts without leaving the execution detail.",
+                      )
+                    }}
+                  </p>
+                </div>
+                <span class="execution-result-counter">
+                  {{ executionTimeline.length }}
+                </span>
+              </div>
+              <ol class="execution-timeline-list">
+                <li
+                  v-for="item in executionTimeline"
+                  :key="item.id"
+                  :class="[
+                    'execution-timeline-item',
+                    `execution-timeline-item--${item.variant}`,
+                  ]"
+                >
+                  <span class="execution-timeline-marker" aria-hidden="true" />
+                  <div class="execution-timeline-content">
+                    <div class="execution-timeline-main">
+                      <strong>{{ item.name }}</strong>
+                      <span>{{ item.statusText }}</span>
+                    </div>
+                    <dl class="execution-timeline-meta">
+                      <div>
+                        <dt>{{ resultLabel("duration", "duration") }}</dt>
+                        <dd>{{ item.duration }}</dd>
+                      </div>
+                      <div>
+                        <dt>{{ resultLabel("diagnostics", "diagnostics") }}</dt>
+                        <dd>{{ item.diagnostics }}</dd>
+                      </div>
+                      <div>
+                        <dt>{{ resultLabel("artifacts", "artifacts") }}</dt>
+                        <dd>{{ item.artifacts }}</dd>
+                      </div>
+                    </dl>
+                  </div>
+                </li>
+              </ol>
+            </section>
             <div class="stepTable">
               <table class="table table-striped costum">
                 <thead>
@@ -371,15 +425,59 @@
                                 ) in stepArtifacts(step)"
                                 :key="artifactIndex"
                               >
-                                <strong>{{
-                                  artifact.name || "artifact"
-                                }}</strong>
-                                {{ artifact.type || "unknown" }}
-                                <span v-if="artifact.path">
-                                  · {{ artifact.path }}</span
+                                <button
+                                  type="button"
+                                  class="execution-artifact-button"
+                                  @click="selectArtifact(step, artifact)"
                                 >
+                                  <strong>{{
+                                    artifact.name || "artifact"
+                                  }}</strong>
+                                  <span>{{ artifact.type || "unknown" }}</span>
+                                  <small v-if="artifact.path">
+                                    {{ artifact.path }}
+                                  </small>
+                                </button>
                               </li>
                             </ul>
+                          </div>
+                          <div
+                            v-if="selectedArtifactForStep(step)"
+                            class="execution-artifact-viewer"
+                          >
+                            <div class="execution-artifact-viewer-header">
+                              <h6>
+                                {{
+                                  resultLabel(
+                                    "artifactViewer",
+                                    "Artifact viewer",
+                                  )
+                                }}
+                              </h6>
+                              <button
+                                type="button"
+                                class="btn btn-outline-secondary buttonTest"
+                                @click="clearArtifactSelection"
+                              >
+                                {{ resultLabel("closeArtifact", "Close") }}
+                              </button>
+                            </div>
+                            <img
+                              v-if="
+                                isImageArtifact(selectedArtifactForStep(step))
+                              "
+                              :src="
+                                artifactPreview(selectedArtifactForStep(step))
+                              "
+                              class="execution-artifact-image"
+                              :alt="
+                                selectedArtifactForStep(step).name ||
+                                resultLabel('artifactViewer', 'Artifact viewer')
+                              "
+                            />
+                            <pre v-else>{{
+                              artifactPreview(selectedArtifactForStep(step))
+                            }}</pre>
                           </div>
                           <div
                             v-if="stepTrace(step) != null"
@@ -449,7 +547,8 @@
 }
 .postman-result-panel,
 .bidi-result-panel,
-.execution-result-panel {
+.execution-result-panel,
+.execution-timeline-panel {
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 18px;
   margin: 0.75rem;
@@ -536,15 +635,138 @@
 .execution-result-card strong {
   color: #f6f7fb;
 }
+.execution-timeline-list {
+  display: grid;
+  gap: 0.75rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.execution-timeline-item {
+  align-items: stretch;
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: auto minmax(0, 1fr);
+}
+.execution-timeline-marker {
+  background: #8892a6;
+  border-radius: 999px;
+  box-shadow: 0 0 0 0.35rem rgba(255, 255, 255, 0.05);
+  height: 0.85rem;
+  margin-top: 0.65rem;
+  width: 0.85rem;
+}
+.execution-timeline-item--success .execution-timeline-marker {
+  background: #2fbf71;
+}
+.execution-timeline-item--danger .execution-timeline-marker {
+  background: #ff5d5d;
+}
+.execution-timeline-content {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 14px;
+  padding: 0.85rem;
+}
+.execution-timeline-main {
+  align-items: center;
+  display: flex;
+  gap: 0.75rem;
+  justify-content: space-between;
+}
+.execution-timeline-main strong {
+  color: #f6f7fb;
+}
+.execution-timeline-main span {
+  color: #c9d2e3;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.execution-timeline-meta {
+  display: grid;
+  gap: 0.55rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 0.75rem 0 0;
+}
+.execution-timeline-meta dt {
+  color: rgba(246, 247, 251, 0.58);
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.execution-timeline-meta dd {
+  color: #f6f7fb;
+  margin: 0.15rem 0 0;
+}
 .execution-result-diagnostics,
 .execution-result-artifacts,
-.execution-result-trace {
+.execution-result-trace,
+.execution-artifact-viewer {
   margin-top: 0.75rem;
 }
 .execution-result-diagnostics ul,
 .execution-result-artifacts ul {
+  display: grid;
+  gap: 0.5rem;
+  list-style: none;
   margin: 0.5rem 0 0;
-  padding-left: 1.25rem;
+  padding: 0;
+}
+.execution-artifact-button {
+  align-items: flex-start;
+  background: rgba(255, 255, 255, 0.045);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  color: rgba(246, 247, 251, 0.78);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.7rem;
+  text-align: left;
+  width: 100%;
+}
+.execution-artifact-button:hover,
+.execution-artifact-button:focus-visible {
+  border-color: rgba(255, 109, 31, 0.52);
+  outline: none;
+}
+.execution-artifact-button strong {
+  color: #f6f7fb;
+}
+.execution-artifact-button small {
+  color: rgba(246, 247, 251, 0.52);
+  overflow-wrap: anywhere;
+}
+.execution-artifact-viewer {
+  background: rgba(0, 0, 0, 0.24);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  overflow: hidden;
+}
+.execution-artifact-viewer-header {
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+}
+.execution-artifact-viewer pre {
+  color: #f6f7fb;
+  margin: 0;
+  max-height: 22rem;
+  overflow: auto;
+  padding: 1rem;
+  white-space: pre-wrap;
+}
+.execution-artifact-image {
+  display: block;
+  max-height: 28rem;
+  max-width: 100%;
+  object-fit: contain;
+  padding: 1rem;
 }
 .postman-response-panel {
   margin-top: 1rem;
@@ -592,6 +814,7 @@ export default {
       screenFull: null,
       postmanCollection: null,
       postmanResponse: null,
+      selectedArtifact: null,
       showCollectionWindow: false,
       showMe: true,
     };
@@ -688,6 +911,24 @@ export default {
     postmanResults(step) {
       return step?.type === "postman" ? parsePostmanResults(step.data) : [];
     },
+    executionStatusText(step) {
+      if (step?.type === "postman" && this.isPostmanStepFailed(step)) {
+        return this.resultLabel("failed", "failed");
+      }
+      const status = this.getStatusText(step?.status);
+      return this.resultLabel(status, status);
+    },
+    executionTimelineItem(step, index) {
+      return {
+        id: step?.id || index,
+        name: step?.name || `#${index + 1}`,
+        variant: this.getStepVariant(step),
+        statusText: this.executionStatusText(step),
+        duration: this.formatDuration(this.stepDuration(step)),
+        diagnostics: this.stepDiagnostics(step).length,
+        artifacts: this.stepArtifacts(step).length,
+      };
+    },
     bidiLabel(key, fallback) {
       return (
         this.language?.[this.config.currentLanguage]?.Bidi?.[key] || fallback
@@ -781,11 +1022,66 @@ export default {
       const artifacts = Array.isArray(payload.artifacts)
         ? payload.artifacts
         : [];
-      return artifacts.slice(0, 25).map((artifact) => ({
-        name: this.formatBidiValue(artifact?.name || "artifact"),
-        type: this.formatBidiValue(artifact?.type || "unknown"),
-        path: this.formatBidiValue(artifact?.path || ""),
-      }));
+      const screenshotArtifacts = this.safeScreenshots(step).map(
+        (screenshot, index) => ({
+          name: `screenshot-${index + 1}`,
+          type: "image/*",
+          path: "",
+          preview: screenshot,
+        }),
+      );
+      return [...artifacts, ...screenshotArtifacts]
+        .slice(0, 25)
+        .map((artifact) => ({
+          name: this.formatBidiValue(artifact?.name || "artifact"),
+          type: this.formatBidiValue(artifact?.type || "unknown"),
+          path: this.formatBidiValue(artifact?.path || ""),
+          preview:
+            artifact?.preview ??
+            artifact?.data ??
+            artifact?.content ??
+            artifact?.body ??
+            artifact?.text ??
+            artifact?.url ??
+            null,
+        }));
+    },
+    selectArtifact(step, artifact) {
+      this.selectedArtifact = {
+        stepId: step?.id,
+        artifact,
+      };
+    },
+    selectedArtifactForStep(step) {
+      if (this.selectedArtifact?.stepId !== step?.id) {
+        return null;
+      }
+      return this.selectedArtifact.artifact;
+    },
+    clearArtifactSelection() {
+      this.selectedArtifact = null;
+    },
+    isImageArtifact(artifact) {
+      const type = String(artifact?.type || "");
+      const preview = String(artifact?.preview || "");
+      return type.startsWith("image/") || preview.startsWith("data:image/");
+    },
+    artifactPreview(artifact) {
+      const preview = artifact?.preview;
+      if (
+        preview === null ||
+        typeof preview === "undefined" ||
+        preview === ""
+      ) {
+        return this.resultLabel(
+          "artifactPreviewUnavailable",
+          "This artifact is registered, but no inline preview payload is available.",
+        );
+      }
+      if (typeof preview === "object") {
+        return JSON.stringify(preview, null, 2);
+      }
+      return String(preview);
     },
     stepDuration(step) {
       const payload = this.safeStepData(step);
@@ -834,6 +1130,7 @@ export default {
       this.testName = name;
       this.fullscreen = false;
       this.postmanResponse = null;
+      this.selectedArtifact = null;
       this.modalElem.show();
       this.showCollectionWindow = false;
       setTimeout(
@@ -858,6 +1155,13 @@ export default {
     },
     showImage(index) {
       this.fullscreenImage(this.safeScreenshots(this.arrayStep[index])[0]);
+    },
+  },
+  computed: {
+    executionTimeline() {
+      return this.arrayStep.map((step, index) =>
+        this.executionTimelineItem(step, index),
+      );
     },
   },
 };

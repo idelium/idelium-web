@@ -69,6 +69,15 @@ export default {
     artifacts: "artifact",
     trace: "trace",
     page: "pagina",
+    timeline: "Timeline esecuzione",
+    timelineHelp:
+      "Ispeziona stato, durata, diagnostics e artifact disponibili per ogni step senza uscire dal dettaglio esecuzione.",
+    artifactViewer: "Viewer artifact",
+    closeArtifact: "Chiudi",
+    artifactPreviewUnavailable:
+      "Questo artifact è registrato, ma non contiene un payload visualizzabile inline.",
+    success: "successo",
+    failed: "fallito",
     emptyResults:
       "Non sono disponibili dettagli canonici del risultato per questo step.",
   },

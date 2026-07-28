@@ -85,6 +85,13 @@ function mountModal() {
               artifacts: "artifacts",
               trace: "trace",
               page: "page",
+              timeline: "Execution timeline",
+              timelineHelp: "Inspect each step state.",
+              artifactViewer: "Artifact viewer",
+              closeArtifact: "Close",
+              artifactPreviewUnavailable: "No inline preview.",
+              success: "success",
+              failed: "failed",
               emptyResults: "No canonical execution result details.",
             },
           },
@@ -316,6 +323,48 @@ describe("performed test details modal", () => {
     expect(wrapper.text()).toContain("legacy");
     expect(wrapper.vm.stepArtifacts(wrapper.vm.arrayStep[0])).toEqual([]);
     expect(wrapper.vm.stepDiagnostics(wrapper.vm.arrayStep[0])).toEqual([]);
+  });
+
+  it("renders an accessible execution timeline and inline artifact preview", async () => {
+    const wrapper = mountModal();
+
+    await wrapper.vm.showModal(
+      [
+        {
+          id: 22,
+          name: "open browser",
+          status: 1,
+          type: "selenium",
+          screenshots: '["data:image/png;base64,abc123"]',
+          data: JSON.stringify({
+            runtime: "selenium",
+            schemaVersion: "performed-step-result.v1",
+            durationMilliseconds: 51,
+            artifacts: [
+              {
+                name: "console-log",
+                type: "text/plain",
+                data: "ready [REDACTED]",
+              },
+            ],
+          }),
+        },
+      ],
+      "timeline",
+    );
+
+    expect(
+      wrapper.find(".execution-timeline-panel").attributes("aria-label"),
+    ).toBe("Execution timeline");
+    expect(wrapper.text()).toContain("open browser");
+    expect(wrapper.text()).toContain("51 ms");
+    expect(wrapper.vm.stepArtifacts(wrapper.vm.arrayStep[0])).toHaveLength(2);
+
+    await wrapper.get(".execution-artifact-button").trigger("click");
+
+    expect(wrapper.text()).toContain("Artifact viewer");
+    expect(wrapper.text()).toContain("ready [REDACTED]");
+    expect(wrapper.text()).not.toContain("ready secret");
   });
 
   it("ignores invalid screenshot payloads without breaking the modal", () => {

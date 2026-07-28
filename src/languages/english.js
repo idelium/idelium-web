@@ -69,6 +69,15 @@ export default {
     artifacts: "artifacts",
     trace: "trace",
     page: "page",
+    timeline: "Execution timeline",
+    timelineHelp:
+      "Inspect each step state, duration, diagnostics, and available artifacts without leaving the execution detail.",
+    artifactViewer: "Artifact viewer",
+    closeArtifact: "Close",
+    artifactPreviewUnavailable:
+      "This artifact is registered, but no inline preview payload is available.",
+    success: "success",
+    failed: "failed",
     emptyResults:
       "No canonical execution result details are available for this step.",
   },
