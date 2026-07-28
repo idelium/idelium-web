@@ -10,6 +10,15 @@ describe("English localization", () => {
     expect(english.Accounts.newAccount).toBe("New account");
   });
 
+  it("uses customer terminology in user-facing copy", () => {
+    expect(english.Sidebar.costumers).toBe("customers");
+    expect(english.Header.costumer).toBe("Customer");
+    expect(english.Header.btnChangeCostumer).toBe("Switch customer");
+    expect(english.Accounts.costumer).toBe("customer");
+    expect(english.Costumers.btnNewCostumer).toBe("new customer");
+    expect(english.Costumers.btnAddCostumer).toBe("add customer");
+  });
+
   it("localizes DSL v1 authoring guidance", () => {
     expect(english.Steps.dsl.constructsTitle).toBe("DSL v1 authoring guide");
     expect(english.Steps.dsl.constructs.variables.title).toBe(
