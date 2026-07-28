@@ -3,7 +3,9 @@ import { describe, expect, it, vi } from "vitest";
 
 vi.mock("@/services/apiClient", () => ({ default: { post: vi.fn() } }));
 vi.mock("bootstrap", () => ({
-  Modal: vi.fn(() => ({ hide: vi.fn(), show: vi.fn() })),
+  Modal: vi.fn(function Modal() {
+    return { hide: vi.fn(), show: vi.fn() };
+  }),
 }));
 
 import ModalListPlatform from "@/view/platformlauncher/modalListPlatform.vue";

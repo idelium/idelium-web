@@ -99,8 +99,9 @@ function assertionSummary(result) {
 
 .postman-url-cell span {
   color: #9fd3ff;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
-    "Liberation Mono", "Courier New", monospace;
+  font-family:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    "Courier New", monospace;
   font-size: 0.74rem;
   letter-spacing: 0.02em;
   text-transform: none;

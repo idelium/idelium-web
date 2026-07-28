@@ -373,7 +373,9 @@ describe("tests performed component", () => {
     const clearIntervalSpy = vi.spyOn(window, "clearInterval");
     const abort = vi.fn();
     const originalAbortController = global.AbortController;
-    global.AbortController = vi.fn(() => ({ abort, signal: {} }));
+    global.AbortController = vi.fn(function AbortController() {
+      return { abort, signal: {} };
+    });
     api.get.mockResolvedValue({ data: [] });
 
     const wrapper = mountTestsPerformed();

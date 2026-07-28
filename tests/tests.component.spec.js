@@ -55,6 +55,8 @@ describe("tests component", () => {
         params: { tab: "new" },
       }),
     );
-    expect(wrapper.find("#nav-tabTitleModify-tab").attributes("disabled")).toBeDefined();
+    expect(
+      wrapper.find("#nav-tabTitleModify-tab").attributes("disabled"),
+    ).toBeDefined();
   });
 });

@@ -2,7 +2,9 @@ import { mount } from "@vue/test-utils";
 import { describe, expect, it, vi } from "vitest";
 
 vi.mock("bootstrap", () => ({
-  Modal: vi.fn(() => ({ hide: vi.fn(), show: vi.fn() })),
+  Modal: vi.fn(function Modal() {
+    return { hide: vi.fn(), show: vi.fn() };
+  }),
 }));
 
 import ModalModifyProject from "@/view/project/modalModifyProject.vue";

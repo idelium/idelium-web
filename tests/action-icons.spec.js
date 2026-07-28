@@ -40,6 +40,8 @@ describe("enterprise action icons", () => {
 
     expect(source).toContain("Actions.remove");
     expect(source).toContain("tests-icon-action");
-    expect(source).not.toContain('href="#"\n                      v-on:click="deleteItem');
+    expect(source).not.toContain(
+      'href="#"\n                      v-on:click="deleteItem',
+    );
   });
 });

@@ -6,11 +6,13 @@ const modalHide = vi.fn();
 const modalDispose = vi.fn();
 
 vi.mock("bootstrap", () => ({
-  Modal: vi.fn(() => ({
-    show: modalShow,
-    hide: modalHide,
-    dispose: modalDispose,
-  })),
+  Modal: vi.fn(function Modal() {
+    return {
+      show: modalShow,
+      hide: modalHide,
+      dispose: modalDispose,
+    };
+  }),
 }));
 
 import ModalTestPerformed from "@/view/testperformed/modalTestPerformed.vue";

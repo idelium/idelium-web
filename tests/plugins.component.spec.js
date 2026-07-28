@@ -5,7 +5,11 @@ const api = vi.hoisted(() => ({ get: vi.fn() }));
 const modal = vi.hoisted(() => ({ show: vi.fn(), hide: vi.fn() }));
 
 vi.mock("@/services/apiClient", () => ({ default: api }));
-vi.mock("bootstrap", () => ({ Modal: vi.fn(() => modal) }));
+vi.mock("bootstrap", () => ({
+  Modal: vi.fn(function Modal() {
+    return modal;
+  }),
+}));
 
 import Plugins from "@/view/plugins.vue";
 import { pinia } from "@/stores/pinia";

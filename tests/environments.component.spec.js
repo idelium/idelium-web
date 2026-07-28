@@ -7,8 +7,12 @@ const button = vi.hoisted(() => ({}));
 
 vi.mock("@/services/apiClient", () => ({ default: api }));
 vi.mock("bootstrap", () => ({
-  Modal: vi.fn(() => modal),
-  Button: vi.fn(() => button),
+  Modal: vi.fn(function Modal() {
+    return modal;
+  }),
+  Button: vi.fn(function Button() {
+    return button;
+  }),
 }));
 
 import Environments from "@/view/environments.vue";

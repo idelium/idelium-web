@@ -16,7 +16,7 @@ import Konva from "konva";
 import appKonva from "vue-konva";
 import appFullscreen from "vue-fullscreen";
 import { VueReCaptcha } from "vue-recaptcha-v3";
-import appGtag from "vue-gtag";
+import { createGtag } from "vue-gtag";
 import "ace-builds/src-noconflict/mode-python";
 import "ace-builds/src-noconflict/theme-chrome";
 
@@ -115,9 +115,9 @@ app.use(Toast, {
 app.use(appKonva);
 app.use(appFullscreen);
 app.use(VueReCaptcha, { siteKey: import.meta.env.VITE_GOOGLE_SITE_KEY });
-app.use(appGtag, {
-  config: { id: import.meta.env.VITE_GOOGLE_TAG_ID },
-});
+if (import.meta.env.VITE_GOOGLE_TAG_ID) {
+  app.use(createGtag({ tagId: import.meta.env.VITE_GOOGLE_TAG_ID }));
+}
 app.component("v-select", vSelect);
 
 app.component("font-awesome-icon", FontAwesomeIcon);

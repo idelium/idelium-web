@@ -51,6 +51,6 @@ describe("wizard markup", () => {
     expect(layerOpenTag).not.toContain("@mousedown");
     expect(layerOpenTag).not.toContain("@mouseenter");
     expect(layerOpenTag).not.toContain("@mouseout");
-    expect(source).toContain("@mousedown=\"eventShowImage\"");
+    expect(source).toContain('@mousedown="eventShowImage"');
   });
 });
