@@ -63,8 +63,12 @@ describe("enterprise grid contract", () => {
     expect(gridStateFromResult({ loading: true })).toBe("loading");
     expect(gridStateFromResult({ permissionDenied: true })).toBe("permission");
     expect(gridStateFromResult({ error: new Error("boom") })).toBe("error");
-    expect(gridStateFromResult({ rows: [], meta: { stale: true } })).toBe("stale");
-    expect(gridStateFromResult({ rows: [], meta: { partial: true } })).toBe("partial");
+    expect(gridStateFromResult({ rows: [], meta: { stale: true } })).toBe(
+      "stale",
+    );
+    expect(gridStateFromResult({ rows: [], meta: { partial: true } })).toBe(
+      "partial",
+    );
     expect(gridStateFromResult({ rows: [], meta: {} })).toBe("empty");
     expect(gridStateFromResult({ rows: [{ id: 1 }], meta: {} })).toBeNull();
   });

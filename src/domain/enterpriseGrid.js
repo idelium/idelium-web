@@ -61,7 +61,13 @@ export function parseGridResponse(response) {
   };
 }
 
-export function gridStateFromResult({ loading, error, permissionDenied, rows, meta }) {
+export function gridStateFromResult({
+  loading,
+  error,
+  permissionDenied,
+  rows,
+  meta,
+}) {
   if (loading) {
     return GRID_STATES.LOADING;
   }
@@ -82,8 +88,14 @@ export function gridStateFromResult({ loading, error, permissionDenied, rows, me
 
 export function storageKeyForGrid({ tenantId, projectId, gridName }) {
   const safeGrid = String(gridName ?? "").replace(/[^a-zA-Z0-9_.-]/g, "-");
-  const safeTenant = String(tenantId ?? "tenant").replace(/[^a-zA-Z0-9_.-]/g, "-");
-  const safeProject = String(projectId ?? "global").replace(/[^a-zA-Z0-9_.-]/g, "-");
+  const safeTenant = String(tenantId ?? "tenant").replace(
+    /[^a-zA-Z0-9_.-]/g,
+    "-",
+  );
+  const safeProject = String(projectId ?? "global").replace(
+    /[^a-zA-Z0-9_.-]/g,
+    "-",
+  );
   return `idelium:grid:${safeTenant}:${safeProject}:${safeGrid}`;
 }
 
@@ -92,7 +104,9 @@ export function sanitizeGridPreferences(preferences, allowedColumns) {
   const visibleColumns = Array.isArray(preferences?.visibleColumns)
     ? preferences.visibleColumns.filter((column) => allowed.has(column))
     : [...allowed];
-  const density = ["comfortable", "compact", "spacious"].includes(preferences?.density)
+  const density = ["comfortable", "compact", "spacious"].includes(
+    preferences?.density,
+  )
     ? preferences.density
     : "comfortable";
 
@@ -135,7 +149,9 @@ function nonNegativeInteger(value, fallback) {
 }
 
 function safeText(value) {
-  return String(value ?? "").trim().slice(0, 200);
+  return String(value ?? "")
+    .trim()
+    .slice(0, 200);
 }
 
 function isSafeFilterKey(key) {
@@ -147,7 +163,10 @@ function safeFilterValue(value) {
     return null;
   }
   if (Array.isArray(value)) {
-    const joined = value.map((entry) => safeText(entry)).filter(Boolean).join(",");
+    const joined = value
+      .map((entry) => safeText(entry))
+      .filter(Boolean)
+      .join(",");
     return joined === "" ? null : joined;
   }
   return safeText(value);
