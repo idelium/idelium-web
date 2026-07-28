@@ -573,6 +573,9 @@ export default {
     averageDuration: "Durata media",
     averageQueue: "Coda media",
     flakyTests: "Test flaky",
+    previousPage: "Precedente",
+    nextPage: "Successiva",
+    paginationSummary: "Pagina {page} di {lastPage} · {total} risultati",
     parallelStatuses: {
       queued: "In coda",
       running: "In esecuzione",

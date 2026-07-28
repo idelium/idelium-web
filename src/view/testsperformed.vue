@@ -336,7 +336,10 @@
             </span>
           </button>
         </div>
-        <div v-else class="testsperformed-empty">
+        <div
+          v-if="arrayTestCyclesDate.length === 0"
+          class="testsperformed-empty"
+        >
           {{ language[config.currentLanguage].TestsPerformed.emptyCycles }}
         </div>
       </article>
@@ -415,6 +418,29 @@
             </span>
           </button>
         </div>
+        <div
+          v-if="runPagination.total != null"
+          class="testsperformed-pagination"
+          aria-live="polite"
+        >
+          <button
+            type="button"
+            class="btn btn-sm btn-outline-light testsperformed-page-button"
+            :disabled="runPagination.page <= 1"
+            v-on:click="changeRunPage(-1)"
+          >
+            {{ language[config.currentLanguage].TestsPerformed.previousPage }}
+          </button>
+          <span>{{ paginationLabel(runPagination) }}</span>
+          <button
+            type="button"
+            class="btn btn-sm btn-outline-light testsperformed-page-button"
+            :disabled="runPagination.page >= runPagination.lastPage"
+            v-on:click="changeRunPage(1)"
+          >
+            {{ language[config.currentLanguage].TestsPerformed.nextPage }}
+          </button>
+        </div>
         <div v-else class="testsperformed-empty">
           {{
             testCycleSelected == null
@@ -454,7 +480,33 @@
             </span>
           </button>
         </div>
-        <div v-else class="testsperformed-empty testsperformed-empty-large">
+        <div
+          v-if="testPagination.total != null"
+          class="testsperformed-pagination"
+          aria-live="polite"
+        >
+          <button
+            type="button"
+            class="btn btn-sm btn-outline-light testsperformed-page-button"
+            :disabled="testPagination.page <= 1"
+            v-on:click="changeTestPage(-1)"
+          >
+            {{ language[config.currentLanguage].TestsPerformed.previousPage }}
+          </button>
+          <span>{{ paginationLabel(testPagination) }}</span>
+          <button
+            type="button"
+            class="btn btn-sm btn-outline-light testsperformed-page-button"
+            :disabled="testPagination.page >= testPagination.lastPage"
+            v-on:click="changeTestPage(1)"
+          >
+            {{ language[config.currentLanguage].TestsPerformed.nextPage }}
+          </button>
+        </div>
+        <div
+          v-if="arrayTest.length === 0"
+          class="testsperformed-empty testsperformed-empty-large"
+        >
           {{
             testCycleDateSelected == null
               ? language[config.currentLanguage].TestsPerformed.selectRunFirst
@@ -941,6 +993,26 @@
   margin-top: 0.45rem;
 }
 
+.testsperformed-pagination {
+  align-items: center;
+  color: rgba(255, 255, 255, 0.72);
+  display: flex;
+  font-size: 0.78rem;
+  gap: 0.75rem;
+  justify-content: center;
+  letter-spacing: 0.08em;
+  margin-top: 1rem;
+  text-transform: uppercase;
+}
+
+.testsperformed-page-button {
+  border-radius: 999px;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  min-width: 6rem;
+  text-transform: uppercase;
+}
+
 .testsperformed-test-grid {
   max-height: none;
 }
@@ -1088,6 +1160,22 @@ export default {
       analyticsTimezone: "UTC",
       analyticsStatuses: ["passed", "failed", "pending"],
       analyticsStatusOptions: ["passed", "failed", "pending", "cancelled"],
+      runPagination: {
+        page: 1,
+        perPage: 25,
+        total: null,
+        lastPage: 1,
+        sort: "date",
+        direction: "desc",
+      },
+      testPagination: {
+        page: 1,
+        perPage: 25,
+        total: null,
+        lastPage: 1,
+        sort: "id",
+        direction: "asc",
+      },
     };
   },
   computed: {
@@ -1354,6 +1442,10 @@ export default {
       const parsed = Number(firstValue);
       return Number.isInteger(parsed) && parsed > 0 ? parsed : null;
     },
+    routeQueryInteger(name, fallback) {
+      const parsed = this.routeQueryId(name);
+      return parsed == null ? fallback : parsed;
+    },
     routeQueryText(name, fallback) {
       const value = this.$route?.query?.[name];
       const firstValue = Array.isArray(value) ? value[0] : value;
@@ -1445,6 +1537,66 @@ export default {
       ) {
         this.restoreSelectionFromRoute();
       }
+    },
+    paginatedParams(pagination) {
+      return {
+        page: pagination.page,
+        perPage: pagination.perPage,
+        sort: pagination.sort,
+        direction: pagination.direction,
+      };
+    },
+    normalizePaginatedResponse(responseData, pagination) {
+      if (Array.isArray(responseData)) {
+        return {
+          data: responseData,
+          pagination: {
+            ...pagination,
+            total: null,
+            lastPage: 1,
+          },
+        };
+      }
+
+      const meta = responseData?.meta?.pagination || {};
+      return {
+        data: Array.isArray(responseData?.data) ? responseData.data : [],
+        pagination: {
+          ...pagination,
+          page: Number(meta.page) || pagination.page,
+          perPage: Number(meta.perPage) || pagination.perPage,
+          total: Number.isFinite(Number(meta.total)) ? Number(meta.total) : 0,
+          lastPage: Math.max(Number(meta.lastPage) || 1, 1),
+          sort: meta.sort || pagination.sort,
+          direction: meta.direction || pagination.direction,
+        },
+      };
+    },
+    paginationLabel(pagination) {
+      const labels = this.language[this.config.currentLanguage].TestsPerformed;
+      if (pagination.total == null) return "";
+      return labels.paginationSummary
+        .replace("{page}", pagination.page)
+        .replace("{lastPage}", pagination.lastPage)
+        .replace("{total}", pagination.total);
+    },
+    changeRunPage(delta) {
+      if (this.testCycleSelected == null) return;
+      const nextPage = Math.min(
+        Math.max(this.runPagination.page + delta, 1),
+        this.runPagination.lastPage,
+      );
+      if (nextPage === this.runPagination.page) return;
+      this.getTestCyclesDate(this.testCycleSelected, { page: nextPage });
+    },
+    changeTestPage(delta) {
+      if (this.testCycleDateSelected == null) return;
+      const nextPage = Math.min(
+        Math.max(this.testPagination.page + delta, 1),
+        this.testPagination.lastPage,
+      );
+      if (nextPage === this.testPagination.page) return;
+      this.getTest(this.testCycleDateSelected, { page: nextPage });
     },
     reportUrl(run, format) {
       const descriptor = this.reportDescriptor(run, format);
@@ -1595,6 +1747,16 @@ export default {
       this.arrayTest = [];
       this.emitter.emit("showLoader", true);
       this.spinreverseDate = "spin-reverse";
+      this.runPagination = {
+        ...this.runPagination,
+        page:
+          options.page ||
+          this.routeQueryInteger("runPage", this.runPagination.page || 1),
+        perPage: this.routeQueryInteger(
+          "runPerPage",
+          this.runPagination.perPage || 25,
+        ),
+      };
       return apiClient
         .get(
           this.config.serviceBaseUrl +
@@ -1603,11 +1765,17 @@ export default {
             id,
           {
             headers: this.setHeaders(),
+            params: this.paginatedParams(this.runPagination),
           },
         )
         .then((response) => {
           this.emitter.emit("showLoader", false);
-          this.arrayTestCyclesDate = response.data;
+          const result = this.normalizePaginatedResponse(
+            response.data,
+            this.runPagination,
+          );
+          this.arrayTestCyclesDate = result.data;
+          this.runPagination = result.pagination;
           this.testCycleSelected = id;
           this.testCycleDateSelected = null;
           this.spinreverseDate = null;
@@ -1615,6 +1783,9 @@ export default {
             this.replaceExecutionQuery({
               testCycleId: String(id),
               runId: null,
+              runPage: String(this.runPagination.page),
+              runPerPage: String(this.runPagination.perPage),
+              testPage: null,
             });
           }
         })
@@ -1626,6 +1797,16 @@ export default {
 
     getTest(id, options = {}) {
       this.emitter.emit("showLoader", true);
+      this.testPagination = {
+        ...this.testPagination,
+        page:
+          options.page ||
+          this.routeQueryInteger("testPage", this.testPagination.page || 1),
+        perPage: this.routeQueryInteger(
+          "testPerPage",
+          this.testPagination.perPage || 25,
+        ),
+      };
       return apiClient
         .get(
           this.config.serviceBaseUrl +
@@ -1634,11 +1815,17 @@ export default {
             id,
           {
             headers: this.setHeaders(),
+            params: this.paginatedParams(this.testPagination),
           },
         )
         .then((response) => {
           this.emitter.emit("showLoader", false);
-          this.arrayTest = response.data;
+          const result = this.normalizePaginatedResponse(
+            response.data,
+            this.testPagination,
+          );
+          this.arrayTest = result.data;
+          this.testPagination = result.pagination;
           this.testCycleDateSelected = id;
           if (options.syncRoute !== false) {
             this.replaceExecutionQuery({
@@ -1647,6 +1834,10 @@ export default {
                   ? null
                   : String(this.testCycleSelected),
               runId: String(id),
+              runPage: String(this.runPagination.page),
+              runPerPage: String(this.runPagination.perPage),
+              testPage: String(this.testPagination.page),
+              testPerPage: String(this.testPagination.perPage),
             });
           }
         })

@@ -93,6 +93,10 @@ describe("tests performed component", () => {
                 averageDuration: "Avg duration",
                 averageQueue: "Avg queue",
                 flakyTests: "Flaky tests",
+                previousPage: "Previous",
+                nextPage: "Next",
+                paginationSummary:
+                  "Page {page} of {lastPage} · {total} results",
                 parallelStatuses: {
                   queued: "Queued",
                   running: "Running",
@@ -308,13 +312,103 @@ describe("tests performed component", () => {
 
     await wrapper.vm.getTestCyclesDate(7);
     expect(replace).toHaveBeenCalledWith({
-      query: { testCycleId: "7" },
+      query: {
+        testCycleId: "7",
+        runPage: "1",
+        runPerPage: "25",
+      },
     });
 
     await wrapper.vm.getTest(44);
     expect(replace).toHaveBeenLastCalledWith({
-      query: { testCycleId: "7", runId: "44" },
+      query: {
+        testCycleId: "7",
+        runId: "44",
+        runPage: "1",
+        runPerPage: "25",
+        testPage: "1",
+        testPerPage: "25",
+      },
     });
+  });
+
+  it("uses server-side pagination metadata for executions and tests", async () => {
+    api.get.mockImplementation((url) => {
+      if (url.includes("testcycles-performed")) {
+        return Promise.resolve({
+          data: {
+            data: [{ id: 44, date: "2026-07-28" }],
+            meta: {
+              pagination: {
+                page: 1,
+                perPage: 1,
+                total: 2,
+                lastPage: 2,
+                sort: "date",
+                direction: "desc",
+              },
+            },
+          },
+        });
+      }
+      if (url.includes("tests-performed")) {
+        return Promise.resolve({
+          data: {
+            data: [{ id: 5, name: "postman" }],
+            meta: {
+              pagination: {
+                page: 2,
+                perPage: 1,
+                total: 2,
+                lastPage: 2,
+                sort: "id",
+                direction: "asc",
+              },
+            },
+          },
+        });
+      }
+      return Promise.resolve({ data: [] });
+    });
+    const replace = vi.fn();
+    const wrapper = mountTestsPerformed({
+      $router: { replace },
+      $route: {
+        name: "testsperformed",
+        query: {
+          runPage: "1",
+          runPerPage: "1",
+          testPage: "2",
+          testPerPage: "1",
+        },
+      },
+    });
+
+    await wrapper.vm.getTestCyclesDate(7);
+
+    expect(api.get).toHaveBeenCalledWith("/api/testcycles-performed/7", {
+      headers: {},
+      params: {
+        page: 1,
+        perPage: 1,
+        sort: "date",
+        direction: "desc",
+      },
+    });
+    expect(wrapper.text()).toContain("Page 1 of 2");
+
+    await wrapper.vm.getTest(44);
+
+    expect(api.get).toHaveBeenCalledWith("/api/tests-performed/44", {
+      headers: {},
+      params: {
+        page: 2,
+        perPage: 1,
+        sort: "id",
+        direction: "asc",
+      },
+    });
+    expect(wrapper.text()).toContain("Page 2 of 2");
   });
 
   it("renders quality analytics and persists analytics filters in the route query", async () => {
@@ -395,6 +489,12 @@ describe("tests performed component", () => {
     await vi.waitFor(() =>
       expect(api.get).toHaveBeenCalledWith("/api/tests-performed/44", {
         headers: {},
+        params: {
+          page: 1,
+          perPage: 25,
+          sort: "id",
+          direction: "asc",
+        },
       }),
     );
 

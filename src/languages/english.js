@@ -569,6 +569,9 @@ export default {
     averageDuration: "Avg duration",
     averageQueue: "Avg queue",
     flakyTests: "Flaky tests",
+    previousPage: "Previous",
+    nextPage: "Next",
+    paginationSummary: "Page {page} of {lastPage} · {total} results",
     parallelStatuses: {
       queued: "Queued",
       running: "Running",
