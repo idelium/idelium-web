@@ -48,6 +48,7 @@ export function normalizeArtifacts(artifacts) {
     ),
     preview: safePreview(
       artifact?.preview ??
+        artifact?.data ??
         artifact?.content ??
         artifact?.body ??
         artifact?.text,

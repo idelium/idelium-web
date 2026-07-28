@@ -428,6 +428,14 @@
                                 <button
                                   type="button"
                                   class="execution-artifact-button"
+                                  :data-detail-route="
+                                    JSON.stringify(
+                                      executionDetailRouteForStep(
+                                        step,
+                                        artifact,
+                                      ),
+                                    )
+                                  "
                                   @click="selectArtifact(step, artifact)"
                                 >
                                   <strong>{{
@@ -800,6 +808,12 @@ import {
   formatPostmanResponse,
   parsePostmanResults,
 } from "@/domain/postmanResults";
+import {
+  assertRedactedArtifact,
+  executionDetailRoute,
+  normalizeArtifacts,
+  normalizeExecutionTimeline,
+} from "@/domain/executionDetails";
 export default {
   components: {
     timeline,
@@ -919,14 +933,28 @@ export default {
       return this.resultLabel(status, status);
     },
     executionTimelineItem(step, index) {
+      const normalized = normalizeExecutionTimeline([
+        {
+          ...step,
+          state:
+            step?.type === "postman" && this.isPostmanStepFailed(step)
+              ? "failed"
+              : undefined,
+          durationMs: this.stepDuration(step),
+          diagnostics: this.stepDiagnostics(step).map(
+            (diagnostic) => diagnostic.message,
+          ),
+          artifacts: this.stepArtifacts(step),
+        },
+      ])[0];
       return {
-        id: step?.id || index,
-        name: step?.name || `#${index + 1}`,
-        variant: this.getStepVariant(step),
-        statusText: this.executionStatusText(step),
-        duration: this.formatDuration(this.stepDuration(step)),
-        diagnostics: this.stepDiagnostics(step).length,
-        artifacts: this.stepArtifacts(step).length,
+        id: normalized.id || step?.id || index,
+        name: normalized.name || step?.name || `#${index + 1}`,
+        variant: normalized.state === "passed" ? "success" : "danger",
+        statusText: this.resultLabel(normalized.state, normalized.state),
+        duration: this.formatDuration(normalized.durationMs),
+        diagnostics: normalized.diagnostics.length,
+        artifacts: normalized.artifactCount,
       };
     },
     bidiLabel(key, fallback) {
@@ -1030,21 +1058,33 @@ export default {
           preview: screenshot,
         }),
       );
-      return [...artifacts, ...screenshotArtifacts]
-        .slice(0, 25)
+      return normalizeArtifacts(
+        [...artifacts, ...screenshotArtifacts].slice(0, 25),
+      )
+        .map((artifact) =>
+          assertRedactedArtifact(artifact)
+            ? artifact
+            : {
+                ...artifact,
+                preview: null,
+                redacted: true,
+              },
+        )
         .map((artifact) => ({
-          name: this.formatBidiValue(artifact?.name || "artifact"),
-          type: this.formatBidiValue(artifact?.type || "unknown"),
-          path: this.formatBidiValue(artifact?.path || ""),
-          preview:
-            artifact?.preview ??
-            artifact?.data ??
-            artifact?.content ??
-            artifact?.body ??
-            artifact?.text ??
-            artifact?.url ??
-            null,
+          ...artifact,
+          name: this.formatBidiValue(artifact.name),
+          type: this.formatBidiValue(artifact.type),
+          path: this.formatBidiValue(artifact.path || ""),
         }));
+    },
+    executionDetailRouteForStep(step, artifact = null) {
+      return executionDetailRoute({
+        projectId: this.$route?.params?.projectId,
+        runId: step?.testDoneId,
+        testId: step?.idTest ?? step?.testId,
+        stepId: step?.id,
+        artifactId: artifact?.id,
+      });
     },
     selectArtifact(step, artifact) {
       this.selectedArtifact = {

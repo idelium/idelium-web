@@ -332,6 +332,8 @@ describe("performed test details modal", () => {
       [
         {
           id: 22,
+          testDoneId: 44,
+          idTest: 17,
           name: "open browser",
           status: 1,
           type: "selenium",
@@ -365,6 +367,54 @@ describe("performed test details modal", () => {
     expect(wrapper.text()).toContain("Artifact viewer");
     expect(wrapper.text()).toContain("ready [REDACTED]");
     expect(wrapper.text()).not.toContain("ready secret");
+    expect(
+      JSON.parse(
+        wrapper
+          .get(".execution-artifact-button")
+          .attributes("data-detail-route"),
+      ),
+    ).toEqual({
+      path: "/projects/3/testsperformed",
+      query: {
+        runId: "44",
+        testId: "17",
+        stepId: "22",
+        artifactId: "console-log",
+      },
+    });
+  });
+
+  it("does not render inline artifact previews when sensitive data is not redacted", async () => {
+    const wrapper = mountModal();
+
+    await wrapper.vm.showModal(
+      [
+        {
+          id: 23,
+          name: "unsafe artifact",
+          status: 2,
+          type: "selenium",
+          screenshots: "[]",
+          data: JSON.stringify({
+            runtime: "selenium",
+            schemaVersion: "performed-step-result.v1",
+            artifacts: [
+              {
+                name: "raw-response",
+                type: "text/plain",
+                text: "Authorization: Bearer secret-token",
+              },
+            ],
+          }),
+        },
+      ],
+      "unsafe artifact",
+    );
+
+    await wrapper.get(".execution-artifact-button").trigger("click");
+
+    expect(wrapper.text()).toContain("No inline preview.");
+    expect(wrapper.text()).not.toContain("secret-token");
   });
 
   it("ignores invalid screenshot payloads without breaking the modal", () => {
