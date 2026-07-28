@@ -570,6 +570,8 @@ export default {
       environmentsLoaded: false,
       modalElem: null,
       buttonElem: null,
+      wizardGenerateTimer: null,
+      wizardRestoreTimer: null,
       dragging: false,
       jsonEnvironments: null,
       jsonResumeEnvironments: null,
@@ -654,12 +656,14 @@ export default {
     this.modalElem = new Modal(document.getElementById("myModal"));
     this.buttonElem = new Button(document.getElementById("nav-newenv-tab"));
     this.getEnvironments();
-    setTimeout(
-      function () {
-        this.$refs.wizard.generateJson(null);
-      }.bind(this),
-      100,
-    );
+    this.wizardGenerateTimer = setTimeout(() => {
+      this.$refs.wizard?.generateJson(null);
+      this.wizardGenerateTimer = null;
+    }, 100);
+  },
+  beforeUnmount() {
+    clearTimeout(this.wizardGenerateTimer);
+    clearTimeout(this.wizardRestoreTimer);
   },
   created() {
     this.emitter.on("refreshEnvironment", (msg) => {
@@ -675,12 +679,11 @@ export default {
     },
     changeViewMode() {
       if (this.modeSelected == "wizard") {
-        setTimeout(
-          function () {
-            this.$refs.wizard.putJson(this.rememberJson);
-          }.bind(this),
-          100,
-        );
+        clearTimeout(this.wizardRestoreTimer);
+        this.wizardRestoreTimer = setTimeout(() => {
+          this.$refs.wizard?.putJson(this.rememberJson);
+          this.wizardRestoreTimer = null;
+        }, 100);
       }
     },
     isLetter(e) {
