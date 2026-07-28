@@ -66,6 +66,43 @@ describe("test-cycle creation component", () => {
     );
   });
 
+  it("loads test cycles through the enterprise grid contract when available", async () => {
+    api.get.mockResolvedValueOnce({ data: [] }).mockResolvedValueOnce({
+      data: {
+        data: [{ id: 3, name: "release", description: "Release cycle" }],
+        meta: {
+          page: 1,
+          pageSize: 25,
+          total: 1,
+          lastPage: 1,
+          hasNextPage: false,
+          hasPreviousPage: false,
+        },
+      },
+    });
+    useSessionStore(pinia).selectProject(9);
+
+    const wrapper = mountTestCycles();
+
+    await vi.waitFor(() =>
+      expect(api.get).toHaveBeenCalledWith("/api/cycles/9", {
+        headers: {},
+        params: {
+          page: 1,
+          pageSize: 25,
+          sort: "id",
+          direction: "asc",
+        },
+      }),
+    );
+    await vi.waitFor(() =>
+      expect(wrapper.vm.arrayTestCycles).toEqual([
+        { id: 3, name: "release(3)", description: "Release cycle" },
+      ]),
+    );
+    expect(wrapper.vm.testCyclesGridMeta.total).toBe(1);
+  });
+
   it("marks the current tab as active", () => {
     api.get.mockResolvedValue({ data: [] });
     useSessionStore(pinia).selectProject(9);

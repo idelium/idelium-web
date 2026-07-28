@@ -440,6 +440,20 @@ export default {
       arrayTestCycles: [],
       testCyclesLoaded: false,
       testCycleSelected: null,
+      testCyclesGridQuery: {
+        page: 1,
+        pageSize: 25,
+        sort: "id",
+        direction: "asc",
+      },
+      testCyclesGridMeta: {
+        page: 1,
+        pageSize: 25,
+        total: null,
+        lastPage: 1,
+        hasNextPage: false,
+        hasPreviousPage: false,
+      },
       testFilter: "",
       disableNameTestCycle: true,
       disableTestCycleDescription: true,
@@ -496,6 +510,32 @@ export default {
         d.name.includes(filter),
       );
     },
+    normalizeGridResponse(responseData, fallbackMeta) {
+      if (Array.isArray(responseData)) {
+        return {
+          rows: responseData,
+          meta: {
+            ...fallbackMeta,
+            total: null,
+            hasNextPage: false,
+            hasPreviousPage: false,
+          },
+        };
+      }
+
+      const meta = responseData?.meta || {};
+      return {
+        rows: Array.isArray(responseData?.data) ? responseData.data : [],
+        meta: {
+          page: Number(meta.page) || fallbackMeta.page,
+          pageSize: Number(meta.pageSize) || fallbackMeta.pageSize,
+          total: Number.isFinite(Number(meta.total)) ? Number(meta.total) : 0,
+          lastPage: Math.max(Number(meta.lastPage) || 1, 1),
+          hasNextPage: Boolean(meta.hasNextPage),
+          hasPreviousPage: Boolean(meta.hasPreviousPage),
+        },
+      };
+    },
     getTests(from) {
       this.emitter.emit("showLoader", true);
       apiClient
@@ -527,13 +567,19 @@ export default {
             getSelectedProjectId(),
           {
             headers: this.setHeaders(),
+            params: this.testCyclesGridQuery,
           },
         )
         .then((response) => {
           this.emitter.emit("showLoader", false);
+          const result = this.normalizeGridResponse(
+            response.data,
+            this.testCyclesGridMeta,
+          );
+          this.testCyclesGridMeta = result.meta;
           this.arrayTestCycles = [];
-          for (let i = 0; i < response.data.length; i++) {
-            let objectTc = response.data[i];
+          for (let i = 0; i < result.rows.length; i++) {
+            let objectTc = result.rows[i];
             objectTc.name = objectTc.name + "(" + objectTc.id + ")";
             this.arrayTestCycles.push(objectTc);
           }
