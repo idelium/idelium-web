@@ -103,6 +103,7 @@ describe("tests performed component", () => {
           emitter: { on: vi.fn(), emit: vi.fn() },
           setHeaders: () => ({}),
           Logout: vi.fn(),
+          $router: { replace: vi.fn() },
           ...overrides,
         },
       },
@@ -276,6 +277,66 @@ describe("tests performed component", () => {
     );
     expect(wrapper.text()).not.toContain("do-not-render");
     expect(logout).toHaveBeenCalled();
+  });
+
+  it("persists selected cycle and execution filters in the route query", async () => {
+    api.get.mockImplementation((url) => {
+      if (url.includes("testcycles-performed")) {
+        return Promise.resolve({ data: [{ id: 44, date: "2026-07-28" }] });
+      }
+      if (url.includes("tests-performed")) {
+        return Promise.resolve({ data: [{ id: 5, name: "postman" }] });
+      }
+      return Promise.resolve({ data: [] });
+    });
+    const replace = vi.fn();
+
+    const wrapper = mountTestsPerformed({
+      $router: { replace },
+      $route: { name: "testsperformed", query: {} },
+    });
+
+    await wrapper.vm.getTestCyclesDate(7);
+    expect(replace).toHaveBeenCalledWith({
+      query: { testCycleId: "7" },
+    });
+
+    await wrapper.vm.getTest(44);
+    expect(replace).toHaveBeenLastCalledWith({
+      query: { testCycleId: "7", runId: "44" },
+    });
+  });
+
+  it("restores selected cycle and execution filters from a shareable URL", async () => {
+    api.get.mockImplementation((url) => {
+      if (url.endsWith("testcycles/9")) {
+        return Promise.resolve({ data: [{ id: 7, name: "Regression" }] });
+      }
+      if (url.endsWith("testcycles-performed/7")) {
+        return Promise.resolve({ data: [{ id: 44, date: "2026-07-28" }] });
+      }
+      if (url.endsWith("tests-performed/44")) {
+        return Promise.resolve({ data: [{ id: 5, name: "postman" }] });
+      }
+      return Promise.resolve({ data: [] });
+    });
+
+    const wrapper = mountTestsPerformed({
+      $route: {
+        name: "testsperformed",
+        query: { testCycleId: "7", runId: "44" },
+      },
+    });
+
+    await vi.waitFor(() =>
+      expect(api.get).toHaveBeenCalledWith("/api/tests-performed/44", {
+        headers: {},
+      }),
+    );
+
+    expect(wrapper.vm.testCycleSelected).toBe(7);
+    expect(wrapper.vm.testCycleDateSelected).toBe(44);
+    expect(wrapper.vm.arrayTest).toEqual([{ id: 5, name: "postman" }]);
   });
 
   it("renders parallel execution worker states and classified failures", async () => {

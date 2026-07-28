@@ -859,16 +859,17 @@ export default {
       this.stopParallelRunPolling();
       this.loadParallelRuns();
       this.startParallelRunPolling();
+      this.syncSelectionFromRoute();
       this.$forceUpdate();
     },
   },
   created() {
-    this.getTestCycles();
+    this.getTestCycles({ restoreFromRoute: true });
     this.loadParallelRuns();
     this.startParallelRunPolling();
     this.emitter.on("refreshTestCyclePerformed", (msg) => {
       if (msg == true) {
-        this.getTestCycles();
+        this.getTestCycles({ restoreFromRoute: true });
         this.loadParallelRuns();
       } else this.$forceUpdate();
     });
@@ -1029,6 +1030,60 @@ export default {
     reportDownloadErrorFor(runId) {
       return this.reportDownloadErrors[runId] || null;
     },
+    routeQueryId(name) {
+      const value = this.$route?.query?.[name];
+      const firstValue = Array.isArray(value) ? value[0] : value;
+      const parsed = Number(firstValue);
+      return Number.isInteger(parsed) && parsed > 0 ? parsed : null;
+    },
+    replaceExecutionQuery(patch) {
+      if (!this.$router?.replace) return;
+      const nextQuery = {
+        ...(this.$route?.query || {}),
+        ...patch,
+      };
+      Object.keys(nextQuery).forEach((key) => {
+        if (
+          nextQuery[key] === null ||
+          typeof nextQuery[key] === "undefined" ||
+          nextQuery[key] === ""
+        ) {
+          delete nextQuery[key];
+        }
+      });
+      const current = JSON.stringify(this.$route?.query || {});
+      const next = JSON.stringify(nextQuery);
+      if (current === next) return;
+      this.$router.replace({ query: nextQuery });
+    },
+    restoreSelectionFromRoute() {
+      const testCycleId = this.routeQueryId("testCycleId");
+      if (testCycleId == null) return;
+
+      this.getTestCyclesDate(testCycleId, { syncRoute: false }).then(() => {
+        const runId = this.routeQueryId("runId");
+        if (runId != null) {
+          this.getTest(runId, { syncRoute: false });
+        }
+      });
+    },
+    syncSelectionFromRoute() {
+      const testCycleId = this.routeQueryId("testCycleId");
+      const runId = this.routeQueryId("runId");
+      if (testCycleId == null && runId == null) {
+        this.arrayTestCyclesDate = [];
+        this.arrayTest = [];
+        this.testCycleSelected = null;
+        this.testCycleDateSelected = null;
+        return;
+      }
+      if (
+        testCycleId !== this.testCycleSelected ||
+        (runId != null && runId !== this.testCycleDateSelected)
+      ) {
+        this.restoreSelectionFromRoute();
+      }
+    },
     reportUrl(run, format) {
       const descriptor = this.reportDescriptor(run, format);
       const rawUrl =
@@ -1137,13 +1192,14 @@ export default {
           this.error = e;
         });
     },
-    getTestCycles() {
+    getTestCycles(options = {}) {
       this.spinreverse = "spin-reverse";
       this.arrayTestCyclesDate = [];
       this.arrayTest = [];
       this.testCycleSelected = null;
+      this.testCycleDateSelected = null;
       this.emitter.emit("showLoader", true);
-      apiClient
+      return apiClient
         .get(
           this.config.serviceBaseUrl +
             this.config.url.testcycles +
@@ -1157,17 +1213,20 @@ export default {
           this.spinreverse = null;
           this.emitter.emit("showLoader", false);
           this.arrayTestCycles = response.data;
+          if (options.restoreFromRoute === true) {
+            this.restoreSelectionFromRoute();
+          }
         })
         .catch((e) => {
           this.Logout(this, e);
           this.error = e;
         });
     },
-    getTestCyclesDate(id) {
+    getTestCyclesDate(id, options = {}) {
       this.arrayTest = [];
       this.emitter.emit("showLoader", true);
       this.spinreverseDate = "spin-reverse";
-      apiClient
+      return apiClient
         .get(
           this.config.serviceBaseUrl +
             this.config.url.getTestCyclePerformed +
@@ -1183,6 +1242,12 @@ export default {
           this.testCycleSelected = id;
           this.testCycleDateSelected = null;
           this.spinreverseDate = null;
+          if (options.syncRoute !== false) {
+            this.replaceExecutionQuery({
+              testCycleId: String(id),
+              runId: null,
+            });
+          }
         })
         .catch((e) => {
           this.Logout(this, e);
@@ -1190,9 +1255,9 @@ export default {
         });
     },
 
-    getTest(id) {
+    getTest(id, options = {}) {
       this.emitter.emit("showLoader", true);
-      apiClient
+      return apiClient
         .get(
           this.config.serviceBaseUrl +
             this.config.url.getTestPerformed +
@@ -1206,6 +1271,15 @@ export default {
           this.emitter.emit("showLoader", false);
           this.arrayTest = response.data;
           this.testCycleDateSelected = id;
+          if (options.syncRoute !== false) {
+            this.replaceExecutionQuery({
+              testCycleId:
+                this.testCycleSelected == null
+                  ? null
+                  : String(this.testCycleSelected),
+              runId: String(id),
+            });
+          }
         })
         .catch((e) => {
           this.Logout(this, e);
