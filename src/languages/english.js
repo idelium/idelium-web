@@ -165,6 +165,9 @@ export default {
     colId: "id",
     colName: "name",
     colDescription: "description",
+    gridEmptyTitle: "No steps available",
+    gridEmptyDescription:
+      "Create the first step to enable ordering, reuse, and execution in test cycles.",
     dsl: {
       sourceLabel: "Idelium DSL source",
       sourcePlaceholder: 'idelium 1.0\n\ntest "smoke" {\n}',

@@ -167,6 +167,9 @@ export default {
     colId: "id",
     colName: "nome",
     colDescription: "descrizione",
+    gridEmptyTitle: "Nessuno step disponibile",
+    gridEmptyDescription:
+      "Crea il primo step per abilitare ordinamento, riuso ed esecuzione nei cicli di test.",
     dsl: {
       sourceLabel: "Sorgente Idelium DSL",
       sourcePlaceholder: 'idelium 1.0\n\ntest "smoke" {\n}',

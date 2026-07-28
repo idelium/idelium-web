@@ -54,6 +54,7 @@
                 <div class="col col-lg-3"></div>
               </div>
               <draggable
+                v-if="listSteps.length > 0"
                 v-model="listSteps"
                 @change="moveElement"
                 :component-data="{ name: 'fade' }"
@@ -126,6 +127,14 @@
                   </div>
                 </template>
               </draggable>
+              <EnterpriseGridState
+                v-else-if="stepsLoaded"
+                variant="empty"
+                :title="language[config.currentLanguage].Steps.gridEmptyTitle"
+                :description="
+                  language[config.currentLanguage].Steps.gridEmptyDescription
+                "
+              />
             </div>
             <button
               type="button"
@@ -536,6 +545,7 @@ import { buildStepPayload } from "@/domain/workflowPayloads";
 import { Modal } from "bootstrap";
 
 import draggable from "vuedraggable";
+import EnterpriseGridState from "@/components/shared/EnterpriseGridState.vue";
 import JsonEditor from "../components/JsonEditor.vue";
 import wizard from "./steps/wizard.vue";
 import download from "@/shared/download";
@@ -566,6 +576,12 @@ export default {
   name: "StepsComponent",
   inheritAttrs: false,
   mixins: [routableTabs("order", ["order", "new"])],
+  components: {
+    draggable,
+    EnterpriseGridState,
+    JsonEditor,
+    wizard,
+  },
   data: () => {
     return {
       enabled: true,
@@ -1023,11 +1039,6 @@ export default {
         })
         .catch();
     },
-  },
-  components: {
-    draggable,
-    JsonEditor,
-    wizard,
   },
 };
 </script>

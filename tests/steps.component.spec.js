@@ -58,6 +58,8 @@ describe("steps component", () => {
                 btnSaveStep: "Save step",
                 btnSave: "Save",
                 btnCancel: "Cancel",
+                gridEmptyTitle: "No steps available",
+                gridEmptyDescription: "Create the first step.",
                 errorMessageInputEmpty: "Fields cannot be empty",
                 errorCharactersError: "File name contains invalid characters",
                 dsl: {
@@ -141,6 +143,18 @@ describe("steps component", () => {
     expect(
       wrapper.find("#nav-tabOrderSteps-tab").attributes("disabled"),
     ).toBeDefined();
+    expect(
+      wrapper.findComponent({ name: "EnterpriseGridState" }).exists(),
+    ).toBe(true);
+    expect(
+      wrapper.findComponent({ name: "EnterpriseGridState" }).props(),
+    ).toEqual(
+      expect.objectContaining({
+        description: "Create the first step.",
+        title: "No steps available",
+        variant: "empty",
+      }),
+    );
   });
 
   it("clears the loader when steps cannot load without a selected project", () => {
