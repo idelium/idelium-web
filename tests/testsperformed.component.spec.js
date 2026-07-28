@@ -84,6 +84,15 @@ describe("tests performed component", () => {
                 workerCompleted: "Completed",
                 workerFailed: "Failed",
                 workerCancelled: "Cancelled",
+                analyticsTitle: "Quality analytics",
+                analyticsDescription: "Review quality trends.",
+                analyticsWindow: "Window",
+                analyticsTimezone: "Timezone",
+                passRate: "Pass rate",
+                failureRate: "Failure rate",
+                averageDuration: "Avg duration",
+                averageQueue: "Avg queue",
+                flakyTests: "Flaky tests",
                 parallelStatuses: {
                   queued: "Queued",
                   running: "Running",
@@ -122,6 +131,7 @@ describe("tests performed component", () => {
     expect(wrapper.find(".testsperformed-workspace").exists()).toBe(true);
     expect(wrapper.findAll(".testsperformed-panel")).toHaveLength(3);
     expect(wrapper.find(".testsperformed-parallel-panel").exists()).toBe(true);
+    expect(wrapper.find(".testsperformed-analytics-panel").exists()).toBe(true);
     expect(wrapper.findComponent({ name: "splitpanes" }).exists()).toBe(false);
     expect(wrapper.text()).toContain("Select a run first.");
   });
@@ -304,6 +314,60 @@ describe("tests performed component", () => {
     await wrapper.vm.getTest(44);
     expect(replace).toHaveBeenLastCalledWith({
       query: { testCycleId: "7", runId: "44" },
+    });
+  });
+
+  it("renders quality analytics and persists analytics filters in the route query", async () => {
+    api.get.mockResolvedValue({ data: [] });
+    const replace = vi.fn();
+    const wrapper = mountTestsPerformed({
+      $router: { replace },
+      $route: {
+        name: "testsperformed",
+        query: {
+          analyticsWindow: "30d",
+          analyticsTimezone: "Europe/Rome",
+          status: "passed,failed",
+        },
+      },
+    });
+
+    wrapper.vm.arrayTest = [
+      {
+        id: 1,
+        name: "Checkout",
+        status: 1,
+        durationMs: 100,
+        queueMs: 10,
+      },
+      {
+        id: 1,
+        name: "Checkout",
+        status: 2,
+        durationMs: 300,
+        queueMs: 30,
+        diagnostic: "expected true",
+      },
+    ];
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.text()).toContain("Quality analytics");
+    expect(wrapper.text()).toContain("50%");
+    expect(wrapper.text()).toContain("200 ms");
+    expect(wrapper.text()).toContain("Checkout");
+    expect(wrapper.vm.analyticsQueryDescription).toContain("window=30d");
+    expect(wrapper.vm.analyticsQueryDescription).toContain(
+      "timezone=Europe%2FRome",
+    );
+
+    await wrapper.findAll(".testsperformed-status-filter")[2].trigger("click");
+
+    expect(replace).toHaveBeenCalledWith({
+      query: {
+        analyticsWindow: "30d",
+        analyticsTimezone: "Europe/Rome",
+        status: "passed,failed,pending",
+      },
     });
   });
 

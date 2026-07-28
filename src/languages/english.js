@@ -559,6 +559,16 @@ export default {
     workerCompleted: "Completed",
     workerFailed: "Failed",
     workerCancelled: "Cancelled",
+    analyticsTitle: "Quality analytics",
+    analyticsDescription:
+      "Review pass rate, failure taxonomy, duration, queue time, and flaky tests for the selected execution.",
+    analyticsWindow: "Window",
+    analyticsTimezone: "Timezone",
+    passRate: "Pass rate",
+    failureRate: "Failure rate",
+    averageDuration: "Avg duration",
+    averageQueue: "Avg queue",
+    flakyTests: "Flaky tests",
     parallelStatuses: {
       queued: "Queued",
       running: "Running",

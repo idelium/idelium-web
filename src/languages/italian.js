@@ -563,6 +563,16 @@ export default {
     workerCompleted: "Completati",
     workerFailed: "Falliti",
     workerCancelled: "Annullati",
+    analyticsTitle: "Analytics qualità",
+    analyticsDescription:
+      "Controlla pass rate, tassonomia errori, durata, coda e test flaky per l'esecuzione selezionata.",
+    analyticsWindow: "Finestra",
+    analyticsTimezone: "Timezone",
+    passRate: "Pass rate",
+    failureRate: "Failure rate",
+    averageDuration: "Durata media",
+    averageQueue: "Coda media",
+    flakyTests: "Test flaky",
     parallelStatuses: {
       queued: "In coda",
       running: "In esecuzione",

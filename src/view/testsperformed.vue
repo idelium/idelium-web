@@ -55,6 +55,116 @@
       </article>
     </section>
 
+    <section class="card testsperformed-analytics-panel" aria-live="polite">
+      <div class="testsperformed-panel-header">
+        <div>
+          <span class="testsperformed-section-title">
+            {{ language[config.currentLanguage].TestsPerformed.analyticsTitle }}
+          </span>
+          <p class="testsperformed-helper">
+            {{
+              language[config.currentLanguage].TestsPerformed
+                .analyticsDescription
+            }}
+          </p>
+        </div>
+        <div class="testsperformed-analytics-filters">
+          <label>
+            <span>
+              {{
+                language[config.currentLanguage].TestsPerformed.analyticsWindow
+              }}
+            </span>
+            <input
+              v-model="analyticsWindow"
+              class="form-control testsperformed-filter-control"
+              inputmode="numeric"
+              v-on:change="persistAnalyticsFilters()"
+            />
+          </label>
+          <label>
+            <span>
+              {{
+                language[config.currentLanguage].TestsPerformed
+                  .analyticsTimezone
+              }}
+            </span>
+            <input
+              v-model="analyticsTimezone"
+              class="form-control testsperformed-filter-control"
+              v-on:change="persistAnalyticsFilters()"
+            />
+          </label>
+        </div>
+      </div>
+      <p class="testsperformed-helper">{{ analyticsQueryDescription }}</p>
+      <div class="testsperformed-analytics-statuses" role="group">
+        <button
+          v-for="status in analyticsStatusOptions"
+          v-bind:key="status"
+          type="button"
+          :class="[
+            'testsperformed-status-filter',
+            { active: analyticsStatuses.includes(status) },
+          ]"
+          v-on:click="toggleAnalyticsStatus(status)"
+        >
+          {{ statusLabel(status) }}
+        </button>
+      </div>
+      <div class="testsperformed-analytics-grid">
+        <article class="testsperformed-analytics-card">
+          <span>{{
+            language[config.currentLanguage].TestsPerformed.passRate
+          }}</span>
+          <strong>{{ percent(executionAnalytics.passRate) }}</strong>
+        </article>
+        <article class="testsperformed-analytics-card">
+          <span>{{
+            language[config.currentLanguage].TestsPerformed.failureRate
+          }}</span>
+          <strong>{{ percent(executionAnalytics.failureRate) }}</strong>
+        </article>
+        <article class="testsperformed-analytics-card">
+          <span>{{
+            language[config.currentLanguage].TestsPerformed.averageDuration
+          }}</span>
+          <strong>{{ executionAnalytics.averageDurationMs }} ms</strong>
+        </article>
+        <article class="testsperformed-analytics-card">
+          <span>{{
+            language[config.currentLanguage].TestsPerformed.averageQueue
+          }}</span>
+          <strong>{{ executionAnalytics.averageQueueMs }} ms</strong>
+        </article>
+      </div>
+      <dl class="testsperformed-taxonomy">
+        <div
+          v-for="(count, failureClass) in executionAnalytics.failuresByClass"
+          v-bind:key="failureClass"
+        >
+          <dt>{{ failureClass }}</dt>
+          <dd>{{ count }}</dd>
+        </div>
+      </dl>
+      <div
+        v-if="executionAnalytics.flakyTests.length > 0"
+        class="testsperformed-flaky-list"
+      >
+        <span class="testsperformed-section-title">
+          {{ language[config.currentLanguage].TestsPerformed.flakyTests }}
+        </span>
+        <ul>
+          <li
+            v-for="flakyTest in executionAnalytics.flakyTests"
+            v-bind:key="flakyTest.testId || flakyTest.testName"
+          >
+            {{ flakyTest.testName }}
+          </li>
+        </ul>
+      </div>
+    </section>
+
     <section class="card testsperformed-parallel-panel" aria-live="polite">
       <div class="testsperformed-panel-header">
         <div>
@@ -437,6 +547,122 @@
   font-size: 2rem;
   line-height: 1;
   margin-top: 0.35rem;
+}
+
+.testsperformed-analytics-panel {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  gap: 0.9rem;
+  padding: 1rem;
+}
+
+.testsperformed-analytics-filters,
+.testsperformed-analytics-statuses {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+}
+
+.testsperformed-analytics-filters label {
+  color: rgba(255, 255, 255, 0.72);
+  display: grid;
+  font-size: 0.68rem;
+  font-weight: 800;
+  gap: 0.35rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.testsperformed-filter-control {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+  min-width: 8rem;
+}
+
+.testsperformed-status-filter {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  padding: 0.45rem 0.75rem;
+  text-transform: uppercase;
+}
+
+.testsperformed-status-filter.active {
+  background: linear-gradient(135deg, #ff8a1d, #ff5f2d);
+  border-color: rgba(255, 138, 29, 0.76);
+  color: #10131d;
+}
+
+.testsperformed-analytics-grid {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.testsperformed-analytics-card {
+  background: rgba(255, 255, 255, 0.045);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.9rem;
+  padding: 0.85rem;
+}
+
+.testsperformed-analytics-card span {
+  color: rgba(255, 255, 255, 0.62);
+  display: block;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.testsperformed-analytics-card strong {
+  color: #ffffff;
+  display: block;
+  font-size: 1.45rem;
+  margin-top: 0.35rem;
+}
+
+.testsperformed-taxonomy {
+  display: grid;
+  gap: 0.55rem;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  margin: 0;
+}
+
+.testsperformed-taxonomy div {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 0.7rem;
+  display: flex;
+  justify-content: space-between;
+  padding: 0.55rem 0.7rem;
+}
+
+.testsperformed-taxonomy dt {
+  color: rgba(255, 255, 255, 0.64);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.testsperformed-taxonomy dd {
+  color: #ffffff;
+  font-weight: 800;
+  margin: 0;
+}
+
+.testsperformed-flaky-list ul {
+  color: rgba(255, 255, 255, 0.78);
+  margin: 0.45rem 0 0;
 }
 
 .testsperformed-workspace {
@@ -830,6 +1056,12 @@ import modalTestPerformed from "./testperformed/modalTestPerformed.vue";
 
 import apiClient from "@/services/apiClient";
 import { parsePostmanResults } from "@/domain/postmanResults";
+import {
+  buildAnalyticsQuery,
+  canDownloadExport,
+  normalizeExportDescriptor,
+  summarizeExecutionTrends,
+} from "@/domain/resultAnalytics";
 import { getSelectedProjectId } from "@/stores/session";
 
 export default {
@@ -852,18 +1084,46 @@ export default {
       parallelRunAbortController: null,
       reportDownloadErrors: {},
       reportFormats: ["junit", "json", "markdown", "html"],
+      analyticsWindow: "7d",
+      analyticsTimezone: "UTC",
+      analyticsStatuses: ["passed", "failed", "pending"],
+      analyticsStatusOptions: ["passed", "failed", "pending", "cancelled"],
     };
+  },
+  computed: {
+    analyticsExecutions() {
+      return this.arrayTest
+        .map((test) => this.analyticsExecutionForTest(test))
+        .filter((test) => this.analyticsStatuses.includes(test.status));
+    },
+    executionAnalytics() {
+      return summarizeExecutionTrends(this.analyticsExecutions, {
+        window: this.analyticsWindow,
+        timezone: this.analyticsTimezone,
+      });
+    },
+    analyticsQueryDescription() {
+      return buildAnalyticsQuery({
+        projectId: getSelectedProjectId(),
+        testCycleId: this.testCycleSelected,
+        window: this.analyticsWindow,
+        timezone: this.analyticsTimezone,
+        statuses: this.analyticsStatuses,
+      }).toString();
+    },
   },
   watch: {
     $route() {
       this.stopParallelRunPolling();
       this.loadParallelRuns();
       this.startParallelRunPolling();
+      this.restoreAnalyticsFiltersFromRoute();
       this.syncSelectionFromRoute();
       this.$forceUpdate();
     },
   },
   created() {
+    this.restoreAnalyticsFiltersFromRoute();
     this.getTestCycles({ restoreFromRoute: true });
     this.loadParallelRuns();
     this.startParallelRunPolling();
@@ -901,6 +1161,14 @@ export default {
       return this.language[this.config.currentLanguage].TestsPerformed
         .statusFailed;
     },
+    statusLabel(status) {
+      const labels = this.language[this.config.currentLanguage].TestsPerformed;
+      const key = "status" + status.charAt(0).toUpperCase() + status.slice(1);
+      return labels[key] || status;
+    },
+    percent(value) {
+      return `${Math.round(value * 100)}%`;
+    },
     postmanResults(test) {
       if (test?.type !== "postman") {
         return [];
@@ -924,6 +1192,41 @@ export default {
           .statusFailed;
       }
       return this.getStatusLabel(test?.status);
+    },
+    analyticsExecutionForTest(test) {
+      const postmanFailed = this.isPostmanTestFailed(test);
+      const status = postmanFailed
+        ? "failed"
+        : this.analyticsStatusFromLegacy(test?.status);
+      const firstPostmanFailure = this.postmanResults(test).find(
+        (result) => result.passed === false,
+      );
+
+      return {
+        id: test?.id,
+        testId: test?.idTest ?? test?.testId ?? test?.id,
+        testName: test?.name,
+        status,
+        durationMs: test?.durationMs ?? test?.duration ?? test?.time ?? 0,
+        queueMs: test?.queueMs ?? test?.queueTime ?? 0,
+        errorClass: test?.errorClass ?? test?.failureClass,
+        diagnostic:
+          firstPostmanFailure?.diagnostic ||
+          firstPostmanFailure?.message ||
+          test?.diagnostic ||
+          test?.message ||
+          "",
+      };
+    },
+    analyticsStatusFromLegacy(status) {
+      if (status === 1 || status === "passed" || status === "success") {
+        return "passed";
+      }
+      if (status === 2 || status === "failed" || status === "error") {
+        return "failed";
+      }
+      if (status === "cancelled") return "cancelled";
+      return "pending";
     },
     parallelRunEndpoint(runId = null, suffix = "") {
       const base =
@@ -1018,7 +1321,22 @@ export default {
       return this.advertisedReports(run)[format] ?? null;
     },
     isReportFormatAvailable(run, format) {
-      return this.reportDescriptor(run, format) != null;
+      const descriptor = this.reportDescriptor(run, format);
+      if (descriptor == null) return false;
+      if (
+        typeof descriptor === "object" &&
+        ("status" in descriptor ||
+          "authorized" in descriptor ||
+          "expiresAt" in descriptor)
+      ) {
+        return canDownloadExport(
+          normalizeExportDescriptor({
+            ...descriptor,
+            url: this.safeDescriptorDownloadUrl(descriptor),
+          }),
+        );
+      }
+      return true;
     },
     reportButtonLabel(run, format) {
       const labels = this.language[this.config.currentLanguage].TestsPerformed;
@@ -1035,6 +1353,21 @@ export default {
       const firstValue = Array.isArray(value) ? value[0] : value;
       const parsed = Number(firstValue);
       return Number.isInteger(parsed) && parsed > 0 ? parsed : null;
+    },
+    routeQueryText(name, fallback) {
+      const value = this.$route?.query?.[name];
+      const firstValue = Array.isArray(value) ? value[0] : value;
+      return typeof firstValue === "string" && firstValue.trim() !== ""
+        ? firstValue
+        : fallback;
+    },
+    routeQueryList(name) {
+      const value = this.$route?.query?.[name];
+      if (Array.isArray(value)) return value.filter(Boolean);
+      if (typeof value === "string" && value.trim() !== "") {
+        return value.split(",").filter(Boolean);
+      }
+      return [];
     },
     replaceExecutionQuery(patch) {
       if (!this.$router?.replace) return;
@@ -1055,6 +1388,35 @@ export default {
       const next = JSON.stringify(nextQuery);
       if (current === next) return;
       this.$router.replace({ query: nextQuery });
+    },
+    restoreAnalyticsFiltersFromRoute() {
+      this.analyticsWindow = this.routeQueryText("analyticsWindow", "7d");
+      this.analyticsTimezone = this.routeQueryText("analyticsTimezone", "UTC");
+      const statuses = this.routeQueryList("status").filter((status) =>
+        this.analyticsStatusOptions.includes(status),
+      );
+      this.analyticsStatuses =
+        statuses.length > 0 ? statuses : ["passed", "failed", "pending"];
+    },
+    persistAnalyticsFilters() {
+      this.replaceExecutionQuery({
+        analyticsWindow: this.analyticsWindow,
+        analyticsTimezone: this.analyticsTimezone,
+        status: this.analyticsStatuses.join(","),
+      });
+    },
+    toggleAnalyticsStatus(status) {
+      if (this.analyticsStatuses.includes(status)) {
+        this.analyticsStatuses = this.analyticsStatuses.filter(
+          (entry) => entry !== status,
+        );
+      } else {
+        this.analyticsStatuses = [...this.analyticsStatuses, status];
+      }
+      if (this.analyticsStatuses.length === 0) {
+        this.analyticsStatuses = ["passed", "failed", "pending"];
+      }
+      this.persistAnalyticsFilters();
     },
     restoreSelectionFromRoute() {
       const testCycleId = this.routeQueryId("testCycleId");
@@ -1107,6 +1469,13 @@ export default {
         "/reports/" +
         format
       );
+    },
+    safeDescriptorDownloadUrl(descriptor) {
+      const rawUrl =
+        descriptor?.url || descriptor?.downloadUrl || descriptor?.endpoint;
+      if (!rawUrl) return null;
+      if (String(rawUrl).startsWith("http")) return rawUrl;
+      return "/" + String(rawUrl).replace(/^\/+/, "");
     },
     reportFilename(run, format) {
       const descriptor = this.reportDescriptor(run, format);
