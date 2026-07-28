@@ -384,6 +384,17 @@ export default {
     confirmationDelete: "Sei sicuro di voler cancellare il file: ",
     name: "nome",
     description: "descrizione",
+    approval: "approvazione",
+    approvalStates: {
+      approved: "Approvato",
+      approvedTitle: "Plugin approvato con provenance verificata.",
+      unapproved: "Non approvato",
+      unapprovedTitle:
+        "Il plugin è salvato ma non può essere eseguito finché approval e integrity check non passano.",
+      invalid: "Non valido",
+      invalidTitle:
+        "I metadati di approvazione del plugin sono incompleti o incoerenti.",
+    },
     pluginImported: "plugin importato",
     importPlugin: {
       extensionIsWrong: "Estensione file non conforme",

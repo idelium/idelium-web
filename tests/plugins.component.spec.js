@@ -32,10 +32,22 @@ describe("plugins component", () => {
           },
           language: {
             gb: {
+              Actions: {
+                delete: "Delete",
+                download: "Download",
+              },
               Plugins: {
                 tabListPlugins: "List Plugins",
                 tabNewPlugin: "New Plugin",
                 tabTitleImportPlugin: "Import Plugin",
+                name: "name",
+                description: "description",
+                approval: "approval",
+                approvalStates: {
+                  approved: "Approved",
+                  unapproved: "Unapproved",
+                  invalid: "Invalid",
+                },
               },
             },
           },
@@ -62,5 +74,28 @@ describe("plugins component", () => {
       }),
     );
     expect(wrapper.find("#nav-home-tab").attributes("disabled")).toBeDefined();
+  });
+
+  it("renders plugin approval metadata without exposing source code", async () => {
+    api.get.mockResolvedValue({
+      data: [
+        {
+          id: 1,
+          name: "safe_step",
+          description: "Approved plugin",
+          approvalStatus: "approved",
+          provenanceReviewed: true,
+          sourceSha256: "abcdef1234567890",
+          executionMode: "subprocess",
+        },
+      ],
+    });
+    useSessionStore(pinia).selectProject(9);
+
+    const wrapper = mountPlugins();
+
+    await vi.waitFor(() => expect(wrapper.text()).toContain("Approved"));
+    expect(wrapper.text()).toContain("abcdef123456");
+    expect(wrapper.text()).not.toContain("def init");
   });
 });

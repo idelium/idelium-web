@@ -65,6 +65,9 @@
                 <th scope="col">
                   {{ language[config.currentLanguage].Plugins.description }}
                 </th>
+                <th scope="col">
+                  {{ language[config.currentLanguage].Plugins.approval }}
+                </th>
                 <th scope="col"></th>
                 <th scope="col"></th>
               </tr>
@@ -91,12 +94,31 @@
                 </td>
                 <td>
                   <span
+                    :class="[
+                      'plugins-approval-badge',
+                      'plugins-approval-badge--' + pluginApproval(item).variant,
+                    ]"
+                    :title="pluginApproval(item).title"
+                  >
+                    {{ pluginApproval(item).label }}
+                  </span>
+                  <small
+                    v-if="shortPluginHash(item)"
+                    class="plugins-approval-hash"
+                  >
+                    {{ shortPluginHash(item) }}
+                  </small>
+                </td>
+                <td>
+                  <span
                     class="idelium-action-icon--delete"
                     v-on:click="deletePlugin(index)"
                     :title="language[config.currentLanguage].Actions.delete"
                     role="button"
                     style="cursor: pointer"
-                    ><font-awesome-icon icon="trash" class="idelium-action-icon"
+                    ><font-awesome-icon
+                      icon="trash"
+                      class="idelium-action-icon"
                   /></span>
                 </td>
                 <td>
@@ -106,7 +128,9 @@
                     :title="language[config.currentLanguage].Actions.download"
                     role="button"
                     style="cursor: pointer"
-                    ><font-awesome-icon icon="download" class="idelium-action-icon"
+                    ><font-awesome-icon
+                      icon="download"
+                      class="idelium-action-icon"
                   /></span>
                 </td>
               </tr>
@@ -308,6 +332,40 @@
   min-width: 7rem;
 }
 
+.plugins-approval-badge {
+  border-radius: 999px;
+  display: inline-flex;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  padding: 0.35rem 0.65rem;
+  text-transform: uppercase;
+}
+
+.plugins-approval-badge--success {
+  background: rgba(31, 122, 66, 0.22);
+  color: #57d68d;
+}
+
+.plugins-approval-badge--warning {
+  background: rgba(196, 126, 9, 0.22);
+  color: #ffbe5c;
+}
+
+.plugins-approval-badge--danger {
+  background: rgba(197, 48, 48, 0.22);
+  color: #ff7a7a;
+}
+
+.plugins-approval-hash {
+  color: rgba(255, 255, 255, 0.58);
+  display: block;
+  font-family:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    "Courier New", monospace;
+  margin-top: 0.25rem;
+}
+
 .plugins-editor-row {
   --bs-gutter-x: 0;
   min-height: 0;
@@ -343,6 +401,7 @@ import { VAceEditor } from "vue3-ace-editor";
 import importplugin from "./plugin/importPlugin.vue";
 import download from "@/shared/download";
 import { routableTabs } from "@/shared/routableTabs";
+import { pluginApprovalView, shortPluginHash } from "@/domain/pluginManifest";
 
 export default {
   name: "PluginsComponent",
@@ -478,10 +537,20 @@ export default {
           this.error = e;
         });
     },
+    pluginApproval(plugin) {
+      return pluginApprovalView(
+        plugin,
+        this.language[this.config.currentLanguage].Plugins.approvalStates,
+      );
+    },
+    shortPluginHash(plugin) {
+      return shortPluginHash(plugin);
+    },
     deletePlugin(index) {
       return this.$showConfirm({
         message:
-          this.language[this.config.currentLanguage].Plugins.confirmationDelete +
+          this.language[this.config.currentLanguage].Plugins
+            .confirmationDelete +
           this.listPlugins[index].name +
           " ?",
         variant: "warning",

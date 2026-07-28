@@ -382,6 +382,16 @@ export default {
     confirmationDelete: "Are you sure you want to delete the file: ",
     name: "name",
     description: "description",
+    approval: "approval",
+    approvalStates: {
+      approved: "Approved",
+      approvedTitle: "Approved plugin with verified provenance.",
+      unapproved: "Unapproved",
+      unapprovedTitle:
+        "Plugin is saved but cannot execute until approval and integrity checks pass.",
+      invalid: "Invalid",
+      invalidTitle: "Plugin approval metadata is incomplete or inconsistent.",
+    },
     pluginImported: "plugin imported",
     importPlugin: {
       extensionIsWrong: "Extension is wrong",
