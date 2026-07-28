@@ -622,6 +622,20 @@ export default {
       isLetterCheck: false,
       btnSaveOrderDisabled: true,
       isLetterEditCheck: false,
+      gridQuery: {
+        page: 1,
+        pageSize: 25,
+        sort: "order",
+        direction: "asc",
+      },
+      gridMeta: {
+        page: 1,
+        pageSize: 25,
+        total: null,
+        lastPage: 1,
+        hasNextPage: false,
+        hasPreviousPage: false,
+      },
     };
   },
   options: {},
@@ -804,6 +818,32 @@ export default {
           this.Logout(this, e);
         });
     },
+    normalizeGridResponse(responseData) {
+      if (Array.isArray(responseData)) {
+        return {
+          rows: responseData,
+          meta: {
+            ...this.gridMeta,
+            total: null,
+            hasNextPage: false,
+            hasPreviousPage: false,
+          },
+        };
+      }
+
+      const meta = responseData?.meta || {};
+      return {
+        rows: Array.isArray(responseData?.data) ? responseData.data : [],
+        meta: {
+          page: Number(meta.page) || this.gridQuery.page,
+          pageSize: Number(meta.pageSize) || this.gridQuery.pageSize,
+          total: Number.isFinite(Number(meta.total)) ? Number(meta.total) : 0,
+          lastPage: Math.max(Number(meta.lastPage) || 1, 1),
+          hasNextPage: Boolean(meta.hasNextPage),
+          hasPreviousPage: Boolean(meta.hasPreviousPage),
+        },
+      };
+    },
     duplicateStep(element) {
       this.getJson(element.id, element.name, element.description, true, false);
     },
@@ -894,11 +934,14 @@ export default {
             this.currentProjectId(),
           {
             headers: this.setHeaders(),
+            params: this.gridQuery,
           },
         )
         .then((response) => {
           this.emitter.emit("showLoader", false);
-          this.listSteps = response.data;
+          const result = this.normalizeGridResponse(response.data);
+          this.listSteps = result.rows;
+          this.gridMeta = result.meta;
           this.stepsLoaded = true;
           this.redirectEmptySteps();
         })

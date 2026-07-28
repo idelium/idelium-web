@@ -20,6 +20,7 @@ describe("steps component", () => {
     api.get.mockReset();
     api.post.mockReset();
     api.put.mockReset();
+    api.get.mockResolvedValue({ data: [] });
     modal.show.mockReset();
     modal.hide.mockReset();
   });
@@ -166,6 +167,41 @@ describe("steps component", () => {
     expect(wrapper.vm.getSteps()).toBe(false);
     expect(emitter.emit).toHaveBeenCalledWith("showLoader", true);
     expect(emitter.emit).toHaveBeenCalledWith("showLoader", false);
+  });
+
+  it("loads steps through the enterprise grid contract when available", async () => {
+    api.get.mockResolvedValue({
+      data: {
+        data: [{ id: 7, name: "open_browser", description: "Open browser" }],
+        meta: {
+          page: 1,
+          pageSize: 25,
+          total: 1,
+          lastPage: 1,
+          hasNextPage: false,
+          hasPreviousPage: false,
+        },
+      },
+    });
+    useSessionStore(pinia).selectProject(9);
+
+    const wrapper = mountSteps();
+
+    await vi.waitFor(() =>
+      expect(api.get).toHaveBeenCalledWith("/api/steps/9", {
+        headers: {},
+        params: {
+          page: 1,
+          pageSize: 25,
+          sort: "order",
+          direction: "asc",
+        },
+      }),
+    );
+    expect(wrapper.vm.listSteps).toEqual([
+      { id: 7, name: "open_browser", description: "Open browser" },
+    ]);
+    expect(wrapper.vm.gridMeta.total).toBe(1);
   });
 
   it("uses an enterprise confirmation before deleting a step", async () => {
