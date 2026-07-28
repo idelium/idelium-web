@@ -82,102 +82,155 @@
   </div>
 </template>
 <script>
-import apiClient from '@/services/apiClient'
-import modalModifyProject from './project/modalModifyProject.vue'
+import apiClient from "@/services/apiClient";
+import modalModifyProject from "./project/modalModifyProject.vue";
 
 export default {
-  name: 'ProjectsComponent',
+  name: "ProjectsComponent",
   created() {
-    this.getProjects()
-    this.$gtag.event('idelium-builder', { method: 'project' })
-    this.emitter.on('refreshProject', (msg) => {
-      if (msg == true) this.getProjects(true)
-      else this.$forceUpdate()
-    })
+    this.getProjects();
+    this.$gtag.event("idelium-builder", { method: "project" });
+    this.emitter.on("refreshProject", (msg) => {
+      if (msg == true) this.getProjects(true);
+      else this.$forceUpdate();
+    });
   },
   watch: {
     $route() {
-      this.$gtag.event('idelium-builder', { method: 'project' })
-      this.getProjects()
-      this.$forceUpdate()
-    }
+      this.$gtag.event("idelium-builder", { method: "project" });
+      this.getProjects();
+      this.$forceUpdate();
+    },
   },
   data() {
     return {
       newproject: null,
       arrayProjects: [],
+      projectsGridQuery: {
+        page: 1,
+        pageSize: 25,
+        sort: "created_at",
+        direction: "asc",
+      },
+      projectsGridMeta: {
+        page: 1,
+        pageSize: 25,
+        total: null,
+        lastPage: 1,
+        hasNextPage: false,
+        hasPreviousPage: false,
+      },
       idSelected: null,
-      projectToModify: null
-    }
+      projectToModify: null,
+    };
   },
   methods: {
     modify(id, name) {
-      this.idSelected = id
-      this.projectToModify = name
+      this.idSelected = id;
+      this.projectToModify = name;
+    },
+    normalizeGridResponse(responseData, fallbackMeta) {
+      if (Array.isArray(responseData)) {
+        return {
+          rows: responseData,
+          meta: {
+            ...fallbackMeta,
+            total: null,
+            hasNextPage: false,
+            hasPreviousPage: false,
+          },
+        };
+      }
+
+      const meta = responseData?.meta || {};
+      return {
+        rows: Array.isArray(responseData?.data) ? responseData.data : [],
+        meta: {
+          page: Number(meta.page) || fallbackMeta.page,
+          pageSize: Number(meta.pageSize) || fallbackMeta.pageSize,
+          total: Number.isFinite(Number(meta.total)) ? Number(meta.total) : 0,
+          lastPage: Math.max(Number(meta.lastPage) || 1, 1),
+          hasNextPage: Boolean(meta.hasNextPage),
+          hasPreviousPage: Boolean(meta.hasPreviousPage),
+        },
+      };
+    },
+    applyProjectsResponse(responseData) {
+      const result = this.normalizeGridResponse(
+        responseData,
+        this.projectsGridMeta,
+      );
+      this.arrayProjects = result.rows;
+      this.projectsGridMeta = result.meta;
     },
 
     deleteProject(id) {
       return this.$showConfirm({
         message: this.language[this.config.currentLanguage].Projects.textDelete,
-        variant: 'warning'
+        variant: "warning",
       }).then((confirmed) => {
-        if (confirmed) this.deleteAction(id)
-      })
+        if (confirmed) this.deleteAction(id);
+      });
     },
     deleteAction(id) {
       apiClient
-        .delete(this.config.serviceBaseUrl + this.config.url.projects + '/' + id, {
-          headers: this.setHeaders()
-        })
+        .delete(
+          this.config.serviceBaseUrl + this.config.url.projects + "/" + id,
+          {
+            headers: this.setHeaders(),
+          },
+        )
         .then((response) => {
-          this.arrayProjects = response.data
+          this.applyProjectsResponse(response.data);
           if (this.arrayProjects.length == 0) {
-            this.showModal(null, 'new')
+            this.showModal(null, "new");
           }
-          this.emitter.emit('showLoader', false)
+          this.emitter.emit("showLoader", false);
         })
         .catch((e) => {
-          this.emitter.emit('showLoader', false)
-          this.Logout(this, e)
-          this.error = e
-        })
+          this.emitter.emit("showLoader", false);
+          this.Logout(this, e);
+          this.error = e;
+        });
     },
     getCostumers() {
       apiClient
         .get(this.config.serviceBaseUrl + this.config.url.costumers, {
-          headers: this.setHeaders()
+          headers: this.setHeaders(),
         })
         .then((response) => {
-          this.emitter.emit('showLoader', false)
+          this.emitter.emit("showLoader", false);
           if (response.data.length == 0) {
-            this.showModal(null, 'new')
+            this.showModal(null, "new");
           }
         })
         .catch((e) => {
-          this.Logout(this, e)
-          this.error = e
-        })
+          this.Logout(this, e);
+          this.error = e;
+        });
     },
 
     getProjects(isAutomaticLoad = false) {
-      this.emitter.emit('showLoader', true)
+      this.emitter.emit("showLoader", true);
       apiClient
         .get(this.config.serviceBaseUrl + this.config.url.projects, {
-          headers: this.setHeaders()
+          headers: this.setHeaders(),
+          params: this.projectsGridQuery,
         })
         .then((response) => {
-          this.emitter.emit('showLoader', false)
-          this.arrayProjects = response.data
+          this.emitter.emit("showLoader", false);
+          this.applyProjectsResponse(response.data);
           if (this.arrayProjects.length == 0) {
-            this.getCostumers()
+            this.getCostumers();
           } else {
-            if (isAutomaticLoad == false) this.emitter.emit('updateListProject', this.arrayProjects)
+            if (isAutomaticLoad == false)
+              this.emitter.emit("updateListProject", this.arrayProjects);
           }
         })
         .catch((e) => {
-          this.Logout(this, e)
-          this.error = e
-        })
+          this.Logout(this, e);
+          this.error = e;
+        });
     },
     insertProject(data) {
       apiClient
@@ -185,63 +238,63 @@ export default {
           this.config.serviceBaseUrl + this.config.url.projects,
           {
             name: data.name,
-            description: data.description
+            description: data.description,
           },
           {
-            headers: this.setHeaders()
-          }
+            headers: this.setHeaders(),
+          },
         )
         .then((response) => {
-          this.emitter.emit('showLoader', false)
-          this.arrayProjects = response.data
-          this.emitter.emit('updateListProject', this.arrayProjects)
+          this.emitter.emit("showLoader", false);
+          this.applyProjectsResponse(response.data);
+          this.emitter.emit("updateListProject", this.arrayProjects);
         })
         .catch((e) => {
-          this.Logout(this, e)
-          this.error = e
-        })
+          this.Logout(this, e);
+          this.error = e;
+        });
     },
     updateProject(data) {
-      this.emitter.emit('showLoader', true)
+      this.emitter.emit("showLoader", true);
       apiClient
         .put(
-          this.config.serviceBaseUrl + this.config.url.projects + '/' + data.id,
+          this.config.serviceBaseUrl + this.config.url.projects + "/" + data.id,
           {
             name: data.name,
-            description: data.description
+            description: data.description,
           },
           {
-            headers: this.setHeaders()
-          }
+            headers: this.setHeaders(),
+          },
         )
         .then((response) => {
-          this.emitter.emit('showLoader', false)
-          this.arrayProjects = response.data
-          this.emitter.emit('updateListProject', this.arrayProjects)
+          this.emitter.emit("showLoader", false);
+          this.applyProjectsResponse(response.data);
+          this.emitter.emit("updateListProject", this.arrayProjects);
         })
         .catch((e) => {
-          this.emitter.emit('showLoader', false)
-          this.Logout(this, e)
-          this.error = e
-        })
+          this.emitter.emit("showLoader", false);
+          this.Logout(this, e);
+          this.error = e;
+        });
     },
     showModal(index, type) {
-      if (type == 'new') {
-        this.$refs.modifyModal.showModal(null, type)
+      if (type == "new") {
+        this.$refs.modifyModal.showModal(null, type);
       } else {
-        this.$refs.modifyModal.showModal(this.arrayProjects[index], type)
+        this.$refs.modifyModal.showModal(this.arrayProjects[index], type);
       }
     },
     updateData(data) {
-      if (data.type == 'new') {
-        this.insertProject(data)
+      if (data.type == "new") {
+        this.insertProject(data);
       } else {
-        this.updateProject(data)
+        this.updateProject(data);
       }
-    }
+    },
   },
   components: {
-    modalModifyProject
-  }
-}
+    modalModifyProject,
+  },
+};
 </script>
