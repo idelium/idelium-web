@@ -61,7 +61,10 @@
                 <input
                   class="form-control formTest"
                   v-if="testSelected != null"
-                  :placeholder="language[config.currentLanguage].Tests.placeholderDescriptionTest"
+                  :placeholder="
+                    language[config.currentLanguage].Tests
+                      .placeholderDescriptionTest
+                  "
                   v-model="modifyDescriptionTest"
                   :disabled="testSelected == null"
                 />
@@ -89,13 +92,18 @@
               <!-- start tabTitleModify tab -->
               <input
                 class="form-control formTest"
-                :placeholder="language[config.currentLanguage].Tests.placeholderNameTest"
+                :placeholder="
+                  language[config.currentLanguage].Tests.placeholderNameTest
+                "
                 v-model="newNameTest"
                 :disabled="disableNameTest"
               />
               <input
                 class="form-control formTest"
-                :placeholder="language[config.currentLanguage].Tests.placeholderDescriptionTest"
+                :placeholder="
+                  language[config.currentLanguage].Tests
+                    .placeholderDescriptionTest
+                "
                 v-model="newDescriptionTest"
                 :disabled="disableTestDescription"
               />
@@ -131,7 +139,9 @@
               class="form-control"
               type="text"
               v-model.lazy="stepFilter"
-              :placeholder="language[config.currentLanguage].Tests.placeholderFilterStep"
+              :placeholder="
+                language[config.currentLanguage].Tests.placeholderFilterStep
+              "
               style="margin-bottom: 5px"
             />
 
@@ -145,7 +155,9 @@
             >
               <template #item="{ element }">
                 <div class="list-group-item" style="cursor: grab">
-                  <span style="text-transform: uppercase">{{ element.description }}</span>
+                  <span style="text-transform: uppercase">{{
+                    element.description
+                  }}</span>
                 </div>
               </template>
             </draggable>
@@ -169,7 +181,11 @@
                     <span>
                       <font-awesome-icon
                         icon="arrow-circle-down"
-                        style="font-size: 25px; margin-top: 5px; margin-bottom: 5px"
+                        style="
+                          font-size: 25px;
+                          margin-top: 5px;
+                          margin-bottom: 5px;
+                        "
                     /></span>
                   </div>
 
@@ -182,7 +198,9 @@
                       text-align: center !important;
                     "
                   >
-                    <span style="text-transform: uppercase">{{ element.description }}</span>
+                    <span style="text-transform: uppercase">{{
+                      element.description
+                    }}</span>
                     <button
                       type="button"
                       class="tests-icon-action"
@@ -211,11 +229,18 @@
               >
                 <template #item="{ element, index }">
                   <div style="margin-right: 10px">
-                    <div style="text-align: center; width: 100%" v-if="index > 0">
+                    <div
+                      style="text-align: center; width: 100%"
+                      v-if="index > 0"
+                    >
                       <span>
                         <font-awesome-icon
                           icon="arrow-circle-down"
-                          style="font-size: 25px; margin-top: 5px; margin-bottom: 5px"
+                          style="
+                            font-size: 25px;
+                            margin-top: 5px;
+                            margin-bottom: 5px;
+                          "
                       /></span>
                     </div>
 
@@ -237,7 +262,10 @@
                       <span
                         style="text-transform: uppercase"
                         v-on:click="editImportedItem(index)"
-                        v-if="arrayEditImportedSteps[index] == false && element.steps[0].findBy"
+                        v-if="
+                          arrayEditImportedSteps[index] == false &&
+                          element.steps[0].findBy
+                        "
                         ><br />({{ element.steps[0].findBy }})</span
                       >
                       <input
@@ -258,7 +286,8 @@
                         style="width: 80%; margin-left: 10px"
                       >
                         <option
-                          v-for="(target, index2) in seleniumImport[index].targets"
+                          v-for="(target, index2) in seleniumImport[index]
+                            .targets"
                           :key="index2"
                           :value="target[0]"
                         >
@@ -419,21 +448,21 @@
 </style>
 
 <script>
-import apiClient from '@/services/apiClient'
-import { getSelectedProjectId } from '@/stores/session'
-import { buildTestPayload } from '@/domain/workflowPayloads'
+import apiClient from "@/services/apiClient";
+import { getSelectedProjectId } from "@/stores/session";
+import { buildTestPayload } from "@/domain/workflowPayloads";
 
-import draggable from 'vuedraggable'
-import importSelenium from './tests/importSelenium.vue'
-import { routableTabs } from '@/shared/routableTabs'
+import draggable from "vuedraggable";
+import importSelenium from "./tests/importSelenium.vue";
+import { routableTabs } from "@/shared/routableTabs";
 
 export default {
-  name: 'TestsComponent',
+  name: "TestsComponent",
   components: {
     draggable,
-    importSelenium
+    importSelenium,
   },
-  mixins: [routableTabs('modify', ['modify', 'new', 'import'])],
+  mixins: [routableTabs("modify", ["modify", "new", "import"])],
   data() {
     return {
       delay: 1000,
@@ -444,158 +473,208 @@ export default {
       listOriginalSteps: [],
       arrayTests: [],
       testSelected: null,
-      stepFilter: '',
+      stepFilter: "",
       disableNameTest: true,
       disableTestDescription: true,
       disableBtnCreateTest: true,
-      newNameTest: '',
-      newDescriptionTest: '',
-      importedNameTest: '',
-      importedDescriptionTest: '',
-      modifyDescriptionTest: '',
+      newNameTest: "",
+      newDescriptionTest: "",
+      importedNameTest: "",
+      importedDescriptionTest: "",
+      modifyDescriptionTest: "",
       tabOpen: 0,
       testsLoaded: false,
+      testsGridQuery: {
+        page: 1,
+        pageSize: 25,
+        sort: "id",
+        direction: "asc",
+      },
+      testsGridMeta: {
+        page: 1,
+        pageSize: 25,
+        total: null,
+        lastPage: 1,
+        hasNextPage: false,
+        hasPreviousPage: false,
+      },
       importedFromSelenium: false,
-      seleniumImport: {}
-    }
+      seleniumImport: {},
+    };
   },
   created() {
-    this.getSteps()
-    this.emitter.on('refreshTest', (msg) => {
-      if (msg == true) this.getSteps()
-      else this.$forceUpdate()
-      
-    })
+    this.getSteps();
+    this.emitter.on("refreshTest", (msg) => {
+      if (msg == true) this.getSteps();
+      else this.$forceUpdate();
+    });
   },
   watch: {
     stepFilter() {
       // Do something with search nameIssue after it debounced
-      let filter = this.stepFilter
-      this.searchTextSteps(filter)
+      let filter = this.stepFilter;
+      this.searchTextSteps(filter);
     },
     arrayStepsSelectedDragged() {
-      this.disableNameTest = this.arrayStepsSelectedDragged.length == 0
+      this.disableNameTest = this.arrayStepsSelectedDragged.length == 0;
     },
     newNameTest() {
-      this.disableTestDescription = this.newNameTest.length == 0
+      this.disableTestDescription = this.newNameTest.length == 0;
     },
     newDescriptionTest() {
-      this.disableBtnCreateTest = this.newDescriptionTest.length == 0
+      this.disableBtnCreateTest = this.newDescriptionTest.length == 0;
     },
     testSelected() {
-      this.getTest()
+      this.getTest();
     },
     /*$route() {
       this.$forceUpdate();
     }, */
-    files() {
-    }
+    files() {},
   },
   computed: {
     isModifyTabDisabled() {
-      return this.testsLoaded && this.arrayTests.length === 0
-    }
+      return this.testsLoaded && this.arrayTests.length === 0;
+    },
   },
   methods: {
     onRoutableTabChange(tab) {
-      this.tabOpen = ['modify', 'new', 'import'].indexOf(tab)
+      this.tabOpen = ["modify", "new", "import"].indexOf(tab);
     },
     redirectEmptyTests() {
-      if (this.isModifyTabDisabled && this.isActiveTab('modify')) {
-        this.openTab('new')
+      if (this.isModifyTabDisabled && this.isActiveTab("modify")) {
+        this.openTab("new");
       }
     },
     cancelUpload() {
-      this.$refs.selenium.showUploadComponent()
-      this.seleniumImport = {}
-      this.arrayStepsImported = []
+      this.$refs.selenium.showUploadComponent();
+      this.seleniumImport = {};
+      this.arrayStepsImported = [];
     },
     importTest(value) {
-      this.importedNameTest = value.name
-      this.importedDescriptionTest = value.description
+      this.importedNameTest = value.name;
+      this.importedDescriptionTest = value.description;
       if (value.tests) {
-        this.seleniumImport = value.seleniumImport
-        this.arrayStepsImported = value.tests
-        this.importedFromSelenium = true
-        this.arrayEditImportedSteps = []
+        this.seleniumImport = value.seleniumImport;
+        this.arrayStepsImported = value.tests;
+        this.importedFromSelenium = true;
+        this.arrayEditImportedSteps = [];
         for (let i in this.arrayStepsImported) {
-          this.arrayEditImportedSteps.push(false)
+          this.arrayEditImportedSteps.push(false);
         }
       }
     },
     searchTextSteps(filter) {
       this.arraySteps = this.listOriginalSteps.filter((d) =>
-        d.name.toLowerCase().includes(filter.toLowerCase())
-      )
+        d.name.toLowerCase().includes(filter.toLowerCase()),
+      );
+    },
+    normalizeGridResponse(responseData, fallbackMeta) {
+      if (Array.isArray(responseData)) {
+        return {
+          rows: responseData,
+          meta: {
+            ...fallbackMeta,
+            total: null,
+            hasNextPage: false,
+            hasPreviousPage: false,
+          },
+        };
+      }
+
+      const meta = responseData?.meta || {};
+      return {
+        rows: Array.isArray(responseData?.data) ? responseData.data : [],
+        meta: {
+          page: Number(meta.page) || fallbackMeta.page,
+          pageSize: Number(meta.pageSize) || fallbackMeta.pageSize,
+          total: Number.isFinite(Number(meta.total)) ? Number(meta.total) : 0,
+          lastPage: Math.max(Number(meta.lastPage) || 1, 1),
+          hasNextPage: Boolean(meta.hasNextPage),
+          hasPreviousPage: Boolean(meta.hasPreviousPage),
+        },
+      };
     },
     getSteps() {
-      this.emitter.emit('showLoader', true)
+      this.emitter.emit("showLoader", true);
       apiClient
         .get(
-          this.config.serviceBaseUrl + this.config.url.steps + '/' + getSelectedProjectId(),
+          this.config.serviceBaseUrl +
+            this.config.url.steps +
+            "/" +
+            getSelectedProjectId(),
           {
-            headers: this.setHeaders()
-          }
+            headers: this.setHeaders(),
+          },
         )
         .then((response) => {
-          this.arraySteps = this.listOriginalSteps = response.data
-          this.getTests()
+          this.arraySteps = this.listOriginalSteps = response.data;
+          this.getTests();
         })
         .catch((e) => {
-          this.error = e
-        })
+          this.error = e;
+        });
     },
     getTests() {
-      this.emitter.emit('showLoader', true)
-      apiClient
-        .get(
-          this.config.serviceBaseUrl + this.config.url.tests + '/' + getSelectedProjectId(),
-          {
-            headers: this.setHeaders()
-          }
-        )
-        .then((response) => {
-          this.emitter.emit('showLoader', false)
-          this.arrayTests = response.data
-          this.testsLoaded = true
-          this.redirectEmptyTests()
-        })
-        .catch((e) => {
-          this.Logout(this, e)
-          this.error = e
-        })
-    },
-    getTest() {
-      if (this.testSelected == null) {
-        this.modifyDescriptionTest = ''
-        this.arrayStepsSelectedDragged = []
-        return false
-      }
-      this.emitter.emit('showLoader', true)
+      this.emitter.emit("showLoader", true);
       apiClient
         .get(
           this.config.serviceBaseUrl +
             this.config.url.tests +
-            '/' +
-            getSelectedProjectId() +
-            '/' +
-            this.testSelected.id,
+            "/" +
+            getSelectedProjectId(),
           {
-            headers: this.setHeaders()
-          }
+            headers: this.setHeaders(),
+            params: this.testsGridQuery,
+          },
         )
         .then((response) => {
-          this.emitter.emit('showLoader', false)
-          this.arrayStepsSelectedDragged = JSON.parse(response.data.config)
-          this.modifyDescriptionTest = response.data.description
+          this.emitter.emit("showLoader", false);
+          const result = this.normalizeGridResponse(
+            response.data,
+            this.testsGridMeta,
+          );
+          this.arrayTests = result.rows;
+          this.testsGridMeta = result.meta;
+          this.testsLoaded = true;
+          this.redirectEmptyTests();
         })
         .catch((e) => {
-          this.Logout(this, e)
-          this.error = e
+          this.Logout(this, e);
+          this.error = e;
+        });
+    },
+    getTest() {
+      if (this.testSelected == null) {
+        this.modifyDescriptionTest = "";
+        this.arrayStepsSelectedDragged = [];
+        return false;
+      }
+      this.emitter.emit("showLoader", true);
+      apiClient
+        .get(
+          this.config.serviceBaseUrl +
+            this.config.url.tests +
+            "/" +
+            getSelectedProjectId() +
+            "/" +
+            this.testSelected.id,
+          {
+            headers: this.setHeaders(),
+          },
+        )
+        .then((response) => {
+          this.emitter.emit("showLoader", false);
+          this.arrayStepsSelectedDragged = JSON.parse(response.data.config);
+          this.modifyDescriptionTest = response.data.description;
         })
+        .catch((e) => {
+          this.Logout(this, e);
+          this.error = e;
+        });
     },
     saveTest() {
-      this.emitter.emit('showLoader', true)
+      this.emitter.emit("showLoader", true);
       apiClient
         .post(
           this.config.serviceBaseUrl + this.config.url.tests,
@@ -603,25 +682,25 @@ export default {
             name: this.newNameTest,
             description: this.newDescriptionTest,
             steps: this.arrayStepsSelectedDragged,
-            projectId: getSelectedProjectId()
+            projectId: getSelectedProjectId(),
           }),
           {
-            headers: this.setHeaders()
-          }
+            headers: this.setHeaders(),
+          },
         )
         .then((response) => {
-          this.emitter.emit('showLoader', false)
-          this.listPlugins = response.data
-          this.arraySteps = this.listOriginalSteps
-          this.arrayStepsSelectedDragged = []
+          this.emitter.emit("showLoader", false);
+          this.listPlugins = response.data;
+          this.arraySteps = this.listOriginalSteps;
+          this.arrayStepsSelectedDragged = [];
         })
         .catch((e) => {
-          this.Logout(this, e)
-          this.error = e
-        })
+          this.Logout(this, e);
+          this.error = e;
+        });
     },
     saveImportTest() {
-      this.emitter.emit('showLoader', true)
+      this.emitter.emit("showLoader", true);
       apiClient
         .post(
           this.config.serviceBaseUrl + this.config.url.importtest,
@@ -629,46 +708,46 @@ export default {
             name: this.importedNameTest,
             description: this.importedDescriptionTest,
             import: JSON.stringify(this.arrayStepsImported),
-            idProject: getSelectedProjectId()
+            idProject: getSelectedProjectId(),
           },
           {
-            headers: this.setHeaders()
-          }
+            headers: this.setHeaders(),
+          },
         )
         .then((response) => {
-          this.arrayStepsSelectedDragged = []
-          this.arrayStepsImported = []
-          this.cancelUpload()
-          this.getSteps()
-          this.openTab('modify')
+          this.arrayStepsSelectedDragged = [];
+          this.arrayStepsImported = [];
+          this.cancelUpload();
+          this.getSteps();
+          this.openTab("modify");
         })
         .catch((e) => {
-          this.Logout(this, e)
-          this.error = e
-        })
+          this.Logout(this, e);
+          this.error = e;
+        });
     },
     modifyTest() {
-      this.emitter.emit('showLoader', true)
+      this.emitter.emit("showLoader", true);
       apiClient
         .put(
           this.config.serviceBaseUrl +
             this.config.url.tests +
-            '/' +
+            "/" +
             getSelectedProjectId() +
-            '/' +
+            "/" +
             this.testSelected.id,
           {
             config: JSON.stringify(this.arrayStepsSelectedDragged),
-            description: this.modifyDescriptionTest
+            description: this.modifyDescriptionTest,
           },
           {
-            headers: this.setHeaders()
-          }
+            headers: this.setHeaders(),
+          },
         )
         .then((response) => {
-          this.emitter.emit('showLoader', false)
-          this.listPlugins = response.data
-          this.arraySteps = this.listOriginalSteps
+          this.emitter.emit("showLoader", false);
+          this.listPlugins = response.data;
+          this.arraySteps = this.listOriginalSteps;
         })
         .catch((e) => {
           //this.Logout(this)
@@ -676,50 +755,53 @@ export default {
             message:
               e?.message ||
               this.language[this.config.currentLanguage].Dialog.operationFailed,
-            variant: 'danger'
-          })
-          this.error = e
-        })
+            variant: "danger",
+          });
+          this.error = e;
+        });
     },
     log: function () {
-      this.copyArray()
+      this.copyArray();
     },
     deleteItem(index) {
-      this.arrayStepsSelectedDragged.splice(index, 1)
-      this.copyArray()
+      this.arrayStepsSelectedDragged.splice(index, 1);
+      this.copyArray();
     },
     deleteItemImported(index) {
-      this.arrayStepsImported.splice(index, 1)
+      this.arrayStepsImported.splice(index, 1);
     },
     editImportedItem(index) {
-      for (let i in this.arrayEditImportedSteps) this.arrayEditImportedSteps[i] = false
-      this.arrayEditImportedSteps[index] = true
+      for (let i in this.arrayEditImportedSteps)
+        this.arrayEditImportedSteps[i] = false;
+      this.arrayEditImportedSteps[index] = true;
       this.targetSelected =
         this.arrayStepsImported[index].steps[0].findBy +
-        '=' +
-        this.arrayStepsImported[index].steps[0].target
-      this.$forceUpdate()
+        "=" +
+        this.arrayStepsImported[index].steps[0].target;
+      this.$forceUpdate();
     },
     endEditImportedItem(index) {
-      this.arrayEditImportedSteps[index] = false
-      this.$forceUpdate()
+      this.arrayEditImportedSteps[index] = false;
+      this.$forceUpdate();
     },
     changeTarget(index, obj) {
-      let target = obj.target.value.substring(obj.target.value.indexOf('=') + 1)
-      let findBy = obj.target.value.substring(0, obj.target.value.indexOf('='))
-      this.arrayStepsImported[index].steps[0].target = target
-      this.arrayStepsImported[index].steps[1].target = target
-      this.arrayStepsImported[index].steps[0].findBy = findBy
-      this.arrayStepsImported[index].steps[1].findBy = findBy
-      this.endEditImportedItem(index)
+      let target = obj.target.value.substring(
+        obj.target.value.indexOf("=") + 1,
+      );
+      let findBy = obj.target.value.substring(0, obj.target.value.indexOf("="));
+      this.arrayStepsImported[index].steps[0].target = target;
+      this.arrayStepsImported[index].steps[1].target = target;
+      this.arrayStepsImported[index].steps[0].findBy = findBy;
+      this.arrayStepsImported[index].steps[1].findBy = findBy;
+      this.endEditImportedItem(index);
     },
     copyArray() {
-      this.disableNameTest = this.arrayStepsSelectedDragged.length == 0
-      this.arrayStepsSelected = []
+      this.disableNameTest = this.arrayStepsSelectedDragged.length == 0;
+      this.arrayStepsSelected = [];
       for (let i = 0; i < this.arrayStepsSelectedDragged.length; i++) {
-        this.arrayStepsSelected.push(this.arrayStepsSelectedDragged[i].name)
+        this.arrayStepsSelected.push(this.arrayStepsSelectedDragged[i].name);
       }
-    }
-  }
-}
+    },
+  },
+};
 </script>

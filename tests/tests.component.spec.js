@@ -1,5 +1,5 @@
 import { shallowMount } from "@vue/test-utils";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const api = vi.hoisted(() => ({ get: vi.fn() }));
 
@@ -10,6 +10,10 @@ import { pinia } from "@/stores/pinia";
 import { useSessionStore } from "@/stores/session";
 
 describe("tests component", () => {
+  beforeEach(() => {
+    api.get.mockReset();
+  });
+
   function mountTests(overrides = {}) {
     return shallowMount(Tests, {
       global: {
@@ -58,5 +62,40 @@ describe("tests component", () => {
     expect(
       wrapper.find("#nav-tabTitleModify-tab").attributes("disabled"),
     ).toBeDefined();
+  });
+
+  it("loads tests through the enterprise grid contract when available", async () => {
+    api.get.mockResolvedValueOnce({ data: [] }).mockResolvedValueOnce({
+      data: {
+        data: [{ id: 17, name: "postman", description: "Postman flow" }],
+        meta: {
+          page: 1,
+          pageSize: 25,
+          total: 1,
+          lastPage: 1,
+          hasNextPage: false,
+          hasPreviousPage: false,
+        },
+      },
+    });
+    useSessionStore(pinia).selectProject(9);
+
+    const wrapper = mountTests();
+
+    await vi.waitFor(() =>
+      expect(api.get).toHaveBeenCalledWith("/api/tests/9", {
+        headers: {},
+        params: {
+          page: 1,
+          pageSize: 25,
+          sort: "id",
+          direction: "asc",
+        },
+      }),
+    );
+    expect(wrapper.vm.arrayTests).toEqual([
+      { id: 17, name: "postman", description: "Postman flow" },
+    ]);
+    expect(wrapper.vm.testsGridMeta.total).toBe(1);
   });
 });
