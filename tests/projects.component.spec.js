@@ -18,6 +18,8 @@ describe("projects component", () => {
         stubs: {
           fontAwesomeIcon: true,
           modalModifyProject: true,
+          EnterpriseDataTable: true,
+          IdButton: true,
         },
         mocks: {
           $forceUpdate: vi.fn(),
@@ -35,10 +37,28 @@ describe("projects component", () => {
               Actions: { delete: "Delete" },
               Projects: {
                 btnNewProject: "New project",
+                btnDelete: "Delete",
+                btnModify: "Edit",
+                btnModalModifyProject: "Edit project",
                 description: "Description",
                 id: "ID",
+                listDescription: "Manage projects",
+                listEyebrow: "Administration",
+                listTitle: "Projects",
+                nextPage: "Next",
+                pageStatus: "Page {page} of {pages}",
+                paginationLabel: "Project pages",
+                previousPage: "Previous",
                 project: "Project",
+                searchLabel: "Search projects",
+                searchPlaceholder: "Search",
                 textDelete: "Delete project?",
+              },
+              DataTable: {
+                actions: "Actions",
+                bulk: {},
+                preferences: {},
+                states: {},
               },
             },
           },
@@ -76,6 +96,7 @@ describe("projects component", () => {
           pageSize: 25,
           sort: "created_at",
           direction: "asc",
+          search: "",
         },
       }),
     );
@@ -98,5 +119,50 @@ describe("projects component", () => {
       ]),
     );
     expect(wrapper.vm.projectsGridMeta.total).toBeNull();
+  });
+
+  it("keeps search, sorting, and pagination in the route query", async () => {
+    vi.useFakeTimers();
+    api.get.mockResolvedValue({
+      data: {
+        data: [],
+        meta: {
+          page: 1,
+          pageSize: 25,
+          total: 0,
+          hasNextPage: false,
+          hasPreviousPage: false,
+        },
+      },
+    });
+    const replace = vi.fn().mockResolvedValue();
+    const wrapper = mountProjects({
+      $route: { query: {} },
+      $router: { replace },
+    });
+    await Promise.resolve();
+
+    wrapper.vm.projectSearch = "postman";
+    wrapper.vm.scheduleProjectSearch();
+    await vi.advanceTimersByTimeAsync(250);
+
+    expect(replace).toHaveBeenCalledWith({
+      query: {
+        direction: "asc",
+        q: "postman",
+        sort: "created_at",
+      },
+    });
+    expect(api.get).toHaveBeenCalledWith("/api/admin/projects", {
+      headers: {},
+      params: {
+        page: 1,
+        pageSize: 25,
+        search: "postman",
+        sort: "created_at",
+        direction: "asc",
+      },
+    });
+    vi.useRealTimers();
   });
 });

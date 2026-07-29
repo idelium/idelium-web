@@ -477,6 +477,16 @@ export default {
     projectNameHelp: "Use a short, recognizable project name.",
     projectDescriptionHelp: "Describe what this project contains or validates.",
     projectIsDuplicated: "A project with this name already exists",
+    listEyebrow: "Workspace administration",
+    listTitle: "Projects",
+    listDescription:
+      "Search, review, and manage the project workspaces available to this customer.",
+    searchLabel: "Search projects",
+    searchPlaceholder: "Search by project name or description",
+    paginationLabel: "Project result pages",
+    previousPage: "Previous",
+    nextPage: "Next",
+    pageStatus: "Page {page} of {pages}",
   },
   Tests: {
     tabTitleModify: "Modify Test",
