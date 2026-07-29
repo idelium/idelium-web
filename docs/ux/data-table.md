@@ -102,6 +102,9 @@ polls their status so completed, partial, and failed outcomes can provide recove
 guidance. The API remains responsible for rechecking tenant ownership,
 authorization, snapshot expiry, and every target immediately before mutation.
 
+Performance and accessibility thresholds are defined in
+[`data-table-performance.md`](data-table-performance.md).
+
 ## Migration and rollback
 
 Existing routes and API endpoints remain compatible. Listings move to the shared
