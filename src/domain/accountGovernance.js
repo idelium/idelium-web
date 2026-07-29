@@ -33,17 +33,27 @@ const ROLE_DEFINITIONS = Object.freeze({
   admin: {
     assignmentConstraints: ["cannot-remove-last-admin", "tenant-bound"],
     display: { gb: "Administrator", it: "Amministratore" },
+    purpose: {
+      gb: "Manage tenant users, credentials, and operational governance.",
+      it: "Gestisce utenti tenant, credenziali e governance operativa.",
+    },
     permissions: [
       "account.invite",
       "account.role.assign",
       "account.suspend",
       "credential.audit",
     ],
+    riskLevel: "high",
   },
   operator: {
     assignmentConstraints: ["tenant-bound"],
     display: { gb: "Operator", it: "Operatore" },
+    purpose: {
+      gb: "Run approved tests and inspect retained execution artifacts.",
+      it: "Esegue test approvati e consulta artifact di esecuzione conservati.",
+    },
     permissions: ["run.execute", "artifact.read"],
+    riskLevel: "medium",
   },
   superadmin: {
     assignmentConstraints: [
@@ -52,13 +62,30 @@ const ROLE_DEFINITIONS = Object.freeze({
       "tenant-bound",
     ],
     display: { gb: "Super administrator", it: "Super amministratore" },
+    purpose: {
+      gb: "Administer platform-level tenants, users, credentials, and governance.",
+      it: "Amministra tenant, utenti, credenziali e governance a livello piattaforma.",
+    },
     permissions: ["*"],
+    riskLevel: "critical",
   },
   viewer: {
     assignmentConstraints: ["tenant-bound"],
     display: { gb: "Viewer", it: "Visualizzatore" },
+    purpose: {
+      gb: "Inspect available artifacts without changing execution or governance state.",
+      it: "Consulta gli artifact disponibili senza modificare esecuzioni o governance.",
+    },
     permissions: ["artifact.read"],
+    riskLevel: "low",
   },
+});
+
+const PERMISSION_GROUPS = Object.freeze({
+  administration: ["account.invite", "account.role.assign", "account.suspend"],
+  assets: ["artifact.read"],
+  execution: ["run.execute"],
+  governance: ["credential.audit"],
 });
 
 export function normalizeAccountDescriptor(account = {}, context = {}) {
@@ -94,7 +121,77 @@ export function roleMetadata(roleId, language = "gb") {
     permissionsSummary: definition.permissions.includes("*")
       ? "All tenant administration permissions"
       : definition.permissions.join(", "),
+    purpose: definition.purpose[language] ?? definition.purpose.gb,
+    riskLevel: definition.riskLevel,
   };
+}
+
+export function buildRolePickerOptions(roles = [], options = {}) {
+  const language = options.language ?? "gb";
+  const assignable = new Set(
+    safeArray(options.assignableRoleIds).map((roleId) =>
+      safeIdentifier(roleId).toLowerCase(),
+    ),
+  );
+  const hasExplicitAssignments = assignable.size > 0;
+  return safeArray(roles).map((role) => {
+    const stableId = safeIdentifier(role.id ?? role.roleId ?? role.name);
+    const canonicalId = inferCanonicalRole(role);
+    const metadata = roleMetadata(canonicalId, language);
+    const allowed =
+      !hasExplicitAssignments ||
+      assignable.has(stableId.toLowerCase()) ||
+      assignable.has(canonicalId);
+    return {
+      ...metadata,
+      allowed,
+      disabledReason: allowed
+        ? ""
+        : (options.copy?.unavailableRole ??
+          "Your current permissions cannot assign this role."),
+      displayName:
+        safeText(role.displayName ?? role.label ?? role.name) ||
+        metadata.displayName,
+      stableId,
+      value: stableId,
+    };
+  });
+}
+
+export function permissionMatrixForRoles(roles = [], options = {}) {
+  const pickerOptions = buildRolePickerOptions(roles, options);
+  return Object.entries(PERMISSION_GROUPS).map(([group, permissions]) => ({
+    group,
+    permissions: permissions.map((permission) => ({
+      permission,
+      roles: Object.fromEntries(
+        pickerOptions.map((role) => [
+          role.stableId,
+          role.permissions.includes("*") ||
+            role.permissions.includes(permission),
+        ]),
+      ),
+    })),
+  }));
+}
+
+export function roleReductionWarning(currentRole, nextRole, options = {}) {
+  const current = roleMetadata(
+    inferCanonicalRole(currentRole),
+    options.language,
+  );
+  const next = roleMetadata(inferCanonicalRole(nextRole), options.language);
+  if (current.riskLevel === "critical" && next.riskLevel !== "critical") {
+    return "critical-reduction";
+  }
+  if (
+    current.permissions.includes("account.role.assign") &&
+    !next.permissions.includes("account.role.assign") &&
+    !next.permissions.includes("*")
+  ) {
+    return "governance-reduction";
+  }
+  return "";
 }
 
 export function accountOperationContract(
@@ -354,6 +451,19 @@ function normalizeAccountStatus(value, account) {
 function normalizeRoleId(value) {
   const role = safeIdentifier(value || "viewer").toLowerCase();
   return ROLE_DEFINITIONS[role] ? role : "viewer";
+}
+
+function inferCanonicalRole(role) {
+  const raw = String(
+    role?.canonicalId ?? role?.code ?? role?.name ?? role ?? "",
+  )
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]/g, "");
+  if (raw.includes("super")) return "superadmin";
+  if (raw.includes("admin")) return "admin";
+  if (raw.includes("operator") || raw.includes("user")) return "operator";
+  if (raw.includes("viewer") || raw.includes("read")) return "viewer";
+  return normalizeRoleId(raw);
 }
 
 function safeOperation(value) {

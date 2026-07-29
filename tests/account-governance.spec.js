@@ -3,10 +3,13 @@ import { describe, expect, it } from "vitest";
 import {
   ACCOUNT_GOVERNANCE_CONTRACT_VERSION,
   accountOperationContract,
+  buildRolePickerOptions,
   createAccountInvitationRequest,
   legacyAccountCompatibility,
   normalizeAccountDescriptor,
+  permissionMatrixForRoles,
   roleMetadata,
+  roleReductionWarning,
 } from "@/domain/accountGovernance";
 
 describe("account lifecycle and role governance contract", () => {
@@ -52,6 +55,56 @@ describe("account lifecycle and role governance contract", () => {
       id: "viewer",
       permissionsSummary: "artifact.read",
     });
+  });
+
+  it("builds role picker options and permission matrix from stable role IDs", () => {
+    const roles = [
+      { id: 1, name: "superadmin" },
+      { id: 2, name: "admin" },
+      { id: 3, name: "viewer" },
+    ];
+    const options = buildRolePickerOptions(roles, {
+      assignableRoleIds: ["2", "3"],
+      copy: { unavailableRole: "Not authorized." },
+      language: "gb",
+    });
+
+    expect(options).toEqual([
+      expect.objectContaining({
+        allowed: false,
+        disabledReason: "Not authorized.",
+        displayName: "superadmin",
+        stableId: "1",
+        value: "1",
+      }),
+      expect.objectContaining({
+        allowed: true,
+        displayName: "admin",
+        stableId: "2",
+        value: "2",
+      }),
+      expect.objectContaining({
+        allowed: true,
+        displayName: "viewer",
+        stableId: "3",
+        value: "3",
+      }),
+    ]);
+    expect(
+      permissionMatrixForRoles(roles, { assignableRoleIds: ["2", "3"] }).find(
+        (group) => group.group === "administration",
+      ).permissions,
+    ).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          permission: "account.invite",
+          roles: { 1: true, 2: true, 3: false },
+        }),
+      ]),
+    );
+    expect(
+      roleReductionWarning({ name: "admin" }, { name: "viewer" }, {}),
+    ).toBe("governance-reduction");
   });
 
   it("builds tenant-scoped idempotent contracts for valid account operations", () => {

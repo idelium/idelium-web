@@ -1153,6 +1153,43 @@ export default {
     placeholderConfirmPassword: "Confirm password",
     placeholderRole: "Select a role",
     placeholderCostumer: "Select a customer",
+    rolePicker: {
+      title: "Role assignment",
+      description:
+        "Choose a stable role ID after reviewing purpose, permissions, restrictions, and risk.",
+      noRoleSelected: "No role selected",
+      matrixTitle: "Permission matrix",
+      permission: "Permission",
+      permissionAllowed: "Permission allowed",
+      permissionDenied: "Permission not granted",
+      unavailableRole: "Your current permissions cannot assign this role.",
+      groups: {
+        administration: "Administration",
+        assets: "Assets",
+        execution: "Execution",
+        governance: "Governance",
+      },
+      permissions: {
+        "account.invite": "Invite accounts",
+        "account.role.assign": "Assign roles",
+        "account.suspend": "Suspend accounts",
+        "artifact.read": "Read artifacts",
+        "credential.audit": "Audit credentials",
+        "run.execute": "Run executions",
+      },
+      riskLevels: {
+        critical: "Critical risk",
+        high: "High risk",
+        low: "Low risk",
+        medium: "Medium risk",
+      },
+      reductionWarnings: {
+        "critical-reduction":
+          "This change reduces a critical role and may affect platform ownership duties.",
+        "governance-reduction":
+          "This change removes governance permissions that may be required for current duties.",
+      },
+    },
     emailHelp: "The email address is used as the sign-in account.",
     nameHelp: "Use the display name shown in account lists and profile views.",
     passwordHelp:

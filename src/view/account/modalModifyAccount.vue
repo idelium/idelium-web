@@ -155,28 +155,14 @@
               </select>
             </div>
             <div class="mb-3" v-if="!isModifyType">
-              <label class="form-label" for="account-role">
-                {{ language[config.currentLanguage].Accounts.role }}
-              </label>
-              <select
-                class="form-select"
-                id="account-role"
+              <RolePicker
                 v-model="selectedRole"
-                :disabled="isModifyType"
-              >
-                <option :value="null" disabled>
-                  {{
-                    language[config.currentLanguage].Accounts.placeholderRole
-                  }}
-                </option>
-                <option
-                  v-for="item in roles"
-                  v-bind:key="item.id"
-                  :value="item.id"
-                >
-                  {{ item.name }}
-                </option>
-              </select>
+                :assignable-role-ids="assignableRoleIds"
+                :copy="rolePickerCopy"
+                :current-role="dataAccount.role"
+                :language-code="config.currentLanguage"
+                :roles="roles"
+              />
             </div>
           </form>
         </div>
@@ -206,7 +192,9 @@
 import { Modal } from "bootstrap";
 import validatePassword from "@/shared/validatePassword";
 import { hideModalSafely } from "@/shared/bootstrapModal";
+import RolePicker from "@/components/account/RolePicker.vue";
 export default {
+  components: { RolePicker },
   props: ["arrayAccounts", "roles", "costumers", "isSuperAdmin"],
   emits: ["updateData"],
   data() {
@@ -246,6 +234,15 @@ export default {
     currentCustomerLabel() {
       let customer = this.costumers.find(({ id }) => id === this.selectedCostumer);
       return customer ? customer.costumer : "-";
+    },
+    assignableRoleIds() {
+      if (this.isSuperAdmin) return this.roles.map((role) => String(role.id));
+      return this.roles
+        .filter((role) => !String(role.name ?? "").toLowerCase().includes("super"))
+        .map((role) => String(role.id));
+    },
+    rolePickerCopy() {
+      return this.language[this.config.currentLanguage].Accounts.rolePicker;
     },
   },
   watch: {

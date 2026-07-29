@@ -29,6 +29,30 @@ The UI may explain permissions, but it is not the authority. Server-side checks
 must enforce role existence, tenant ownership, capability authorization, and
 assignment constraints for every mutation.
 
+## Role picker and permission matrix
+
+The account invitation flow uses a role picker instead of a native role select.
+The picker submits the stable role ID returned by the API; localized labels are
+display-only metadata and must not be used as authorization identifiers.
+
+Each role option displays:
+
+- localized role name;
+- role purpose;
+- key permissions summary;
+- assignment restrictions;
+- risk level.
+
+Unavailable roles remain visible but disabled with an authorized explanation so
+administrators understand why the assignment cannot be made. The read-only
+permission matrix groups permissions by assets, execution, governance, and
+administration. Permission names and status indicators are exposed through
+keyboard-focusable controls and screen-reader labels.
+
+The picker warns when a role change would reduce governance or critical platform
+ownership permissions. The API must still enforce the final assignment boundary,
+including attempts to submit a role above the actor's capability.
+
 ## Operations
 
 The contract defines these account operations:

@@ -55,6 +55,40 @@ describe("account modal", () => {
                 placeholderName: "Full name",
                 placeholderPassword: "Password",
                 placeholderRole: "Select a role",
+                rolePicker: {
+                  title: "Role assignment",
+                  description: "Choose a role after reviewing impact.",
+                  noRoleSelected: "No role selected",
+                  matrixTitle: "Permission matrix",
+                  permission: "Permission",
+                  permissionAllowed: "Permission allowed",
+                  permissionDenied: "Permission denied",
+                  unavailableRole: "Not authorized.",
+                  groups: {
+                    administration: "Administration",
+                    assets: "Assets",
+                    execution: "Execution",
+                    governance: "Governance",
+                  },
+                  permissions: {
+                    "account.invite": "Invite accounts",
+                    "account.role.assign": "Assign roles",
+                    "account.suspend": "Suspend accounts",
+                    "artifact.read": "Read artifacts",
+                    "credential.audit": "Audit credentials",
+                    "run.execute": "Run executions",
+                  },
+                  riskLevels: {
+                    critical: "Critical risk",
+                    high: "High risk",
+                    low: "Low risk",
+                    medium: "Medium risk",
+                  },
+                  reductionWarnings: {
+                    "critical-reduction": "Critical reduction.",
+                    "governance-reduction": "Governance reduction.",
+                  },
+                },
                 role: "role",
                 modal: {
                   addAccount: "Add account",
@@ -89,15 +123,15 @@ describe("account modal", () => {
     expect(wrapper.find("label[for='account-confirm-password']").exists()).toBe(
       false,
     );
-    expect(wrapper.find("label[for='account-role']").text()).toBe("role");
     expect(wrapper.find("label[for='account-customer']").text()).toBe(
       "customer",
     );
+    expect(wrapper.findComponent({ name: "RolePicker" }).exists()).toBe(true);
     expect(wrapper.findAll("#account-email")).toHaveLength(1);
     expect(wrapper.findAll("#account-name")).toHaveLength(1);
     expect(wrapper.findAll("#account-password")).toHaveLength(0);
     expect(wrapper.findAll("#account-confirm-password")).toHaveLength(0);
-    expect(wrapper.findAll("#account-role")).toHaveLength(1);
+    expect(wrapper.findAll("#account-role")).toHaveLength(0);
     expect(wrapper.findAll("#account-customer")).toHaveLength(1);
     expect(wrapper.findAll("#accountModal")).toHaveLength(1);
     expect(wrapper.findAll("#accountModalLabel")).toHaveLength(1);

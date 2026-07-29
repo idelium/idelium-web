@@ -1163,6 +1163,43 @@ export default {
     placeholderConfirmPassword: "Conferma password",
     placeholderRole: "Seleziona un ruolo",
     placeholderCostumer: "Seleziona un cliente",
+    rolePicker: {
+      title: "Assegnazione ruolo",
+      description:
+        "Scegli un ID ruolo stabile dopo aver verificato scopo, permessi, restrizioni e rischio.",
+      noRoleSelected: "Nessun ruolo selezionato",
+      matrixTitle: "Matrice permessi",
+      permission: "Permesso",
+      permissionAllowed: "Permesso consentito",
+      permissionDenied: "Permesso non assegnato",
+      unavailableRole: "I tuoi permessi correnti non consentono di assegnare questo ruolo.",
+      groups: {
+        administration: "Amministrazione",
+        assets: "Asset",
+        execution: "Esecuzione",
+        governance: "Governance",
+      },
+      permissions: {
+        "account.invite": "Invita account",
+        "account.role.assign": "Assegna ruoli",
+        "account.suspend": "Sospendi account",
+        "artifact.read": "Leggi artifact",
+        "credential.audit": "Audit credenziali",
+        "run.execute": "Esegui run",
+      },
+      riskLevels: {
+        critical: "Rischio critico",
+        high: "Rischio alto",
+        low: "Rischio basso",
+        medium: "Rischio medio",
+      },
+      reductionWarnings: {
+        "critical-reduction":
+          "Questa modifica riduce un ruolo critico e può impattare responsabilità di ownership piattaforma.",
+        "governance-reduction":
+          "Questa modifica rimuove permessi di governance che potrebbero essere necessari per le responsabilità correnti.",
+      },
+    },
     emailHelp: "L'indirizzo email viene usato come account di accesso.",
     nameHelp:
       "Usa il nome visualizzato nelle liste account e nelle viste profilo.",
