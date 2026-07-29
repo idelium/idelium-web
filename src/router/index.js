@@ -42,6 +42,12 @@ const router = createRouter({
           meta: { projectScoped: true, requiresAuth: true },
         },
         {
+          path: "projects/:projectId/executions/:runId",
+          name: "execution-detail",
+          component: testsperformed,
+          meta: { projectScoped: true, requiresAuth: true },
+        },
+        {
           path: "projects/:projectId/testlauncher",
           name: "testlauncher",
           component: testlauncher,

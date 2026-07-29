@@ -563,6 +563,9 @@ export default {
     testcycle: "Test Cycle",
     description: "description",
     environment: "Environment:",
+    launchError:
+      "Launch submission did not complete. The configured launch was preserved.",
+    launching: "Launching...",
     launchtest: " Launch Test",
     pageEyebrow: "Launch control",
     pageTitle: "Test launcher",

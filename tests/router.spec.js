@@ -79,6 +79,14 @@ describe("route smoke checks", () => {
     );
   });
 
+  it("opens the canonical execution detail route", async () => {
+    useSessionStore(pinia).establishSession();
+    await router.push("/projects/7/executions/run-42");
+    expect(router.currentRoute.value.name).toBe("execution-detail");
+    expect(router.currentRoute.value.params.projectId).toBe("7");
+    expect(router.currentRoute.value.params.runId).toBe("run-42");
+  });
+
   it("redirects legacy project routes to the selected project URL", async () => {
     const session = useSessionStore(pinia);
     session.establishSession();

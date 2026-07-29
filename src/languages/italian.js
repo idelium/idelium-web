@@ -567,6 +567,9 @@ export default {
     testcycle: "Ciclo di test",
     description: "descrizione",
     environment: "Ambiente:",
+    launchError:
+      "L'avvio non è stato completato. La configurazione è stata preservata.",
+    launching: "Avvio in corso...",
     launchtest: " Esegui il test",
     pageEyebrow: "Controllo avvio",
     pageTitle: "Test launcher",

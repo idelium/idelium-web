@@ -103,6 +103,20 @@ the redacted review summary only; it is a diagnostic artifact and not a source
 of secret material. Links to affected asset details must preserve the route
 query that stores the authorized launch draft.
 
+## Idempotent submission and run route
+
+Submitting a launch creates one logical request with one retained idempotency
+key. The submit control is disabled while the request is in flight, so repeated
+clicks cannot create duplicate runs. A safe retry reuses the same idempotency
+key until the user changes the launch configuration.
+
+Created or replayed runs redirect to the canonical route
+`/projects/:projectId/executions/:runId`. The route is project-scoped,
+refresh-safe, and reuses the execution-insights surface so permission
+revalidation remains consistent with existing execution history. Accepted
+asynchronous creation may return a status location; unknown network outcomes
+preserve the configured launch so the API can reconcile by idempotency key.
+
 The diagnostic model contains:
 
 - `severity`: `info`, `warning`, or `error`;

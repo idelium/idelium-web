@@ -16,6 +16,11 @@ import {
 } from "@/domain/launchPreflight";
 import { buildLaunchReviewSummary } from "@/domain/launchReview";
 import {
+  canonicalExecutionRoute,
+  createLaunchSubmission,
+  normalizeLaunchSubmissionResult,
+} from "@/domain/launchSubmission";
+import {
   buildLaunchAssetQuery,
   normalizeLaunchAssetRows,
 } from "@/domain/launchSelection";
@@ -466,6 +471,98 @@ describe("launch asset selection", () => {
 
     await wrapper.vm.selectConcurrency(2);
     expect(wrapper.vm.preflightStale).toBe(true);
+  });
+
+  it("submits one idempotent launch and redirects to the canonical run route", async () => {
+    api.get
+      .mockResolvedValueOnce({
+        data: {
+          data: [
+            {
+              id: 3,
+              name: "Smoke",
+              projectId: 7,
+              runtime: "selenium",
+              status: "active",
+            },
+          ],
+        },
+      })
+      .mockResolvedValueOnce({
+        data: {
+          data: [
+            {
+              capacity: { available: 1, max: 1, queued: 0 },
+              health: "healthy",
+              id: "platform-pool",
+              lastHealthAt: new Date().toISOString(),
+              runtime: "selenium",
+            },
+          ],
+        },
+      })
+      .mockResolvedValueOnce({
+        data: {
+          data: [
+            {
+              code: "demo",
+              id: 9,
+              name: "Demo",
+              projectId: 7,
+              runtimeType: "selenium",
+              status: "active",
+            },
+          ],
+        },
+      });
+    api.post.mockResolvedValueOnce({
+      data: { replayed: false, runId: "run-42" },
+      status: 201,
+    });
+    const router = { push: vi.fn(), replace: vi.fn() };
+    const wrapper = mountLauncher({ router });
+    await vi.waitFor(() => expect(api.get).toHaveBeenCalledTimes(3));
+    wrapper.vm.preflightResult = {
+      configurationHash: wrapper.vm.currentPreflightHash,
+      diagnostics: [],
+      hasBlockingDiagnostics: false,
+    };
+
+    await wrapper.vm.launchSelectedCycle();
+    await vi.waitFor(() => expect(router.push).toHaveBeenCalled());
+
+    expect(api.post).toHaveBeenCalledTimes(1);
+    expect(api.post.mock.calls[0][0]).toBe("/api/admin/launch");
+    expect(api.post.mock.calls[0][2].headers).toHaveProperty("Idempotency-Key");
+    expect(router.push).toHaveBeenCalledWith(
+      canonicalExecutionRoute(7, "run-42"),
+    );
+  });
+
+  it("normalizes launch submission replay and accepted outcomes", () => {
+    const request = {
+      body: { projectId: "7" },
+      endpoint: "admin/launch",
+      headers: { "Idempotency-Key": "key-1" },
+      idempotencyKey: "key-1",
+    };
+
+    expect(createLaunchSubmission(request, "key-1")).toMatchObject({
+      idempotencyKey: "key-1",
+      status: "ready",
+    });
+    expect(
+      normalizeLaunchSubmissionResult({
+        data: { runId: "run-1" },
+        status: 200,
+      }),
+    ).toMatchObject({ runId: "run-1", status: "replayed" });
+    expect(
+      normalizeLaunchSubmissionResult({
+        data: { statusLocation: "/launch/status/key-1" },
+        status: 202,
+      }),
+    ).toMatchObject({ status: "accepted" });
   });
 
   it("preserves route-backed selections and clears only incompatible cycles", async () => {

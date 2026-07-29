@@ -65,7 +65,7 @@
       <button
         class="btn btn-success"
         type="button"
-        :disabled="!canOpenTargetSelection"
+        :disabled="!canOpenTargetSelection || launchSubmitting"
         :title="language[config.currentLanguage].Actions.launch"
         v-on:click="launchSelectedCycle"
       >
@@ -74,8 +74,13 @@
           class="idelium-action-icon idelium-action-icon--launch"
           aria-hidden="true"
         />
-        {{ launcherCopy.launchtest }}
+        {{
+          launchSubmitting ? launcherCopy.launching : launcherCopy.launchtest
+        }}
       </button>
+      <p v-if="launchError" class="launch-page__error" aria-live="polite">
+        {{ launcherCopy.launchError }}
+      </p>
     </section>
 
     <platformLauncher ref="platformLauncher" />
@@ -95,6 +100,12 @@ import {
   normalizePreflightResult,
 } from "@/domain/launchPreflight";
 import { buildLaunchReviewSummary } from "@/domain/launchReview";
+import {
+  canonicalExecutionRoute,
+  createLaunchSubmission,
+  normalizeLaunchSubmissionResult,
+  shouldReconcileLaunchOutcome,
+} from "@/domain/launchSubmission";
 import {
   buildLaunchAssetQuery,
   buildLaunchSelectionQuery,
@@ -132,6 +143,10 @@ export default {
         search: this.$route?.query?.environmentSearch,
       }),
       error: null,
+      launchError: null,
+      launchStatus: "idle",
+      launchSubmitting: false,
+      launchSubmissionKey: null,
       listEnvironments: [],
       preflightResult: null,
       preflightRunning: false,
@@ -564,10 +579,41 @@ export default {
     },
     launchSelectedCycle() {
       if (!this.canOpenTargetSelection) return;
-      this.$refs.platformLauncher.showModal(
-        this.selectedCycle.id,
-        this.selectedEnvironment.code ?? this.selectedEnvironment.id,
+      const submission = createLaunchSubmission(
+        this.launchRequest,
+        this.launchSubmissionKey,
       );
+      this.launchSubmissionKey = submission.idempotencyKey;
+      this.launchSubmitting = true;
+      this.launchError = null;
+      this.launchStatus = "submitting";
+      return apiClient
+        .post(
+          this.config.serviceBaseUrl + submission.endpoint,
+          submission.body,
+          { headers: { ...this.setHeaders(), ...submission.headers } },
+        )
+        .then((response) => this.handleLaunchSubmissionResponse(response))
+        .catch((error) => {
+          if (shouldReconcileLaunchOutcome(error)) {
+            this.launchStatus = "unknown";
+          } else {
+            this.launchStatus = "rejected";
+          }
+          this.launchError = error;
+        })
+        .finally(() => {
+          this.launchSubmitting = false;
+        });
+    },
+    handleLaunchSubmissionResponse(response) {
+      const result = normalizeLaunchSubmissionResult(response);
+      this.launchStatus = result.status;
+      if (result.runId) {
+        this.$router.push(
+          canonicalExecutionRoute(getSelectedProjectId(), result.runId),
+        );
+      }
     },
   },
 };
