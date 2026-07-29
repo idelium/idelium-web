@@ -83,6 +83,27 @@ The UI may expose unavailable actions as disabled when the current row state doe
 not allow the operation. The API remains responsible for tenant ownership,
 current lifecycle state, and capability enforcement.
 
+## Suspension, reactivation, and invitation management
+
+Lifecycle actions are confirmed before submission and include the account,
+assigned role, and operational impact. Suspend and cancel-invitation actions use
+warning confirmations because they remove access or invalidate pending access.
+Reactivate and resend-invitation actions explain the API-controlled conditions
+that must still pass.
+
+Requests are idempotent and tenant-scoped through the shared account operation
+contract. The client sends the intended operation, target account, tenant,
+actor-derived idempotency key, and safe audit intent. The API remains the source
+of truth for rate limits, already-transitioned rows, self-suspension protection,
+last-administrator protection, concurrent updates, and lifecycle state.
+
+The UI does not mark an account as suspended, active, archived, or invited until
+the API returns durable confirmation. On failure, the visible account state is
+left unchanged and the operator receives safe localized feedback. Suspend may
+invalidate active sessions and account-bound credentials according to API policy;
+reactivation does not automatically restore credentials unless the API policy
+explicitly does so.
+
 ## Operations
 
 The contract defines these account operations:

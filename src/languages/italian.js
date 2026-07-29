@@ -1229,6 +1229,27 @@ export default {
     },
     governanceActionQueued:
       "Azione governance selezionata. Il workflow dettagliato è disponibile dal prossimo step governance",
+    lifecycleSafeFailure:
+      "Non è stato possibile completare l'azione lifecycle. L'account resta invariato finché l'API non conferma una transizione durevole.",
+    lifecycleConfirmations: {
+      "cancel-invite":
+        "Annullare l'invito per {account}? Ruolo: {role}. Impatto: {impact}",
+      reactivate:
+        "Riattivare {account}? Ruolo: {role}. Impatto: {impact}",
+      "resend-invite":
+        "Reinviare l'invito per {account}? Ruolo: {role}. Impatto: {impact}",
+      suspend: "Sospendere {account}? Ruolo: {role}. Impatto: {impact}",
+    },
+    lifecycleImpacts: {
+      "cancel-invite":
+        "L'invito diventa inutilizzabile e viene conservato per audit.",
+      reactivate:
+        "L'account potrà accedere di nuovo secondo la policy sessione dell'API.",
+      "resend-invite":
+        "Viene richiesta una nuova consegna soggetta ai rate limit dell'API.",
+      suspend:
+        "Sessioni attive e credenziali vengono invalidate secondo la policy API.",
+    },
     emailHelp: "L'indirizzo email viene usato come account di accesso.",
     nameHelp:
       "Usa il nome visualizzato nelle liste account e nelle viste profilo.",

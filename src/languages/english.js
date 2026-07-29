@@ -1219,6 +1219,27 @@ export default {
     },
     governanceActionQueued:
       "Governance action selected. The detailed workflow is available from the next governance step",
+    lifecycleSafeFailure:
+      "The lifecycle action could not be completed. The account remains unchanged until the API confirms a durable transition.",
+    lifecycleConfirmations: {
+      "cancel-invite":
+        "Cancel the invitation for {account}? Role: {role}. Impact: {impact}",
+      reactivate:
+        "Reactivate {account}? Role: {role}. Impact: {impact}",
+      "resend-invite":
+        "Resend the invitation for {account}? Role: {role}. Impact: {impact}",
+      suspend: "Suspend {account}? Role: {role}. Impact: {impact}",
+    },
+    lifecycleImpacts: {
+      "cancel-invite":
+        "The invitation becomes unusable and is retained for audit.",
+      reactivate:
+        "The account can sign in again according to the API session policy.",
+      "resend-invite":
+        "A new delivery attempt is requested subject to API rate limits.",
+      suspend:
+        "Active sessions and credentials are invalidated according to API policy.",
+    },
     emailHelp: "The email address is used as the sign-in account.",
     nameHelp: "Use the display name shown in account lists and profile views.",
     passwordHelp:

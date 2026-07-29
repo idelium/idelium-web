@@ -26,6 +26,8 @@ function commonMocks(section, url) {
     $gtag: { event: vi.fn() },
     $route: { query: {} },
     $router: { replace: vi.fn().mockResolvedValue() },
+    $showConfirm: vi.fn().mockResolvedValue(true),
+    $wkToast: vi.fn(),
     config: {
       currentLanguage: "gb",
       serviceBaseUrl: "/api/",
@@ -58,6 +60,26 @@ function commonMocks(section, url) {
           filterStatus: "Status",
           filterTeam: "Team",
           governanceActionQueued: "Governance action selected",
+          lifecycleConfirmations: {
+            "cancel-invite":
+              "Cancel the invitation for {account}? Role: {role}. Impact: {impact}",
+            reactivate: "Reactivate {account}? Role: {role}. Impact: {impact}",
+            "resend-invite":
+              "Resend the invitation for {account}? Role: {role}. Impact: {impact}",
+            suspend: "Suspend {account}? Role: {role}. Impact: {impact}",
+          },
+          lifecycleImpacts: {
+            "cancel-invite":
+              "The invitation becomes unusable and is retained for audit.",
+            reactivate:
+              "The account can sign in again according to the API session policy.",
+            "resend-invite":
+              "A new delivery attempt is requested subject to API rate limits.",
+            suspend:
+              "Active sessions and credentials are invalidated according to API policy.",
+          },
+          lifecycleSafeFailure:
+            "The lifecycle action could not be completed. The account remains unchanged until the API confirms a durable transition.",
           id: "ID",
           invitationStates: {
             expired: "Expired",
@@ -303,5 +325,141 @@ describe("administration enterprise listings", () => {
         sort: "email",
       },
     });
+  });
+
+  it("submits idempotent lifecycle actions and updates state only after API confirmation", async () => {
+    api.get.mockImplementation((url) => {
+      if (url === "/api/admin/accounts") {
+        return Promise.resolve({
+          data: {
+            data: [
+              {
+                id: 9,
+                email: "user@example.test",
+                name: "User",
+                role: "operator",
+                roleName: "Operator",
+                status: "active",
+                tenantId: "tenant-1",
+              },
+            ],
+            meta: { page: 1, pageSize: 25, total: 1 },
+          },
+        });
+      }
+      return Promise.resolve({ data: [] });
+    });
+    api.post.mockResolvedValue({
+      data: {
+        status: "suspended",
+        updatedAt: "2026-07-29T11:00:00Z",
+      },
+    });
+
+    const wrapper = shallowMount(Accounts, {
+      global: {
+        stubs: {
+          EnterpriseListingGrid: true,
+          EnterpriseListingPage: true,
+          modalModifyAccount: true,
+        },
+        mocks: commonMocks(
+          {},
+          {
+            accounts: "admin/accounts",
+            costumers: "admin/costumers",
+            roles: "admin/roles",
+          },
+        ),
+      },
+    });
+    wrapper.vm.session.capabilities = ["account.suspend"];
+    await vi.waitFor(() =>
+      expect(wrapper.vm.accountRows[0].status).toBe("active"),
+    );
+
+    await wrapper.vm.handleAction({
+      action: "suspend",
+      row: wrapper.vm.accountRows[0],
+    });
+
+    expect(api.post).toHaveBeenCalledWith(
+      "/api/admin/accounts/9/suspend",
+      expect.objectContaining({
+        accountId: "9",
+        audit: expect.objectContaining({
+          accountId: "9",
+          operation: "suspend",
+          outcome: "requested",
+          tenantId: "tenant-1",
+        }),
+        operation: "suspend",
+        tenantId: "tenant-1",
+      }),
+      {
+        headers: {
+          "Idempotency-Key": "account:suspend:tenant-1:9:current-user",
+        },
+      },
+    );
+    expect(
+      wrapper.vm.arrayAccounts.find((account) => account.id === 9).status,
+    ).toBe("suspended");
+  });
+
+  it("keeps lifecycle state unchanged when the API rejects a concurrent transition", async () => {
+    const originalAccount = {
+      id: 10,
+      email: "invite@example.test",
+      name: "Invite",
+      role: "viewer",
+      roleName: "Viewer",
+      status: "invited",
+      tenantId: "tenant-1",
+    };
+    api.get.mockImplementation((url) => {
+      if (url === "/api/admin/accounts") {
+        return Promise.resolve({
+          data: {
+            data: [originalAccount],
+            meta: { page: 1, pageSize: 25, total: 1 },
+          },
+        });
+      }
+      return Promise.resolve({ data: [] });
+    });
+    api.post.mockRejectedValue(new Error("conflict"));
+
+    const wrapper = shallowMount(Accounts, {
+      global: {
+        stubs: {
+          EnterpriseListingGrid: true,
+          EnterpriseListingPage: true,
+          modalModifyAccount: true,
+        },
+        mocks: commonMocks(
+          {},
+          {
+            accounts: "admin/accounts",
+            costumers: "admin/costumers",
+            roles: "admin/roles",
+          },
+        ),
+      },
+    });
+    wrapper.vm.session.capabilities = ["account.invite"];
+    await vi.waitFor(() =>
+      expect(wrapper.vm.accountRows[0].status).toBe("invited"),
+    );
+
+    await wrapper.vm.handleAction({
+      action: "cancel-invite",
+      row: wrapper.vm.accountRows[0],
+    });
+
+    expect(wrapper.vm.arrayAccounts).toEqual([originalAccount]);
+    expect(wrapper.vm.error.safeFeedback).toBe(
+      "The lifecycle action could not be completed. The account remains unchanged until the API confirms a durable transition.",
+    );
   });
 });

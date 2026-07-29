@@ -102,7 +102,10 @@
 <script>
 import EnterpriseListingGrid from "@/components/grid/EnterpriseListingGrid.vue";
 import EnterpriseListingPage from "@/components/grid/EnterpriseListingPage.vue";
-import { createAccountInvitationRequest } from "@/domain/accountGovernance";
+import {
+  accountOperationContract,
+  createAccountInvitationRequest,
+} from "@/domain/accountGovernance";
 import {
   buildGridQuery,
   parseGridResponse,
@@ -519,19 +522,84 @@ export default {
     handleAction({ action, row }) {
       if (
         [
-          "audit",
           "cancel-invite",
-          "detail",
           "reactivate",
           "resend-invite",
           "suspend",
         ].includes(action)
       ) {
+        return this.confirmAccountLifecycleAction(action, row);
+      }
+      if (["audit", "detail"].includes(action)) {
         this.$wkToast?.(`${this.copy.governanceActionQueued}: ${row.email}`);
-        return;
+        return null;
       }
       if (action === "edit") this.showAccountModal(row);
       if (action === "delete") this.deleteAccount(row.id);
+      return null;
+    },
+    confirmAccountLifecycleAction(action, row) {
+      return this.$showConfirm({
+        message: this.lifecycleConfirmationMessage(action, row),
+        variant: ["cancel-invite", "suspend"].includes(action)
+          ? "warning"
+          : "info",
+      }).then((confirmed) => {
+        if (!confirmed) return null;
+        return this.executeAccountLifecycleAction(action, row);
+      });
+    },
+    lifecycleConfirmationMessage(action, row) {
+      return String(this.copy.lifecycleConfirmations[action] || action)
+        .replace("{account}", row.email || row.account || row.name)
+        .replace("{role}", row.roleName || row.role || "—")
+        .replace("{impact}", this.copy.lifecycleImpacts[action] || "");
+    },
+    executeAccountLifecycleAction(action, row) {
+      const request = accountOperationContract(action, row, {
+        actor: "current-user",
+        actorAccountId: this.session.accountId,
+        capabilities: this.accountCapabilities,
+        tenantId: row.tenantId || row.idCostumer || "current-tenant",
+        timestamp: new Date().toISOString(),
+      });
+      if (!request.allowed) {
+        this.error = {
+          safeErrors: [{ code: request.reason }],
+          safeFeedback: this.copy.lifecycleSafeFailure,
+        };
+        return Promise.resolve();
+      }
+      return apiClient
+        .post(this.accountLifecycleEndpoint(row.id, action), {
+          ...request.body,
+          audit: request.audit,
+        }, {
+          headers: { ...this.setHeaders(), ...request.headers },
+        })
+        .then((response) => {
+          const durableStatus =
+            response.data?.status || request.transition.nextStatus;
+          this.arrayAccounts = this.arrayAccounts.map((account) => {
+            if (account.id !== row.id) return account;
+            return {
+              ...account,
+              status: durableStatus,
+              updatedAt: response.data?.updatedAt || new Date().toISOString(),
+            };
+          });
+          return response;
+        })
+        .catch((error) => {
+          this.error = {
+            cause: error,
+            safeFeedback: this.copy.lifecycleSafeFailure,
+          };
+          this.Logout(this, error);
+        });
+    },
+    accountLifecycleEndpoint(id, action) {
+      return `${this.config.serviceBaseUrl}${this.config.url.accounts}/${id}/${action}`;
     },
     showAccountModal(account) {
       this.$refs.modifyModal.showModal(account, "modify");
