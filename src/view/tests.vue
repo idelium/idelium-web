@@ -125,7 +125,10 @@
               aria-labelledby="tabTitleImportTest-tab"
             >
               <!-- start tabTitleModify tab -->
-              <importSelenium ref="selenium" v-on:importTest="importTest" />
+              <ImportIdeliumTest
+                ref="importTestUpload"
+                v-on:importTest="importTest"
+              />
               <!-- end tabTitleModify tab -->
             </div>
           </div>
@@ -214,25 +217,6 @@
                         v-model="arrayStepsImported[index].name"
                         style="width: 80%"
                       />
-                      <select
-                        v-if="
-                          arrayEditImportedSteps[index] == true &&
-                          seleniumImport[index].targets.length > 0
-                        "
-                        @change="changeTarget(index, $event)"
-                        v-model="targetSelected"
-                        class="form-control"
-                        style="width: 80%; margin-left: 10px"
-                      >
-                        <option
-                          v-for="(target, index2) in seleniumImport[index]
-                            .targets"
-                          :key="index2"
-                          :value="target[0]"
-                        >
-                          {{ target[0] }}
-                        </option>
-                      </select>
                       <button
                         type="button"
                         class="tests-icon-action"
@@ -455,13 +439,13 @@ import {
 } from "@/domain/sequenceBuilder";
 import SequenceBuilder from "@/components/sequence/SequenceBuilder.vue";
 import english from "@/languages/english";
-import importSelenium from "./tests/importSelenium.vue";
+import ImportIdeliumTest from "./tests/importIdeliumTest.vue";
 import { routableTabs } from "@/shared/routableTabs";
 
 export default {
   name: "TestsComponent",
   components: {
-    importSelenium,
+    ImportIdeliumTest,
     SequenceBuilder,
   },
   mixins: [routableTabs("modify", ["modify", "new", "import"])],
@@ -506,8 +490,7 @@ export default {
         hasNextPage: false,
         hasPreviousPage: false,
       },
-      importedFromSelenium: false,
-      seleniumImport: {},
+      importedFromIdelium: false,
     };
   },
   created() {
@@ -662,8 +645,7 @@ export default {
       }
     },
     cancelUpload() {
-      this.$refs.selenium.showUploadComponent();
-      this.seleniumImport = {};
+      this.$refs.importTestUpload.showUploadComponent();
       this.arrayStepsImported = [];
       this.arrayImportedStepKeys = [];
     },
@@ -671,14 +653,13 @@ export default {
       this.importedNameTest = value.name;
       this.importedDescriptionTest = value.description;
       if (value.tests) {
-        this.seleniumImport = value.seleniumImport;
         this.arrayStepsImported = value.tests.map((step) =>
           JSON.parse(JSON.stringify(step)),
         );
         this.arrayImportedStepKeys = value.tests.map(
           (_step, index) => `import-${Date.now()}-${index}`,
         );
-        this.importedFromSelenium = true;
+        this.importedFromIdelium = true;
         this.arrayEditImportedSteps = [];
         for (let i in this.arrayStepsImported) {
           this.arrayEditImportedSteps.push(false);
@@ -917,26 +898,11 @@ export default {
       for (let i in this.arrayEditImportedSteps)
         this.arrayEditImportedSteps[i] = false;
       this.arrayEditImportedSteps[index] = true;
-      this.targetSelected =
-        this.arrayStepsImported[index].steps[0].findBy +
-        "=" +
-        this.arrayStepsImported[index].steps[0].target;
       this.$forceUpdate();
     },
     endEditImportedItem(index) {
       this.arrayEditImportedSteps[index] = false;
       this.$forceUpdate();
-    },
-    changeTarget(index, obj) {
-      let target = obj.target.value.substring(
-        obj.target.value.indexOf("=") + 1,
-      );
-      let findBy = obj.target.value.substring(0, obj.target.value.indexOf("="));
-      this.arrayStepsImported[index].steps[0].target = target;
-      this.arrayStepsImported[index].steps[1].target = target;
-      this.arrayStepsImported[index].steps[0].findBy = findBy;
-      this.arrayStepsImported[index].steps[1].findBy = findBy;
-      this.endEditImportedItem(index);
     },
     copyArray() {
       this.disableNameTest = this.arrayStepsSelectedDragged.length == 0;

@@ -554,7 +554,7 @@ export default {
     editImported: "Edit imported step",
     tabTitleModify: "Modify Test",
     tabTitleNewTest: "Create Test",
-    tabTitleImportTest: "Import Selenium IDE",
+    tabTitleImportTest: "Import Idelium JSON",
     btnCreateTest: "Create",
     btnModifyTest: "Modify",
     btnImportTest: "Import Test",
@@ -565,11 +565,22 @@ export default {
     steps: "Steps available",
     stepsToDo: "Selected Step",
     selectTest: "-- select a test --",
-    selenium: {
-      extensionIsWrong: "Extension is wrong",
-      isNotASeleniumFile: "Is not a Selenium ide file",
+    ideliumImport: {
+      eyebrow: "Native test import",
+      title: "Import an Idelium test definition",
+      description:
+        "Upload a JSON file with a test name, description, and reusable Idelium steps.",
+      extensionIsWrong: "Only JSON files are supported",
+      invalidJson: "The selected file is not valid JSON",
+      isNotAnIdeliumFile:
+        "The selected file is not an Idelium test import definition",
+      invalidStep:
+        "Every imported step must have a name and at least one executable action",
+      readError: "The selected file could not be read",
       testName: "Test name",
-      importSeleniumFile: "Import Selenium file",
+      testDescription: "Test description",
+      importFile: "Drop or select an Idelium JSON file",
+      ready: "{count} step(s) ready to import",
     },
   },
   TestLauncher: {

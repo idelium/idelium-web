@@ -225,10 +225,6 @@ describe("tests component", () => {
     wrapper.vm.importTest({
       name: "Postman import",
       description: "Imported collection",
-      seleniumImport: {
-        0: { targets: [] },
-        1: { targets: [] },
-      },
       tests: imported,
     });
     await wrapper.vm.$nextTick();
