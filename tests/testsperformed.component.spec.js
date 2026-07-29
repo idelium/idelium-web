@@ -98,6 +98,15 @@ describe("tests performed component", () => {
                 flakyTests: "Flaky tests",
                 previousPage: "Previous",
                 nextPage: "Next",
+                actions: "Actions",
+                allStatuses: "All statuses",
+                clearFilters: "Clear filters",
+                noResults: "No runs match filters.",
+                resultCount: "{count} executions",
+                runHistory: "Run history",
+                saveView: "Save view",
+                status: "Status",
+                tag: "Tag",
                 paginationSummary:
                   "Page {page} of {lastPage} · {total} results",
                 parallelStatuses: {
@@ -632,6 +641,58 @@ describe("tests performed component", () => {
       .get(".testsperformed-live-actions .testsperformed-page-button")
       .trigger("click");
     expect(replace).toHaveBeenCalledWith({ query: { runId: "93" } });
+  });
+
+  it("renders run history in the shared data table with safe saved views", async () => {
+    const replace = vi.fn();
+    api.get.mockImplementation((url) => {
+      if (url.includes("testcycles-performed")) {
+        return Promise.resolve({
+          data: [
+            {
+              id: 44,
+              cycleName: "postman cycle",
+              date: "2026-07-29 12:00:00",
+              status: 2,
+              target: "postman-runner",
+            },
+          ],
+        });
+      }
+      return Promise.resolve({ data: [] });
+    });
+
+    const wrapper = mountTestsPerformed({
+      $route: { name: "testsperformed", query: {} },
+      $router: { replace },
+    });
+
+    await wrapper.vm.getTestCyclesDate(7);
+    await wrapper.setData({
+      runHistoryStatus: "failed",
+      runHistoryTag: "smoke",
+    });
+    wrapper.vm.applyRunHistoryFilters();
+    wrapper.vm.saveRunHistoryView();
+    await wrapper.vm.$nextTick();
+
+    expect(
+      wrapper.findComponent({ name: "EnterpriseDataTable" }).exists(),
+    ).toBe(true);
+    expect(wrapper.vm.runHistoryRows[0]).toMatchObject({
+      cycle: "postman cycle",
+      id: 44,
+      target: "postman-runner",
+    });
+    expect(wrapper.vm.runHistorySavedViews).toHaveLength(1);
+    expect(replace).toHaveBeenCalledWith({
+      query: expect.objectContaining({
+        pageSize: "25",
+        projectId: "9",
+        status: "failed",
+        tag: "smoke",
+      }),
+    });
   });
 
   it("confirms cancellation and reflects the server response", async () => {

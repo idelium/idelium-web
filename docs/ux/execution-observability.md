@@ -65,6 +65,25 @@ progress value, the UI keeps the greater completed count and updates only fields
 that do not make progress regress. Status filters are local and project-scoped;
 they do not request or render runs for another selected project.
 
+## Run history filters and saved views
+
+Run history uses the shared server-side DataTable pattern and persists safe
+filters, sorting, and pagination in the canonical route query. The current saved
+view schema is `2026-07-29.run-history.v1`.
+
+Supported filters are status, cycle, environment, target, author, time range,
+tag, and failure classification. Query parameters are project-scoped, bounded by
+page size, and sanitized so credentials or protected payload fragments are not
+stored in URLs. Date-only boundaries are inclusive: `fromInclusive=YYYY-MM-DD`
+maps to `00:00:00.000`, and `toInclusive=YYYY-MM-DD` maps to `23:59:59.999`.
+The source timezone is kept alongside the UTC instant so the API can apply
+indexed tenant-scoped queries consistently.
+
+Saved views are personal and versioned. Legacy filter names are migrated:
+`cycle` to `cycleId`, `env` to `environmentId`, `from` to `fromInclusive`, `to`
+to `toInclusive`, and `user` to `author`. Rollback is safe because saved-view
+migration is additive and the canonical URL still contains plain filters.
+
 ## Legacy compatibility
 
 Legacy status values are still accepted:

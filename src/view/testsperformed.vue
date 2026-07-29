@@ -165,6 +165,86 @@
       </div>
     </section>
 
+    <section class="card testsperformed-history-panel">
+      <EnterpriseDataTable
+        accessible-label="Run history"
+        :actions="runHistoryActions"
+        :columns="runHistoryColumns"
+        :copy="runHistoryGridCopy"
+        :has-active-filters="runHistoryHasFilters"
+        :meta="{ total: runHistoryRows.length }"
+        row-key="id"
+        :rows="runHistoryRows"
+        :sort="{
+          field: runHistoryFilters.sort.field,
+          direction: runHistoryFilters.sort.direction,
+        }"
+        v-on:action="handleRunHistoryAction"
+        v-on:clear-filters="clearRunHistoryFilters"
+        v-on:row-activate="openRunHistoryRow"
+        v-on:sort="updateRunHistorySort"
+      >
+        <template #toolbar>
+          <div class="testsperformed-history-toolbar">
+            <label>
+              <span>
+                {{ language[config.currentLanguage].TestsPerformed.status }}
+              </span>
+              <select
+                v-model="runHistoryStatus"
+                class="form-control testsperformed-filter-control"
+                v-on:change="applyRunHistoryFilters()"
+              >
+                <option value="">
+                  {{
+                    language[config.currentLanguage].TestsPerformed.allStatuses
+                  }}
+                </option>
+                <option
+                  v-for="status in liveRunStatusOptions"
+                  v-bind:key="status"
+                  :value="status"
+                >
+                  {{ parallelRunStatusLabel(status) }}
+                </option>
+              </select>
+            </label>
+            <label>
+              <span>
+                {{ language[config.currentLanguage].TestsPerformed.tag }}
+              </span>
+              <input
+                v-model="runHistoryTag"
+                class="form-control testsperformed-filter-control"
+                v-on:change="applyRunHistoryFilters()"
+              />
+            </label>
+            <button
+              type="button"
+              class="btn btn-sm btn-outline-light testsperformed-page-button"
+              v-on:click="saveRunHistoryView"
+            >
+              {{ language[config.currentLanguage].TestsPerformed.saveView }}
+            </button>
+          </div>
+        </template>
+      </EnterpriseDataTable>
+      <div
+        v-if="runHistorySavedViews.length > 0"
+        class="testsperformed-saved-views"
+      >
+        <button
+          v-for="view in runHistorySavedViews"
+          v-bind:key="view.id"
+          type="button"
+          class="testsperformed-status-filter"
+          v-on:click="applyRunHistorySavedView(view)"
+        >
+          {{ view.name }}
+        </button>
+      </div>
+    </section>
+
     <section class="card testsperformed-parallel-panel" aria-live="polite">
       <div class="testsperformed-panel-header">
         <div>
@@ -695,17 +775,30 @@
   padding: 1rem;
 }
 
+.testsperformed-history-panel {
+  display: grid;
+  flex: 0 0 auto;
+  gap: 0.9rem;
+  max-height: 24rem;
+  min-height: 14rem;
+  overflow: auto;
+  padding: 1rem;
+}
+
 .testsperformed-analytics-filters,
 .testsperformed-analytics-statuses,
 .testsperformed-live-toolbar,
-.testsperformed-live-actions {
+.testsperformed-live-actions,
+.testsperformed-history-toolbar,
+.testsperformed-saved-views {
   align-items: center;
   display: flex;
   flex-wrap: wrap;
   gap: 0.7rem;
 }
 
-.testsperformed-analytics-filters label {
+.testsperformed-analytics-filters label,
+.testsperformed-history-toolbar label {
   color: rgba(255, 255, 255, 0.72);
   display: grid;
   font-size: 0.68rem;
@@ -1246,6 +1339,7 @@
 </style>
 
 <script>
+import EnterpriseDataTable from "@/components/grid/EnterpriseDataTable.vue";
 import modalTestPerformed from "./testperformed/modalTestPerformed.vue";
 
 import apiClient from "@/services/apiClient";
@@ -1263,11 +1357,17 @@ import {
   mergeLiveRunWindow,
   normalizeLiveRun,
 } from "@/domain/liveRuns";
+import {
+  buildRunHistoryQuery,
+  createRunHistorySavedView,
+  normalizeRunHistoryFilters,
+} from "@/domain/runHistory";
 import { getSelectedProjectId } from "@/stores/session";
 
 export default {
   name: "TestsPerformedComponent",
   components: {
+    EnterpriseDataTable,
     modalTestPerformed,
   },
   data() {
@@ -1305,6 +1405,25 @@ export default {
       analyticsTimezone: "UTC",
       analyticsStatuses: ["passed", "failed", "pending"],
       analyticsStatusOptions: ["passed", "failed", "pending", "cancelled"],
+      runHistoryStatus: "",
+      runHistoryTag: "",
+      runHistoryFilters: normalizeRunHistoryFilters({}, { projectId: 1 }),
+      runHistorySavedViews: [],
+      runHistoryColumns: [
+        { key: "id", label: "ID", sortable: true, type: "text" },
+        { key: "date", label: "Updated", sortable: true, type: "text" },
+        { key: "status", label: "Status", sortable: true, type: "badge" },
+        { key: "cycle", label: "Cycle", sortable: true, type: "text" },
+        { key: "target", label: "Target", sortable: false, type: "text" },
+      ],
+      runHistoryActions: [
+        {
+          id: "details",
+          label: "Details",
+          requires: null,
+          variant: "secondary",
+        },
+      ],
       cyclePagination: {
         page: 1,
         perPage: 25,
@@ -1351,6 +1470,63 @@ export default {
         timezone: this.analyticsTimezone,
         statuses: this.analyticsStatuses,
       }).toString();
+    },
+    runHistoryRows() {
+      return this.arrayTestCyclesDate.map((run) => ({
+        id: run.id,
+        cycle:
+          run.cycleName ?? run.testCycleName ?? this.testCycleSelected ?? "",
+        date: run.date ?? run.updatedAt ?? run.startedAt ?? "",
+        status: this.parallelRunStatusLabel(
+          this.analyticsStatusFromLegacy(run.status ?? run.outcome),
+        ),
+        target: run.target ?? run.targetName ?? "",
+      }));
+    },
+    runHistoryHasFilters() {
+      return Boolean(this.runHistoryStatus || this.runHistoryTag);
+    },
+    runHistoryGridCopy() {
+      const labels = this.language[this.config.currentLanguage].TestsPerformed;
+      return {
+        actions: labels.actions,
+        bulk: {
+          allSelected: "{count} selected",
+          clear: "Clear",
+          selectAll: "Select all {count}",
+          selected: "{count} selected",
+          title: "Selection",
+        },
+        clearFilters: labels.clearFilters,
+        empty: labels.emptyRuns,
+        moreActions: labels.actions,
+        noResults: labels.noResults,
+        preferences: {
+          columns: "Columns",
+          comfortable: "Comfortable",
+          compact: "Compact",
+          density: "Density",
+          moveDown: "Move down",
+          moveUp: "Move up",
+          reset: "Reset",
+          spacious: "Spacious",
+          title: "Preferences",
+        },
+        refreshComplete: labels.refresh,
+        resultCount: labels.resultCount,
+        retry: labels.refresh,
+        scrollRegion: labels.runHistory,
+        states: {
+          empty: {
+            title: labels.emptyRuns,
+            description: labels.emptyRuns,
+          },
+          "no-results": {
+            title: labels.noResults,
+            description: labels.clearFilters,
+          },
+        },
+      };
     },
     visibleLiveRuns() {
       return filterLiveRuns(this.parallelRuns, {
@@ -1678,6 +1854,14 @@ export default {
       );
       this.analyticsStatuses =
         statuses.length > 0 ? statuses : ["passed", "failed", "pending"];
+      this.restoreRunHistoryFiltersFromRoute();
+    },
+    restoreRunHistoryFiltersFromRoute() {
+      this.runHistoryFilters = normalizeRunHistoryFilters(this.$route?.query, {
+        projectId: getSelectedProjectId(),
+      });
+      this.runHistoryStatus = this.runHistoryFilters.statuses[0] ?? "";
+      this.runHistoryTag = this.runHistoryFilters.tag ?? "";
     },
     persistAnalyticsFilters() {
       this.replaceExecutionQuery({
@@ -1698,6 +1882,57 @@ export default {
         this.analyticsStatuses = ["passed", "failed", "pending"];
       }
       this.persistAnalyticsFilters();
+    },
+    applyRunHistoryFilters() {
+      this.runHistoryFilters = normalizeRunHistoryFilters(
+        {
+          ...this.runHistoryFilters,
+          statuses: this.runHistoryStatus ? [this.runHistoryStatus] : [],
+          tag: this.runHistoryTag,
+        },
+        { projectId: getSelectedProjectId() },
+      );
+      this.replaceExecutionQuery(
+        Object.fromEntries(buildRunHistoryQuery(this.runHistoryFilters)),
+      );
+    },
+    clearRunHistoryFilters() {
+      this.runHistoryStatus = "";
+      this.runHistoryTag = "";
+      this.applyRunHistoryFilters();
+    },
+    saveRunHistoryView() {
+      const view = createRunHistorySavedView(
+        {
+          filters: this.runHistoryFilters,
+          name: `View ${this.runHistorySavedViews.length + 1}`,
+        },
+        { owner: "local", projectId: getSelectedProjectId() },
+      );
+      this.runHistorySavedViews = [...this.runHistorySavedViews, view];
+    },
+    applyRunHistorySavedView(view) {
+      this.runHistoryFilters = view.filters;
+      this.runHistoryStatus = view.filters.statuses[0] ?? "";
+      this.runHistoryTag = view.filters.tag ?? "";
+      this.applyRunHistoryFilters();
+    },
+    updateRunHistorySort(sort) {
+      this.runHistoryFilters = normalizeRunHistoryFilters(
+        {
+          ...this.runHistoryFilters,
+          direction: sort.direction,
+          sort: sort.field,
+        },
+        { projectId: getSelectedProjectId() },
+      );
+      this.applyRunHistoryFilters();
+    },
+    handleRunHistoryAction({ row }) {
+      this.openRunHistoryRow(row);
+    },
+    openRunHistoryRow(row) {
+      this.getTest(row.id);
     },
     restoreSelectionFromRoute() {
       const testCycleId = this.routeQueryId("testCycleId");
