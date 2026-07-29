@@ -845,6 +845,30 @@ export default {
       "Idelium chiederà al server di annullare il run #{runId}. Impatto previsto: {scope} worker attivi/richiesti. La UI mostrerà annullamento finché lo stato server durevole conferma.",
     confirmCancelRun: "Annulla esecuzione",
     keepRunning: "Mantieni attiva",
+    retryTitle: "Retry e rerun",
+    rerun: "Riesegui tutto",
+    retryFailed: "Riprova falliti",
+    retryRunTitle: "Creare una esecuzione derivata?",
+    retryRunMessage:
+      "Idelium creerà un nuovo run immutabile dal run sorgente #{runId} usando lo scope '{scope}'. Versioni degli asset e preflight restano tracciati nella richiesta.",
+    confirmRetryRun: "Crea run",
+    keepCurrentRun: "Mantieni run corrente",
+    retryRequested: "Richiesta di retry inviata con chiave di idempotenza.",
+    retryCreated: "Run derivato #{runId} creato.",
+    retryFailedRequest:
+      "Richiesta di retry non riuscita. Il run storico non è stato modificato.",
+    retryPreflightRequired:
+      "È richiesto il preflight perché uno o più asset ereditati non sono disponibili o sono solo snapshot.",
+    retryStates: {
+      eligible: "Questo run può essere riprovato in sicurezza.",
+      "no-failed-scope":
+        "Non esiste uno scope fallito. Usa la riesecuzione completa.",
+      "preflight-required":
+        "Questo retry richiede preflight perché asset ereditati sono cambiati o non disponibili.",
+      unauthorized: "Non hai i permessi per riprovare questo run.",
+      "unsupported-runtime":
+        "Questo runner non supporta il retry automatico. Crea un nuovo run manuale.",
+    },
     cancellationStates: {
       "cancellation-requested":
         "Annullamento richiesto, in attesa dello stato server.",

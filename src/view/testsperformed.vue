@@ -134,6 +134,50 @@
       <pre class="testsperformed-command">{{
         currentRunDetail.reproducibilityCommand
       }}</pre>
+      <div class="testsperformed-run-actions" aria-live="polite">
+        <div>
+          <span class="testsperformed-section-title">
+            {{ language[config.currentLanguage].TestsPerformed.retryTitle }}
+          </span>
+          <p class="testsperformed-helper">
+            {{ retryRunStateLabel("failed") }}
+          </p>
+        </div>
+        <div class="testsperformed-run-action-buttons">
+          <button
+            type="button"
+            class="btn btn-sm btn-outline-light testsperformed-page-button"
+            v-on:click="retryRun('full')"
+            :disabled="!retryEligibilityFor('full').allowed"
+          >
+            {{ language[config.currentLanguage].TestsPerformed.rerun }}
+          </button>
+          <button
+            type="button"
+            class="btn btn-sm testsperformed-page-button testsperformed-primary-button"
+            v-on:click="retryRun('failed')"
+            :disabled="!retryEligibilityFor('failed').allowed"
+          >
+            {{ language[config.currentLanguage].TestsPerformed.retryFailed }}
+          </button>
+        </div>
+        <p
+          v-if="retryEligibilityFor('failed').requiresPreflight"
+          class="testsperformed-live-alert"
+        >
+          {{
+            language[config.currentLanguage].TestsPerformed
+              .retryPreflightRequired
+          }}
+          {{ retryUnavailableAssetList }}
+        </p>
+        <p
+          v-if="retryAudit[currentRunDetail.id]"
+          class="testsperformed-cancellation-audit"
+        >
+          {{ retryAudit[currentRunDetail.id].message }}
+        </p>
+      </div>
       <div
         v-if="showRunDrilldown"
         class="testsperformed-drilldown"
@@ -997,6 +1041,30 @@
   padding: 0.85rem;
 }
 
+.testsperformed-run-actions {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 0.85rem;
+  display: grid;
+  gap: 0.85rem;
+  grid-template-columns: minmax(0, 1fr) auto;
+  padding: 0.85rem;
+}
+
+.testsperformed-run-action-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  justify-content: flex-end;
+}
+
+.testsperformed-primary-button {
+  background: linear-gradient(135deg, #ff8a1d, #ff5f2d);
+  border: 1px solid rgba(255, 138, 29, 0.76);
+  color: #10131d;
+}
+
 .testsperformed-drilldown {
   display: grid;
   gap: 0.55rem;
@@ -1671,6 +1739,11 @@ import {
   normalizeCancellationResponse,
   shouldRetryCancellation,
 } from "@/domain/runCancellation";
+import {
+  createRetryRunRequest,
+  normalizeRetryRunResponse,
+  retryEligibility,
+} from "@/domain/runRetry";
 import { getSelectedProjectId } from "@/stores/session";
 
 export default {
@@ -1709,6 +1782,7 @@ export default {
       parallelRunPoller: null,
       parallelRunAbortController: null,
       cancellationAudit: {},
+      retryAudit: {},
       reportDownloadErrors: {},
       reportFormats: ["junit", "json", "markdown", "html"],
       analyticsWindow: "7d",
@@ -1868,6 +1942,41 @@ export default {
     },
     drilldownNodes() {
       return normalizeRunDrilldown(this.arrayTest, { limit: 150 }).nodes;
+    },
+    retryRunSource() {
+      if (!this.currentRunDetail) return {};
+      const failures = this.drilldownNodes
+        .filter((node) => node.status === "failed")
+        .map((node) => ({
+          id: node.id,
+          message: node.failure?.message,
+          name: node.name,
+        }));
+      const run =
+        this.arrayTestCyclesDate.find(
+          (entry) => String(entry.id) === String(this.currentRunDetail.id),
+        ) ?? {};
+      return {
+        ...run,
+        assets: run.assets ?? run.relatedAssets ?? this.secureArtifacts,
+        configuration: run.configuration ?? run.config ?? {},
+        failures,
+        id: this.currentRunDetail.id,
+        projectId: getSelectedProjectId(),
+        runtime:
+          run.runtime ??
+          run.runner ??
+          this.arrayTest[0]?.runtime ??
+          this.arrayTest[0]?.type ??
+          "postman",
+        status: this.currentRunDetail.status,
+        tests: this.arrayTest,
+      };
+    },
+    retryUnavailableAssetList() {
+      return this.retryEligibilityFor("failed")
+        .unavailableAssets.map((asset) => `${asset.name}@${asset.version}`)
+        .join(", ");
     },
     showArtifactViewer() {
       return (
@@ -2079,6 +2188,93 @@ export default {
     canCancelParallelRun(run) {
       return cancellationEligibility(normalizeLiveRun(run), ["run.cancel"])
         .allowed;
+    },
+    retryEligibilityFor(scope) {
+      return retryEligibility(this.retryRunSource, scope);
+    },
+    retryRunStateLabel(scope) {
+      const labels = this.language[this.config.currentLanguage].TestsPerformed;
+      const eligibility = this.retryEligibilityFor(scope);
+      if (eligibility.requiresPreflight) return labels.retryPreflightRequired;
+      return labels.retryStates?.[eligibility.reason] ?? eligibility.reason;
+    },
+    retryRunEndpoint(runId) {
+      return this.parallelRunEndpoint(runId, "/retry");
+    },
+    async retryRun(scope) {
+      const labels = this.language[this.config.currentLanguage].TestsPerformed;
+      const request = createRetryRunRequest(this.retryRunSource, {
+        actor: "current-user",
+        scope,
+      });
+      if (!request.allowed) {
+        this.retryAudit = {
+          ...this.retryAudit,
+          [this.currentRunDetail.id]: {
+            message: this.retryRunStateLabel(scope),
+            status: request.eligibility.reason,
+          },
+        };
+        return;
+      }
+      const confirmed = await this.$showConfirm({
+        cancelLabel: labels.keepCurrentRun,
+        confirmLabel: labels.confirmRetryRun,
+        message: labels.retryRunMessage
+          .replace("{runId}", this.currentRunDetail.id)
+          .replace("{scope}", scope),
+        title: labels.retryRunTitle,
+        variant: "info",
+      });
+      if (!confirmed) return;
+
+      this.retryAudit = {
+        ...this.retryAudit,
+        [this.currentRunDetail.id]: {
+          idempotencyKey: request.idempotencyKey,
+          message: labels.retryRequested,
+          status: request.status,
+        },
+      };
+      this.emitter.emit("showLoader", true);
+      try {
+        const response = await apiClient.post(
+          this.retryRunEndpoint(this.currentRunDetail.id),
+          request.body,
+          {
+            headers: { ...this.setHeaders(), ...request.headers },
+          },
+        );
+        const retryResponse = normalizeRetryRunResponse(response, {
+          projectId: getSelectedProjectId(),
+          sourceRunId: this.currentRunDetail.id,
+        });
+        this.retryAudit = {
+          ...this.retryAudit,
+          [this.currentRunDetail.id]: {
+            ...this.retryAudit[this.currentRunDetail.id],
+            message: labels.retryCreated.replace(
+              "{runId}",
+              retryResponse.derivedRunId,
+            ),
+            status: "created",
+            trace: retryResponse.trace,
+          },
+        };
+        if (this.$router?.push) this.$router.push(retryResponse.route);
+      } catch (e) {
+        this.retryAudit = {
+          ...this.retryAudit,
+          [this.currentRunDetail.id]: {
+            ...this.retryAudit[this.currentRunDetail.id],
+            message: labels.retryFailedRequest,
+            status: "failed",
+          },
+        };
+        this.Logout(this, e);
+      } finally {
+        this.emitter.emit("showLoader", false);
+      }
     },
     parallelResultSummary(run) {
       return normalizeLiveRun(run).workerSummary;

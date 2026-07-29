@@ -155,6 +155,31 @@ completion timestamp when returned by the API, retryability, and final outcome.
 Timeout, conflict, network, and server failures are treated as unknown/retryable;
 authorization failures are rejected and are not retried automatically.
 
+## Retry failed and rerun workflows
+
+Retry and rerun actions create a new derived execution instead of mutating the
+historical source run. The source run remains immutable evidence, while the new
+run carries a trace envelope with the source run identifier, source version,
+selected retry scope, inherited configuration snapshot, and preflight status.
+
+Two scopes are available:
+
+- full rerun, which repeats the entire supported run;
+- retry failed, which repeats only the failed test, step, or assertion scope
+  identified by the drill-down adapter.
+
+The UI exposes eligibility before submission. Unsupported runners, unauthorized
+operators, and runs without a failed scope explain the alternative action rather
+than silently creating a different execution. Missing, changed, or snapshot-only
+assets require preflight and are displayed with their version metadata so a
+retry never silently uses changed plugin, environment, collection, or test
+assets.
+
+Every retry request carries a stable idempotency key for the source run, scope,
+and actor. Confirmation is required before submission. When the API creates the
+derived run, the UI redirects to the canonical execution-detail route for the
+new run and preserves the trace back to the source run.
+
 ## Legacy compatibility
 
 Legacy status values are still accepted:

@@ -83,6 +83,25 @@ describe("tests performed component", () => {
                   "Ask the server to cancel run #{runId}. Impact {scope}.",
                 confirmCancelRun: "Cancel execution",
                 keepRunning: "Keep running",
+                retryTitle: "Retry and rerun",
+                rerun: "Rerun full",
+                retryFailed: "Retry failed",
+                retryRunTitle: "Create a derived execution?",
+                retryRunMessage:
+                  "Create a new run from #{runId} using {scope}.",
+                confirmRetryRun: "Create run",
+                keepCurrentRun: "Keep current run",
+                retryRequested: "Retry request submitted.",
+                retryCreated: "Derived run #{runId} was created.",
+                retryFailedRequest: "Retry request failed.",
+                retryPreflightRequired: "Preflight is required.",
+                retryStates: {
+                  eligible: "This run can be retried safely.",
+                  "no-failed-scope": "No failed scope is available.",
+                  "preflight-required": "Preflight is required.",
+                  unauthorized: "Retry is not allowed.",
+                  "unsupported-runtime": "Runner does not support retry.",
+                },
                 cancellationStates: {
                   "cancellation-requested": "Cancellation requested.",
                   cancelled: "Cancellation confirmed.",
@@ -905,6 +924,80 @@ describe("tests performed component", () => {
     expect(wrapper.text()).toContain("Cancelled");
     expect(wrapper.text()).toContain("Classified cancellation.");
     expect(wrapper.text()).toContain("Cancellation confirmed.");
+  });
+
+  it("creates a traceable retry-failed run without mutating history", async () => {
+    const push = vi.fn();
+    api.get.mockResolvedValue({ data: [] });
+    api.post.mockResolvedValue({
+      data: { id: 45, projectId: 9, sourceRunId: 44 },
+    });
+
+    const wrapper = mountTestsPerformed({
+      $route: {
+        name: "execution-detail",
+        params: { projectId: "9", runId: "44" },
+        query: { tab: "tests" },
+      },
+      $router: { push, replace: vi.fn() },
+      $showConfirm: vi.fn().mockResolvedValue(true),
+    });
+    await wrapper.setData({
+      arrayTest: [
+        {
+          data: [
+            {
+              assertions: [{ name: "status", passed: false }],
+              method: "GET",
+              name: "Health",
+              status: 500,
+              url: "https://example.org/health",
+            },
+          ],
+          id: 17,
+          name: "Postman",
+          type: "postman",
+        },
+      ],
+      arrayTestCyclesDate: [
+        {
+          configuration: { authorization: "Bearer secret-token" },
+          id: 44,
+          runtime: "postman",
+          status: "failed",
+          version: "snapshot-1",
+        },
+      ],
+    });
+
+    await wrapper
+      .findAll(".testsperformed-run-action-buttons button")
+      .find((button) => button.text() === "Retry failed")
+      .trigger("click");
+
+    await vi.waitFor(() => expect(api.post).toHaveBeenCalled());
+
+    expect(api.post).toHaveBeenCalledWith(
+      "/api/projects/9/parallel-runs/44/retry",
+      expect.objectContaining({
+        configurationSnapshot: { authorization: "[REDACTED]" },
+        scope: "failed",
+        selectedFailedScope: expect.arrayContaining(["postman:17:1"]),
+        sourceRunId: "44",
+        sourceVersion: "snapshot-1",
+      }),
+      {
+        headers: {
+          "Idempotency-Key": "retry:44:failed:current-user",
+        },
+      },
+    );
+    expect(push).toHaveBeenCalledWith({
+      name: "execution-detail",
+      params: { projectId: "9", runId: "45" },
+      query: { tab: "overview" },
+    });
+    expect(wrapper.vm.arrayTestCyclesDate[0].status).toBe("failed");
   });
 
   it("stops polling and aborts pending parallel run requests on unmount", async () => {
