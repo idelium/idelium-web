@@ -40,112 +40,38 @@
         <div class="row">
           <div class="col-sm-1" />
           <div class="col">
-            <div class="paneColumn idelium-steps-grid">
-              <div class="row idelium-steps-grid__header">
-                <div class="col col col-lg-1">
-                  {{ language[config.currentLanguage].Steps.colId }}
-                </div>
-                <div class="col col col-lg-4">
-                  {{ language[config.currentLanguage].Steps.colName }}
-                </div>
-                <div class="col col col-lg-4">
-                  {{ language[config.currentLanguage].Steps.colDescription }}
-                </div>
-                <div class="col col-lg-3"></div>
-              </div>
-              <draggable
-                v-if="listSteps.length > 0"
-                v-model="listSteps"
-                @change="moveElement"
-                :component-data="{ name: 'fade' }"
-                item-key="id"
-              >
-                <template #item="{ element }">
-                  <div class="row idelium-steps-grid__row">
-                    <div class="col col-lg-1">
-                      {{ element.id }}
-                    </div>
-                    <div class="col col col-lg-4">
-                      <button
-                        type="button"
-                        class="btn btn-link btn-sm idelium-steps-grid__link"
-                        v-on:click="getJson(element.id)"
-                      >
-                        {{ element.name }}
-                      </button>
-                    </div>
-                    <div class="col col col-lg-4">
-                      <button
-                        type="button"
-                        class="btn btn-link btn-sm idelium-steps-grid__link"
-                        v-on:click="getJson(element.id)"
-                      >
-                        {{ element.description }}
-                      </button>
-                    </div>
-                    <div class="col col-lg-1">
-                      <span
-                        id="clone"
-                        class="idelium-action-icon--duplicate"
-                        v-on:click="duplicateStep(element)"
-                        :title="
-                          language[config.currentLanguage].Actions.duplicate
-                        "
-                        role="button"
-                        style="cursor: pointer"
-                        ><font-awesome-icon
-                          icon="clone"
-                          class="idelium-action-icon idelium-action-icon--duplicate"
-                      /></span>
-                    </div>
-                    <div class="col col-lg-1">
-                      <span
-                        class="idelium-action-icon--download"
-                        v-on:click="downloadStep(element)"
-                        :title="
-                          language[config.currentLanguage].Actions.download
-                        "
-                        role="button"
-                        style="cursor: pointer"
-                        ><font-awesome-icon
-                          icon="download"
-                          class="idelium-action-icon idelium-action-icon--download"
-                      /></span>
-                    </div>
-                    <div class="col col-lg-1">
-                      <span
-                        class="idelium-action-icon--delete"
-                        v-on:click="deleteStep(element)"
-                        :title="language[config.currentLanguage].Actions.delete"
-                        role="button"
-                        style="cursor: pointer"
-                        ><font-awesome-icon
-                          icon="trash"
-                          class="idelium-action-icon idelium-action-icon--delete"
-                      /></span>
-                    </div>
-                  </div>
-                </template>
-              </draggable>
-              <EnterpriseGridState
-                v-else-if="stepsLoaded"
-                variant="empty"
-                :title="language[config.currentLanguage].Steps.gridEmptyTitle"
-                :description="
-                  language[config.currentLanguage].Steps.gridEmptyDescription
-                "
-              />
-            </div>
-            <button
-              type="button"
-              class="btn btn-success"
-              size="sm"
-              style="float: right"
-              v-on:click="saveOrderSteps()"
-              :disabled="btnSaveOrderDisabled"
+            <EnterpriseListingGrid
+              v-model:search="stepSearch"
+              :accessible-label="stepCopy.listTitle"
+              :actions="stepActions"
+              :columns="stepColumns"
+              :error="error"
+              :has-active-filters="gridQuery.search !== ''"
+              :listing-copy="stepCopy"
+              :loading="stepGridLoading"
+              :meta="gridMeta"
+              :rows="listSteps"
+              :sort="stepSort"
+              :table-copy="stepTableCopy"
+              v-on:action="handleStepAction"
+              v-on:clear-filters="clearStepSearch"
+              v-on:page-change="changeStepPage"
+              v-on:retry="getSteps"
+              v-on:row-activate="openStep"
+              v-on:search="scheduleStepSearch"
+              v-on:sort="sortSteps"
             >
-              {{ language[config.currentLanguage].Steps.btnSaveOrder }}
-            </button>
+              <template #toolbar>
+                <button
+                  type="button"
+                  class="btn btn-success"
+                  v-on:click="saveOrderSteps()"
+                  :disabled="btnSaveOrderDisabled"
+                >
+                  {{ stepCopy.btnSaveOrder }}
+                </button>
+              </template>
+            </EnterpriseListingGrid>
           </div>
           <div class="col-sm-1" />
         </div>
@@ -540,12 +466,16 @@
 
 <script>
 import apiClient from "@/services/apiClient";
+import EnterpriseListingGrid from "@/components/grid/EnterpriseListingGrid.vue";
 import { getSelectedProjectId } from "@/stores/session";
 import { buildStepPayload } from "@/domain/workflowPayloads";
+import {
+  isGridRouteQueryKey,
+  parseGridRouteQuery,
+  serializeGridRouteQuery,
+} from "@/domain/enterpriseGrid";
 import { Modal } from "bootstrap";
 
-import draggable from "vuedraggable";
-import EnterpriseGridState from "@/components/shared/EnterpriseGridState.vue";
 import JsonEditor from "../components/JsonEditor.vue";
 import wizard from "./steps/wizard.vue";
 import download from "@/shared/download";
@@ -572,19 +502,28 @@ let templateJson = {
   ],
 };
 
+const STEP_SORTS = [
+  "id",
+  "name",
+  "description",
+  "order",
+  "created_at",
+  "updated_at",
+];
+
 export default {
   name: "StepsComponent",
   inheritAttrs: false,
   mixins: [routableTabs("order", ["order", "new"])],
   components: {
-    draggable,
-    EnterpriseGridState,
+    EnterpriseListingGrid,
     JsonEditor,
     wizard,
   },
   data: () => {
     return {
       enabled: true,
+      error: null,
       listSteps: [],
       stepsLoaded: false,
       arrayRealStep: [],
@@ -627,6 +566,7 @@ export default {
         pageSize: 25,
         sort: "order",
         direction: "asc",
+        search: "",
       },
       gridMeta: {
         page: 1,
@@ -636,10 +576,74 @@ export default {
         hasNextPage: false,
         hasPreviousPage: false,
       },
+      stepGridLoading: false,
+      stepSearch: "",
+      stepSearchTimer: null,
+      updatingStepRoute: false,
     };
   },
   options: {},
   computed: {
+    stepCopy() {
+      return this.language[this.config.currentLanguage].Steps;
+    },
+    stepTableCopy() {
+      return this.language[this.config.currentLanguage].DataTable;
+    },
+    stepColumns() {
+      return [
+        {
+          key: "id",
+          label: this.stepCopy.colId,
+          required: true,
+          sortable: true,
+          type: "technical",
+        },
+        {
+          key: "name",
+          label: this.stepCopy.colName,
+          required: true,
+          sortable: true,
+        },
+        {
+          key: "description",
+          label: this.stepCopy.colDescription,
+          sortable: true,
+        },
+        {
+          key: "order",
+          label: this.stepCopy.colOrder,
+          sortable: true,
+          type: "technical",
+        },
+      ];
+    },
+    stepActions() {
+      const actions = this.language[this.config.currentLanguage].Actions;
+      return [
+        {
+          id: "move-up",
+          label: this.stepCopy.moveUp,
+          disabled: (row) => this.listSteps.indexOf(row) <= 0,
+        },
+        {
+          id: "move-down",
+          label: this.stepCopy.moveDown,
+          disabled: (row) =>
+            this.listSteps.indexOf(row) === this.listSteps.length - 1,
+        },
+        { id: "edit", label: actions.edit },
+        { id: "duplicate", label: actions.duplicate },
+        { id: "download", label: actions.download },
+        { id: "delete", label: actions.delete, variant: "danger" },
+      ];
+    },
+    stepSort() {
+      return {
+        field: this.gridQuery.sort,
+        direction: this.gridQuery.direction,
+      };
+    },
     strippedContent() {
       let regex = /(<([^>]+)>)/gi;
       return this.comment.content.rendered.replace(regex, "");
@@ -683,17 +687,22 @@ export default {
       }
     },
     $route() {
+      if (!this.updatingStepRoute && this.restoreStepQuery()) {
+        this.getSteps();
+      }
       this.openRoutedStepForEdit();
       this.$forceUpdate();
     },
   },
   mounted() {
+    this.restoreStepQuery();
     this.getSteps();
     this.loadJsonToEdit = this.defaultJson;
     this.modalElem = new Modal(document.getElementById("myModal"));
     this.openRoutedStepForEdit();
   },
   beforeUnmount() {
+    clearTimeout(this.stepSearchTimer);
     this.emitter.emit("showLoader", false);
   },
   created() {
@@ -703,6 +712,107 @@ export default {
     });
   },
   methods: {
+    restoreStepQuery() {
+      const parsed = parseGridRouteQuery(this.$route?.query || {}, {
+        allowedSorts: STEP_SORTS,
+      });
+      const next = {
+        page: parsed.page,
+        pageSize: parsed.pageSize,
+        search: parsed.search,
+        sort: parsed.sort?.field || "order",
+        direction: parsed.sort?.direction || "asc",
+      };
+      const changed = JSON.stringify(next) !== JSON.stringify(this.gridQuery);
+      this.gridQuery = next;
+      this.stepSearch = parsed.search;
+      return changed;
+    },
+    async updateStepRoute(changes) {
+      const next = { ...this.gridQuery, ...changes };
+      if (
+        changes.search !== undefined ||
+        changes.sort !== undefined ||
+        changes.direction !== undefined
+      ) {
+        next.page = 1;
+      }
+      this.gridQuery = next;
+      if (this.$router && this.$route) {
+        const preserved = Object.fromEntries(
+          Object.entries(this.$route.query || {}).filter(
+            ([key]) => !isGridRouteQueryKey(key),
+          ),
+        );
+        this.updatingStepRoute = true;
+        try {
+          await this.$router.replace({
+            query: {
+              ...preserved,
+              ...serializeGridRouteQuery(
+                {
+                  ...next,
+                  sort: { field: next.sort, direction: next.direction },
+                },
+                { allowedSorts: STEP_SORTS },
+              ),
+            },
+          });
+        } finally {
+          this.updatingStepRoute = false;
+        }
+      }
+      return this.getSteps();
+    },
+    scheduleStepSearch(value) {
+      clearTimeout(this.stepSearchTimer);
+      this.stepSearchTimer = setTimeout(() => {
+        this.stepSearchTimer = null;
+        this.updateStepRoute({ search: value });
+      }, 250);
+    },
+    clearStepSearch() {
+      this.stepSearch = "";
+      return this.updateStepRoute({ search: "" });
+    },
+    changeStepPage(page) {
+      return this.updateStepRoute({ page: Math.max(Number(page) || 1, 1) });
+    },
+    sortSteps(sort) {
+      return this.updateStepRoute({
+        sort: sort.field,
+        direction: sort.direction,
+      });
+    },
+    openStep(step) {
+      return this.getJson(step.id, step.name, step.description);
+    },
+    moveStep(step, offset) {
+      const currentIndex = this.listSteps.indexOf(step);
+      const nextIndex = currentIndex + offset;
+      if (
+        currentIndex < 0 ||
+        nextIndex < 0 ||
+        nextIndex >= this.listSteps.length
+      ) {
+        return;
+      }
+      const reordered = [...this.listSteps];
+      [reordered[currentIndex], reordered[nextIndex]] = [
+        reordered[nextIndex],
+        reordered[currentIndex],
+      ];
+      this.listSteps = reordered;
+      this.btnSaveOrderDisabled = false;
+    },
+    handleStepAction({ action, row }) {
+      if (action === "move-up") this.moveStep(row, -1);
+      if (action === "move-down") this.moveStep(row, 1);
+      if (action === "edit") this.openStep(row);
+      if (action === "duplicate") this.duplicateStep(row);
+      if (action === "download") this.downloadStep(row);
+      if (action === "delete") this.deleteStep(row);
+    },
     currentProjectId() {
       return this.$route?.params?.projectId || getSelectedProjectId();
     },
@@ -919,11 +1029,13 @@ export default {
     },
     getSteps() {
       this.emitter.emit("showLoader", true);
+      this.stepGridLoading = true;
       if (
         this.currentProjectId() === null ||
         this.currentProjectId() === undefined
       ) {
         this.emitter.emit("showLoader", false);
+        this.stepGridLoading = false;
         return false;
       }
       apiClient
@@ -948,6 +1060,10 @@ export default {
         .catch((e) => {
           this.Logout(this, e);
           this.error = e;
+        })
+        .finally(() => {
+          this.stepGridLoading = false;
+          this.emitter.emit("showLoader", false);
         });
     },
     changeJson(json) {
@@ -1006,12 +1122,7 @@ export default {
             headers: this.setHeaders(),
           },
         )
-        .then((response) => {
-          this.listSteps.push({
-            id: response.data.id,
-            name: this.stepNameFile.toLowerCase(),
-            description: this.stepDescription.toLowerCase(),
-          });
+        .then(() => {
           this.stepsLoaded = true;
           this.stepDescription = "";
           this.stepNameFile = "";
@@ -1022,6 +1133,7 @@ export default {
           this.isLetterCheck = false;
           this.loadJsonToEdit = this.defaultJson;
           this.emitter.emit("showLoader", false);
+          return this.getSteps();
         })
         .catch((e) => {
           this.Logout(this, e);
@@ -1039,6 +1151,7 @@ export default {
             "/updateorder",
           {
             order: this.listSteps,
+            offset: (this.gridQuery.page - 1) * this.gridQuery.pageSize,
           },
           {
             headers: this.setHeaders(),
@@ -1073,12 +1186,12 @@ export default {
             headers: this.setHeaders(),
           },
         )
-        .then((response) => {
+        .then(() => {
           this.btnSaveEnable = false;
           this.modalElem.hide();
-          this.listSteps = response.data;
           this.stepsLoaded = true;
           this.emitter.emit("showLoader", false);
+          return this.getSteps();
         })
         .catch();
     },

@@ -35,6 +35,7 @@ describe("plugins component", () => {
               Actions: {
                 delete: "Delete",
                 download: "Download",
+                edit: "Edit",
               },
               Plugins: {
                 tabListPlugins: "List Plugins",
@@ -43,11 +44,25 @@ describe("plugins component", () => {
                 name: "name",
                 description: "description",
                 approval: "approval",
+                integrity: "source integrity",
+                listTitle: "Plugins",
+                nextPage: "Next",
+                pageStatus: "Page {page} of {pages}",
+                paginationLabel: "Plugin pages",
+                previousPage: "Previous",
+                searchLabel: "Search",
+                searchPlaceholder: "Search plugins",
                 approvalStates: {
                   approved: "Approved",
                   unapproved: "Unapproved",
                   invalid: "Invalid",
                 },
+              },
+              DataTable: {
+                actions: "Actions",
+                bulk: {},
+                preferences: {},
+                states: {},
               },
             },
           },
@@ -94,8 +109,13 @@ describe("plugins component", () => {
 
     const wrapper = mountPlugins();
 
-    await vi.waitFor(() => expect(wrapper.text()).toContain("Approved"));
-    expect(wrapper.text()).toContain("abcdef123456");
-    expect(wrapper.text()).not.toContain("def init");
+    await vi.waitFor(() => expect(wrapper.vm.displayPlugins).toHaveLength(1));
+    expect(wrapper.vm.displayPlugins[0]).toEqual(
+      expect.objectContaining({
+        approvalLabel: "Approved",
+        sourceHash: "abcdef123456",
+      }),
+    );
+    expect(wrapper.vm.displayPlugins[0]).not.toHaveProperty("code");
   });
 });

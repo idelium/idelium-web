@@ -61,6 +61,21 @@ export function buildGridQuery(options = {}) {
 
 export function parseGridResponse(response) {
   const payload = response?.data ?? {};
+  if (Array.isArray(payload)) {
+    return {
+      rows: payload,
+      meta: {
+        page: 1,
+        pageSize: Math.min(Math.max(payload.length, 1), MAX_PAGE_SIZE),
+        total: payload.length,
+        lastPage: 1,
+        hasNextPage: false,
+        hasPreviousPage: false,
+        stale: false,
+        partial: false,
+      },
+    };
+  }
   const rows = Array.isArray(payload.data) ? payload.data : [];
   const meta = payload.meta ?? {};
 
@@ -70,6 +85,7 @@ export function parseGridResponse(response) {
       page: positiveInteger(meta.page, 1),
       pageSize: boundedPageSize(meta.pageSize ?? meta.perPage),
       total: nonNegativeInteger(meta.total, rows.length),
+      lastPage: positiveInteger(meta.lastPage, 1),
       hasNextPage: Boolean(meta.hasNextPage ?? false),
       hasPreviousPage: Boolean(meta.hasPreviousPage ?? false),
       stale: Boolean(meta.stale ?? false),

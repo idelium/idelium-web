@@ -38,96 +38,28 @@
         aria-labelledby="home-tab"
       >
         <!--start content tab --->
-        <div class="row">
-          <div class="col col-sm-1" />
-          <div class="col">
-            <table class="table table-striped costum">
-              <thead>
-                <tr>
-                  <th scope="col">
-                    {{ language[config.currentLanguage].Environments.id }}
-                  </th>
-                  <th scope="col">
-                    {{ language[config.currentLanguage].Environments.code }}
-                  </th>
-                  <th scope="col">
-                    {{
-                      language[config.currentLanguage].Environments.description
-                    }}
-                  </th>
-                  <th scope="col"></th>
-                  <th scope="col"></th>
-                  <th scope="col"></th>
-                </tr>
-              </thead>
-              <tbody>
-                <!-- draggable v-model="listEnvironments" tag="tbody" -->
-                <tr v-for="(item, index) in listEnvironments" :key="item.name">
-                  <td>
-                    {{ item.id }}
-                  </td>
-                  <td>
-                    <button
-                      type="button"
-                      class="btn btn-link btn-sm"
-                      v-on:click="getJson(item.id, item.code)"
-                    >
-                      {{ item.code }}
-                    </button>
-                  </td>
-                  <td>
-                    <button
-                      type="button"
-                      class="btn btn-link btn-sm"
-                      v-on:click="getJson(item.id, item.code)"
-                    >
-                      {{ item.description }}
-                    </button>
-                  </td>
-                  <td>
-                    <span
-                      id="clone"
-                      class="idelium-action-icon--duplicate"
-                      v-on:click="duplicateEnvironment(index)"
-                      :title="language[config.currentLanguage].Actions.duplicate"
-                      role="button"
-                      style="cursor: pointer"
-                      ><font-awesome-icon
-                        icon="clone"
-                        class="idelium-action-icon idelium-action-icon--duplicate"
-                    /></span>
-                  </td>
-                  <td>
-                    <span
-                      class="idelium-action-icon--delete"
-                      v-on:click="deleteEnvironment(index)"
-                      :title="language[config.currentLanguage].Actions.delete"
-                      role="button"
-                      style="cursor: pointer"
-                      ><font-awesome-icon
-                        icon="trash"
-                        class="idelium-action-icon idelium-action-icon--delete"
-                    /></span>
-                  </td>
-                  <td>
-                    <span
-                      class="idelium-action-icon--download"
-                      v-on:click="downloadEnvironment(index)"
-                      :title="language[config.currentLanguage].Actions.download"
-                      role="button"
-                      style="cursor: pointer"
-                      ><font-awesome-icon
-                        icon="download"
-                        class="idelium-action-icon idelium-action-icon--download"
-                    /></span>
-                  </td>
-                </tr>
-                <!--/draggable-->
-              </tbody>
-            </table>
-          </div>
-          <div class="col-sm-1" />
-        </div>
+        <EnterpriseListingGrid
+          v-model:search="environmentSearch"
+          class="idelium-tab-grid"
+          :accessible-label="environmentCopy.listTitle"
+          :actions="environmentActions"
+          :columns="environmentColumns"
+          :error="error"
+          :has-active-filters="environmentGridQuery.search !== ''"
+          :listing-copy="environmentCopy"
+          :loading="environmentGridLoading"
+          :meta="environmentGridMeta"
+          :rows="listEnvironments"
+          :sort="environmentSort"
+          :table-copy="environmentTableCopy"
+          v-on:action="handleEnvironmentAction"
+          v-on:clear-filters="clearEnvironmentSearch"
+          v-on:page-change="changeEnvironmentPage"
+          v-on:retry="getEnvironments"
+          v-on:row-activate="openEnvironment"
+          v-on:search="scheduleEnvironmentSearch"
+          v-on:sort="sortEnvironments"
+        />
         <!-- end content tab -->
       </div>
       <div
@@ -148,8 +80,7 @@
               </h2>
               <p>
                 {{
-                  language[config.currentLanguage].Environments
-                    .formDescription
+                  language[config.currentLanguage].Environments.formDescription
                 }}
               </p>
             </div>
@@ -237,8 +168,7 @@
                 </option>
                 <option value="webservice">
                   {{
-                    language[config.currentLanguage].Environments
-                      .typeWebservice
+                    language[config.currentLanguage].Environments.typeWebservice
                   }}
                 </option>
               </select>
@@ -399,7 +329,11 @@
 
 .idelium-environment-form {
   background:
-    radial-gradient(circle at top right, rgba(255, 122, 24, 0.16), transparent 28rem),
+    radial-gradient(
+      circle at top right,
+      rgba(255, 122, 24, 0.16),
+      transparent 28rem
+    ),
     linear-gradient(180deg, rgba(255, 255, 255, 0.045), transparent),
     rgba(35, 38, 49, 0.92);
   border: 1px solid rgba(255, 255, 255, 0.12);
@@ -548,8 +482,15 @@
 
 <script>
 import { Modal, Button } from "bootstrap";
+import EnterpriseListingGrid from "@/components/grid/EnterpriseListingGrid.vue";
 import JsonEditor from "../components/JsonEditor.vue";
 import apiClient from "@/services/apiClient";
+import {
+  isGridRouteQueryKey,
+  parseGridResponse,
+  parseGridRouteQuery,
+  serializeGridRouteQuery,
+} from "@/domain/enterpriseGrid";
 import { getSelectedProjectId } from "@/stores/session";
 import { buildEnvironmentPayload } from "@/domain/workflowPayloads";
 import { hideModalSafely } from "@/shared/bootstrapModal";
@@ -559,6 +500,14 @@ import { routableTabs } from "@/shared/routableTabs";
 import wizard from "./environments/wizard.vue";
 import param from "./environments/environmentsParameter";
 
+const ENVIRONMENT_SORTS = [
+  "id",
+  "code",
+  "description",
+  "created_at",
+  "updated_at",
+];
+
 export default {
   name: "EnvironmentsComponent",
   inheritAttrs: false,
@@ -566,6 +515,7 @@ export default {
   data: () => {
     return {
       enabled: true,
+      error: null,
       listEnvironments: [],
       environmentsLoaded: false,
       modalElem: null,
@@ -592,6 +542,25 @@ export default {
       environmentNameFile: "",
       loadJsonToEdit: "",
       errorNewVersionMessage: null,
+      environmentGridLoading: false,
+      environmentGridMeta: {
+        page: 1,
+        pageSize: 25,
+        total: 0,
+        lastPage: 1,
+        hasNextPage: false,
+        hasPreviousPage: false,
+      },
+      environmentGridQuery: {
+        page: 1,
+        pageSize: 25,
+        search: "",
+        sort: "created_at",
+        direction: "asc",
+      },
+      environmentSearch: "",
+      environmentSearchTimer: null,
+      updatingEnvironmentRoute: false,
       skeletonJsonType: "web",
       codeSelected: null,
       defaultJson: {
@@ -629,6 +598,49 @@ export default {
   },
   options: {},
   computed: {
+    environmentCopy() {
+      return this.language[this.config.currentLanguage].Environments;
+    },
+    environmentTableCopy() {
+      return this.language[this.config.currentLanguage].DataTable;
+    },
+    environmentColumns() {
+      return [
+        {
+          key: "id",
+          label: this.environmentCopy.id,
+          required: true,
+          sortable: true,
+          type: "technical",
+        },
+        {
+          key: "code",
+          label: this.environmentCopy.code,
+          required: true,
+          sortable: true,
+        },
+        {
+          key: "description",
+          label: this.environmentCopy.description,
+          sortable: true,
+        },
+      ];
+    },
+    environmentActions() {
+      const actions = this.language[this.config.currentLanguage].Actions;
+      return [
+        { id: "edit", label: actions.edit },
+        { id: "duplicate", label: actions.duplicate },
+        { id: "download", label: actions.download },
+        { id: "delete", label: actions.delete, variant: "danger" },
+      ];
+    },
+    environmentSort() {
+      return {
+        field: this.environmentGridQuery.sort,
+        direction: this.environmentGridQuery.direction,
+      };
+    },
     strippedContent() {
       let regex = /(<([^>]+)>)/gi;
       return this.comment.content.rendered.replace(regex, "");
@@ -649,10 +661,14 @@ export default {
   watch: {
     $route() {
       this.page = 0;
+      if (!this.updatingEnvironmentRoute && this.restoreEnvironmentQuery()) {
+        this.getEnvironments();
+      }
       this.$forceUpdate();
     },
   },
   mounted() {
+    this.restoreEnvironmentQuery();
     this.modalElem = new Modal(document.getElementById("myModal"));
     this.buttonElem = new Button(document.getElementById("nav-newenv-tab"));
     this.getEnvironments();
@@ -664,6 +680,7 @@ export default {
   beforeUnmount() {
     clearTimeout(this.wizardGenerateTimer);
     clearTimeout(this.wizardRestoreTimer);
+    clearTimeout(this.environmentSearchTimer);
   },
   created() {
     this.emitter.on("refreshEnvironment", (msg) => {
@@ -672,6 +689,96 @@ export default {
     });
   },
   methods: {
+    restoreEnvironmentQuery() {
+      const parsed = parseGridRouteQuery(this.$route?.query || {}, {
+        allowedSorts: ENVIRONMENT_SORTS,
+      });
+      const next = {
+        page: parsed.page,
+        pageSize: parsed.pageSize,
+        search: parsed.search,
+        sort: parsed.sort?.field || "created_at",
+        direction: parsed.sort?.direction || "asc",
+      };
+      const changed =
+        JSON.stringify(next) !== JSON.stringify(this.environmentGridQuery);
+      this.environmentGridQuery = next;
+      this.environmentSearch = parsed.search;
+      return changed;
+    },
+    async updateEnvironmentRoute(changes) {
+      const next = { ...this.environmentGridQuery, ...changes };
+      if (
+        changes.search !== undefined ||
+        changes.sort !== undefined ||
+        changes.direction !== undefined
+      ) {
+        next.page = 1;
+      }
+      this.environmentGridQuery = next;
+      if (this.$router && this.$route) {
+        const preserved = Object.fromEntries(
+          Object.entries(this.$route.query || {}).filter(
+            ([key]) => !isGridRouteQueryKey(key),
+          ),
+        );
+        this.updatingEnvironmentRoute = true;
+        try {
+          await this.$router.replace({
+            query: {
+              ...preserved,
+              ...serializeGridRouteQuery(
+                {
+                  ...next,
+                  sort: { field: next.sort, direction: next.direction },
+                },
+                { allowedSorts: ENVIRONMENT_SORTS },
+              ),
+            },
+          });
+        } finally {
+          this.updatingEnvironmentRoute = false;
+        }
+      }
+      return this.getEnvironments();
+    },
+    scheduleEnvironmentSearch(value) {
+      clearTimeout(this.environmentSearchTimer);
+      this.environmentSearchTimer = setTimeout(() => {
+        this.environmentSearchTimer = null;
+        this.updateEnvironmentRoute({ search: value });
+      }, 250);
+    },
+    clearEnvironmentSearch() {
+      this.environmentSearch = "";
+      return this.updateEnvironmentRoute({ search: "" });
+    },
+    changeEnvironmentPage(page) {
+      return this.updateEnvironmentRoute({
+        page: Math.max(Number(page) || 1, 1),
+      });
+    },
+    sortEnvironments(sort) {
+      return this.updateEnvironmentRoute({
+        sort: sort.field,
+        direction: sort.direction,
+      });
+    },
+    environmentIndex(environment) {
+      return this.listEnvironments.findIndex(
+        (item) => String(item.id) === String(environment.id),
+      );
+    },
+    openEnvironment(environment) {
+      return this.getJson(environment.id, environment.code);
+    },
+    handleEnvironmentAction({ action, row }) {
+      const index = this.environmentIndex(row);
+      if (action === "edit") this.openEnvironment(row);
+      if (action === "duplicate") this.duplicateEnvironment(index);
+      if (action === "download") this.downloadEnvironment(index);
+      if (action === "delete") this.deleteEnvironment(index);
+    },
     redirectEmptyEnvironments() {
       if (this.isEnvironmentOrderTabDisabled && this.isActiveTab("order")) {
         this.openTab("new");
@@ -718,12 +825,10 @@ export default {
             headers: this.setHeaders(),
           },
         )
-        .then((response) => {
+        .then(() => {
           this.btnSaveEnable = false;
-          this.listEnvironments = response.data;
           this.environmentsLoaded = true;
-          this.redirectEmptyEnvironments();
-          this.emitter.emit("showLoader", false);
+          return this.getEnvironments();
         })
         .catch((e) => {
           this.Logout(this, e);
@@ -799,6 +904,7 @@ export default {
     },
     getEnvironments() {
       this.emitter.emit("showLoader", true);
+      this.environmentGridLoading = true;
       apiClient
         .get(
           this.config.serviceBaseUrl +
@@ -807,17 +913,30 @@ export default {
             getSelectedProjectId(),
           {
             headers: this.setHeaders(),
+            params: this.environmentGridQuery,
           },
         )
         .then((response) => {
           this.emitter.emit("showLoader", false);
-          this.listEnvironments = response.data;
+          const result = parseGridResponse(response);
+          this.listEnvironments = result.rows;
+          this.environmentGridMeta = {
+            ...result.meta,
+            lastPage: Math.max(
+              Math.ceil(result.meta.total / result.meta.pageSize),
+              1,
+            ),
+          };
           this.environmentsLoaded = true;
           this.redirectEmptyEnvironments();
         })
         .catch((e) => {
           this.Logout(this, e);
           this.error = e;
+        })
+        .finally(() => {
+          this.environmentGridLoading = false;
+          this.emitter.emit("showLoader", false);
         });
     },
     changeJson: function (json) {
@@ -868,14 +987,13 @@ export default {
             headers: this.setHeaders(),
           },
         )
-        .then((response) => {
+        .then(() => {
           this.emitter.emit("showLoader", false);
           this.btnSaveEnable = false;
           this.hideEditorModal();
           this.loadJsonToEdit = this.generateJson(param.selenium);
 
-          this.listEnvironments = response.data;
-          this.environmentsLoaded = true;
+          return this.getEnvironments();
         })
         .catch((e) => {
           this.Logout(this, e);
@@ -900,13 +1018,12 @@ export default {
           },
         )
         .then(
-          (response) => {
+          () => {
             this.emitter.emit("showLoader", false);
             this.btnSaveEnable = false;
             this.hideEditorModal();
             this.loadJsonToEdit = this.generateJson(param.selenium);
-            this.listEnvironments = response.data;
-            this.environmentsLoaded = true;
+            return this.getEnvironments();
           },
           {
             headers: this.setHeaders(),
@@ -945,6 +1062,7 @@ export default {
     },
   },
   components: {
+    EnterpriseListingGrid,
     wizard,
     //draggable,
     JsonEditor,

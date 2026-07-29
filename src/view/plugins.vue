@@ -53,92 +53,28 @@
       aria-labelledby="home-tab"
     >
       <!-- start home tab -->
-      <div class="row plugins-new-toolbar">
-        <div class="col-sm-1" />
-        <div class="col">
-          <table class="table table-striped costum">
-            <thead>
-              <tr>
-                <th scope="col">
-                  {{ language[config.currentLanguage].Plugins.name }}
-                </th>
-                <th scope="col">
-                  {{ language[config.currentLanguage].Plugins.description }}
-                </th>
-                <th scope="col">
-                  {{ language[config.currentLanguage].Plugins.approval }}
-                </th>
-                <th scope="col"></th>
-                <th scope="col"></th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="(item, index) in listPlugins" :key="item.name">
-                <td>
-                  <button
-                    type="button"
-                    class="btn btn-link btn-sm"
-                    v-on:click="getPlugin(item.id, item.name, false)"
-                  >
-                    {{ item.name }}
-                  </button>
-                </td>
-                <td>
-                  <button
-                    type="button"
-                    class="btn btn-link btn-sm"
-                    v-on:click="getPlugin(item.id, item.name, false)"
-                  >
-                    {{ item.description }}
-                  </button>
-                </td>
-                <td>
-                  <span
-                    :class="[
-                      'plugins-approval-badge',
-                      'plugins-approval-badge--' + pluginApproval(item).variant,
-                    ]"
-                    :title="pluginApproval(item).title"
-                  >
-                    {{ pluginApproval(item).label }}
-                  </span>
-                  <small
-                    v-if="shortPluginHash(item)"
-                    class="plugins-approval-hash"
-                  >
-                    {{ shortPluginHash(item) }}
-                  </small>
-                </td>
-                <td>
-                  <span
-                    class="idelium-action-icon--delete"
-                    v-on:click="deletePlugin(index)"
-                    :title="language[config.currentLanguage].Actions.delete"
-                    role="button"
-                    style="cursor: pointer"
-                    ><font-awesome-icon
-                      icon="trash"
-                      class="idelium-action-icon"
-                  /></span>
-                </td>
-                <td>
-                  <span
-                    class="idelium-action-icon--download"
-                    v-on:click="downloadPlugin(index)"
-                    :title="language[config.currentLanguage].Actions.download"
-                    role="button"
-                    style="cursor: pointer"
-                    ><font-awesome-icon
-                      icon="download"
-                      class="idelium-action-icon"
-                  /></span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <div class="col-sm-1" />
-      </div>
+      <EnterpriseListingGrid
+        v-model:search="pluginSearch"
+        class="idelium-tab-grid"
+        :accessible-label="pluginCopy.listTitle"
+        :actions="pluginActions"
+        :columns="pluginColumns"
+        :error="error"
+        :has-active-filters="pluginGridQuery.search !== ''"
+        :listing-copy="pluginCopy"
+        :loading="pluginGridLoading"
+        :meta="pluginGridMeta"
+        :rows="displayPlugins"
+        :sort="pluginSort"
+        :table-copy="pluginTableCopy"
+        v-on:action="handlePluginAction"
+        v-on:clear-filters="clearPluginSearch"
+        v-on:page-change="changePluginPage"
+        v-on:retry="listPlugin"
+        v-on:row-activate="openPlugin"
+        v-on:search="schedulePluginSearch"
+        v-on:sort="sortPlugins"
+      />
       <!-- end home tab -->
     </div>
     <div
@@ -393,7 +329,14 @@
 </style>
 
 <script>
+import EnterpriseListingGrid from "@/components/grid/EnterpriseListingGrid.vue";
 import apiClient from "@/services/apiClient";
+import {
+  isGridRouteQueryKey,
+  parseGridResponse,
+  parseGridRouteQuery,
+  serializeGridRouteQuery,
+} from "@/domain/enterpriseGrid";
 import { getSelectedProjectId } from "@/stores/session";
 import { Modal } from "bootstrap";
 import { VAceEditor } from "vue3-ace-editor";
@@ -403,6 +346,8 @@ import download from "@/shared/download";
 import { routableTabs } from "@/shared/routableTabs";
 import { pluginApprovalView, shortPluginHash } from "@/domain/pluginManifest";
 
+const PLUGIN_SORTS = ["id", "name", "description", "created_at", "updated_at"];
+
 export default {
   name: "PluginsComponent",
   inheritAttrs: false,
@@ -410,6 +355,7 @@ export default {
   data: () => {
     return {
       modalElem: null,
+      error: null,
       enabled: true,
       listPlugins: [],
       dragging: false,
@@ -432,6 +378,25 @@ export default {
       pluginSelected: null,
       tabIndex: 0,
       pluginsLoaded: false,
+      pluginGridLoading: false,
+      pluginGridMeta: {
+        page: 1,
+        pageSize: 25,
+        total: 0,
+        lastPage: 1,
+        hasNextPage: false,
+        hasPreviousPage: false,
+      },
+      pluginGridQuery: {
+        page: 1,
+        pageSize: 25,
+        search: "",
+        sort: "created_at",
+        direction: "asc",
+      },
+      pluginSearch: "",
+      pluginSearchTimer: null,
+      updatingPluginRoute: false,
     };
   },
   options: {},
@@ -442,6 +407,58 @@ export default {
     });
   },
   computed: {
+    pluginCopy() {
+      return this.language[this.config.currentLanguage].Plugins;
+    },
+    pluginTableCopy() {
+      return this.language[this.config.currentLanguage].DataTable;
+    },
+    pluginColumns() {
+      return [
+        {
+          key: "name",
+          label: this.pluginCopy.name,
+          required: true,
+          sortable: true,
+        },
+        {
+          key: "description",
+          label: this.pluginCopy.description,
+          sortable: true,
+        },
+        {
+          key: "approvalLabel",
+          label: this.pluginCopy.approval,
+          type: "status",
+        },
+        {
+          key: "sourceHash",
+          label: this.pluginCopy.integrity,
+          type: "technical",
+        },
+      ];
+    },
+    pluginActions() {
+      const actions = this.language[this.config.currentLanguage].Actions;
+      return [
+        { id: "edit", label: actions.edit },
+        { id: "download", label: actions.download },
+        { id: "delete", label: actions.delete, variant: "danger" },
+      ];
+    },
+    displayPlugins() {
+      return this.listPlugins.map((plugin) => ({
+        ...plugin,
+        approvalLabel: this.pluginApproval(plugin).label,
+        sourceHash: this.shortPluginHash(plugin),
+      }));
+    },
+    pluginSort() {
+      return {
+        field: this.pluginGridQuery.sort,
+        direction: this.pluginGridQuery.direction,
+      };
+    },
     isPluginListDisabled() {
       return this.pluginsLoaded && this.listPlugins.length === 0;
     },
@@ -449,14 +466,108 @@ export default {
   watch: {
     $route() {
       this.page = 0;
+      if (!this.updatingPluginRoute && this.restorePluginQuery()) {
+        this.listPlugin();
+      }
       this.$forceUpdate();
     },
   },
   mounted() {
+    this.restorePluginQuery();
     this.modalElem = new Modal(document.getElementById("myModal"));
     this.listPlugin();
   },
+  beforeUnmount() {
+    clearTimeout(this.pluginSearchTimer);
+  },
   methods: {
+    restorePluginQuery() {
+      const parsed = parseGridRouteQuery(this.$route?.query || {}, {
+        allowedSorts: PLUGIN_SORTS,
+      });
+      const next = {
+        page: parsed.page,
+        pageSize: parsed.pageSize,
+        search: parsed.search,
+        sort: parsed.sort?.field || "created_at",
+        direction: parsed.sort?.direction || "asc",
+      };
+      const changed =
+        JSON.stringify(next) !== JSON.stringify(this.pluginGridQuery);
+      this.pluginGridQuery = next;
+      this.pluginSearch = parsed.search;
+      return changed;
+    },
+    async updatePluginRoute(changes) {
+      const next = { ...this.pluginGridQuery, ...changes };
+      if (
+        changes.search !== undefined ||
+        changes.sort !== undefined ||
+        changes.direction !== undefined
+      ) {
+        next.page = 1;
+      }
+      this.pluginGridQuery = next;
+      if (this.$router && this.$route) {
+        const preserved = Object.fromEntries(
+          Object.entries(this.$route.query || {}).filter(
+            ([key]) => !isGridRouteQueryKey(key),
+          ),
+        );
+        this.updatingPluginRoute = true;
+        try {
+          await this.$router.replace({
+            query: {
+              ...preserved,
+              ...serializeGridRouteQuery(
+                {
+                  ...next,
+                  sort: { field: next.sort, direction: next.direction },
+                },
+                { allowedSorts: PLUGIN_SORTS },
+              ),
+            },
+          });
+        } finally {
+          this.updatingPluginRoute = false;
+        }
+      }
+      return this.listPlugin();
+    },
+    schedulePluginSearch(value) {
+      clearTimeout(this.pluginSearchTimer);
+      this.pluginSearchTimer = setTimeout(() => {
+        this.pluginSearchTimer = null;
+        this.updatePluginRoute({ search: value });
+      }, 250);
+    },
+    clearPluginSearch() {
+      this.pluginSearch = "";
+      return this.updatePluginRoute({ search: "" });
+    },
+    changePluginPage(page) {
+      return this.updatePluginRoute({ page: Math.max(Number(page) || 1, 1) });
+    },
+    sortPlugins(sort) {
+      return this.updatePluginRoute({
+        sort: sort.field,
+        direction: sort.direction,
+      });
+    },
+    pluginIndex(plugin) {
+      return this.listPlugins.findIndex(
+        (item) => String(item.id) === String(plugin.id),
+      );
+    },
+    openPlugin(plugin) {
+      return this.getPlugin(plugin.id, plugin.name, false);
+    },
+    handlePluginAction({ action, row }) {
+      const index = this.pluginIndex(row);
+      if (action === "edit") this.openPlugin(row);
+      if (action === "download") this.downloadPlugin(index);
+      if (action === "delete") this.deletePlugin(index);
+    },
     onRoutableTabChange(tab) {
       if (tab === "new" && this.textNew === "new") this.newPlugin();
     },
@@ -572,11 +683,10 @@ export default {
             headers: this.setHeaders(),
           },
         )
-        .then((response) => {
+        .then(() => {
           this.emitter.emit("showLoader", false);
-          this.listPlugins = response.data;
           this.pluginsLoaded = true;
-          this.redirectEmptyPlugins();
+          return this.listPlugin();
         })
         .catch((e) => {
           this.Logout(this, e);
@@ -598,12 +708,12 @@ export default {
             headers: this.setHeaders(),
           },
         )
-        .then((response) => {
+        .then(() => {
           this.emitter.emit("showLoader", false);
-          this.listPlugins = response.data;
           this.pluginsLoaded = true;
           this.descriptionNewFile = "";
           this.nameNewFile = "";
+          return this.listPlugin();
         })
         .catch((e) => {
           //this.Logout(this)
@@ -628,13 +738,13 @@ export default {
           },
         )
         .then(
-          (response) => {
+          () => {
             this.emitter.emit("showLoader", false);
-            this.listPlugins = response.data;
             this.pluginsLoaded = true;
             this.jsoneditorModal = false;
             this.descriptionNewFile = "";
             this.nameNewFile = "";
+            return this.listPlugin();
           },
           {
             headers: {
@@ -649,6 +759,7 @@ export default {
     },
     listPlugin() {
       this.emitter.emit("showLoader", true);
+      this.pluginGridLoading = true;
       apiClient
         .get(
           this.config.serviceBaseUrl +
@@ -657,21 +768,35 @@ export default {
             getSelectedProjectId(),
           {
             headers: this.setHeaders(),
+            params: this.pluginGridQuery,
           },
         )
         .then((response) => {
           this.emitter.emit("showLoader", false);
-          this.listPlugins = response.data;
+          const result = parseGridResponse(response);
+          this.listPlugins = result.rows;
+          this.pluginGridMeta = {
+            ...result.meta,
+            lastPage: Math.max(
+              Math.ceil(result.meta.total / result.meta.pageSize),
+              1,
+            ),
+          };
           this.pluginsLoaded = true;
           this.redirectEmptyPlugins();
         })
         .catch((e) => {
           this.Logout(this, e);
           this.error = e;
+        })
+        .finally(() => {
+          this.pluginGridLoading = false;
+          this.emitter.emit("showLoader", false);
         });
     },
   },
   components: {
+    EnterpriseListingGrid,
     VAceEditor,
     importplugin,
   },

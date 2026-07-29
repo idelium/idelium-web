@@ -61,6 +61,19 @@ describe("steps component", () => {
                 btnCancel: "Cancel",
                 gridEmptyTitle: "No steps available",
                 gridEmptyDescription: "Create the first step.",
+                colDescription: "Description",
+                colId: "ID",
+                colName: "Name",
+                colOrder: "Order",
+                listTitle: "Steps",
+                moveDown: "Move down",
+                moveUp: "Move up",
+                nextPage: "Next",
+                pageStatus: "Page {page} of {pages}",
+                paginationLabel: "Step pages",
+                previousPage: "Previous",
+                searchLabel: "Search",
+                searchPlaceholder: "Search steps",
                 errorMessageInputEmpty: "Fields cannot be empty",
                 errorCharactersError: "File name contains invalid characters",
                 dsl: {
@@ -107,6 +120,13 @@ describe("steps component", () => {
                 delete: "Delete",
                 download: "Download",
                 duplicate: "Duplicate",
+                edit: "Edit",
+              },
+              DataTable: {
+                actions: "Actions",
+                bulk: {},
+                preferences: {},
+                states: {},
               },
               Platforms: {
                 ManagePlatform: {
@@ -145,17 +165,8 @@ describe("steps component", () => {
       wrapper.find("#nav-tabOrderSteps-tab").attributes("disabled"),
     ).toBeDefined();
     expect(
-      wrapper.findComponent({ name: "EnterpriseGridState" }).exists(),
-    ).toBe(true);
-    expect(
-      wrapper.findComponent({ name: "EnterpriseGridState" }).props(),
-    ).toEqual(
-      expect.objectContaining({
-        description: "Create the first step.",
-        title: "No steps available",
-        variant: "empty",
-      }),
-    );
+      wrapper.findComponent({ name: "EnterpriseListingGrid" }).props("rows"),
+    ).toEqual([]);
   });
 
   it("clears the loader when steps cannot load without a selected project", () => {
@@ -195,6 +206,7 @@ describe("steps component", () => {
           pageSize: 25,
           sort: "order",
           direction: "asc",
+          search: "",
         },
       }),
     );
@@ -202,6 +214,29 @@ describe("steps component", () => {
       { id: 7, name: "open_browser", description: "Open browser" },
     ]);
     expect(wrapper.vm.gridMeta.total).toBe(1);
+  });
+
+  it("reorders the current bounded page with an absolute server offset", async () => {
+    api.post.mockResolvedValue({ data: [] });
+    useSessionStore(pinia).selectProject(9);
+    const wrapper = mountSteps();
+    const first = { id: 1, name: "First", order: 25 };
+    const second = { id: 2, name: "Second", order: 26 };
+    wrapper.vm.listSteps = [first, second];
+    wrapper.vm.gridQuery.page = 2;
+    wrapper.vm.gridQuery.pageSize = 25;
+
+    wrapper.vm.moveStep(second, -1);
+    await wrapper.vm.saveOrderSteps();
+
+    expect(api.post).toHaveBeenCalledWith(
+      "/api/steps/9/updateorder",
+      {
+        offset: 25,
+        order: [second, first],
+      },
+      { headers: {} },
+    );
   });
 
   it("uses an enterprise confirmation before deleting a step", async () => {
