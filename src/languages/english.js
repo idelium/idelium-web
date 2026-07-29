@@ -914,6 +914,117 @@ export default {
         "Review the generated sections before saving the migrated environment.",
     },
   },
+  EnvironmentForm: {
+    sections: {
+      identity: "Identity",
+      runtime: "Runtime and template",
+      variables: "Variables",
+      secrets: "Secret references",
+      advanced: "Advanced configuration",
+    },
+    schemaSections: {
+      connection: "Connection and network",
+      browser: "Browser",
+      device: "Device",
+      postman: "API behavior",
+    },
+    types: {
+      web: "Web and Selenium",
+      mobile: "Mobile and Appium",
+      api: "API and Postman",
+    },
+    fields: {
+      name: {
+        label: "Environment name",
+        help: "Use a stable name that is unique within the project.",
+      },
+      description: {
+        label: "Description",
+        help: "Explain the purpose and intended consumers.",
+      },
+      type: {
+        label: "Environment type",
+        help: "The type controls the compatible runtime sections.",
+      },
+      base_url: { label: "Base URL", help: "Use an absolute service URL." },
+      browser: { label: "Browser", help: "Select the browser runtime." },
+      seleniumGridUrl: {
+        label: "Selenium Grid URL",
+        help: "Leave empty for a locally managed browser.",
+      },
+      seleniumHeadless: {
+        label: "Run headless",
+        help: "Run without a visible browser window.",
+      },
+      seleniumLocale: {
+        label: "Browser locale",
+        help: "Use a BCP 47 locale such as en-US.",
+      },
+      accept_self_certificate: {
+        label: "Accept self-signed certificates",
+        help: "Enable only for controlled development environments.",
+      },
+      appiumServer: {
+        label: "Appium server URL",
+        help: "Use the authorized Appium endpoint.",
+      },
+      platformName: { label: "Platform", help: "Select Android or iOS." },
+      automationName: {
+        label: "Automation driver",
+        help: "Choose a driver installed on the Appium server.",
+      },
+      deviceName: { label: "Device name", help: "Identify the target device." },
+      platformVersion: {
+        label: "Platform version",
+        help: "Optionally constrain the operating-system version.",
+      },
+      isRealDevice: {
+        label: "Real device",
+        help: "Disable for simulators and emulators.",
+      },
+      app: { label: "Application path", help: "Path or authorized app URL." },
+      appPackage: {
+        label: "Application package",
+        help: "Android package identifier when required.",
+      },
+      timeoutMs: {
+        label: "Request timeout",
+        help: "Allowed range: 1,000 to 120,000 milliseconds.",
+      },
+      followRedirects: {
+        label: "Follow redirects",
+        help: "Apply redirects during API validation.",
+      },
+      strictTls: {
+        label: "Strict TLS verification",
+        help: "Keep enabled outside controlled local development.",
+      },
+    },
+    optional: "(optional)",
+    sectionErrors: "{count} errors",
+    formErrors: "{count} fields require attention.",
+    valid: "The environment form is valid.",
+    save: "Save environment",
+    saving: "Saving environment",
+    advancedDescription:
+      "Use raw configuration only for supported fields not exposed above.",
+    advancedLabel: "Raw environment configuration",
+    applyAdvanced: "Apply advanced configuration",
+    typeChangeTitle: "Review incompatible values",
+    typeChangeDescription:
+      "Changing type removes the following fields because the target schema does not support them.",
+    cancel: "Cancel",
+    confirmTypeChange: "Change type and remove values",
+    validation: {
+      required: "Enter a required value.",
+      url: "Enter a valid absolute URL.",
+      range: "Enter a number within the supported range.",
+      enum: "Select a supported value.",
+      inlineSecret:
+        "Use an authorized secret reference instead of an inline secret.",
+      json: "Enter a valid JSON object.",
+    },
+  },
   StepEditor: {
     shell: {
       accessibleLabel: "Reusable step editor",

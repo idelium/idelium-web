@@ -49,6 +49,23 @@ and persistence remain API responsibilities. Future form and preview layers must
 consume secret identifiers rather than resolved values and must not include
 protected values in diagnostics, exports, logs, screenshots, or telemetry.
 
+## Sectioned form
+
+`EnvironmentSchemaForm` renders persistent labels and help through the shared
+form-field control. Identity and runtime precede schema-defined connection,
+browser, device, and API sections. Variable and secret-reference sections are
+enabled by schema capabilities. Raw JSON remains collapsed under Advanced and
+is not the primary editing path; sensitive legacy keys are redacted before that
+source is displayed.
+
+Validation associates a stable code with an exact field path and section.
+Required and optional fields are explicit, and the sticky save bar remains in
+the viewport at reduced widths and 200% zoom. Changing environment family first
+computes incompatible fields. The current type and values remain unchanged when
+the author cancels; confirmation removes only the listed incompatible values and
+applies target defaults. Inline secret fields block save and diagnostics never
+contain their values.
+
 ## Rollout and rollback
 
 The versioned loader can be introduced before route migration because unchanged

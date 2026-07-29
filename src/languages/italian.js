@@ -920,6 +920,126 @@ export default {
         "Verifica le sezioni generate prima di salvare l'ambiente migrato.",
     },
   },
+  EnvironmentForm: {
+    sections: {
+      identity: "Identità",
+      runtime: "Runtime e modello",
+      variables: "Variabili",
+      secrets: "Riferimenti segreti",
+      advanced: "Configurazione avanzata",
+    },
+    schemaSections: {
+      connection: "Connessione e rete",
+      browser: "Browser",
+      device: "Dispositivo",
+      postman: "Comportamento API",
+    },
+    types: {
+      web: "Web e Selenium",
+      mobile: "Mobile e Appium",
+      api: "API e Postman",
+    },
+    fields: {
+      name: {
+        label: "Nome ambiente",
+        help: "Usa un nome stabile e univoco nel progetto.",
+      },
+      description: {
+        label: "Descrizione",
+        help: "Spiega finalità e utilizzatori previsti.",
+      },
+      type: {
+        label: "Tipo di ambiente",
+        help: "Il tipo controlla le sezioni runtime compatibili.",
+      },
+      base_url: {
+        label: "URL base",
+        help: "Usa un URL assoluto del servizio.",
+      },
+      browser: { label: "Browser", help: "Seleziona il runtime del browser." },
+      seleniumGridUrl: {
+        label: "URL Selenium Grid",
+        help: "Lascia vuoto per un browser gestito localmente.",
+      },
+      seleniumHeadless: {
+        label: "Esecuzione headless",
+        help: "Esegui senza una finestra browser visibile.",
+      },
+      seleniumLocale: {
+        label: "Lingua browser",
+        help: "Usa un codice BCP 47 come it-IT.",
+      },
+      accept_self_certificate: {
+        label: "Accetta certificati autofirmati",
+        help: "Abilita solo in ambienti di sviluppo controllati.",
+      },
+      appiumServer: {
+        label: "URL server Appium",
+        help: "Usa l'endpoint Appium autorizzato.",
+      },
+      platformName: { label: "Piattaforma", help: "Seleziona Android o iOS." },
+      automationName: {
+        label: "Driver di automazione",
+        help: "Scegli un driver installato sul server Appium.",
+      },
+      deviceName: {
+        label: "Nome dispositivo",
+        help: "Identifica il dispositivo di destinazione.",
+      },
+      platformVersion: {
+        label: "Versione piattaforma",
+        help: "Limita facoltativamente la versione del sistema operativo.",
+      },
+      isRealDevice: {
+        label: "Dispositivo reale",
+        help: "Disabilita per simulatori ed emulatori.",
+      },
+      app: {
+        label: "Percorso applicazione",
+        help: "Percorso o URL autorizzato dell'app.",
+      },
+      appPackage: {
+        label: "Package applicazione",
+        help: "Identificatore package Android quando necessario.",
+      },
+      timeoutMs: {
+        label: "Timeout richiesta",
+        help: "Intervallo consentito: da 1.000 a 120.000 millisecondi.",
+      },
+      followRedirects: {
+        label: "Segui redirect",
+        help: "Applica i redirect durante la validazione API.",
+      },
+      strictTls: {
+        label: "Verifica TLS rigorosa",
+        help: "Mantieni attiva fuori dallo sviluppo locale controllato.",
+      },
+    },
+    optional: "(facoltativo)",
+    sectionErrors: "{count} errori",
+    formErrors: "{count} campi richiedono attenzione.",
+    valid: "Il form dell'ambiente è valido.",
+    save: "Salva ambiente",
+    saving: "Salvataggio ambiente",
+    advancedDescription:
+      "Usa la configurazione raw solo per campi supportati non esposti sopra.",
+    advancedLabel: "Configurazione raw dell'ambiente",
+    applyAdvanced: "Applica configurazione avanzata",
+    typeChangeTitle: "Verifica valori incompatibili",
+    typeChangeDescription:
+      "Il cambio di tipo rimuove i campi seguenti perché lo schema di destinazione non li supporta.",
+    cancel: "Annulla",
+    confirmTypeChange: "Cambia tipo e rimuovi valori",
+    validation: {
+      required: "Inserisci un valore obbligatorio.",
+      url: "Inserisci un URL assoluto valido.",
+      range: "Inserisci un numero nell'intervallo supportato.",
+      enum: "Seleziona un valore supportato.",
+      inlineSecret:
+        "Usa un riferimento segreto autorizzato invece di un valore inline.",
+      json: "Inserisci un oggetto JSON valido.",
+    },
+  },
   StepEditor: {
     shell: {
       accessibleLabel: "Editor degli step riutilizzabili",
