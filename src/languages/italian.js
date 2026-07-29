@@ -733,6 +733,37 @@ export default {
       btnCreateCycle: "Crea ciclo di test",
     },
   },
+  DataTable: {
+    actions: "Azioni",
+    resultCount: "{count} risultati",
+    scrollRegion: "Tabella dei risultati scorrevole",
+    selectPage: "Seleziona tutte le righe di questa pagina",
+    selectRow: "Seleziona",
+    states: {
+      empty: {
+        title: "Nessun elemento",
+        description: "Crea il primo elemento per iniziare.",
+      },
+      error: {
+        title: "Risultati non disponibili",
+        description: "Impossibile caricare i risultati. Riprova.",
+      },
+      loading: {
+        title: "Caricamento risultati",
+        description: "Caricamento degli elementi autorizzati in corso.",
+      },
+      permission: {
+        title: "Autorizzazione necessaria",
+        description:
+          "Non hai l'autorizzazione per visualizzare questi elementi.",
+      },
+      stale: {
+        title: "I risultati potrebbero non essere aggiornati",
+        description:
+          "Gli ultimi risultati autorizzati rimangono visibili durante l'aggiornamento.",
+      },
+    },
+  },
   Platforms: {
     platforms: "Piattaforme",
     os: "Sistemi Operativi",

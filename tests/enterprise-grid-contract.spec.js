@@ -2,11 +2,16 @@ import { describe, expect, it } from "vitest";
 
 import {
   buildGridQuery,
+  boundedLocalRows,
+  formatGridCellValue,
+  getGridRowIdentity,
   gridStateFromResult,
+  normalizeGridActions,
   parseGridResponse,
   requiresBulkConfirmation,
   sanitizeGridPreferences,
   storageKeyForGrid,
+  validateGridColumns,
 } from "@/domain/enterpriseGrid";
 
 describe("enterprise grid contract", () => {
@@ -97,5 +102,48 @@ describe("enterprise grid contract", () => {
     expect(requiresBulkConfirmation("archive")).toBe(true);
     expect(requiresBulkConfirmation("tag")).toBe(true);
     expect(requiresBulkConfirmation("refresh")).toBe(false);
+  });
+
+  it("validates stable columns and row identities", () => {
+    const columns = validateGridColumns([
+      { key: "id", label: "ID", required: true },
+      { key: "name", label: "Name", sortable: true },
+    ]);
+
+    expect(columns[1]).toMatchObject({
+      key: "name",
+      sortable: true,
+      type: "text",
+    });
+    expect(getGridRowIdentity({ id: 42 })).toBe("42");
+    expect(() => getGridRowIdentity({ name: "missing" })).toThrow(
+      "stable identity",
+    );
+    expect(() =>
+      validateGridColumns([
+        { key: "name", label: "Name" },
+        { key: "name", label: "Duplicate" },
+      ]),
+    ).toThrow("Duplicate");
+  });
+
+  it("redacts sensitive values and rejects complex cell payloads", () => {
+    expect(formatGridCellValue("secret", { sensitive: true })).toBe("••••••••");
+    expect(formatGridCellValue({ token: "not rendered" }, {})).toBe("—");
+    expect(formatGridCellValue("visible", {})).toBe("visible");
+  });
+
+  it("bounds local rows and capability-aware actions", () => {
+    const rows = Array.from({ length: 1_100 }, (_, id) => ({ id }));
+    expect(boundedLocalRows(rows)).toHaveLength(1_000);
+    expect(
+      normalizeGridActions(
+        [
+          { id: "view", label: "View" },
+          { id: "delete", label: "Delete", capability: "records.delete" },
+        ],
+        [],
+      ),
+    ).toEqual([{ id: "view", label: "View" }]);
   });
 });

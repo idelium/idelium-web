@@ -1,5 +1,18 @@
 const DEFAULT_PAGE_SIZE = 25;
 const MAX_PAGE_SIZE = 100;
+const MAX_LOCAL_ROWS = 1000;
+const REDACTED_VALUE = "••••••••";
+
+/**
+ * @typedef {Object} EnterpriseGridColumn
+ * @property {string} key Stable field identifier.
+ * @property {string} label Localized column label.
+ * @property {boolean} [configurable] Whether users may hide or reorder it.
+ * @property {boolean} [required] Whether the column must remain visible.
+ * @property {boolean} [sensitive] Whether values must always be redacted.
+ * @property {boolean} [sortable] Whether the server contract accepts this field.
+ * @property {"text"|"status"|"timestamp"|"technical"} [type] Safe display format.
+ */
 
 export const GRID_STATES = Object.freeze({
   EMPTY: "empty",
@@ -118,6 +131,81 @@ export function sanitizeGridPreferences(preferences, allowedColumns) {
 
 export function requiresBulkConfirmation(action) {
   return ["archive", "delete", "export", "tag"].includes(action);
+}
+
+export function validateGridColumns(columns) {
+  if (!Array.isArray(columns) || columns.length === 0) {
+    throw new TypeError("Enterprise DataTable requires at least one column.");
+  }
+
+  const keys = new Set();
+  return columns.map((column) => {
+    const key = String(column?.key ?? "").trim();
+    const label = String(column?.label ?? "").trim();
+    if (!/^[a-zA-Z0-9_.-]+$/.test(key) || label === "") {
+      throw new TypeError(
+        "Enterprise DataTable columns require a safe key and a localized label.",
+      );
+    }
+    if (keys.has(key)) {
+      throw new TypeError(`Duplicate Enterprise DataTable column: ${key}.`);
+    }
+    keys.add(key);
+    return Object.freeze({
+      configurable: true,
+      required: false,
+      sensitive: false,
+      sortable: false,
+      type: "text",
+      ...column,
+      key,
+      label,
+    });
+  });
+}
+
+export function getGridRowIdentity(row, rowKey = "id") {
+  const identity =
+    typeof rowKey === "function" ? rowKey(row) : row?.[String(rowKey)];
+  if (identity === null || identity === undefined || identity === "") {
+    throw new TypeError("Enterprise DataTable rows require a stable identity.");
+  }
+  return String(identity);
+}
+
+export function formatGridCellValue(value, column) {
+  if (column?.sensitive === true) {
+    return REDACTED_VALUE;
+  }
+  if (value === null || value === undefined || value === "") {
+    return "—";
+  }
+  if (column?.type === "timestamp") {
+    const timestamp = new Date(value);
+    return Number.isNaN(timestamp.getTime()) ? "—" : timestamp.toLocaleString();
+  }
+  if (typeof value === "object") {
+    return "—";
+  }
+  return String(value).slice(0, 500);
+}
+
+export function normalizeGridActions(actions, capabilities = []) {
+  const allowedCapabilities = new Set(capabilities);
+  return (Array.isArray(actions) ? actions : []).filter((action) => {
+    if (!action?.id || !action?.label) return false;
+    return (
+      !action.capability || allowedCapabilities.has(String(action.capability))
+    );
+  });
+}
+
+export function boundedLocalRows(rows, limit = MAX_LOCAL_ROWS) {
+  const safeLimit = Math.min(
+    MAX_LOCAL_ROWS,
+    Math.max(1, positiveInteger(limit, MAX_LOCAL_ROWS)),
+  );
+  return Array.isArray(rows) ? rows.slice(0, safeLimit) : [];
 }
 
 function normalizeSort(sort, allowedSorts) {

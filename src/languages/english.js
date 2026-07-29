@@ -728,6 +728,36 @@ export default {
       btnCreateteCycle: "Create test cycle",
     },
   },
+  DataTable: {
+    actions: "Actions",
+    resultCount: "{count} results",
+    scrollRegion: "Scrollable results table",
+    selectPage: "Select all rows on this page",
+    selectRow: "Select",
+    states: {
+      empty: {
+        title: "No records yet",
+        description: "Create the first record to get started.",
+      },
+      error: {
+        title: "Results unavailable",
+        description: "The results could not be loaded. Try again.",
+      },
+      loading: {
+        title: "Loading results",
+        description: "The authorized records are being loaded.",
+      },
+      permission: {
+        title: "Permission required",
+        description: "You do not have permission to view these records.",
+      },
+      stale: {
+        title: "Results may be out of date",
+        description:
+          "The last authorized results are shown while data refreshes.",
+      },
+    },
+  },
   Platforms: {
     platforms: "Platforms",
     os: "Operative Systems",

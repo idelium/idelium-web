@@ -30,9 +30,14 @@ export default {
       type: String,
       default: "empty",
       validator(value) {
-        return ["empty", "loading", "error", "permission", "stale"].includes(
-          value,
-        );
+        return [
+          "empty",
+          "loading",
+          "error",
+          "permission",
+          "partial",
+          "stale",
+        ].includes(value);
       },
     },
   },
@@ -43,6 +48,7 @@ export default {
         error: "exclamation-triangle",
         loading: "sync",
         permission: "lock",
+        partial: "exclamation-circle",
         stale: "history",
       };
       return icons[this.variant] || icons.empty;
