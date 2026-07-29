@@ -1018,6 +1018,7 @@ export default {
     colCreated: "Created",
     colLastUsed: "Last used",
     colExpiry: "Expiry",
+    colLineage: "Lineage",
     filterStatus: "Status",
     filterScope: "Scope",
     filterOwner: "Owner",
@@ -1033,6 +1034,7 @@ export default {
     auditTooltip: "Open credential audit",
     actions: {
       audit: "Audit",
+      cancel: "Cancel",
       create: "Create",
       revoke: "Revoke",
       rotate: "Rotate",
@@ -1052,6 +1054,17 @@ export default {
     description: "Description",
     constraints: "Approved constraints",
     createFailed: "Credential creation failed.",
+    rotationTitle: "Rotate credential",
+    rotationHelp:
+      "Issue a replacement credential with an approved cutover policy. The original credential remains usable if rotation fails.",
+    rotationPolicy: "Rotation policy",
+    rotationImmediate: "Immediate cutover",
+    rotationOverlap24h: "24-hour overlap",
+    rotationOverlap7d: "7-day overlap",
+    rotationFailed:
+      "Credential rotation failed. The original credential remains unchanged unless the API reports a durable transition.",
+    rotatedFrom: "Rotated from",
+    rotatedCredential: "Rotated credential",
     scopeRunExecute: "Run execution",
     scopeRunExecuteHelp: "Allows launching approved test executions.",
     scopeArtifactRead: "Artifact read",
@@ -1067,7 +1080,9 @@ export default {
       "maximum-lifetime": "Credential lifetime cannot exceed 365 days.",
       "missing-capability": "You are not authorized to create credentials.",
       required: "Complete the required credential fields.",
+      "terminal-state": "This credential cannot be rotated from its current state.",
       "unauthorized-scope": "You cannot grant one or more selected scopes.",
+      "unsupported-policy": "Choose an approved rotation policy.",
     },
   },
   Profile: {

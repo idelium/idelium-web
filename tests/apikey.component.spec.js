@@ -87,6 +87,7 @@ describe("apikey component", () => {
                 colCreated: "Created",
                 colLastUsed: "Last used",
                 colExpiry: "Expiry",
+                colLineage: "Lineage",
                 filterStatus: "Status",
                 filterScope: "Scope",
                 filterOwner: "Owner",
@@ -102,6 +103,7 @@ describe("apikey component", () => {
                 auditTooltip: "Open audit",
                 actions: {
                   audit: "Audit",
+                  cancel: "Cancel",
                   create: "Create",
                   revoke: "Revoke",
                   rotate: "Rotate",
@@ -120,6 +122,15 @@ describe("apikey component", () => {
                 description: "Description",
                 constraints: "Approved constraints",
                 createFailed: "Credential creation failed.",
+                rotationTitle: "Rotate credential",
+                rotationHelp: "Issue a replacement credential.",
+                rotationPolicy: "Rotation policy",
+                rotationImmediate: "Immediate cutover",
+                rotationOverlap24h: "24-hour overlap",
+                rotationOverlap7d: "7-day overlap",
+                rotationFailed: "Credential rotation failed.",
+                rotatedFrom: "Rotated from",
+                rotatedCredential: "Rotated credential",
                 scopeRunExecute: "Run execution",
                 scopeRunExecuteHelp: "Allows launching approved tests.",
                 scopeArtifactRead: "Artifact read",
@@ -133,7 +144,9 @@ describe("apikey component", () => {
                   "maximum-lifetime": "Maximum lifetime.",
                   "missing-capability": "Missing capability.",
                   required: "Required field.",
+                  "terminal-state": "Terminal state.",
                   "unauthorized-scope": "Unauthorized scope.",
+                  "unsupported-policy": "Unsupported policy.",
                 },
               },
             },
@@ -206,6 +219,7 @@ describe("apikey component", () => {
       "createdAt",
       "lastUsedAt",
       "expiresAt",
+      "lineage",
     ]);
     expect(JSON.stringify(inventory.props("rows"))).toContain(
       "safe-fingerprint",
@@ -369,6 +383,101 @@ describe("apikey component", () => {
       tenantId: "current-tenant",
     });
     window.dispatchEvent(new Event("pagehide"));
+    expect(wrapper.vm.activeRevealSecret).toBe("");
+  });
+
+  it("rotates a credential with an idempotent policy request and reveal-once replacement", async () => {
+    api.get.mockResolvedValue({
+      data: {
+        credentials: [
+          {
+            expiresAt: "2027-07-01",
+            fingerprint: "safe-fingerprint",
+            id: "cred-old",
+            lastUsedAt: "2026-07-29T09:00:00Z",
+            name: "CI",
+            scopes: ["run:execute"],
+            status: "active",
+            tenantId: "current-tenant",
+          },
+        ],
+      },
+    });
+    api.post.mockResolvedValue({
+      data: {
+        credential: {
+          id: "cred-new",
+          key: "idelium_rotated_secret_revealed_once",
+          name: "CI rotated",
+          scopes: ["run:execute"],
+          tenantId: "current-tenant",
+        },
+      },
+    });
+
+    const wrapper = mountApikey();
+    await wrapper.vm.$nextTick();
+    await vi.waitFor(() => expect(wrapper.vm.credentialRows).toHaveLength(1));
+
+    wrapper.vm.handleCredentialAction({
+      action: "rotate",
+      row: { id: "cred-old", name: "CI" },
+    });
+    await wrapper.vm.$nextTick();
+    expect(wrapper.find(".apikey-rotation-card").text()).toContain("CI");
+
+    await wrapper.setData({ rotationPolicy: "overlap-7d" });
+    await wrapper.vm.rotateCredential();
+    await vi.waitFor(() => expect(api.post).toHaveBeenCalled());
+
+    expect(api.post).toHaveBeenCalledWith(
+      "/api/apikey/credentials/cred-old/rotate",
+      {
+        credentialId: "cred-old",
+        policy: "overlap-7d",
+        tenantId: "current-tenant",
+      },
+      {
+        headers: {
+          "Idempotency-Key":
+            "credential:rotate:current-tenant:cred-old:current-user:overlap-7d",
+        },
+      },
+    );
+    expect(wrapper.vm.activeRevealSecret).toBe(
+      "idelium_rotated_secret_revealed_once",
+    );
+    expect(JSON.stringify(wrapper.vm.credentials)).not.toContain(
+      "rotated_secret",
+    );
+    expect(wrapper.vm.credentialRows.map((row) => row.status)).toContain(
+      "rotated",
+    );
+  });
+
+  it("keeps the original credential unchanged when rotation fails", async () => {
+    const originalCredential = {
+      id: "cred-old",
+      name: "CI",
+      scopes: ["run:execute"],
+      status: "active",
+      tenantId: "current-tenant",
+    };
+    api.get.mockResolvedValue({ data: { credentials: [originalCredential] } });
+    api.post.mockRejectedValue(new Error("network"));
+
+    const wrapper = mountApikey();
+    await wrapper.vm.$nextTick();
+    await vi.waitFor(() => expect(wrapper.vm.credentialRows).toHaveLength(1));
+
+    wrapper.vm.handleCredentialAction({
+      action: "rotate",
+      row: { id: "cred-old", name: "CI" },
+    });
+    await wrapper.vm.rotateCredential();
+
+    expect(wrapper.vm.rotationErrors).toEqual(["Credential rotation failed."]);
+    expect(wrapper.vm.credentials).toEqual([originalCredential]);
     expect(wrapper.vm.activeRevealSecret).toBe("");
   });
 });

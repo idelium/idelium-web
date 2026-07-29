@@ -208,6 +208,71 @@
       </p>
     </section>
 
+    <section v-if="rotationTarget" class="apikey-card apikey-rotation-card">
+      <div class="apikey-card-header">
+        <div>
+          <p class="apikey-eyebrow">
+            {{ language[config.currentLanguage].Apikey.rotationTitle }}
+          </p>
+          <h2 class="apikey-card-title">
+            {{ rotationTarget.name }}
+          </h2>
+          <p class="apikey-cli-copy">
+            {{ language[config.currentLanguage].Apikey.rotationHelp }}
+          </p>
+        </div>
+        <button
+          type="button"
+          class="btn btn-outline-secondary apikey-secondary-action"
+          v-on:click="cancelCredentialRotation()"
+        >
+          {{ language[config.currentLanguage].Apikey.actions.cancel }}
+        </button>
+      </div>
+      <dl class="apikey-rotation-metadata">
+        <div>
+          <dt>{{ language[config.currentLanguage].Apikey.colFingerprint }}</dt>
+          <dd>{{ rotationTarget.fingerprint || rotationTarget.prefix || "—" }}</dd>
+        </div>
+        <div>
+          <dt>{{ language[config.currentLanguage].Apikey.colScopes }}</dt>
+          <dd>{{ rotationTarget.scopes.join(", ") }}</dd>
+        </div>
+        <div>
+          <dt>{{ language[config.currentLanguage].Apikey.colLastUsed }}</dt>
+          <dd>{{ rotationTarget.lastUsedAt || "—" }}</dd>
+        </div>
+        <div>
+          <dt>{{ language[config.currentLanguage].Apikey.colExpiry }}</dt>
+          <dd>{{ rotationTarget.expiresAt || "—" }}</dd>
+        </div>
+      </dl>
+      <label class="apikey-rotation-policy">
+        <span>{{ language[config.currentLanguage].Apikey.rotationPolicy }}</span>
+        <select v-model="rotationPolicy" class="form-control apikey-filter">
+          <option value="immediate">
+            {{ language[config.currentLanguage].Apikey.rotationImmediate }}
+          </option>
+          <option value="overlap-24h">
+            {{ language[config.currentLanguage].Apikey.rotationOverlap24h }}
+          </option>
+          <option value="overlap-7d">
+            {{ language[config.currentLanguage].Apikey.rotationOverlap7d }}
+          </option>
+        </select>
+      </label>
+      <p v-if="rotationErrors.length > 0" class="apikey-alert alert alert-danger">
+        {{ rotationErrors.join(", ") }}
+      </p>
+      <button
+        type="button"
+        class="btn btn-primary apikey-primary-action"
+        v-on:click="rotateCredential()"
+      >
+        {{ language[config.currentLanguage].Apikey.actions.rotate }}
+      </button>
+    </section>
+
     <section class="apikey-card apikey-create-card">
       <div class="apikey-card-header">
         <div>
@@ -582,6 +647,46 @@
   gap: 1rem;
 }
 
+.apikey-rotation-card {
+  display: grid;
+  gap: 1rem;
+}
+
+.apikey-rotation-metadata {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: 0;
+}
+
+.apikey-rotation-metadata div {
+  background: rgba(12, 14, 22, 0.34);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.85rem;
+  padding: 0.85rem;
+}
+
+.apikey-rotation-metadata dt,
+.apikey-rotation-policy span {
+  color: rgba(244, 244, 245, 0.58);
+  font-size: 0.65rem;
+  font-weight: 850;
+  letter-spacing: 0.12rem;
+  text-transform: uppercase;
+}
+
+.apikey-rotation-metadata dd {
+  color: #ffffff;
+  font-weight: 800;
+  margin: 0.35rem 0 0;
+  overflow-wrap: anywhere;
+}
+
+.apikey-rotation-policy {
+  display: grid;
+  gap: 0.4rem;
+}
+
 .apikey-create-form label {
   color: rgba(244, 244, 245, 0.72);
   display: grid;
@@ -666,6 +771,10 @@
   .apikey-inventory-toolbar {
     grid-template-columns: 1fr 1fr;
   }
+
+  .apikey-rotation-metadata {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
 @media only screen and (max-width: 600px) {
@@ -686,6 +795,10 @@
   .apikey-inventory-toolbar {
     grid-template-columns: 1fr;
   }
+
+  .apikey-rotation-metadata {
+    grid-template-columns: 1fr;
+  }
 }
 </style>
 <script>
@@ -695,8 +808,10 @@ import copy from "copy-to-clipboard";
 import download from "@/shared/download";
 import EnterpriseDataTable from "@/components/grid/EnterpriseDataTable.vue";
 import {
+  applyCredentialRotationResult,
   createRevealOnceSession,
   createCredentialCreationRequest,
+  createCredentialRotationRequest,
   credentialInventoryActions,
   credentialInventoryRow,
   defaultCredentialCreationModel,
@@ -734,6 +849,9 @@ export default {
       revealFeedback: "",
       revealTimeoutId: null,
       revealedCredential: null,
+      rotationErrors: [],
+      rotationPolicy: "overlap-24h",
+      rotationTarget: null,
       credentialStatusOptions: [
         "active",
         "expiring",
@@ -757,6 +875,7 @@ export default {
         { key: "createdAt", label: copy.colCreated },
         { key: "lastUsedAt", label: copy.colLastUsed },
         { key: "expiresAt", label: copy.colExpiry },
+        { key: "lineage", label: copy.colLineage },
       ];
     },
     credentialRows() {
@@ -1059,6 +1178,10 @@ export default {
       this.credentialFilters = { expiry: "", owner: "", scope: "", status: "" };
     },
     handleCredentialAction(event) {
+      if (event.action === "rotate") {
+        this.prepareCredentialRotation(event.row);
+        return;
+      }
       this.makeToast(
         `${this.language[this.config.currentLanguage].Apikey.actions[event.action]}: ${event.row.name}`,
       );
@@ -1075,6 +1198,78 @@ export default {
       }).then((confirmed) => {
         if (confirmed) this.generateAction();
       });
+    },
+    prepareCredentialRotation(row) {
+      const target = this.credentials.find((credential) => {
+        const id = credential.id ?? credential.credentialId ?? credential.keyId;
+        return id === row.id;
+      });
+      this.rotationTarget = target
+        ? {
+            ...target,
+            expiresAt: target.expiresAt || null,
+            fingerprint: target.fingerprint || target.keyPrefix || target.prefix,
+            id: target.id ?? target.credentialId ?? target.keyId,
+            lastUsedAt: target.lastUsedAt || null,
+            scopes: Array.isArray(target.scopes)
+              ? target.scopes
+              : String(target.scopes ?? "")
+                  .split(/[,\s]+/)
+                  .filter(Boolean),
+          }
+        : null;
+      this.rotationPolicy = "overlap-24h";
+      this.rotationErrors = [];
+    },
+    cancelCredentialRotation() {
+      this.rotationTarget = null;
+      this.rotationErrors = [];
+      this.rotationPolicy = "overlap-24h";
+    },
+    rotateCredential() {
+      const request = createCredentialRotationRequest(
+        { policy: this.rotationPolicy },
+        this.rotationTarget,
+        {
+          actor: "current-user",
+          capabilities: this.credentialCapabilities,
+          tenantId: "current-tenant",
+        },
+      );
+      if (!request.allowed) {
+        this.rotationErrors = request.errors.map((error) =>
+          this.credentialErrorLabel(error),
+        );
+        return;
+      }
+      this.rotationErrors = [];
+      return apiClient
+        .post(this.credentialRotationEndpoint(this.rotationTarget.id), request.body, {
+          headers: { ...this.setHeaders(), ...request.headers },
+        })
+        .then((response) => {
+          const replacement = response.data?.credential ?? response.data;
+          this.openRevealOnceSession(replacement);
+          this.credentials = applyCredentialRotationResult(
+            this.credentials,
+            this.rotationTarget,
+            this.revealedCredential.credential,
+            {
+              actor: "current-user",
+              tenantId: "current-tenant",
+            },
+          );
+          this.cancelCredentialRotation();
+        })
+        .catch((e) => {
+          this.rotationErrors = [
+            this.language[this.config.currentLanguage].Apikey.rotationFailed,
+          ];
+          this.Logout(this, e);
+        });
+    },
+    credentialRotationEndpoint(id) {
+      return `${this.credentialEndpoint()}/${encodeURIComponent(id)}/rotate`;
     },
     generateAction() {
       apiClient

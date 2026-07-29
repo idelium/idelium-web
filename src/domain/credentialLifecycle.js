@@ -38,6 +38,7 @@ const STATUS_FILTERS = new Set([
 const DEFAULT_SCOPES = ["run:execute"];
 const MAX_LIFETIME_DAYS = 365;
 const DEFAULT_REVEAL_TTL_MS = 10 * 60 * 1000;
+const ROTATION_POLICIES = new Set(["immediate", "overlap-24h", "overlap-7d"]);
 
 export function normalizeCredentialDescriptor(input = {}, context = {}) {
   const tenantId = safeIdentifier(input.tenantId ?? context.tenantId);
@@ -87,6 +88,7 @@ export function credentialInventoryRow(credential = {}, copy = {}) {
     fingerprint: descriptor.fingerprint || descriptor.prefix || "—",
     id: descriptor.id,
     lastUsedAt: lastUsedLabel(descriptor.lastUsedAt, credential, copy),
+    lineage: credentialLineageLabel(descriptor, copy),
     name: descriptor.name,
     rowLabel: `${descriptor.name} ${descriptor.fingerprint || descriptor.prefix}`,
     scopes: descriptor.scopes.join(", "),
@@ -383,6 +385,111 @@ export function createCredentialCreationRequest(model = {}, options = {}) {
   };
 }
 
+export function validateCredentialRotation(model = {}, credential = {}) {
+  const descriptor = normalizeCredentialDescriptor(credential);
+  const policy = normalizeRotationPolicy(model.policy);
+  const errors = [];
+  if (!descriptor.id) errors.push({ field: "credentialId", code: "required" });
+  if (!ROTATION_POLICIES.has(policy)) {
+    errors.push({ field: "policy", code: "unsupported-policy" });
+  }
+  if (
+    [CREDENTIAL_STATUSES.REVOKED, CREDENTIAL_STATUSES.EXPIRED].includes(
+      descriptor.status,
+    )
+  ) {
+    errors.push({ field: "status", code: "terminal-state" });
+  }
+  return {
+    credential: descriptor,
+    errors,
+    model: { policy },
+    valid: errors.length === 0,
+  };
+}
+
+export function createCredentialRotationRequest(
+  model = {},
+  credential = {},
+  options = {},
+) {
+  const validation = validateCredentialRotation(model, credential);
+  const authorization = credentialAuthorization("rotate", credential, options);
+  if (!authorization.allowed) {
+    return {
+      allowed: false,
+      authorization,
+      errors: [{ field: "capability", code: authorization.reason }],
+      status: "rejected",
+      validation,
+    };
+  }
+  if (!validation.valid) {
+    return {
+      allowed: false,
+      errors: validation.errors,
+      status: "invalid",
+      validation,
+    };
+  }
+  const tenantId = safeIdentifier(options.tenantId);
+  const actor = safeIdentifier(options.actor ?? "actor");
+  return {
+    allowed: true,
+    body: {
+      credentialId: validation.credential.id,
+      policy: validation.model.policy,
+      tenantId,
+    },
+    headers: {
+      "Idempotency-Key":
+        options.idempotencyKey ??
+        [
+          "credential",
+          "rotate",
+          tenantId,
+          validation.credential.id,
+          actor,
+          validation.model.policy,
+        ].join(":"),
+    },
+    status: "ready",
+    validation,
+  };
+}
+
+export function applyCredentialRotationResult(
+  credentials = [],
+  rotatedCredential = {},
+  replacement = {},
+  context = {},
+) {
+  const rotated = normalizeCredentialDescriptor(
+    {
+      ...rotatedCredential,
+      status: context.oldStatus ?? "rotated",
+      rotation: {
+        rotatedAt: context.rotatedAt ?? new Date().toISOString(),
+        rotatedBy: context.actor,
+      },
+    },
+    context,
+  );
+  const replacementDescriptor = revealOnceSafeSnapshot({
+    ...replacement,
+    lineage: {
+      previousCredentialId: rotated.id,
+      rotatedAt: context.rotatedAt ?? new Date().toISOString(),
+      rotatedBy: context.actor,
+    },
+  });
+  const remaining = safeArray(credentials).filter(
+    (credential) =>
+      normalizeCredentialDescriptor(credential, context).id !== rotated.id,
+  );
+  return [...remaining, rotated, replacementDescriptor];
+}
+
 export function credentialAuthorization(action, credential = {}, options = {}) {
   const normalizedAction = String(action ?? "").toLowerCase();
   const requiredCapability = ACTION_CAPABILITIES[normalizedAction];
@@ -485,6 +592,21 @@ function lastUsedLabel(lastUsedAt, raw, copy) {
   if (lastUsedAt) return formatDate(lastUsedAt);
   if (raw.lastUsedUnavailable) return copy.lastUsedUnavailable ?? "Unavailable";
   return copy.neverUsed ?? "Never used";
+}
+
+function credentialLineageLabel(descriptor, copy) {
+  if (descriptor.lineage.previousCredentialId) {
+    return `${copy.rotatedFrom ?? "Rotated from"} ${descriptor.lineage.previousCredentialId}`;
+  }
+  if (descriptor.lineage.rotatedAt) {
+    return copy.rotatedCredential ?? "Rotated credential";
+  }
+  return "—";
+}
+
+function normalizeRotationPolicy(value) {
+  const policy = safeIdentifier(value || "overlap-24h").toLowerCase();
+  return ROTATION_POLICIES.has(policy) ? policy : "";
 }
 
 function formatDate(value) {

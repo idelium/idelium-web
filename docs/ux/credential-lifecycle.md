@@ -102,6 +102,27 @@ Reloading a reveal-once URL may preserve the credential ID for orientation, but
 it cannot retrieve or reconstruct the complete secret. The only recovery path is
 to create or rotate a credential and capture the new one-time value.
 
+## Rotation
+
+Credential rotation issues a replacement credential through an idempotent
+request scoped to tenant, actor, credential ID, and selected policy. The
+supported cutover policies are:
+
+- `immediate`: the replacement should become active without overlap;
+- `overlap-24h`: the old and new credentials may overlap for 24 hours;
+- `overlap-7d`: the old and new credentials may overlap for seven days.
+
+The rotation panel displays the affected credential metadata, safe fingerprint,
+last use, scopes, expiry, and selected policy before the request is submitted.
+If the rotation fails, the client leaves the original credential state unchanged
+unless the API explicitly reports a durable transition.
+
+Successful rotation returns the replacement secret through the same reveal-once
+session used by credential creation. The inventory stores only safe descriptors:
+the old credential is marked as rotated and the replacement carries lineage to
+the previous credential ID. Neither the old nor replacement full value appears in
+inventory rows, route state, telemetry, logs, or documentation fixtures.
+
 ## Redaction and observability
 
 Credential diagnostics, audit records, screenshots, fixtures, and UI state must

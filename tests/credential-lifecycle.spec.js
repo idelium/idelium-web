@@ -5,12 +5,15 @@ import {
   createRevealOnceSession,
   createCredentialLifecycleRequest,
   createCredentialCreationRequest,
+  createCredentialRotationRequest,
   credentialAuthorization,
   buildCredentialInventoryQuery,
   credentialInventoryActions,
   credentialInventoryRow,
+  applyCredentialRotationResult,
   legacyCredentialMigrationPolicy,
   validateCredentialCreation,
+  validateCredentialRotation,
   normalizeCredentialInventory,
   normalizeCredentialDescriptor,
   normalizeCredentialList,
@@ -341,5 +344,72 @@ describe("credential lifecycle API and migration contract", () => {
           "credential:create:tenant-1:admin@idelium.org:CI:2027-07-01:run:execute",
       },
     });
+  });
+
+  it("builds idempotent rotation requests and visible lineage without secrets", () => {
+    const credential = {
+      expiresAt: "2027-07-01",
+      id: "cred-old",
+      name: "CI",
+      scopes: ["run:execute"],
+      status: "active",
+      tenantId: "tenant-1",
+    };
+
+    expect(
+      validateCredentialRotation({ policy: "overlap-24h" }, credential),
+    ).toMatchObject({
+      valid: true,
+      model: { policy: "overlap-24h" },
+    });
+    expect(
+      validateCredentialRotation(
+        { policy: "overlap-24h" },
+        { ...credential, status: "revoked" },
+      ).errors.map((error) => error.code),
+    ).toEqual(["terminal-state"]);
+    expect(
+      createCredentialRotationRequest({ policy: "overlap-7d" }, credential, {
+        actor: "admin@idelium.org",
+        capabilities: ["credential.rotate"],
+        tenantId: "tenant-1",
+      }),
+    ).toMatchObject({
+      allowed: true,
+      body: {
+        credentialId: "cred-old",
+        policy: "overlap-7d",
+        tenantId: "tenant-1",
+      },
+      headers: {
+        "Idempotency-Key":
+          "credential:rotate:tenant-1:cred-old:admin@idelium.org:overlap-7d",
+      },
+    });
+
+    const rotated = applyCredentialRotationResult(
+      [credential],
+      credential,
+      {
+        id: "cred-new",
+        key: "idelium_new_secret_must_not_enter_inventory",
+        name: "CI rotated",
+        scopes: ["run:execute"],
+        tenantId: "tenant-1",
+      },
+      {
+        actor: "admin@idelium.org",
+        rotatedAt: "2026-07-29T10:00:00Z",
+        tenantId: "tenant-1",
+      },
+    );
+
+    expect(rotated).toHaveLength(2);
+    expect(rotated.map((entry) => entry.status)).toContain("rotated");
+    expect(
+      credentialInventoryRow(rotated[1], { rotatedFrom: "Rotated from" })
+        .lineage,
+    ).toBe("Rotated from cred-old");
+    expect(JSON.stringify(rotated)).not.toContain("new_secret");
   });
 });

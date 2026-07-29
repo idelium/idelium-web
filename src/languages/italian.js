@@ -1029,6 +1029,7 @@ export default {
     colCreated: "Creata",
     colLastUsed: "Ultimo uso",
     colExpiry: "Scadenza",
+    colLineage: "Lineage",
     filterStatus: "Stato",
     filterScope: "Scope",
     filterOwner: "Owner",
@@ -1044,6 +1045,7 @@ export default {
     auditTooltip: "Apri audit credenziale",
     actions: {
       audit: "Audit",
+      cancel: "Annulla",
       create: "Crea",
       revoke: "Revoca",
       rotate: "Ruota",
@@ -1063,6 +1065,17 @@ export default {
     description: "Descrizione",
     constraints: "Vincoli approvati",
     createFailed: "Creazione credenziale non riuscita.",
+    rotationTitle: "Ruota credenziale",
+    rotationHelp:
+      "Genera una credenziale sostitutiva con una policy di cutover approvata. La credenziale originale resta utilizzabile se la rotazione fallisce.",
+    rotationPolicy: "Policy di rotazione",
+    rotationImmediate: "Cutover immediato",
+    rotationOverlap24h: "Sovrapposizione 24 ore",
+    rotationOverlap7d: "Sovrapposizione 7 giorni",
+    rotationFailed:
+      "Rotazione credenziale non riuscita. La credenziale originale resta invariata salvo transizione durevole comunicata dall'API.",
+    rotatedFrom: "Ruotata da",
+    rotatedCredential: "Credenziale ruotata",
     scopeRunExecute: "Esecuzione run",
     scopeRunExecuteHelp: "Consente di avviare esecuzioni di test approvate.",
     scopeArtifactRead: "Lettura artifact",
@@ -1078,7 +1091,9 @@ export default {
       "maximum-lifetime": "La durata della credenziale non può superare 365 giorni.",
       "missing-capability": "Non sei autorizzato a creare credenziali.",
       required: "Completa i campi obbligatori della credenziale.",
+      "terminal-state": "Questa credenziale non può essere ruotata dal suo stato corrente.",
       "unauthorized-scope": "Non puoi concedere uno o più scope selezionati.",
+      "unsupported-policy": "Scegli una policy di rotazione approvata.",
     },
   },
   Profile: {
