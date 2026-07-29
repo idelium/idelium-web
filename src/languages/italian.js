@@ -851,9 +851,27 @@ export default {
     },
   },
   SequenceBuilder: {
+    accessibleLabel: "Composizione sequenza",
+    selectedTitle: "Sequenza selezionata",
+    selectedDescription:
+      "Verifica gli elementi che saranno salvati nell'ordine corrente.",
+    emptyTitle: "Nessun elemento selezionato",
+    emptyDescription:
+      "Seleziona gli elementi disponibili e aggiungili alla sequenza.",
+    removeSelected: "Rimuovi selezionati",
+    removeItem: "Rimuovi {name}",
+    selectItem: "Seleziona {name}",
+    undo: "Annulla rimozione",
+    position: "Posizione {position}",
+    added: "{count} elementi aggiunti alla sequenza.",
+    removed: "{count} elementi rimossi dalla sequenza.",
+    restored: "{count} elementi ripristinati nella sequenza.",
+    duplicate: "{count} elementi duplicati non sono stati aggiunti.",
     picker: {
       title: "Elementi disponibili",
       description: "Cerca e seleziona gli elementi idonei per questa sequenza.",
+      addSelected: "Aggiungi selezionati",
+      addItem: "Aggiungi {name}",
       resultCount: "{count} elementi disponibili",
       searchLabel: "Cerca elementi disponibili",
       searchPlaceholder: "Cerca per nome o metadati",

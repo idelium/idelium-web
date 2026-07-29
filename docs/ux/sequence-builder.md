@@ -70,6 +70,28 @@ archived, unauthorized, or otherwise ineligible items cannot be selected. Empty,
 no-results, loading, stale, permission, and error states reuse the shared
 accessible feedback component.
 
+## Addition and removal
+
+The shared builder supports the same deterministic add operation through four
+input methods:
+
+- select one or more picker checkboxes and activate **Add selected**;
+- double-click an eligible picker item;
+- activate the explicit per-item **Add** action;
+- drag an eligible picker item onto the selected sequence.
+
+Multi-selection follows the authorized picker order rather than the order in
+which checkboxes were activated. Each operation compares stable identities
+against both the persisted sequence and the current addition batch. Existing
+items are not duplicated, and the builder announces the rejected duplicate count
+without exposing entity configuration.
+
+Selected-sequence checkboxes support a single bulk removal. Every item also has
+an explicit remove action with its entity name in the accessible label. The most
+recent removal can be undone, restoring the removed items at their original
+indexes and restoring the previous selection. Visible positions are always
+one-based and recalculated from the current sequence; they are never persisted.
+
 ## Audit events
 
 Comparing the last persisted sequence with the next sequence produces ordered

@@ -845,9 +845,27 @@ export default {
     },
   },
   SequenceBuilder: {
+    accessibleLabel: "Sequence builder",
+    selectedTitle: "Selected sequence",
+    selectedDescription:
+      "Review the items that will be saved in their current order.",
+    emptyTitle: "No items selected",
+    emptyDescription:
+      "Select available items and add them to build the sequence.",
+    removeSelected: "Remove selected",
+    removeItem: "Remove {name}",
+    selectItem: "Select {name}",
+    undo: "Undo removal",
+    position: "Position {position}",
+    added: "{count} items added to the sequence.",
+    removed: "{count} items removed from the sequence.",
+    restored: "{count} items restored to the sequence.",
+    duplicate: "{count} duplicate items were not added.",
     picker: {
       title: "Available items",
       description: "Find and select eligible items for this sequence.",
+      addSelected: "Add selected",
+      addItem: "Add {name}",
       resultCount: "{count} available items",
       searchLabel: "Search available items",
       searchPlaceholder: "Search by name or metadata",

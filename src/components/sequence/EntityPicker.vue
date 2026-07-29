@@ -13,6 +13,13 @@
           )
         }}
       </span>
+      <IdButton
+        variant="primary"
+        :disabled="selectedIds.length === 0"
+        v-on:click="$emit('add-selected', selectedIds)"
+      >
+        {{ copy.addSelected }}
+      </IdButton>
     </header>
 
     <div class="entity-picker__controls">
@@ -79,6 +86,9 @@
           'entity-picker__item',
           { 'entity-picker__item--disabled': !isEligible(item) },
         ]"
+        :draggable="isEligible(item)"
+        v-on:dblclick="addItem(item)"
+        v-on:dragstart="startDrag(item, $event)"
       >
         <label>
           <input
@@ -104,6 +114,13 @@
             </span>
           </span>
         </label>
+        <IdButton
+          variant="secondary"
+          :disabled="!isEligible(item)"
+          v-on:click="addItem(item)"
+        >
+          {{ copy.addItem.replace("{name}", item.name) }}
+        </IdButton>
         <p
           v-if="!isEligible(item)"
           :id="`entity-picker-reason-${safeDomId(item)}`"
@@ -149,7 +166,14 @@ import { SEQUENCE_ITEM_STATUS } from "@/domain/sequenceBuilder";
 export default {
   name: "EntityPicker",
   components: { EnterpriseGridState, IdButton },
-  emits: ["query-change", "retry", "update:selectedIds"],
+  emits: [
+    "add-item",
+    "add-selected",
+    "drag-start",
+    "query-change",
+    "retry",
+    "update:selectedIds",
+  ],
   props: {
     accessibleLabel: { type: String, required: true },
     copy: { type: Object, required: true },
@@ -228,6 +252,18 @@ export default {
       if (next.has(String(item.identity))) next.delete(String(item.identity));
       else next.add(String(item.identity));
       this.$emit("update:selectedIds", [...next]);
+    },
+    addItem(item) {
+      if (this.isEligible(item)) this.$emit("add-item", item);
+    },
+    startDrag(item, event) {
+      if (!this.isEligible(item)) {
+        event.preventDefault();
+        return;
+      }
+      event.dataTransfer?.setData("text/plain", String(item.identity));
+      if (event.dataTransfer) event.dataTransfer.effectAllowed = "copy";
+      this.$emit("drag-start", item);
     },
     scheduleSearch() {
       clearTimeout(this.searchTimer);
@@ -350,9 +386,13 @@ export default {
 }
 
 .entity-picker__item {
+  align-items: center;
   background: var(--id-color-surface);
   border: 1px solid var(--id-color-border);
   border-radius: var(--id-radius-medium);
+  display: flex;
+  gap: var(--id-space-3);
+  justify-content: space-between;
   padding: var(--id-space-3);
 }
 
@@ -360,6 +400,7 @@ export default {
   align-items: flex-start;
   display: flex;
   gap: var(--id-space-3);
+  min-width: 0;
 }
 
 .entity-picker__item input {
