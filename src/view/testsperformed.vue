@@ -55,6 +55,90 @@
       </article>
     </section>
 
+    <section
+      v-if="currentRunDetail"
+      class="card testsperformed-run-detail"
+      aria-labelledby="run-detail-title"
+    >
+      <div class="testsperformed-panel-header">
+        <div>
+          <span class="testsperformed-section-title">
+            {{ language[config.currentLanguage].TestsPerformed.runDetail }}
+          </span>
+          <h2 id="run-detail-title">#{{ currentRunDetail.id }}</h2>
+          <p class="testsperformed-helper">
+            {{ currentRunDetail.cycle.name }} ·
+            {{ currentRunDetail.environment.name }} ·
+            {{ currentRunDetail.target.name }}
+          </p>
+        </div>
+        <span
+          :class="[
+            'testsperformed-status',
+            parallelRunVariant(currentRunDetail.status),
+          ]"
+        >
+          {{ parallelRunStatusLabel(currentRunDetail.status) }}
+        </span>
+      </div>
+      <dl class="testsperformed-run-detail-grid">
+        <div>
+          <dt>
+            {{ language[config.currentLanguage].TestsPerformed.initiator }}
+          </dt>
+          <dd>{{ currentRunDetail.initiator }}</dd>
+        </div>
+        <div>
+          <dt>
+            {{ language[config.currentLanguage].TestsPerformed.correlationId }}
+          </dt>
+          <dd>{{ currentRunDetail.correlationId || "—" }}</dd>
+        </div>
+        <div>
+          <dt>
+            {{ language[config.currentLanguage].TestsPerformed.progress }}
+          </dt>
+          <dd>
+            {{ currentRunDetail.progress.completed }}/{{
+              currentRunDetail.progress.total
+            }}
+          </dd>
+        </div>
+        <div>
+          <dt>
+            {{
+              language[config.currentLanguage].TestsPerformed.workerConcurrency
+            }}
+          </dt>
+          <dd>
+            {{ currentRunDetail.concurrency.active }}/{{
+              currentRunDetail.concurrency.requested
+            }}
+          </dd>
+        </div>
+      </dl>
+      <div class="testsperformed-run-tabs" role="tablist">
+        <button
+          v-for="tab in currentRunDetail.tabs"
+          v-bind:key="tab"
+          type="button"
+          :class="[
+            'testsperformed-status-filter',
+            { active: runDetailActiveTab === tab },
+          ]"
+          v-on:click="selectRunDetailTab(tab)"
+        >
+          {{ runDetailTabLabel(tab) }}
+        </button>
+      </div>
+      <pre class="testsperformed-command">{{
+        currentRunDetail.reproducibilityCommand
+      }}</pre>
+      <p v-if="currentRunDetail.partial" class="testsperformed-live-alert">
+        {{ language[config.currentLanguage].TestsPerformed.partialRunDetail }}
+      </p>
+    </section>
+
     <section class="card testsperformed-analytics-panel" aria-live="polite">
       <div class="testsperformed-panel-header">
         <div>
@@ -785,6 +869,63 @@
   padding: 1rem;
 }
 
+.testsperformed-run-detail {
+  display: grid;
+  flex: 0 0 auto;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.testsperformed-run-detail h2 {
+  color: #ffffff;
+  margin: 0.25rem 0;
+}
+
+.testsperformed-run-detail-grid {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: 0;
+}
+
+.testsperformed-run-detail-grid div {
+  background: rgba(255, 255, 255, 0.045);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+}
+
+.testsperformed-run-detail-grid dt {
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.testsperformed-run-detail-grid dd {
+  color: #ffffff;
+  font-weight: 800;
+  margin: 0.3rem 0 0;
+  overflow-wrap: anywhere;
+}
+
+.testsperformed-run-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.testsperformed-command {
+  background: rgba(5, 9, 18, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 0.75rem;
+  color: #dbeafe;
+  margin: 0;
+  overflow: auto;
+  padding: 0.85rem;
+}
+
 .testsperformed-analytics-filters,
 .testsperformed-analytics-statuses,
 .testsperformed-live-toolbar,
@@ -1335,6 +1476,10 @@
   .testsperformed-worker-metrics {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .testsperformed-run-detail-grid {
+    grid-template-columns: 1fr;
+  }
 }
 </style>
 
@@ -1362,6 +1507,11 @@ import {
   createRunHistorySavedView,
   normalizeRunHistoryFilters,
 } from "@/domain/runHistory";
+import {
+  normalizeRunDetailOverview,
+  normalizeRunDetailTab,
+  runDetailRoute,
+} from "@/domain/runDetailOverview";
 import { getSelectedProjectId } from "@/stores/session";
 
 export default {
@@ -1409,6 +1559,7 @@ export default {
       runHistoryTag: "",
       runHistoryFilters: normalizeRunHistoryFilters({}, { projectId: 1 }),
       runHistorySavedViews: [],
+      runDetailActiveTab: "overview",
       runHistoryColumns: [
         { key: "id", label: "ID", sortable: true, type: "text" },
         { key: "date", label: "Updated", sortable: true, type: "text" },
@@ -1527,6 +1678,24 @@ export default {
           },
         },
       };
+    },
+    routeRunId() {
+      return this.$route?.params?.runId ?? this.$route?.query?.runId ?? null;
+    },
+    currentRunDetail() {
+      if (!this.routeRunId) return null;
+      const run =
+        this.arrayTestCyclesDate.find(
+          (entry) => String(entry.id) === String(this.routeRunId),
+        ) ??
+        this.visibleLiveRuns.find(
+          (entry) => String(entry.id) === String(this.routeRunId),
+        ) ??
+        {};
+      return normalizeRunDetailOverview(run, {
+        projectId: getSelectedProjectId(),
+        runId: this.routeRunId,
+      });
     },
     visibleLiveRuns() {
       return filterLiveRuns(this.parallelRuns, {
@@ -1750,9 +1919,17 @@ export default {
       return `${run.cycle.name}: ${labels.progress} ${run.progress.completed}/${run.progress.total}`;
     },
     openParallelRunDetails(run) {
-      this.replaceExecutionQuery({
-        runId: String(run.id),
-      });
+      if (this.$router?.push) {
+        this.$router.push(
+          runDetailRoute({
+            projectId: getSelectedProjectId(),
+            runId: run.id,
+            tab: this.runDetailActiveTab,
+          }),
+        );
+      } else {
+        this.replaceExecutionQuery({ runId: String(run.id) });
+      }
     },
     advertisedReports(run) {
       const source =
@@ -1855,6 +2032,7 @@ export default {
       this.analyticsStatuses =
         statuses.length > 0 ? statuses : ["passed", "failed", "pending"];
       this.restoreRunHistoryFiltersFromRoute();
+      this.runDetailActiveTab = normalizeRunDetailTab(this.$route?.query?.tab);
     },
     restoreRunHistoryFiltersFromRoute() {
       this.runHistoryFilters = normalizeRunHistoryFilters(this.$route?.query, {
@@ -1932,7 +2110,26 @@ export default {
       this.openRunHistoryRow(row);
     },
     openRunHistoryRow(row) {
-      this.getTest(row.id);
+      if (this.$router?.push) {
+        this.$router.push(
+          runDetailRoute({
+            projectId: getSelectedProjectId(),
+            runId: row.id,
+            tab: this.runDetailActiveTab,
+          }),
+        );
+      } else {
+        this.getTest(row.id);
+      }
+    },
+    selectRunDetailTab(tab) {
+      this.runDetailActiveTab = normalizeRunDetailTab(tab);
+      this.replaceExecutionQuery({ tab: this.runDetailActiveTab });
+    },
+    runDetailTabLabel(tab) {
+      const labels =
+        this.language[this.config.currentLanguage].TestsPerformed.runDetailTabs;
+      return labels?.[tab] ?? tab;
     },
     restoreSelectionFromRoute() {
       const testCycleId = this.routeQueryId("testCycleId");

@@ -104,9 +104,22 @@ describe("tests performed component", () => {
                 noResults: "No runs match filters.",
                 resultCount: "{count} executions",
                 runHistory: "Run history",
+                runDetail: "Execution detail",
                 saveView: "Save view",
                 status: "Status",
                 tag: "Tag",
+                initiator: "Initiator",
+                correlationId: "Correlation ID",
+                partialRunDetail: "Partial snapshot.",
+                runDetailTabs: {
+                  overview: "Overview",
+                  tests: "Tests",
+                  workers: "Workers",
+                  timeline: "Timeline",
+                  artifacts: "Artifacts",
+                  logs: "Logs",
+                  reports: "Reports",
+                },
                 paginationSummary:
                   "Page {page} of {lastPage} · {total} results",
                 parallelStatuses: {
@@ -692,6 +705,37 @@ describe("tests performed component", () => {
         status: "failed",
         tag: "smoke",
       }),
+    });
+  });
+
+  it("renders the canonical run detail overview and persists the active tab", async () => {
+    const replace = vi.fn();
+    api.get.mockResolvedValue({ data: [] });
+
+    const wrapper = mountTestsPerformed({
+      $route: {
+        name: "execution-detail",
+        params: { projectId: "9", runId: "44" },
+        query: { tab: "logs" },
+      },
+      $router: { replace },
+    });
+
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.find(".testsperformed-run-detail").exists()).toBe(true);
+    expect(wrapper.text()).toContain("#44");
+    expect(wrapper.text()).toContain("Execution detail");
+    expect(wrapper.text()).toContain("Partial snapshot.");
+    expect(wrapper.vm.runDetailActiveTab).toBe("logs");
+
+    await wrapper
+      .findAll(".testsperformed-run-tabs .testsperformed-status-filter")
+      .find((button) => button.text() === "Artifacts")
+      .trigger("click");
+
+    expect(replace).toHaveBeenCalledWith({
+      query: { tab: "artifacts" },
     });
   });
 

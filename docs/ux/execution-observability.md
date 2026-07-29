@@ -84,6 +84,25 @@ Saved views are personal and versioned. Legacy filter names are migrated:
 to `toInclusive`, and `user` to `author`. Rollback is safe because saved-view
 migration is additive and the canonical URL still contains plain filters.
 
+## Canonical run detail
+
+The canonical route is `/projects/:projectId/executions/:runId`. The active tab
+is stored as `?tab=overview|tests|workers|timeline|artifacts|logs|reports`, and
+the selected nested item is stored as `detailId` when needed. Refreshing the
+route restores the same authorized run and tab without relying on mutable asset
+names.
+
+The overview renders immutable run identity, status, cycle snapshot,
+environment snapshot, target snapshot, initiator, timestamps, duration,
+concurrency, progress, and correlation ID. Reproducibility commands are generated
+from safe identifiers only. Configuration payloads are redacted before rendering.
+
+Historical details remain useful when related assets have been deleted or
+expired. In that case the UI displays snapshot names and marks the detail as
+partial instead of failing to render. Unauthorized direct access must be handled
+as a not-found or permission-denied state by the API; the client does not render
+protected detail payloads when the contract marks the run as unauthorized.
+
 ## Legacy compatibility
 
 Legacy status values are still accepted:

@@ -868,9 +868,23 @@ export default {
     noResults: "Nessuna esecuzione corrisponde ai filtri selezionati.",
     resultCount: "{count} esecuzioni",
     runHistory: "Storico run",
+    runDetail: "Dettaglio esecuzione",
     saveView: "Salva vista",
     status: "Stato",
     tag: "Tag",
+    initiator: "Avviato da",
+    correlationId: "Correlation ID",
+    partialRunDetail:
+      "Alcuni asset collegati sono cancellati, scaduti o non disponibili nel payload API corrente. Quando presenti vengono mostrati i valori snapshot.",
+    runDetailTabs: {
+      overview: "Overview",
+      tests: "Test",
+      workers: "Worker",
+      timeline: "Timeline",
+      artifacts: "Artifact",
+      logs: "Log",
+      reports: "Report",
+    },
     paginationSummary: "Pagina {page} di {lastPage} · {total} risultati",
     parallelStatuses: {
       queued: "In coda",
