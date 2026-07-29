@@ -851,6 +851,34 @@ export default {
     },
   },
   SequenceBuilder: {
+    picker: {
+      title: "Elementi disponibili",
+      description: "Cerca e seleziona gli elementi idonei per questa sequenza.",
+      resultCount: "{count} elementi disponibili",
+      searchLabel: "Cerca elementi disponibili",
+      searchPlaceholder: "Cerca per nome o metadati",
+      allFilterValues: "Tutti",
+      paginationLabel: "Pagine degli elementi disponibili",
+      previousPage: "Precedente",
+      nextPage: "Successiva",
+      pageStatus: "Pagina {page} di {pages}",
+      retry: "Riprova",
+      clearFilters: "Cancella ricerca e filtri",
+      disabledReasons: {
+        invalid: "Questo elemento non è valido.",
+        referenceMissing: "Questo elemento è mancante o non disponibile.",
+        referenceStale:
+          "Verifica la versione più recente prima di selezionare l'elemento.",
+        unavailable: "Questo elemento non può essere selezionato.",
+      },
+    },
+    metadata: {
+      runtime: "Runtime",
+      tags: "Tag",
+      owner: "Proprietario",
+      version: "Versione",
+      status: "Stato",
+    },
     diagnostics: {
       invalid: "Questo elemento non è valido e non può essere selezionato.",
       malformed: "La sequenza salvata non è valida.",

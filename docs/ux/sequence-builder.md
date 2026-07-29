@@ -50,6 +50,26 @@ comparison or retry. Legacy endpoints may ignore the optional value during the
 migration period. This permits incremental adoption without changing existing
 stored test or test-cycle payloads.
 
+## Entity picker
+
+`EntityPicker` is a controlled component: it never downloads an entity catalogue
+directly and never treats the current page as the complete tenant dataset. The
+route container supplies a bounded page and metadata, then handles `query-change`
+events with the shared enterprise-grid query serializer. Search is debounced;
+filter and search changes reset the page; selected stable identities remain
+controlled by the parent across page changes.
+
+Route containers use `useEnterpriseGridLoader` for picker requests. A newer query
+aborts the previous request and ignores a late response. Tenant or project context
+changes call `reset`, which aborts in-flight work and clears authorized rows.
+Background failures may retain the last authorized page as stale, while a
+permission denial clears it immediately.
+
+The picker renders only declared metadata labels and explains why missing, stale,
+archived, unauthorized, or otherwise ineligible items cannot be selected. Empty,
+no-results, loading, stale, permission, and error states reuse the shared
+accessible feedback component.
+
 ## Audit events
 
 Comparing the last persisted sequence with the next sequence produces ordered

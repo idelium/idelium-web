@@ -845,6 +845,33 @@ export default {
     },
   },
   SequenceBuilder: {
+    picker: {
+      title: "Available items",
+      description: "Find and select eligible items for this sequence.",
+      resultCount: "{count} available items",
+      searchLabel: "Search available items",
+      searchPlaceholder: "Search by name or metadata",
+      allFilterValues: "All",
+      paginationLabel: "Available item pages",
+      previousPage: "Previous",
+      nextPage: "Next",
+      pageStatus: "Page {page} of {pages}",
+      retry: "Try again",
+      clearFilters: "Clear search and filters",
+      disabledReasons: {
+        invalid: "This item is invalid.",
+        referenceMissing: "This item is missing or unavailable.",
+        referenceStale: "Review the newer version before selecting this item.",
+        unavailable: "This item cannot be selected.",
+      },
+    },
+    metadata: {
+      runtime: "Runtime",
+      tags: "Tags",
+      owner: "Owner",
+      version: "Version",
+      status: "Status",
+    },
     diagnostics: {
       invalid: "This item is invalid and cannot be selected.",
       malformed: "The saved sequence is malformed.",
