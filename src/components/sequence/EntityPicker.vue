@@ -78,10 +78,21 @@
       </template>
     </EnterpriseGridState>
 
-    <ul v-else class="entity-picker__items">
+    <ul
+      v-else
+      class="entity-picker__items"
+      v-on:scroll.passive="updateVirtualWindow"
+    >
       <li
-        v-for="item in items"
+        v-if="topSpacerHeight > 0"
+        class="entity-picker__spacer"
+        aria-hidden="true"
+        :style="{ height: `${topSpacerHeight}px` }"
+      ></li>
+      <li
+        v-for="item in renderedItems"
         v-bind:key="item.identity"
+        :data-identity="item.identity"
         :class="[
           'entity-picker__item',
           { 'entity-picker__item--disabled': !isEligible(item) },
@@ -129,6 +140,12 @@
           {{ disabledReason(item) }}
         </p>
       </li>
+      <li
+        v-if="bottomSpacerHeight > 0"
+        class="entity-picker__spacer"
+        aria-hidden="true"
+        :style="{ height: `${bottomSpacerHeight}px` }"
+      ></li>
     </ul>
 
     <nav class="entity-picker__pagination" :aria-label="copy.paginationLabel">
@@ -179,6 +196,7 @@ export default {
     copy: { type: Object, required: true },
     error: { type: [Error, Object, String], default: null },
     filters: { type: Array, default: () => [] },
+    estimatedItemHeight: { type: Number, default: 88 },
     items: { type: Array, default: () => [] },
     loading: { type: Boolean, default: false },
     meta: { type: Object, default: () => ({}) },
@@ -190,16 +208,43 @@ export default {
     },
     selectedIds: { type: Array, default: () => [] },
     stale: { type: Boolean, default: false },
+    virtualizationThreshold: { type: Number, default: 100 },
+    virtualWindowSize: { type: Number, default: 50 },
   },
   data() {
     return {
+      metadataCache: new Map(),
       search: this.query.search ?? "",
       searchTimer: null,
+      virtualStart: 0,
     };
   },
   computed: {
     selectedSet() {
       return new Set(this.selectedIds.map(String));
+    },
+    virtualized() {
+      return this.items.length > this.virtualizationThreshold;
+    },
+    renderedItems() {
+      if (!this.virtualized) return this.items;
+      return this.items.slice(
+        this.virtualStart,
+        this.virtualStart + this.virtualWindowSize,
+      );
+    },
+    topSpacerHeight() {
+      return this.virtualized
+        ? this.virtualStart * this.estimatedItemHeight
+        : 0;
+    },
+    bottomSpacerHeight() {
+      if (!this.virtualized) return 0;
+      const remaining = Math.max(
+        this.items.length - this.virtualStart - this.virtualWindowSize,
+        0,
+      );
+      return remaining * this.estimatedItemHeight;
     },
     hasActiveFilters() {
       return (
@@ -226,6 +271,13 @@ export default {
   watch: {
     "query.search"(value) {
       this.search = value ?? "";
+    },
+    items() {
+      this.metadataCache.clear();
+      this.virtualStart = Math.min(
+        this.virtualStart,
+        Math.max(this.items.length - this.virtualWindowSize, 0),
+      );
     },
   },
   beforeUnmount() {
@@ -296,13 +348,54 @@ export default {
       });
     },
     metadataEntries(item) {
-      return Object.entries(item.metadata ?? {})
+      const cached = this.metadataCache.get(item.identity);
+      if (
+        cached?.metadata === item.metadata &&
+        cached?.labels === this.metadataLabels
+      ) {
+        return cached.entries;
+      }
+      const entries = Object.entries(item.metadata ?? {})
         .filter(([key, value]) => this.metadataLabels[key] && value !== "")
         .map(([key, value]) => ({
           key,
           label: this.metadataLabels[key],
           value,
         }));
+      this.metadataCache.set(item.identity, {
+        entries,
+        labels: this.metadataLabels,
+        metadata: item.metadata,
+      });
+      return entries;
+    },
+    updateVirtualWindow(event) {
+      if (!this.virtualized) return;
+      const requested = Math.max(
+        0,
+        Math.min(
+          Math.floor(event.currentTarget.scrollTop / this.estimatedItemHeight),
+          this.items.length - this.virtualWindowSize,
+        ),
+      );
+      const activeIdentity = document.activeElement
+        ?.closest("[data-identity]")
+        ?.getAttribute("data-identity");
+      const activeIndex = this.items.findIndex(
+        (item) => String(item.identity) === String(activeIdentity),
+      );
+      if (
+        activeIndex >= 0 &&
+        (activeIndex < requested ||
+          activeIndex >= requested + this.virtualWindowSize)
+      ) {
+        this.virtualStart = Math.max(
+          0,
+          Math.min(activeIndex, this.items.length - this.virtualWindowSize),
+        );
+        return;
+      }
+      this.virtualStart = requested;
     },
     disabledReason(item) {
       const key = String(item.disabledReason ?? "").replace(/^sequence\./, "");
@@ -382,7 +475,16 @@ export default {
   gap: var(--id-space-2);
   list-style: none;
   margin: 0;
+  max-height: min(36rem, 60vh);
+  overflow-y: auto;
   padding: 0;
+}
+
+.entity-picker__spacer {
+  border: 0;
+  min-height: 0;
+  padding: 0;
+  pointer-events: none;
 }
 
 .entity-picker__item {

@@ -162,6 +162,38 @@ Reload is an explicit discard boundary. Compare returns clones of the baseline,
 local, and authorized remote arrays. Retry retains the local sequence and may
 adopt a newly confirmed server version.
 
+## Performance targets
+
+The supported editor fixture contains 500 available items and 100 selected
+items. The following thresholds define the UX-04 performance budget:
+
+- render no more than 50 available entity rows at once;
+- render at most the supported 100 selected rows;
+- retain at most 500 safe metadata cache entries for the current authorized
+  source snapshot;
+- retain at most 50 undo and redo snapshots by default;
+- dispatch debounced search within 250 milliseconds after the last input;
+- keep local add, remove, reorder, and validation work below 50 milliseconds on
+  the reference fixture during manual browser profiling;
+- keep the editor-owned sequence and history below 10 MiB for the reference
+  fixture.
+
+`EntityPicker` uses a fixed estimated-row virtual window only when a supplied
+page exceeds 100 items. Stable identities remain the keys and controlled
+selection is independent from mounted rows. When a focused row would leave the
+window, the window remains pinned to that identity until focus moves, preventing
+keyboard focus loss. Safe derived metadata is cached by identity and source
+object and cleared whenever the authorized source array changes.
+
+Search requests continue to use the abortable enterprise-grid loader.
+`useCancelableSequenceValidation` adds the same latest-request behavior for
+remote validation: starting a new validation aborts the previous controller,
+late responses cannot replace current results, and unmount cancels outstanding
+work. CI uses fixed fixtures and asserts rendered-node bounds, stable selection,
+pointer/keyboard reorder results, and cancellation rather than unstable
+wall-clock timing. Browser profiling checks the documented latency and memory
+budgets before a release.
+
 ## Audit events
 
 Comparing the last persisted sequence with the next sequence produces ordered

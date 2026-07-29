@@ -953,6 +953,7 @@ export default {
       conflict: "The sequence changed on the server while you were editing it.",
       saveFailed: "The sequence could not be saved.",
       validationFailed: "The server rejected the sequence validation.",
+      validationUnavailable: "Sequence validation is temporarily unavailable.",
       serverRejected:
         "The server rejected this sequence without exposing protected details.",
     },
@@ -979,6 +980,8 @@ export default {
       saveFailed: "Keep the local changes and retry the save operation.",
       validationFailed:
         "Resolve the server validation diagnostics before retrying.",
+      validationUnavailable:
+        "Keep the local sequence and retry validation before saving.",
       reviewVersion: "Review and select the current authorized version.",
       selectVersion: "Select an immutable version for this item.",
       serverRejected:

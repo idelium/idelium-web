@@ -157,6 +157,7 @@ describe("sequence builder domain contract", () => {
       "saveFailed",
       "serverRejected",
       "validationFailed",
+      "validationUnavailable",
     ];
 
     for (const key of keys) {

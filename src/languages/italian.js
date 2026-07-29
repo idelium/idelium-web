@@ -961,6 +961,8 @@ export default {
       conflict: "La sequenza è cambiata sul server durante la modifica.",
       saveFailed: "Non è stato possibile salvare la sequenza.",
       validationFailed: "Il server ha rifiutato la validazione della sequenza.",
+      validationUnavailable:
+        "La validazione della sequenza non è temporaneamente disponibile.",
       serverRejected:
         "Il server ha rifiutato la sequenza senza esporre dettagli protetti.",
     },
@@ -990,6 +992,8 @@ export default {
         "Mantieni le modifiche locali e riprova l'operazione di salvataggio.",
       validationFailed:
         "Risolvi i problemi di validazione server prima di riprovare.",
+      validationUnavailable:
+        "Mantieni la sequenza locale e riprova la validazione prima di salvare.",
       reviewVersion: "Verifica e seleziona la versione autorizzata corrente.",
       selectVersion: "Seleziona una versione immutabile per l'elemento.",
       serverRejected:
