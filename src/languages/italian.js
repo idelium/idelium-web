@@ -1086,6 +1086,58 @@ export default {
           "Il sorgente DSL non dispone di un modello di azioni convertibile.",
       },
     },
+    testing: {
+      accessibleLabel: "Validazione step e impatto aggiornamento",
+      title: "Prova questo step",
+      description:
+        "Esegui una validazione mediata dal server su ambiente e destinazione autorizzati.",
+      environment: "Ambiente",
+      target: "Destinazione",
+      timeout: "Timeout in millisecondi",
+      selectEnvironment: "Seleziona un ambiente",
+      selectTarget: "Seleziona una destinazione",
+      run: "Esegui validazione",
+      cancel: "Annulla validazione",
+      result: "Risultato validazione",
+      duration: "Durata: {duration} ms",
+      status: {
+        passed: "Superata",
+        failed: "Validazione non riuscita",
+        timeout: "Timeout",
+        cancelled: "Annullata",
+        unavailable: "Destinazione non disponibile",
+      },
+      remediation: {
+        default:
+          "Verifica il risultato e correggi lo step prima dell'aggiornamento.",
+        selectionUnavailable:
+          "Scegli un ambiente autorizzato e una destinazione compatibile.",
+        targetUnavailable:
+          "Verifica la disponibilità o scegli un'altra destinazione compatibile.",
+        timeout:
+          "Aumenta il timeout entro i limiti o verifica le prestazioni della destinazione.",
+        validationFailed:
+          "Correggi l'errore di validazione ed esegui nuovamente il test.",
+        cancelled: "Esegui nuovamente la validazione quando sei pronto.",
+      },
+      artifact: "{name}, {size} byte",
+      impact: "Impatto aggiornamento",
+      impactDescription:
+        "Verifica i consumatori autorizzati del tenant prima di aggiornare questo step riutilizzabile.",
+      consumerTypes: {
+        test: "Test",
+        cycle: "Ciclo di test",
+        schedule: "Pianificazione",
+      },
+      pinnedVersion: "Vincolato a {version}",
+      unpinned: "Usa la bozza corrente",
+      noImpact: "Nessun consumatore autorizzato è interessato.",
+      pagination: "Pagina {page}, {pageSize} per pagina, {total} totali",
+      governance: "Criterio di aggiornamento",
+      publishVersion: "Pubblica una nuova versione immutabile",
+      updateDraft: "Aggiorna la bozza corrente",
+      continueUpdate: "Continua con il criterio selezionato",
+    },
     diagnostics: {
       malformedConfig:
         "La configurazione salvata dello step non è valida. Apri la modalità JSON per correggerla.",

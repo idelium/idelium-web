@@ -172,6 +172,24 @@ Wizard-to-JSON-to-Wizard round trips preserve action configuration; JSON
 formatting may be normalized. DSL conversion without a parser-produced action
 model is blocked rather than guessing or silently dropping source constructs.
 
+## Step testing and update impact
+
+`StepTestPanel` sends only the step, authorized environment, compatible target,
+runtime, and bounded timeout identifiers to a caller-provided server executor.
+Environment credentials and resolved secret values never enter the request or
+browser result. Client cancellation uses an abort signal; passed, validation
+failed, timed out, cancelled, and target unavailable states remain distinct.
+Returned logs are bounded and redacted. Artifacts expose only bounded metadata,
+never inline binary or response payloads.
+
+Impact responses are filtered by the active tenant, limited to 50 entries per
+page, and expose only consumer ID, safe name, type, and pinned version. Tests,
+cycles, and schedules are visible before update. The governance policy controls
+whether the author may publish a new immutable version, update the current
+draft, or choose between both. The API remains authoritative for tenant
+ownership, target authorization, execution, impact retrieval, and policy
+enforcement.
+
 ## Rollout and rollback
 
 The contract is introduced before replacing the current wizard UI. Existing

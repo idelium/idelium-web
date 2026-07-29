@@ -1072,6 +1072,56 @@ export default {
           "The DSL source has no convertible action model.",
       },
     },
+    testing: {
+      accessibleLabel: "Step validation and update impact",
+      title: "Test this step",
+      description:
+        "Run server-mediated validation against an authorized environment and target.",
+      environment: "Environment",
+      target: "Target",
+      timeout: "Timeout in milliseconds",
+      selectEnvironment: "Select an environment",
+      selectTarget: "Select a target",
+      run: "Run validation",
+      cancel: "Cancel validation",
+      result: "Validation result",
+      duration: "Duration: {duration} ms",
+      status: {
+        passed: "Passed",
+        failed: "Validation failed",
+        timeout: "Timed out",
+        cancelled: "Cancelled",
+        unavailable: "Target unavailable",
+      },
+      remediation: {
+        default: "Review the result and correct the step before updating.",
+        selectionUnavailable:
+          "Choose an authorized environment and compatible target.",
+        targetUnavailable:
+          "Verify target availability or select another compatible target.",
+        timeout: "Increase the bounded timeout or inspect target performance.",
+        validationFailed:
+          "Correct the reported validation failure and run the test again.",
+        cancelled: "Run validation again when ready.",
+      },
+      artifact: "{name}, {size} bytes",
+      impact: "Update impact",
+      impactDescription:
+        "Review tenant-authorized consumers before updating this reusable step.",
+      consumerTypes: {
+        test: "Test",
+        cycle: "Test cycle",
+        schedule: "Schedule",
+      },
+      pinnedVersion: "Pinned to {version}",
+      unpinned: "Uses current draft",
+      noImpact: "No authorized consumers are affected.",
+      pagination: "Page {page}, {pageSize} per page, {total} total",
+      governance: "Update policy",
+      publishVersion: "Publish a new immutable version",
+      updateDraft: "Update the current draft",
+      continueUpdate: "Continue with selected update policy",
+    },
     diagnostics: {
       malformedConfig:
         "The saved step configuration is malformed. Open JSON mode to repair it.",
