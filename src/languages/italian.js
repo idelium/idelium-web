@@ -585,6 +585,29 @@ export default {
       all: "tutti",
     },
   },
+  Launch: {
+    configuration: "Configurazione avvio",
+    preflight: "Diagnostiche preflight",
+    review: "Revisione avvio",
+    target: "Target di esecuzione",
+    concurrency: "Concorrenza",
+    idempotency: "Protezione avvii duplicati",
+    recovery: "Errore di avvio recuperabile",
+    remediation: {
+      capacityLow:
+        "Riduci la concorrenza o seleziona un altro target di esecuzione con capacità disponibile.",
+      crossProjectReference:
+        "Seleziona entità appartenenti al progetto attivo prima dell'avvio.",
+      crossTenantReference:
+        "Seleziona entità appartenenti al cliente attivo prima dell'avvio.",
+      required: "Completa il campo obbligatorio di avvio prima di continuare.",
+      review: "Rivedi la configurazione di avvio ed esegui di nuovo il preflight.",
+      unsupportedOption:
+        "Rimuovi l'opzione non supportata o aggiorna il contratto API prima dell'avvio.",
+      unsupportedTarget:
+        "Seleziona un target supportato tra locale, piattaforma, Selenium Grid, Appium o API.",
+    },
+  },
   TestCycles: {
     compositionTitle: "Configura la sequenza dei test",
     compositionDescription:

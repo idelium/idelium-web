@@ -581,6 +581,29 @@ export default {
       all: "all",
     },
   },
+  Launch: {
+    configuration: "Launch configuration",
+    preflight: "Preflight diagnostics",
+    review: "Review launch",
+    target: "Execution target",
+    concurrency: "Concurrency",
+    idempotency: "Duplicate launch protection",
+    recovery: "Recoverable launch error",
+    remediation: {
+      capacityLow:
+        "Reduce concurrency or select another execution target with available capacity.",
+      crossProjectReference:
+        "Select entities that belong to the active project before launching.",
+      crossTenantReference:
+        "Select entities that belong to the active customer before launching.",
+      required: "Complete the required launch field before continuing.",
+      review: "Review the launch configuration and run preflight again.",
+      unsupportedOption:
+        "Remove the unsupported option or upgrade the API contract before launching.",
+      unsupportedTarget:
+        "Select a supported local, platform, Selenium Grid, Appium, or API target.",
+    },
+  },
   TestCycles: {
     compositionTitle: "Configure test sequence",
     compositionDescription:
