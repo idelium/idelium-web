@@ -72,6 +72,40 @@
       </details>
     </div>
 
+    <div
+      v-if="selectionCount > 0 || allResultsSelected"
+      class="enterprise-data-table__bulk-toolbar"
+      role="region"
+      :aria-label="copy.bulk.title"
+    >
+      <strong>{{ selectionSummary }}</strong>
+      <IdButton
+        v-if="
+          supportsAllResults &&
+          !allResultsSelected &&
+          selectionTotal > selectionCount
+        "
+        variant="secondary"
+        @click="$emit('select-all-results')"
+      >
+        {{
+          String(copy.bulk.selectAll).replace("{count}", String(selectionTotal))
+        }}
+      </IdButton>
+      <IdButton
+        v-for="action in visibleBulkActions"
+        :key="action.id"
+        :variant="action.variant || 'secondary'"
+        :disabled="bulkActionDisabled(action)"
+        @click="emitBulkAction(action)"
+      >
+        {{ action.label }}
+      </IdButton>
+      <IdButton variant="ghost" @click="$emit('clear-selection')">
+        {{ copy.bulk.clear }}
+      </IdButton>
+    </div>
+
     <EnterpriseGridState
       v-if="visibleState"
       :title="stateCopy.title"
@@ -224,6 +258,7 @@ import {
   getGridRowIdentity,
   gridStateFromResult,
   normalizeGridActions,
+  normalizeGridBulkActions,
   sanitizeGridPreferences,
   validateGridColumns,
 } from "@/domain/enterpriseGrid";
@@ -233,18 +268,24 @@ export default {
   components: { EnterpriseGridState, IdButton },
   emits: [
     "action",
+    "bulk-action",
+    "clear-selection",
+    "confirm-bulk-action",
     "confirm-action",
     "clear-filters",
     "create",
     "preferences-change",
     "row-activate",
     "retry",
+    "select-all-results",
     "selection-change",
     "sort",
   ],
   props: {
     accessibleLabel: { type: String, required: true },
     actions: { type: Array, default: () => [] },
+    allResultsSelected: { type: Boolean, default: false },
+    bulkActions: { type: Array, default: () => [] },
     capabilities: { type: Array, default: () => [] },
     columns: { type: Array, required: true },
     copy: { type: Object, required: true },
@@ -267,8 +308,10 @@ export default {
     rows: { type: Array, default: () => [] },
     selectable: { type: Boolean, default: false },
     selectedIds: { type: Array, default: () => [] },
+    selectionTotal: { type: Number, default: 0 },
     sort: { type: Object, default: null },
     stale: { type: Boolean, default: false },
+    supportsAllResults: { type: Boolean, default: false },
   },
   computed: {
     allColumns() {
@@ -297,6 +340,28 @@ export default {
     },
     visibleActions() {
       return normalizeGridActions(this.actions, this.capabilities);
+    },
+    selectedRows() {
+      return this.displayRows.filter((row) => this.isSelected(row));
+    },
+    visibleBulkActions() {
+      return normalizeGridBulkActions(
+        this.bulkActions,
+        this.capabilities,
+        this.selectedRows,
+      );
+    },
+    selectionCount() {
+      return this.selectedIds.length;
+    },
+    selectionSummary() {
+      const count = this.allResultsSelected
+        ? this.selectionTotal
+        : this.selectionCount;
+      const template = this.allResultsSelected
+        ? this.copy.bulk.allSelected
+        : this.copy.bulk.selected;
+      return String(template).replace("{count}", String(count));
     },
     inlineActions() {
       return this.visibleActions.filter(
@@ -455,6 +520,24 @@ export default {
       const event = action.requiresConfirmation ? "confirm-action" : "action";
       this.$emit(event, { action: action.id, row });
     },
+    bulkActionDisabled(action) {
+      return typeof action.disabled === "function"
+        ? action.disabled(this.selectedRows)
+        : action.disabled === true;
+    },
+    emitBulkAction(action) {
+      const event = action.requiresConfirmation
+        ? "confirm-bulk-action"
+        : "bulk-action";
+      this.$emit(event, {
+        action: action.id,
+        allResults: this.allResultsSelected,
+        count: this.allResultsSelected
+          ? this.selectionTotal
+          : this.selectionCount,
+        selectedIds: this.allResultsSelected ? [] : [...this.selectedIds],
+      });
+    },
   },
 };
 </script>
@@ -472,6 +555,22 @@ export default {
   flex-wrap: wrap;
   gap: var(--id-space-3);
   justify-content: space-between;
+}
+
+.enterprise-data-table__bulk-toolbar {
+  align-items: center;
+  background: color-mix(
+    in srgb,
+    var(--id-color-primary) 12%,
+    var(--id-color-surface-raised)
+  );
+  border: 1px solid
+    color-mix(in srgb, var(--id-color-primary) 45%, var(--id-color-border));
+  border-radius: var(--id-radius-medium);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--id-space-2);
+  padding: var(--id-space-3);
 }
 
 .enterprise-data-table__preferences {

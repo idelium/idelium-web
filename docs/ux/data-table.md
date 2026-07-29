@@ -88,6 +88,20 @@ context request aborts the previous request and ignores late responses. Context
 changes must call `reset` before loading the new scope. Result counts and completed
 background refreshes are announced through the table live region.
 
+## Bulk selection and operations
+
+Page selection stores stable row IDs. Selecting all matching results is a separate
+state and is allowed only after the API returns a validated, expiring query
+snapshot. Selection scope includes tenant, project, table, and canonical query; a
+change to any scope clears selection.
+
+The bulk toolbar shows the impact count and only exposes operations supported by
+the current capability and every selected row. High-impact operations use the
+confirmation event. The client starts bounded server jobs by snapshot ID and
+polls their status so completed, partial, and failed outcomes can provide recovery
+guidance. The API remains responsible for rechecking tenant ownership,
+authorization, snapshot expiry, and every target immediately before mutation.
+
 ## Migration and rollback
 
 Existing routes and API endpoints remain compatible. Listings move to the shared

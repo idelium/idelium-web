@@ -735,6 +735,13 @@ export default {
   },
   DataTable: {
     actions: "Azioni",
+    bulk: {
+      title: "Azioni massive",
+      selected: "{count} righe selezionate",
+      allSelected: "Tutte le {count} righe corrispondenti selezionate",
+      selectAll: "Seleziona tutte le {count} righe corrispondenti",
+      clear: "Rimuovi selezione",
+    },
     clearFilters: "Rimuovi filtri",
     create: "Crea elemento",
     refreshComplete: "Risultati aggiornati.",

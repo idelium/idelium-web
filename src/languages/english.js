@@ -730,6 +730,13 @@ export default {
   },
   DataTable: {
     actions: "Actions",
+    bulk: {
+      title: "Bulk actions",
+      selected: "{count} rows selected",
+      allSelected: "All {count} matching rows selected",
+      selectAll: "Select all {count} matching rows",
+      clear: "Clear selection",
+    },
     clearFilters: "Clear filters",
     create: "Create record",
     refreshComplete: "Results refreshed.",

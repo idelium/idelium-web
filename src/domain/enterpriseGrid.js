@@ -259,6 +259,38 @@ export function normalizeGridActions(actions, capabilities = []) {
   });
 }
 
+export function normalizeGridBulkActions(
+  actions,
+  capabilities = [],
+  selectedRows = [],
+) {
+  return normalizeGridActions(actions, capabilities).filter((action) => {
+    if (typeof action.availableFor !== "function") return true;
+    return selectedRows.every((row) => action.availableFor(row));
+  });
+}
+
+export function createGridSelectionScope({
+  tenantId,
+  projectId,
+  gridName,
+  query,
+  allowedFilters = [],
+  allowedSorts = [],
+}) {
+  if (!tenantId || !gridName) {
+    throw new TypeError(
+      "Grid selection requires tenant and table identifiers.",
+    );
+  }
+  return JSON.stringify({
+    tenantId: String(tenantId),
+    projectId: projectId ? String(projectId) : null,
+    gridName: String(gridName),
+    query: serializeGridRouteQuery(query, { allowedFilters, allowedSorts }),
+  });
+}
+
 export function boundedLocalRows(rows, limit = MAX_LOCAL_ROWS) {
   const safeLimit = Math.min(
     MAX_LOCAL_ROWS,

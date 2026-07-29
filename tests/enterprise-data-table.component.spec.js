@@ -5,6 +5,13 @@ import EnterpriseDataTable from "@/components/grid/EnterpriseDataTable.vue";
 
 const copy = {
   actions: "Actions",
+  bulk: {
+    title: "Bulk actions",
+    selected: "{count} rows selected",
+    allSelected: "All {count} rows selected",
+    selectAll: "Select all {count} rows",
+    clear: "Clear selection",
+  },
   clearFilters: "Clear filters",
   create: "Create record",
   moreActions: "More actions",
@@ -190,6 +197,39 @@ describe("EnterpriseDataTable", () => {
       schemaVersion: 1,
       density: "spacious",
       columnOrder: ["name", "id", "token"],
+    });
+  });
+
+  it("offers only bulk actions valid for every selected row", async () => {
+    const wrapper = mountTable({
+      selectable: true,
+      selectedIds: ["10", "11"],
+      selectionTotal: 200,
+      supportsAllResults: true,
+      bulkActions: [
+        { id: "export", label: "Export" },
+        {
+          id: "archive",
+          label: "Archive",
+          requiresConfirmation: true,
+          availableFor: (row) => row.id === 10,
+        },
+      ],
+    });
+
+    expect(wrapper.text()).toContain("2 rows selected");
+    expect(wrapper.text()).toContain("Select all 200 rows");
+    expect(wrapper.text()).not.toContain("Archive");
+
+    const exportButton = wrapper
+      .findAll(".enterprise-data-table__bulk-toolbar button")
+      .find((button) => button.text() === "Export");
+    await exportButton.trigger("click");
+    expect(wrapper.emitted("bulk-action")[0][0]).toEqual({
+      action: "export",
+      allResults: false,
+      count: 2,
+      selectedIds: ["10", "11"],
     });
   });
 });
