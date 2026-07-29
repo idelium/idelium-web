@@ -283,11 +283,65 @@
           {{ language[config.currentLanguage].Apikey.actions.create }}
         </button>
       </form>
-      <div v-if="revealedCredential" class="apikey-reveal-panel">
-        <strong>{{
-          language[config.currentLanguage].Apikey.revealOnceNotice
-        }}</strong>
-        <code>{{ revealedCredential.secret }}</code>
+      <div
+        v-if="activeRevealSecret"
+        class="apikey-reveal-panel"
+        role="region"
+        :aria-label="language[config.currentLanguage].Apikey.revealOnceTitle"
+      >
+        <div>
+          <p class="apikey-eyebrow">
+            {{ language[config.currentLanguage].Apikey.revealOnceTitle }}
+          </p>
+          <strong>{{
+            language[config.currentLanguage].Apikey.revealOnceNotice
+          }}</strong>
+          <p class="apikey-reveal-help">
+            {{ language[config.currentLanguage].Apikey.revealOnceHelp }}
+          </p>
+        </div>
+        <label class="apikey-reveal-acknowledgement">
+          <input v-model="revealAcknowledged" type="checkbox" />
+          <span>{{
+            language[config.currentLanguage].Apikey.revealOnceAcknowledge
+          }}</span>
+        </label>
+        <code aria-live="off">{{ activeRevealSecret }}</code>
+        <div class="apikey-reveal-actions">
+          <button
+            type="button"
+            class="btn btn-outline-success apikey-secondary-action"
+            v-on:click="copyRevealOnceSecret()"
+            :disabled="!revealCanExport"
+            :aria-label="language[config.currentLanguage].Apikey.copySecret"
+          >
+            <font-awesome-icon icon="copy" class="idelium-action-icon--copy" />
+            {{ language[config.currentLanguage].Apikey.copySecret }}
+          </button>
+          <button
+            type="button"
+            class="btn btn-outline-primary apikey-secondary-action"
+            v-on:click="downloadRevealOnceSecret()"
+            :disabled="!revealCanExport"
+            :aria-label="language[config.currentLanguage].Apikey.downloadSecret"
+          >
+            <font-awesome-icon
+              icon="download"
+              class="idelium-action-icon--download"
+            />
+            {{ language[config.currentLanguage].Apikey.downloadSecret }}
+          </button>
+          <button
+            type="button"
+            class="btn btn-outline-secondary apikey-secondary-action"
+            v-on:click="clearRevealOnceSecret('dismissed')"
+          >
+            {{ language[config.currentLanguage].Apikey.clearSecret }}
+          </button>
+        </div>
+        <p class="apikey-reveal-feedback" aria-live="polite">
+          {{ revealFeedback }}
+        </p>
       </div>
     </section>
   </div>
@@ -578,9 +632,30 @@
   padding: 1rem;
 }
 
+.apikey-reveal-help,
+.apikey-reveal-feedback {
+  color: rgba(255, 224, 163, 0.82);
+  margin: 0.35rem 0 0;
+}
+
+.apikey-reveal-acknowledgement {
+  align-items: flex-start;
+  display: grid;
+  gap: 0.7rem;
+  grid-template-columns: auto minmax(0, 1fr);
+  letter-spacing: normal;
+  text-transform: none;
+}
+
 .apikey-reveal-panel code {
   color: #ffffff;
   overflow-wrap: anywhere;
+}
+
+.apikey-reveal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
 }
 
 @media only screen and (max-width: 960px) {
@@ -620,13 +695,15 @@ import copy from "copy-to-clipboard";
 import download from "@/shared/download";
 import EnterpriseDataTable from "@/components/grid/EnterpriseDataTable.vue";
 import {
+  createRevealOnceSession,
   createCredentialCreationRequest,
   credentialInventoryActions,
   credentialInventoryRow,
   defaultCredentialCreationModel,
   normalizeCredentialInventory,
   normalizeCredentialInventoryFilters,
-  normalizeRevealOnceResult,
+  revealOnceDownloadPayload,
+  shouldClearRevealOnceRoute,
 } from "@/domain/credentialLifecycle";
 
 export default {
@@ -653,6 +730,9 @@ export default {
       },
       credentialCreate: defaultCredentialCreationModel(),
       credentialCreateErrors: [],
+      revealAcknowledged: false,
+      revealFeedback: "",
+      revealTimeoutId: null,
       revealedCredential: null,
       credentialStatusOptions: [
         "active",
@@ -762,9 +842,18 @@ export default {
         Boolean(filters.expiry)
       );
     },
+    activeRevealSecret() {
+      return this.revealedCredential?.secret ?? "";
+    },
+    revealCanExport() {
+      return Boolean(this.activeRevealSecret && this.revealAcknowledged);
+    },
   },
   watch: {
-    $route() {
+    $route(to, from) {
+      if (shouldClearRevealOnceRoute(to, from, this.revealedCredential)) {
+        this.clearRevealOnceSecret("navigation");
+      }
       this.getApiKey();
       this.$forceUpdate();
     },
@@ -775,6 +864,11 @@ export default {
       else this.$forceUpdate();
     });
     this.getApiKey();
+    this.registerRevealOnceCleanup();
+  },
+  beforeUnmount() {
+    this.clearRevealOnceSecret("unmount");
+    this.unregisterRevealOnceCleanup();
   },
   methods: {
     makeToast(text) {
@@ -837,15 +931,18 @@ export default {
           headers: { ...this.setHeaders(), ...request.headers },
         })
         .then((response) => {
-          const revealed = normalizeRevealOnceResult(response.data, {
-            tenantId: "current-tenant",
-          });
-          this.revealedCredential = revealed;
-          this.credentials = [...this.credentials, revealed];
+          this.openRevealOnceSession(response.data);
+          this.credentials = [
+            ...this.credentials,
+            this.revealedCredential.credential,
+          ];
           if (this.$router?.push) {
             this.$router.push({
               name: "apikey",
-              query: { credentialId: revealed.id, mode: "reveal-once" },
+              query: {
+                credentialId: this.revealedCredential.credential.id,
+                mode: "reveal-once",
+              },
             });
           }
         })
@@ -855,6 +952,89 @@ export default {
           ];
           this.Logout(this, e);
         });
+    },
+    openRevealOnceSession(data) {
+      this.clearRevealOnceSecret("replace");
+      this.revealedCredential = createRevealOnceSession(data, {
+        tenantId: "current-tenant",
+      });
+      this.revealAcknowledged = false;
+      this.revealFeedback =
+        this.language[this.config.currentLanguage].Apikey.revealOnceReady;
+      this.revealTimeoutId = window.setTimeout(() => {
+        this.clearRevealOnceSecret("timeout");
+      }, 10 * 60 * 1000);
+    },
+    clearRevealOnceSecret(reason) {
+      if (this.revealTimeoutId) {
+        window.clearTimeout(this.revealTimeoutId);
+        this.revealTimeoutId = null;
+      }
+      if (!this.revealedCredential && !this.revealAcknowledged) return;
+      this.revealedCredential = null;
+      this.revealAcknowledged = false;
+      if (reason === "timeout") {
+        this.revealFeedback =
+          this.language[this.config.currentLanguage].Apikey.revealOnceExpired;
+      }
+    },
+    registerRevealOnceCleanup() {
+      if (typeof window === "undefined") return;
+      window.addEventListener("pagehide", this.handleRevealPageExit);
+      window.addEventListener("beforeunload", this.handleRevealPageExit);
+      document.addEventListener(
+        "visibilitychange",
+        this.handleRevealVisibilityChange,
+      );
+    },
+    unregisterRevealOnceCleanup() {
+      if (typeof window === "undefined") return;
+      window.removeEventListener("pagehide", this.handleRevealPageExit);
+      window.removeEventListener("beforeunload", this.handleRevealPageExit);
+      document.removeEventListener(
+        "visibilitychange",
+        this.handleRevealVisibilityChange,
+      );
+    },
+    handleRevealPageExit() {
+      this.clearRevealOnceSecret("page-exit");
+    },
+    handleRevealVisibilityChange() {
+      if (document.visibilityState === "hidden") {
+        this.clearRevealOnceSecret("hidden");
+      }
+    },
+    copyRevealOnceSecret() {
+      if (!this.revealCanExport) return;
+      copy(this.activeRevealSecret);
+      this.revealFeedback =
+        this.language[this.config.currentLanguage].Apikey.copySecretFeedback;
+      this.makeToast(this.revealFeedback);
+    },
+    downloadRevealOnceSecret() {
+      const payload = revealOnceDownloadPayload(this.revealedCredential, {
+        acknowledged: this.revealAcknowledged,
+      });
+      if (!payload.allowed) {
+        this.revealFeedback =
+          this.language[this.config.currentLanguage].Apikey
+            .acknowledgementRequired;
+        return;
+      }
+      const blob = new Blob([payload.text], { type: payload.mimeType });
+      const objectUrl = window.URL.createObjectURL(blob);
+      const element = document.createElement("a");
+      element.href = objectUrl;
+      element.download = payload.filename;
+      element.rel = "noopener";
+      element.style.display = "none";
+      document.body.appendChild(element);
+      element.click();
+      document.body.removeChild(element);
+      window.URL.revokeObjectURL(objectUrl);
+      this.revealFeedback =
+        this.language[this.config.currentLanguage].Apikey.downloadSecretFeedback;
+      this.makeToast(this.revealFeedback);
     },
     credentialEndpoint() {
       return (

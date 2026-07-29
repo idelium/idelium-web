@@ -81,6 +81,27 @@ After successful creation, the user is routed to a reveal-once result state. The
 complete secret exists only in that creation response and is not part of list,
 detail, audit, or subsequent retrieval responses.
 
+## Reveal-once result
+
+The reveal-once result is an in-memory, short-lived UI session created only from
+the credential creation response. It displays the complete secret exactly once
+and stores only a redacted credential snapshot in inventory state.
+
+Operators must acknowledge that the secret cannot be shown again before Copy or
+Download actions become available. Both actions provide accessible feedback
+through the page live region. The download action creates a temporary browser
+object URL, clicks it, and revokes it immediately after use.
+
+The complete secret must never be written to route parameters, query strings,
+local storage, session storage, telemetry, logs, screenshots, test snapshots, or
+credential inventory rows. It is cleared when the operator navigates away,
+refreshes or closes the page, changes project or route context, dismisses the
+panel, or when the reveal timeout expires.
+
+Reloading a reveal-once URL may preserve the credential ID for orientation, but
+it cannot retrieve or reconstruct the complete secret. The only recovery path is
+to create or rotate a credential and capture the new one-time value.
+
 ## Redaction and observability
 
 Credential diagnostics, audit records, screenshots, fixtures, and UI state must

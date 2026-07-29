@@ -37,6 +37,7 @@ const STATUS_FILTERS = new Set([
 ]);
 const DEFAULT_SCOPES = ["run:execute"];
 const MAX_LIFETIME_DAYS = 365;
+const DEFAULT_REVEAL_TTL_MS = 10 * 60 * 1000;
 
 export function normalizeCredentialDescriptor(input = {}, context = {}) {
   const tenantId = safeIdentifier(input.tenantId ?? context.tenantId);
@@ -162,6 +163,63 @@ export function normalizeRevealOnceResult(response = {}, context = {}) {
     revealOnce: true,
     secret: secret || null,
   };
+}
+
+export function createRevealOnceSession(response = {}, context = {}) {
+  const revealed = normalizeRevealOnceResult(response, context);
+  const now = positiveInteger(context.now, Date.now());
+  const ttlMs = Math.min(
+    positiveInteger(context.ttlMs, DEFAULT_REVEAL_TTL_MS),
+    DEFAULT_REVEAL_TTL_MS,
+  );
+  return {
+    acknowledged: false,
+    credential: revealOnceSafeSnapshot(revealed),
+    expiresAt: new Date(now + ttlMs).toISOString(),
+    secret: revealed.secret,
+    sessionId: stableRevealSessionId(revealed, now),
+  };
+}
+
+export function revealOnceSafeSnapshot(value = {}) {
+  const descriptor = normalizeCredentialDescriptor(value);
+  return {
+    ...descriptor,
+    revealOnce: true,
+  };
+}
+
+export function revealOnceDownloadPayload(session = {}, context = {}) {
+  const credential = revealOnceSafeSnapshot(session.credential ?? session);
+  const secret = safeSecret(session.secret);
+  if (!secret) {
+    return { allowed: false, reason: "missing-secret" };
+  }
+  if (context.acknowledged !== true) {
+    return { allowed: false, reason: "acknowledgement-required" };
+  }
+  return {
+    allowed: true,
+    filename: `${credential.name || credential.id || "idelium-credential"}.idelium`,
+    mimeType: "text/plain",
+    text: secret,
+  };
+}
+
+export function shouldClearRevealOnceRoute(to = {}, from = {}, session = {}) {
+  if (!session?.secret) return false;
+  if (to.name !== from.name) return true;
+  const toProject = to.params?.idProject ?? to.params?.projectId;
+  const fromProject = from.params?.idProject ?? from.params?.projectId;
+  if (toProject !== fromProject) return true;
+  const currentCredentialId = session.credential?.id;
+  if (
+    to.query?.mode === "reveal-once" &&
+    to.query?.credentialId === currentCredentialId
+  ) {
+    return false;
+  }
+  return to.fullPath !== from.fullPath;
 }
 
 export function credentialInventoryStatus(credential = {}) {
@@ -453,6 +511,12 @@ function daysUntil(value) {
 function stableCreationHash(model) {
   return safeIdentifier(
     `${model.name}:${model.expiresAt}:${model.scopes.join(".")}`,
+  );
+}
+
+function stableRevealSessionId(credential, now) {
+  return safeIdentifier(
+    `reveal:${credential.tenantId || "tenant"}:${credential.id || credential.name}:${now}`,
   );
 }
 

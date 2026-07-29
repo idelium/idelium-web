@@ -990,6 +990,23 @@ export default {
       "Crea credenziali nominali, ruotale in sicurezza, revoca accessi compromessi e consulta audit senza esporre il segreto completo.",
     revealOnceNotice:
       "Il segreto completo viene mostrato una sola volta alla creazione. Salvalo subito.",
+    revealOnceTitle: "Credenziale mostrata una sola volta",
+    revealOnceHelp:
+      "Copia o scarica questo valore adesso. Rimane solo in memoria e verrà cancellato quando lasci la pagina, ricarichi, cambi contesto o scade il timeout.",
+    revealOnceAcknowledge:
+      "Ho capito che questo segreto non potrà essere mostrato di nuovo dopo aver lasciato questa pagina.",
+    revealOnceReady:
+      "Credenziale creata. Conferma la visualizzazione una sola volta prima di copiare o scaricare.",
+    revealOnceExpired:
+      "Il valore mostrato una sola volta è stato cancellato. Crea o ruota una credenziale per ricevere un nuovo valore.",
+    acknowledgementRequired:
+      "Conferma la visualizzazione una sola volta prima di esportare il segreto.",
+    copySecret: "Copia segreto",
+    copySecretFeedback: "Segreto copiato negli appunti.",
+    downloadSecret: "Scarica segreto",
+    downloadSecretFeedback:
+      "Segreto scaricato. Conservalo in una posizione sicura approvata.",
+    clearSecret: "Cancella segreto",
     legacyMigrationNotice:
       "Le chiavi legacy restano compatibili durante la finestra di migrazione, ma i nuovi accessi devono usare credenziali nominali.",
     inventoryTitle: "Inventario credenziali",

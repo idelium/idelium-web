@@ -980,6 +980,22 @@ export default {
       "Create named credentials, rotate them safely, revoke compromised access, and audit usage without exposing complete secret material.",
     revealOnceNotice:
       "The complete secret is shown only once at creation. Store it immediately.",
+    revealOnceTitle: "Reveal-once credential",
+    revealOnceHelp:
+      "Copy or download this value now. It is kept only in memory and will be cleared when you leave, refresh, change context, or after the timeout.",
+    revealOnceAcknowledge:
+      "I understand this secret cannot be shown again after I leave this page.",
+    revealOnceReady:
+      "Credential created. Acknowledge the one-time display before copying or downloading.",
+    revealOnceExpired:
+      "The reveal-once value was cleared. Create or rotate a credential to receive a new value.",
+    acknowledgementRequired:
+      "Acknowledge the one-time display before exporting the secret.",
+    copySecret: "Copy secret",
+    copySecretFeedback: "Secret copied to clipboard.",
+    downloadSecret: "Download secret",
+    downloadSecretFeedback: "Secret downloaded. Store it in an approved secure location.",
+    clearSecret: "Clear secret",
     legacyMigrationNotice:
       "Legacy keys remain compatible during the migration window, but new access should use named credentials.",
     inventoryTitle: "Credential inventory",

@@ -2,16 +2,21 @@ import { shallowMount } from "@vue/test-utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const api = vi.hoisted(() => ({ get: vi.fn(), post: vi.fn(), put: vi.fn() }));
+const clipboard = vi.hoisted(() => vi.fn(() => true));
 
 vi.mock("@/services/apiClient", () => ({ default: api }));
+vi.mock("copy-to-clipboard", () => ({ default: clipboard }));
 
 import Apikey from "@/view/apikey.vue";
 
 describe("apikey component", () => {
   beforeEach(() => {
+    vi.restoreAllMocks();
     api.get.mockReset();
     api.post.mockReset();
     api.put.mockReset();
+    clipboard.mockClear();
+    vi.spyOn(Storage.prototype, "setItem");
     vi.spyOn(window, "open").mockImplementation(() => null);
   });
 
@@ -50,6 +55,18 @@ describe("apikey component", () => {
                 credentialLifecycleTitle: "Credential lifecycle",
                 credentialLifecycleDescription: "Manage credentials safely.",
                 revealOnceNotice: "Secret is shown only once.",
+                revealOnceTitle: "Reveal-once credential",
+                revealOnceHelp: "Copy or download now.",
+                revealOnceAcknowledge:
+                  "I understand this secret cannot be shown again.",
+                revealOnceReady: "Credential created.",
+                revealOnceExpired: "Secret cleared.",
+                acknowledgementRequired: "Acknowledge first.",
+                copySecret: "Copy secret",
+                copySecretFeedback: "Secret copied.",
+                downloadSecret: "Download secret",
+                downloadSecretFeedback: "Secret downloaded.",
+                clearSecret: "Clear secret",
                 inventoryTitle: "Credential inventory",
                 inventoryScrollRegion: "Scrollable credential inventory",
                 actionsLabel: "Actions",
@@ -124,6 +141,7 @@ describe("apikey component", () => {
           emitter: { on: vi.fn(), emit: vi.fn() },
           setHeaders: () => ({}),
           Logout: vi.fn(),
+          $wkToast: vi.fn(),
         },
       },
     });
@@ -247,5 +265,110 @@ describe("apikey component", () => {
       query: { credentialId: "cred-3", mode: "reveal-once" },
     });
     expect(wrapper.text()).toContain("idelium_secret_revealed_once_value");
+    expect(JSON.stringify(wrapper.vm.credentials)).not.toContain(
+      "idelium_secret_revealed_once_value",
+    );
+    expect(localStorage.setItem).not.toHaveBeenCalled();
+    expect(sessionStorage.setItem).not.toHaveBeenCalled();
+  });
+
+  it("requires acknowledgement before copying and downloading the reveal-once secret", async () => {
+    api.get.mockResolvedValue({ data: { credentials: [] } });
+    const createObjectURL = vi.fn(() => "blob:secret-download");
+    const revokeObjectURL = vi.fn();
+    Object.defineProperty(window.URL, "createObjectURL", {
+      configurable: true,
+      value: createObjectURL,
+    });
+    Object.defineProperty(window.URL, "revokeObjectURL", {
+      configurable: true,
+      value: revokeObjectURL,
+    });
+    const click = vi
+      .spyOn(HTMLAnchorElement.prototype, "click")
+      .mockImplementation(() => {});
+
+    const wrapper = mountApikey();
+    await wrapper.vm.$nextTick();
+    wrapper.vm.openRevealOnceSession({
+      id: "cred-4",
+      key: "idelium_secret_revealed_once_value",
+      name: "CI",
+      scopes: ["run:execute"],
+      tenantId: "current-tenant",
+    });
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.find(".apikey-reveal-panel").exists()).toBe(true);
+    await wrapper.vm.copyRevealOnceSecret();
+    expect(clipboard).not.toHaveBeenCalled();
+    expect(wrapper.vm.revealFeedback).toBe("Credential created.");
+
+    await wrapper.setData({ revealAcknowledged: true });
+    await wrapper.vm.copyRevealOnceSecret();
+    expect(clipboard).toHaveBeenCalledWith(
+      "idelium_secret_revealed_once_value",
+    );
+    await wrapper.vm.downloadRevealOnceSecret();
+
+    expect(createObjectURL).toHaveBeenCalled();
+    expect(click).toHaveBeenCalled();
+    expect(revokeObjectURL).toHaveBeenCalledWith("blob:secret-download");
+    expect(localStorage.setItem).not.toHaveBeenCalled();
+    expect(sessionStorage.setItem).not.toHaveBeenCalled();
+  });
+
+  it("clears reveal-once material on route changes and page lifecycle cleanup", async () => {
+    api.get.mockResolvedValue({ data: { credentials: [] } });
+    const wrapper = mountApikey();
+    await wrapper.vm.$nextTick();
+    wrapper.vm.openRevealOnceSession({
+      id: "cred-5",
+      key: "idelium_secret_revealed_once_value",
+      name: "CI",
+      scopes: ["run:execute"],
+      tenantId: "current-tenant",
+    });
+
+    Apikey.watch.$route.call(
+      wrapper.vm,
+      {
+        fullPath: "/apikey?mode=reveal-once&credentialId=cred-5",
+        name: "apikey",
+        params: {},
+        query: { credentialId: "cred-5", mode: "reveal-once" },
+      },
+      { fullPath: "/apikey", name: "apikey", params: {}, query: {} },
+    );
+    expect(wrapper.vm.activeRevealSecret).toBe(
+      "idelium_secret_revealed_once_value",
+    );
+
+    Apikey.watch.$route.call(
+      wrapper.vm,
+      {
+        fullPath: "/projects/2/apikey",
+        name: "apikey",
+        params: { idProject: "2" },
+        query: {},
+      },
+      {
+        fullPath: "/projects/1/apikey",
+        name: "apikey",
+        params: { idProject: "1" },
+        query: {},
+      },
+    );
+    expect(wrapper.vm.activeRevealSecret).toBe("");
+
+    wrapper.vm.openRevealOnceSession({
+      id: "cred-5",
+      key: "idelium_secret_revealed_once_value",
+      name: "CI",
+      scopes: ["run:execute"],
+      tenantId: "current-tenant",
+    });
+    window.dispatchEvent(new Event("pagehide"));
+    expect(wrapper.vm.activeRevealSecret).toBe("");
   });
 });

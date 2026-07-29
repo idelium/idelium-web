@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   CREDENTIAL_CONTRACT_VERSION,
+  createRevealOnceSession,
   createCredentialLifecycleRequest,
   createCredentialCreationRequest,
   credentialAuthorization,
@@ -14,7 +15,10 @@ import {
   normalizeCredentialDescriptor,
   normalizeCredentialList,
   normalizeRevealOnceResult,
+  revealOnceDownloadPayload,
+  revealOnceSafeSnapshot,
   redactCredentialPayload,
+  shouldClearRevealOnceRoute,
 } from "@/domain/credentialLifecycle";
 
 describe("credential lifecycle API and migration contract", () => {
@@ -76,6 +80,84 @@ describe("credential lifecycle API and migration contract", () => {
     expect(JSON.stringify(listed)).not.toContain(
       "idelium_secret_revealed_once_value",
     );
+  });
+
+  it("keeps reveal-once sessions volatile and exports only after acknowledgement", () => {
+    const session = createRevealOnceSession(
+      {
+        id: "cred-3",
+        key: "idelium_secret_revealed_once_value",
+        name: "CI",
+        scopes: ["run:execute"],
+        tenantId: "tenant-1",
+      },
+      { now: Date.parse("2026-07-29T10:00:00Z"), tenantId: "tenant-1" },
+    );
+
+    expect(session).toMatchObject({
+      acknowledged: false,
+      credential: {
+        id: "cred-3",
+        name: "CI",
+        revealOnce: true,
+        tenantId: "tenant-1",
+      },
+      expiresAt: "2026-07-29T10:10:00.000Z",
+      secret: "idelium_secret_revealed_once_value",
+    });
+    expect(JSON.stringify(revealOnceSafeSnapshot(session))).not.toContain(
+      "idelium_secret_revealed_once_value",
+    );
+    expect(
+      revealOnceDownloadPayload(session, { acknowledged: false }),
+    ).toMatchObject({
+      allowed: false,
+      reason: "acknowledgement-required",
+    });
+    expect(
+      revealOnceDownloadPayload(session, { acknowledged: true }),
+    ).toMatchObject({
+      allowed: true,
+      filename: "CI.idelium",
+      text: "idelium_secret_revealed_once_value",
+    });
+  });
+
+  it("clears reveal-once material on navigation except the in-memory reveal route", () => {
+    const session = {
+      credential: { id: "cred-3" },
+      secret: "idelium_secret_revealed_once_value",
+    };
+
+    expect(
+      shouldClearRevealOnceRoute(
+        {
+          fullPath: "/apikey?mode=reveal-once&credentialId=cred-3",
+          name: "apikey",
+          params: {},
+          query: { credentialId: "cred-3", mode: "reveal-once" },
+        },
+        { fullPath: "/apikey", name: "apikey", params: {}, query: {} },
+        session,
+      ),
+    ).toBe(false);
+    expect(
+      shouldClearRevealOnceRoute(
+        {
+          fullPath: "/projects/2/apikey",
+          name: "apikey",
+          params: { idProject: "2" },
+          query: {},
+        },
+        {
+          fullPath: "/projects/1/apikey",
+          name: "apikey",
+          params: { idProject: "1" },
+          query: {},
+        },
+        session,
+      ),
+    ).toBe(true);
   });
 
   it("enforces tenant scope and action capabilities for every lifecycle action", () => {
