@@ -975,6 +975,13 @@ export default {
     btnCopyKey: "Copy key",
     btnDownloadConfig: "Download key",
     btnDownloadKey: "download idelium-cli",
+    credentialLifecycleTitle: "Credential lifecycle",
+    credentialLifecycleDescription:
+      "Create named credentials, rotate them safely, revoke compromised access, and audit usage without exposing complete secret material.",
+    revealOnceNotice:
+      "The complete secret is shown only once at creation. Store it immediately.",
+    legacyMigrationNotice:
+      "Legacy keys remain compatible during the migration window, but new access should use named credentials.",
   },
   Profile: {
     title: "My profile",

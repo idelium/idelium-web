@@ -985,6 +985,13 @@ export default {
     btnCopyKey: "Copia chiave",
     btnDownloadConfig: "Scarica chiave",
     btnDownloadKey: "scarica idelium-cli",
+    credentialLifecycleTitle: "Ciclo di vita credenziali",
+    credentialLifecycleDescription:
+      "Crea credenziali nominali, ruotale in sicurezza, revoca accessi compromessi e consulta audit senza esporre il segreto completo.",
+    revealOnceNotice:
+      "Il segreto completo viene mostrato una sola volta alla creazione. Salvalo subito.",
+    legacyMigrationNotice:
+      "Le chiavi legacy restano compatibili durante la finestra di migrazione, ma i nuovi accessi devono usare credenziali nominali.",
   },
   Profile: {
     title: "Il mio profilo",
