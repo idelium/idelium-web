@@ -7,6 +7,7 @@ import {
   createCredentialCreationRequest,
   createCredentialRevocationRequest,
   createCredentialRotationRequest,
+  credentialUsageSnippets,
   credentialAuthorization,
   buildCredentialInventoryQuery,
   credentialInventoryActions,
@@ -15,6 +16,7 @@ import {
   legacyCredentialMigrationPolicy,
   validateCredentialCreation,
   validateCredentialRevocation,
+  validateCredentialUsageSnippet,
   validateCredentialRotation,
   normalizeCredentialInventory,
   normalizeCredentialDescriptor,
@@ -480,5 +482,30 @@ describe("credential lifecycle API and migration contract", () => {
           "credential:revoke:tenant-1:cred-old:admin@idelium.org:Compromised-automation-host",
       },
     });
+  });
+
+  it("generates redacted pinned CLI and CI usage snippets", () => {
+    const snippets = credentialUsageSnippets({
+      baseUrl: "https://idelium.io",
+      cliVersion: "latest",
+      cycleId: "2",
+      environment: "demo",
+      projectId: "3",
+    });
+    const rendered = snippets.map((snippet) => snippet.body).join("\n---\n");
+
+    expect(snippets).toHaveLength(3);
+    expect(rendered).toContain("idelium==1.0.14");
+    expect(rendered).toContain("actions/checkout@v4");
+    expect(rendered).toContain("actions/setup-python@v5");
+    expect(rendered).toContain("https://idelium.org");
+    expect(rendered).not.toContain("idelium.io");
+    expect(rendered).not.toContain("latest");
+    expect(rendered).not.toContain("idelium_secret");
+    expect(snippets.map(validateCredentialUsageSnippet)).toEqual([
+      { id: "local-shell", safe: true },
+      { id: "github-actions", safe: true },
+      { id: "generic-ci", safe: true },
+    ]);
   });
 });

@@ -143,6 +143,26 @@ and usable in the client state. Audit records must contain actor, timestamp,
 target credential ID, selected outcome, and reason when provided, but never the
 complete credential value.
 
+## CLI and CI usage guidance
+
+Generated usage examples must never interpolate complete credential material.
+They may contain placeholders, environment variables, or platform secret
+references only. Public references use `idelium.org`; examples must not use
+`idelium.io`, unpinned package versions, `latest`, or moving branches.
+
+Local shell examples install a pinned Idelium CLI version and read
+`IDELIUM_API_KEY` from the operator's local password manager or approved secret
+injection flow. GitHub Actions examples use pinned actions such as
+`actions/checkout@v4` and `actions/setup-python@v5`, with the credential read
+from `${{ secrets.IDELIUM_API_KEY }}`. Generic CI examples describe runtime
+injection from the platform secret store without claiming that client-side code
+can make the value secret.
+
+Operators should verify a newly created credential with the narrowest required
+scope, monitor its last-used timestamp, and rotate it during incidents, operator
+changes, CI migration, or suspected exposure. Incident response should revoke
+known-compromised credentials after a replacement has been validated.
+
 ## Redaction and observability
 
 Credential diagnostics, audit records, screenshots, fixtures, and UI state must

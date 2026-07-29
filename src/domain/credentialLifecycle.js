@@ -39,6 +39,7 @@ const DEFAULT_SCOPES = ["run:execute"];
 const MAX_LIFETIME_DAYS = 365;
 const DEFAULT_REVEAL_TTL_MS = 10 * 60 * 1000;
 const ROTATION_POLICIES = new Set(["immediate", "overlap-24h", "overlap-7d"]);
+const DEFAULT_CLI_VERSION = "1.0.14";
 
 export function normalizeCredentialDescriptor(input = {}, context = {}) {
   const tenantId = safeIdentifier(input.tenantId ?? context.tenantId);
@@ -559,6 +560,70 @@ export function createCredentialRevocationRequest(
   };
 }
 
+export function credentialUsageSnippets(options = {}) {
+  const cliVersion = safePinnedVersion(
+    options.cliVersion ?? DEFAULT_CLI_VERSION,
+  );
+  const baseUrl = safePublicBaseUrl(options.baseUrl ?? "https://idelium.org");
+  const projectId = safeIdentifier(options.projectId ?? "<PROJECT_ID>");
+  const cycleId = safeIdentifier(options.cycleId ?? "<CYCLE_ID>");
+  const environment = safeIdentifier(options.environment ?? "<ENVIRONMENT>");
+  return [
+    {
+      id: "local-shell",
+      title: "Local shell",
+      body: [
+        `python -m pip install idelium==${cliVersion}`,
+        "export IDELIUM_API_KEY='<store in your local password manager, not in source control>'",
+        `idelium --idCycle=${cycleId} --idProject=${projectId} --environment=${environment} --ideliumwsBaseurl ${baseUrl} --ideliumKey "$IDELIUM_API_KEY"`,
+      ].join("\n"),
+      secretFree: true,
+    },
+    {
+      id: "github-actions",
+      title: "GitHub Actions",
+      body: [
+        "name: Idelium",
+        "on: [workflow_dispatch]",
+        "jobs:",
+        "  test:",
+        "    runs-on: ubuntu-24.04",
+        "    steps:",
+        "      - uses: actions/checkout@v4",
+        "      - uses: actions/setup-python@v5",
+        "        with:",
+        "          python-version: '3.13'",
+        `      - run: python -m pip install idelium==${cliVersion}`,
+        '      - run: idelium --idCycle=${{ vars.IDELIUM_CYCLE_ID }} --idProject=${{ vars.IDELIUM_PROJECT_ID }} --environment=${{ vars.IDELIUM_ENVIRONMENT }} --ideliumwsBaseurl https://idelium.org --ideliumKey "$IDELIUM_API_KEY"',
+        "        env:",
+        "          IDELIUM_API_KEY: ${{ secrets.IDELIUM_API_KEY }}",
+      ].join("\n"),
+      secretFree: true,
+    },
+    {
+      id: "generic-ci",
+      title: "Generic CI",
+      body: [
+        `python -m pip install idelium==${cliVersion}`,
+        "# Inject IDELIUM_API_KEY from your approved CI secret store at runtime.",
+        `idelium --idCycle="$IDELIUM_CYCLE_ID" --idProject="$IDELIUM_PROJECT_ID" --environment="$IDELIUM_ENVIRONMENT" --ideliumwsBaseurl ${baseUrl} --ideliumKey "$IDELIUM_API_KEY"`,
+      ].join("\n"),
+      secretFree: true,
+    },
+  ];
+}
+
+export function validateCredentialUsageSnippet(snippet = {}) {
+  const body = String(snippet.body ?? "");
+  return {
+    id: safeIdentifier(snippet.id),
+    safe:
+      !/idelium\.io/i.test(body) &&
+      !/(@latest|main|master|HEAD)/.test(body) &&
+      !/(idelium_(?:secret|live|rotated|complete)|Bearer\s+\S+)/i.test(body),
+  };
+}
+
 export function applyCredentialRotationResult(
   credentials = [],
   rotatedCredential = {},
@@ -818,6 +883,21 @@ function safeIsoTimestamp(value) {
 function safeDate(value) {
   const text = String(value ?? "");
   return /^\d{4}-\d{2}-\d{2}$/.test(text) ? text : null;
+}
+
+function safePinnedVersion(value) {
+  const text = String(value ?? "");
+  return /^\d+\.\d+\.\d+(?:[a-z0-9.-]+)?$/i.test(text)
+    ? text
+    : DEFAULT_CLI_VERSION;
+}
+
+function safePublicBaseUrl(value) {
+  const text = String(value ?? "");
+  if (/^https:\/\/[a-z0-9.-]*idelium\.org(?:\/.*)?$/i.test(text)) {
+    return text.replace(/\/+$/, "");
+  }
+  return "https://idelium.org";
 }
 
 function isSensitiveKey(key) {

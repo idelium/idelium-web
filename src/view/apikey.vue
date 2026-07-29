@@ -88,6 +88,35 @@
         </p>
         <div class="apikey-command">pip install idelium</div>
         <div class="apikey-command">idelium --help</div>
+        <div class="apikey-snippet-list">
+          <article
+            v-for="snippet in usageSnippets"
+            v-bind:key="snippet.id"
+            class="apikey-snippet"
+          >
+            <div class="apikey-card-header">
+              <h3 class="apikey-snippet-title">{{ snippet.title }}</h3>
+              <button
+                type="button"
+                class="btn btn-outline-success apikey-secondary-action"
+                v-on:click="copyUsageSnippet(snippet)"
+                :aria-label="
+                  `${language[config.currentLanguage].Apikey.copySnippet}: ${snippet.title}`
+                "
+              >
+                <font-awesome-icon
+                  icon="copy"
+                  class="idelium-action-icon--copy"
+                />
+                {{ language[config.currentLanguage].Apikey.copySnippet }}
+              </button>
+            </div>
+            <pre><code>{{ snippet.body }}</code></pre>
+          </article>
+          <p class="apikey-security-note">
+            {{ language[config.currentLanguage].Apikey.usageGuidance }}
+          </p>
+        </div>
         <div class="apikey-cli-actions">
           <button
             type="button"
@@ -687,6 +716,41 @@
   padding: 0.8rem 0.9rem;
 }
 
+.apikey-snippet-list {
+  display: grid;
+  gap: 0.9rem;
+  margin-top: 1rem;
+}
+
+.apikey-snippet {
+  background: rgba(12, 14, 22, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.9rem;
+  padding: 0.85rem;
+}
+
+.apikey-snippet-title {
+  color: #ffffff;
+  font-size: 0.82rem;
+  font-weight: 850;
+  letter-spacing: 0.1rem;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.apikey-snippet pre {
+  background: rgba(0, 0, 0, 0.22);
+  border-radius: 0.75rem;
+  color: #f8fafc;
+  font-size: 0.73rem;
+  line-height: 1.55;
+  margin: 0.75rem 0 0;
+  max-height: 14rem;
+  overflow: auto;
+  padding: 0.85rem;
+  white-space: pre-wrap;
+}
+
 .apikey-cli-actions {
   margin-top: auto;
   padding-top: 1rem;
@@ -933,6 +997,7 @@ import {
   createCredentialCreationRequest,
   createCredentialRevocationRequest,
   createCredentialRotationRequest,
+  credentialUsageSnippets,
   credentialInventoryActions,
   credentialInventoryRow,
   defaultCredentialCreationModel,
@@ -1102,6 +1167,21 @@ export default {
       );
       return activeCredentials.length <= 1;
     },
+    usageSnippets() {
+      return credentialUsageSnippets({
+        baseUrl: "https://idelium.org",
+        cliVersion: "1.0.14",
+        cycleId: "${IDELIUM_CYCLE_ID}",
+        environment: "${IDELIUM_ENVIRONMENT}",
+        projectId: "${IDELIUM_PROJECT_ID}",
+      }).map((snippet) => ({
+        ...snippet,
+        title:
+          this.language[this.config.currentLanguage].Apikey.usageSnippetTitles[
+            snippet.id
+          ] || snippet.title,
+      }));
+    },
   },
   watch: {
     $route(to, from) {
@@ -1264,6 +1344,12 @@ export default {
       this.revealFeedback =
         this.language[this.config.currentLanguage].Apikey.copySecretFeedback;
       this.makeToast(this.revealFeedback);
+    },
+    copyUsageSnippet(snippet) {
+      copy(snippet.body);
+      this.makeToast(
+        this.language[this.config.currentLanguage].Apikey.copySnippetFeedback,
+      );
     },
     downloadRevealOnceSecret() {
       const payload = revealOnceDownloadPayload(this.revealedCredential, {

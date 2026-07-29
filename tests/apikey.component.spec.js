@@ -67,6 +67,14 @@ describe("apikey component", () => {
                 downloadSecret: "Download secret",
                 downloadSecretFeedback: "Secret downloaded.",
                 clearSecret: "Clear secret",
+                copySnippet: "Copy",
+                copySnippetFeedback: "Usage snippet copied.",
+                usageGuidance: "Use approved secret stores.",
+                usageSnippetTitles: {
+                  "generic-ci": "Generic CI",
+                  "github-actions": "GitHub Actions",
+                  "local-shell": "Local shell",
+                },
                 inventoryTitle: "Credential inventory",
                 inventoryScrollRegion: "Scrollable credential inventory",
                 actionsLabel: "Actions",
@@ -188,6 +196,30 @@ describe("apikey component", () => {
       "https://pypi.org/project/idelium/",
       "_blank",
     );
+  });
+
+  it("renders redacted pinned usage snippets and copies them accessibly", async () => {
+    api.get.mockResolvedValue({ data: { apiKey: "token" } });
+    const wrapper = mountApikey();
+    await wrapper.vm.$nextTick();
+
+    const snippets = wrapper.vm.usageSnippets;
+    const rendered = snippets.map((snippet) => snippet.body).join("\n");
+
+    expect(snippets.map((snippet) => snippet.title)).toEqual([
+      "Local shell",
+      "GitHub Actions",
+      "Generic CI",
+    ]);
+    expect(rendered).toContain("idelium==1.0.14");
+    expect(rendered).toContain("actions/checkout@v4");
+    expect(rendered).toContain("https://idelium.org");
+    expect(rendered).not.toContain("idelium.io");
+    expect(rendered).not.toContain("latest");
+    expect(rendered).not.toContain("idelium_secret");
+
+    await wrapper.vm.copyUsageSnippet(snippets[1]);
+    expect(clipboard).toHaveBeenCalledWith(snippets[1].body);
   });
 
   it("renders a credential inventory without exposing complete secrets", async () => {

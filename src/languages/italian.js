@@ -1007,6 +1007,15 @@ export default {
     downloadSecretFeedback:
       "Segreto scaricato. Conservalo in una posizione sicura approvata.",
     clearSecret: "Cancella segreto",
+    copySnippet: "Copia",
+    copySnippetFeedback: "Snippet di utilizzo copiato.",
+    usageGuidance:
+      "Usa variabili d'ambiente o secret store approvati. Non committare mai credenziali. Verifica l'accesso delle pipeline con una credenziale con scope limitato e ruotala in caso di incidenti o cambio operatore.",
+    usageSnippetTitles: {
+      "generic-ci": "CI generica",
+      "github-actions": "GitHub Actions",
+      "local-shell": "Shell locale",
+    },
     legacyMigrationNotice:
       "Le chiavi legacy restano compatibili durante la finestra di migrazione, ma i nuovi accessi devono usare credenziali nominali.",
     inventoryTitle: "Inventario credenziali",

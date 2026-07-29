@@ -996,6 +996,15 @@ export default {
     downloadSecret: "Download secret",
     downloadSecretFeedback: "Secret downloaded. Store it in an approved secure location.",
     clearSecret: "Clear secret",
+    copySnippet: "Copy",
+    copySnippetFeedback: "Usage snippet copied.",
+    usageGuidance:
+      "Use environment variables or approved secret stores. Never commit credentials. Verify pipeline access with a scoped credential and rotate it during incidents or operator changes.",
+    usageSnippetTitles: {
+      "generic-ci": "Generic CI",
+      "github-actions": "GitHub Actions",
+      "local-shell": "Local shell",
+    },
     legacyMigrationNotice:
       "Legacy keys remain compatible during the migration window, but new access should use named credentials.",
     inventoryTitle: "Credential inventory",
