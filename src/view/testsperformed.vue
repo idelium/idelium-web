@@ -134,6 +134,34 @@
       <pre class="testsperformed-command">{{
         currentRunDetail.reproducibilityCommand
       }}</pre>
+      <div
+        v-if="showRunDrilldown"
+        class="testsperformed-drilldown"
+        :aria-label="
+          language[config.currentLanguage].TestsPerformed.drilldownTitle
+        "
+      >
+        <button
+          v-for="node in drilldownNodes"
+          v-bind:key="node.id"
+          type="button"
+          :class="[
+            'testsperformed-drilldown-node',
+            `testsperformed-drilldown-node--${node.level}`,
+            { active: selectedDetailId === node.id },
+          ]"
+          v-on:click="selectDrilldownNode(node)"
+        >
+          <span
+            :class="['testsperformed-status', parallelRunVariant(node.status)]"
+          >
+            {{ parallelRunStatusLabel(node.status) }}
+          </span>
+          <strong>{{ node.name }}</strong>
+          <span v-if="node.method">{{ node.method }} {{ node.url }}</span>
+          <span v-if="node.failure">{{ node.failure.message }}</span>
+        </button>
+      </div>
       <p v-if="currentRunDetail.partial" class="testsperformed-live-alert">
         {{ language[config.currentLanguage].TestsPerformed.partialRunDetail }}
       </p>
@@ -926,6 +954,38 @@
   padding: 0.85rem;
 }
 
+.testsperformed-drilldown {
+  display: grid;
+  gap: 0.55rem;
+  max-height: 24rem;
+  overflow: auto;
+}
+
+.testsperformed-drilldown-node {
+  align-items: flex-start;
+  background: rgba(255, 255, 255, 0.045);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.75rem;
+  color: rgba(255, 255, 255, 0.86);
+  display: grid;
+  gap: 0.35rem;
+  padding: 0.75rem;
+  text-align: left;
+}
+
+.testsperformed-drilldown-node--step {
+  margin-left: 1.25rem;
+}
+
+.testsperformed-drilldown-node--assertion {
+  margin-left: 2.5rem;
+}
+
+.testsperformed-drilldown-node.active {
+  border-color: rgba(255, 107, 30, 0.72);
+  box-shadow: 0 0 0 1px rgba(255, 107, 30, 0.25);
+}
+
 .testsperformed-analytics-filters,
 .testsperformed-analytics-statuses,
 .testsperformed-live-toolbar,
@@ -1512,6 +1572,11 @@ import {
   normalizeRunDetailTab,
   runDetailRoute,
 } from "@/domain/runDetailOverview";
+import {
+  drilldownSelectionRoute,
+  normalizeDrilldownSelection,
+  normalizeRunDrilldown,
+} from "@/domain/runDrilldown";
 import { getSelectedProjectId } from "@/stores/session";
 
 export default {
@@ -1696,6 +1761,18 @@ export default {
         projectId: getSelectedProjectId(),
         runId: this.routeRunId,
       });
+    },
+    selectedDetailId() {
+      return normalizeDrilldownSelection(this.$route?.query?.detailId);
+    },
+    showRunDrilldown() {
+      return (
+        this.currentRunDetail &&
+        ["tests", "workers", "timeline"].includes(this.runDetailActiveTab)
+      );
+    },
+    drilldownNodes() {
+      return normalizeRunDrilldown(this.arrayTest, { limit: 150 }).nodes;
     },
     visibleLiveRuns() {
       return filterLiveRuns(this.parallelRuns, {
@@ -2130,6 +2207,20 @@ export default {
       const labels =
         this.language[this.config.currentLanguage].TestsPerformed.runDetailTabs;
       return labels?.[tab] ?? tab;
+    },
+    selectDrilldownNode(node) {
+      if (this.$router?.push && this.currentRunDetail) {
+        this.$router.push(
+          drilldownSelectionRoute({
+            detailId: node.id,
+            projectId: getSelectedProjectId(),
+            runId: this.currentRunDetail.id,
+            tab: this.runDetailActiveTab,
+          }),
+        );
+      } else {
+        this.replaceExecutionQuery({ detailId: node.id });
+      }
     },
     restoreSelectionFromRoute() {
       const testCycleId = this.routeQueryId("testCycleId");

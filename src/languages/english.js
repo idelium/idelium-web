@@ -869,6 +869,7 @@ export default {
     correlationId: "Correlation ID",
     partialRunDetail:
       "Some related assets are deleted, expired, or not available in the current API payload. Snapshot values are shown when available.",
+    drilldownTitle: "Execution drill-down",
     runDetailTabs: {
       overview: "Overview",
       tests: "Tests",

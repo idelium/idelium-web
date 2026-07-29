@@ -111,6 +111,7 @@ describe("tests performed component", () => {
                 initiator: "Initiator",
                 correlationId: "Correlation ID",
                 partialRunDetail: "Partial snapshot.",
+                drilldownTitle: "Execution drill-down",
                 runDetailTabs: {
                   overview: "Overview",
                   tests: "Tests",
@@ -736,6 +737,48 @@ describe("tests performed component", () => {
 
     expect(replace).toHaveBeenCalledWith({
       query: { tab: "artifacts" },
+    });
+  });
+
+  it("renders route-backed drill-down nodes for the selected run", async () => {
+    const push = vi.fn();
+    api.get.mockResolvedValue({ data: [] });
+
+    const wrapper = mountTestsPerformed({
+      $route: {
+        name: "execution-detail",
+        params: { projectId: "9", runId: "44" },
+        query: { tab: "tests" },
+      },
+      $router: { push, replace: vi.fn() },
+    });
+    await wrapper.setData({
+      arrayTest: [
+        {
+          data: [
+            {
+              assertions: [{ name: "status", passed: false }],
+              method: "GET",
+              name: "Health",
+              status: 200,
+              url: "https://example.org/health",
+            },
+          ],
+          id: 17,
+          name: "Postman",
+          type: "postman",
+        },
+      ],
+    });
+
+    expect(wrapper.findAll(".testsperformed-drilldown-node").length).toBe(3);
+    expect(wrapper.text()).toContain("Health");
+
+    await wrapper.findAll(".testsperformed-drilldown-node")[1].trigger("click");
+    expect(push).toHaveBeenCalledWith({
+      name: "execution-detail",
+      params: { projectId: "9", runId: "44" },
+      query: { detailId: "postman:17:1", tab: "tests" },
     });
   });
 

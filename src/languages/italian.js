@@ -876,6 +876,7 @@ export default {
     correlationId: "Correlation ID",
     partialRunDetail:
       "Alcuni asset collegati sono cancellati, scaduti o non disponibili nel payload API corrente. Quando presenti vengono mostrati i valori snapshot.",
+    drilldownTitle: "Drill-down esecuzione",
     runDetailTabs: {
       overview: "Overview",
       tests: "Test",

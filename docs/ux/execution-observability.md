@@ -103,6 +103,21 @@ partial instead of failing to render. Unauthorized direct access must be handled
 as a not-found or permission-denied state by the API; the client does not render
 protected detail payloads when the contract marks the run as unauthorized.
 
+## Worker, test, step, and assertion drill-down
+
+Run detail adapters normalize Postman requests/assertions, Selenium steps, and
+Appium commands into one bounded hierarchy. Parent status is derived from child
+failures so failed assertions cannot appear as passed at the test or run level.
+Each node can expose status, duration, failure code, failure message,
+remediation, retryability, related artifacts, and Postman request metadata
+including name, method, URL, response status, duration, assertions, and response
+descriptor when available.
+
+The selected node is persisted as `detailId` in the canonical execution route,
+which allows refresh and browser back navigation to restore the same authorized
+detail. Legacy result shapes remain inspectable through the adapters and are
+bounded before rendering large result sets.
+
 ## Legacy compatibility
 
 Legacy status values are still accepted:
