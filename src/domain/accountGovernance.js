@@ -204,6 +204,9 @@ export function accountOperationContract(
     return rejected("unsupported-operation");
   }
   const descriptor = normalizeAccountDescriptor(account, options);
+  const requestedRoleId = safeIdentifier(
+    options.roleId ?? descriptor.roleId,
+  ).toLowerCase();
   const authorization = accountAuthorization(
     normalizedOperation,
     descriptor,
@@ -227,6 +230,7 @@ export function accountOperationContract(
     allowed: true,
     audit: accountAuditRecord(normalizedOperation, "requested", descriptor, {
       actor: options.actor,
+      replacementAdminId: options.replacementAdminId,
       reason: options.reason,
       timestamp: options.timestamp,
     }),
@@ -234,7 +238,8 @@ export function accountOperationContract(
       accountId: descriptor.id,
       operation: normalizedOperation,
       reason: safeText(options.reason),
-      roleId: normalizeRoleId(options.roleId ?? descriptor.roleId),
+      replacementAdminId: safeIdentifier(options.replacementAdminId) || null,
+      roleId: requestedRoleId,
       tenantId: descriptor.tenantId,
     },
     headers: {
@@ -372,7 +377,12 @@ export function accountTransition(operation, account = {}, options = {}) {
       : rejected("invalid-transition");
   }
   if (operation === "suspend") {
-    if (options.lastAdmin === true) return rejected("last-admin-protected");
+    if (
+      options.lastAdmin === true &&
+      !safeIdentifier(options.replacementAdminId)
+    ) {
+      return rejected("replacement-admin-required");
+    }
     return status === ACCOUNT_STATUSES.ACTIVE
       ? { allowed: true, nextStatus: ACCOUNT_STATUSES.SUSPENDED }
       : rejected("invalid-transition");
@@ -383,15 +393,42 @@ export function accountTransition(operation, account = {}, options = {}) {
       : rejected("invalid-transition");
   }
   if (operation === "role-change") {
-    if (options.lastAdmin === true) return rejected("last-admin-protected");
-    if (!ROLE_DEFINITIONS[normalizeRoleId(options.roleId)])
-      return rejected("invalid-role");
+    const requestedRoleId = safeIdentifier(options.roleId).toLowerCase();
+    const targetRole = normalizeRoleId(
+      options.roleCanonicalId ?? options.roleId,
+    );
+    const allowedRoleIds = new Set(
+      safeArray(options.allowedRoleIds).map((roleId) =>
+        safeIdentifier(roleId).toLowerCase(),
+      ),
+    );
+    const validRole =
+      ROLE_DEFINITIONS[targetRole] || allowedRoleIds.has(requestedRoleId);
+    const targetKeepsAdmin =
+      targetRole === "admin" || targetRole === "superadmin";
+    if (
+      options.lastAdmin === true &&
+      !targetKeepsAdmin &&
+      !safeIdentifier(options.replacementAdminId)
+    ) {
+      return rejected("replacement-admin-required");
+    }
+    if (!validRole) return rejected("invalid-role");
     return [ACCOUNT_STATUSES.ACTIVE, ACCOUNT_STATUSES.INVITED].includes(status)
-      ? { allowed: true, nextStatus: status }
+      ? {
+          allowed: true,
+          nextStatus: status,
+          risk: privilegedChangeRisk(account.roleId, targetRole, options),
+        }
       : rejected("invalid-transition");
   }
   if (operation === "archive") {
-    if (options.lastAdmin === true) return rejected("last-admin-protected");
+    if (
+      options.lastAdmin === true &&
+      !safeIdentifier(options.replacementAdminId)
+    ) {
+      return rejected("replacement-admin-required");
+    }
     return status !== ACCOUNT_STATUSES.ARCHIVED
       ? { allowed: true, nextStatus: ACCOUNT_STATUSES.ARCHIVED }
       : rejected("invalid-transition");
@@ -413,12 +450,35 @@ export function accountAuditRecord(
     email: descriptor.email,
     operation: safeOperation(operation),
     outcome: safeIdentifier(outcome),
+    replacementAdminId: safeIdentifier(context.replacementAdminId) || null,
     reason: safeText(context.reason),
     roleId: descriptor.roleId,
     status: descriptor.status,
     tenantId: descriptor.tenantId,
     timestamp: safeIsoTimestamp(context.timestamp) ?? new Date().toISOString(),
   };
+}
+
+export function privilegedChangeRisk(currentRole, nextRole, options = {}) {
+  const current = roleMetadata(
+    inferCanonicalRole(options.currentRoleName ?? currentRole),
+    options.language,
+  );
+  const next = roleMetadata(
+    inferCanonicalRole(options.nextRoleName ?? nextRole),
+    options.language,
+  );
+  if (current.riskLevel === "critical" || next.riskLevel === "critical") {
+    return "critical";
+  }
+  if (
+    next.permissions.includes("*") ||
+    next.permissions.includes("account.role.assign")
+  ) {
+    return "elevation";
+  }
+  if (roleReductionWarning(current.id, next.id, options)) return "reduction";
+  return "standard";
 }
 
 export function legacyAccountCompatibility(account = {}, context = {}) {

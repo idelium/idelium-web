@@ -242,7 +242,7 @@ describe("account lifecycle and role governance contract", () => {
       }),
     ).toMatchObject({
       allowed: false,
-      reason: "last-admin-protected",
+      reason: "replacement-admin-required",
     });
     expect(
       accountOperationContract("suspend", account, {
@@ -274,6 +274,57 @@ describe("account lifecycle and role governance contract", () => {
     ).toMatchObject({
       allowed: false,
       reason: "tenant-mismatch",
+    });
+  });
+
+  it("requires a replacement administrator for protected demotion and preserves stable role IDs", () => {
+    const account = {
+      id: "account-1",
+      role: "2",
+      roleId: "admin",
+      status: "active",
+      tenantId: "tenant-1",
+    };
+
+    expect(
+      accountOperationContract("role-change", account, {
+        allowedRoleIds: ["2", "3"],
+        actor: "admin@idelium.org",
+        capabilities: ["account.role.assign"],
+        lastAdmin: true,
+        roleCanonicalId: "viewer",
+        roleId: "3",
+        tenantId: "tenant-1",
+      }),
+    ).toMatchObject({
+      allowed: false,
+      reason: "replacement-admin-required",
+    });
+
+    expect(
+      accountOperationContract("role-change", account, {
+        allowedRoleIds: ["2", "3"],
+        actor: "admin@idelium.org",
+        capabilities: ["account.role.assign"],
+        lastAdmin: true,
+        replacementAdminId: "account-2",
+        roleCanonicalId: "viewer",
+        roleId: "3",
+        tenantId: "tenant-1",
+      }),
+    ).toMatchObject({
+      allowed: true,
+      audit: {
+        accountId: "account-1",
+        operation: "role-change",
+        replacementAdminId: "account-2",
+      },
+      body: {
+        accountId: "account-1",
+        replacementAdminId: "account-2",
+        roleId: "3",
+        tenantId: "tenant-1",
+      },
     });
   });
 });

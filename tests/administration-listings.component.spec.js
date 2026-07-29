@@ -95,6 +95,10 @@ function commonMocks(section, url) {
           nextPage: "Next",
           pageStatus: "Page {page} of {pages}",
           paginationLabel: "Account pages",
+          privilegedRoleConfirmation:
+            "Change {account} from {currentRole} to {nextRole}? This privileged change is revalidated by the API before it becomes durable.",
+          privilegedRoleSafeFailure:
+            "The privileged role change could not be completed. The account remains unchanged until the API confirms the administrator invariant.",
           previousPage: "Previous",
           role: "Role",
           searchLabel: "Search",
@@ -460,6 +464,105 @@ describe("administration enterprise listings", () => {
     expect(wrapper.vm.arrayAccounts).toEqual([originalAccount]);
     expect(wrapper.vm.error.safeFeedback).toBe(
       "The lifecycle action could not be completed. The account remains unchanged until the API confirms a durable transition.",
+    );
+  });
+
+  it("submits privileged role changes with replacement context before profile updates", async () => {
+    const accounts = [
+      {
+        email: "admin@example.test",
+        id: 42,
+        idCostumer: "tenant-1",
+        name: "Admin",
+        role: 2,
+        status: "active",
+      },
+      {
+        email: "replacement@example.test",
+        id: 43,
+        idCostumer: "tenant-1",
+        name: "Replacement",
+        role: 2,
+        status: "active",
+      },
+    ];
+    api.get.mockImplementation((url) => {
+      if (url === "/api/admin/accounts") {
+        return Promise.resolve({
+          data: {
+            data: accounts,
+            meta: { page: 1, pageSize: 25, total: 2 },
+          },
+        });
+      }
+      if (url === "/api/admin/roles") {
+        return Promise.resolve({
+          data: [
+            { id: 2, name: "admin" },
+            { id: 3, name: "viewer" },
+          ],
+        });
+      }
+      if (url === "/api/admin/costumers") {
+        return Promise.resolve({ data: [] });
+      }
+      return Promise.resolve({ data: [] });
+    });
+    api.post.mockResolvedValue({ data: { status: "active" } });
+    api.put.mockResolvedValue({ data: {} });
+
+    const wrapper = shallowMount(Accounts, {
+      global: {
+        stubs: {
+          EnterpriseListingGrid: true,
+          EnterpriseListingPage: true,
+          modalModifyAccount: true,
+        },
+        mocks: commonMocks(
+          {},
+          {
+            accounts: "admin/accounts",
+            costumers: "admin/costumers",
+            roles: "admin/roles",
+          },
+        ),
+      },
+    });
+    wrapper.vm.session.capabilities = ["account.role.assign"];
+    await vi.waitFor(() => expect(wrapper.vm.arrayRoles).toHaveLength(2));
+
+    await wrapper.vm.updateAccount({
+      id: 42,
+      name: "Admin",
+      password: "Password1",
+      replacementAdminId: "43",
+      role: 3,
+      type: "modify",
+    });
+
+    expect(api.post).toHaveBeenCalledWith(
+      "/api/admin/accounts/42/role-change",
+      expect.objectContaining({
+        accountId: "42",
+        audit: expect.objectContaining({
+          operation: "role-change",
+          replacementAdminId: "43",
+          tenantId: "tenant-1",
+        }),
+        replacementAdminId: "43",
+        roleId: "3",
+        tenantId: "tenant-1",
+      }),
+      {
+        headers: {
+          "Idempotency-Key": "account:role-change:tenant-1:42:current-user",
+        },
+      },
+    );
+    expect(api.put).toHaveBeenCalledWith(
+      "/api/admin/accounts/42",
+      { name: "Admin", password: "Password1" },
+      { headers: {} },
     );
   });
 });

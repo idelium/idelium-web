@@ -104,6 +104,22 @@ invalidate active sessions and account-bound credentials according to API policy
 reactivation does not automatically restore credentials unless the API policy
 explicitly does so.
 
+## Last-administrator and privileged-change protection
+
+Role changes, suspension, and archival paths carry administrator-invariant
+context whenever the selected account is the last active administrator for the
+tenant. The client requires an explicit replacement administrator before a
+protected demotion can be submitted and shows a stronger confirmation for
+privilege elevation, critical-role changes, and self-sensitive role changes.
+
+The client-side check is only a safety rail. Every privileged request is
+submitted through the account operation contract with tenant, actor, target
+account, requested role, optional replacement administrator, idempotency key, and
+safe audit intent. The API must re-read the current tenant state and reject stale
+or concurrent transitions that would leave the tenant without an administrator.
+The UI treats such rejections as durable failures and leaves the existing account
+state visible until the API confirms a successful transition.
+
 ## Operations
 
 The contract defines these account operations:

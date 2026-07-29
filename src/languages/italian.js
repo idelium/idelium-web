@@ -1027,9 +1027,11 @@ export default {
     selectPage: "Seleziona questa pagina",
     selectRow: "Seleziona",
     emptyTitle: "Nessuna credenziale",
-    emptyDescription: "Crea una credenziale nominale per sostituire le chiavi legacy.",
+    emptyDescription:
+      "Crea una credenziale nominale per sostituire le chiavi legacy.",
     noResultsTitle: "Nessuna credenziale trovata",
-    noResultsDescription: "Cancella i filtri o modifica stato, scope, owner o scadenza.",
+    noResultsDescription:
+      "Cancella i filtri o modifica stato, scope, owner o scadenza.",
     colName: "Nome",
     colFingerprint: "Prefisso / fingerprint",
     colScopes: "Scope",
@@ -1101,7 +1103,8 @@ export default {
     scopeRunExecute: "Esecuzione run",
     scopeRunExecuteHelp: "Consente di avviare esecuzioni di test approvate.",
     scopeArtifactRead: "Lettura artifact",
-    scopeArtifactReadHelp: "Consente di leggere artifact di esecuzione conservati.",
+    scopeArtifactReadHelp:
+      "Consente di leggere artifact di esecuzione conservati.",
     scopeCredentialAdmin: "Amministrazione credenziali",
     scopeCredentialAdminHelp:
       "Consente di gestire credenziali e va concesso solo agli amministratori.",
@@ -1115,11 +1118,13 @@ export default {
       "elevated-confirmation-required":
         "Per questa revoca protetta è richiesta una conferma elevata.",
       "invalid-date": "Scegli una data di scadenza valida.",
-      "maximum-lifetime": "La durata della credenziale non può superare 365 giorni.",
+      "maximum-lifetime":
+        "La durata della credenziale non può superare 365 giorni.",
       "missing-capability": "Non sei autorizzato a creare credenziali.",
       "reason-required": "La policy richiede un motivo audit.",
       required: "Completa i campi obbligatori della credenziale.",
-      "terminal-state": "Questa credenziale non può essere ruotata dal suo stato corrente.",
+      "terminal-state":
+        "Questa credenziale non può essere ruotata dal suo stato corrente.",
       "unauthorized-scope": "Non puoi concedere uno o più scope selezionati.",
       "unsupported-policy": "Scegli una policy di rotazione approvata.",
     },
@@ -1163,12 +1168,20 @@ export default {
       "Non è stato possibile inviare l'invito. Controlla i campi visibili o contatta un amministratore.",
     modifyFormHelp:
       "Questa form aggiorna solo i campi profilo account modificabili e salvati da Idelium.",
+    placeholderReplacementAdmin: "Seleziona un amministratore sostitutivo",
     placeholderEmail: "utente@example.com",
     placeholderName: "Nome completo",
     placeholderPassword: "Password",
     placeholderConfirmPassword: "Conferma password",
     placeholderRole: "Seleziona un ruolo",
     placeholderCostumer: "Seleziona un cliente",
+    privilegedRoleConfirmation:
+      "Cambiare {account} da {currentRole} a {nextRole}? Questa modifica privilegiata viene rivalidata dall'API prima di diventare durevole.",
+    privilegedRoleSafeFailure:
+      "Non è stato possibile completare il cambio ruolo privilegiato. L'account resta invariato finché l'API non conferma l'invariante amministratore.",
+    replacementAdmin: "Amministratore sostitutivo",
+    replacementAdminHelp:
+      "Obbligatorio quando l'ultimo amministratore attivo viene cambiato a un ruolo non amministratore.",
     rolePicker: {
       title: "Assegnazione ruolo",
       description:
@@ -1178,7 +1191,8 @@ export default {
       permission: "Permesso",
       permissionAllowed: "Permesso consentito",
       permissionDenied: "Permesso non assegnato",
-      unavailableRole: "I tuoi permessi correnti non consentono di assegnare questo ruolo.",
+      unavailableRole:
+        "I tuoi permessi correnti non consentono di assegnare questo ruolo.",
       groups: {
         administration: "Amministrazione",
         assets: "Asset",
@@ -1234,8 +1248,7 @@ export default {
     lifecycleConfirmations: {
       "cancel-invite":
         "Annullare l'invito per {account}? Ruolo: {role}. Impatto: {impact}",
-      reactivate:
-        "Riattivare {account}? Ruolo: {role}. Impatto: {impact}",
+      reactivate: "Riattivare {account}? Ruolo: {role}. Impatto: {impact}",
       "resend-invite":
         "Reinviare l'invito per {account}? Ruolo: {role}. Impatto: {impact}",
       suspend: "Sospendere {account}? Ruolo: {role}. Impatto: {impact}",

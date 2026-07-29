@@ -110,7 +110,8 @@ export default {
     statusCancelled: "Cancelled",
     statusSkipped: "Skipped",
     statusBlocked: "Blocked",
-    replayRequired: "Live updates missed events. Replaying from the last cursor.",
+    replayRequired:
+      "Live updates missed events. Replaying from the last cursor.",
     redactedPayload: "Protected payload redacted",
   },
   Login: {
@@ -869,7 +870,8 @@ export default {
         "This runner does not support automated retry. Create a new manual run.",
     },
     cancellationStates: {
-      "cancellation-requested": "Cancellation requested and awaiting server state.",
+      "cancellation-requested":
+        "Cancellation requested and awaiting server state.",
       cancelled: "Cancellation confirmed by durable server state.",
       cancelling: "Cancellation is in progress.",
       rejected: "Cancellation was rejected by the server.",
@@ -912,7 +914,8 @@ export default {
     fullArtifact: "Open full view",
     noArtifacts: "No artifacts are available for this run.",
     artifactStates: {
-      available: "Content is available through an authorized expiring descriptor.",
+      available:
+        "Content is available through an authorized expiring descriptor.",
       expired: "This content has expired according to its retention policy.",
       oversized:
         "This content is too large for inline preview. Use the authorized download when available.",
@@ -994,7 +997,8 @@ export default {
     copySecret: "Copy secret",
     copySecretFeedback: "Secret copied to clipboard.",
     downloadSecret: "Download secret",
-    downloadSecretFeedback: "Secret downloaded. Store it in an approved secure location.",
+    downloadSecretFeedback:
+      "Secret downloaded. Store it in an approved secure location.",
     clearSecret: "Clear secret",
     copySnippet: "Copy",
     copySnippetFeedback: "Usage snippet copied.",
@@ -1018,7 +1022,8 @@ export default {
     emptyTitle: "No credentials",
     emptyDescription: "Create a named credential to replace legacy keys.",
     noResultsTitle: "No matching credentials",
-    noResultsDescription: "Clear filters or adjust status, scope, owner, or expiry.",
+    noResultsDescription:
+      "Clear filters or adjust status, scope, owner, or expiry.",
     colName: "Name",
     colFingerprint: "Prefix / fingerprint",
     colScopes: "Scopes",
@@ -1108,7 +1113,8 @@ export default {
       "missing-capability": "You are not authorized to create credentials.",
       "reason-required": "An audit reason is required by policy.",
       required: "Complete the required credential fields.",
-      "terminal-state": "This credential cannot be rotated from its current state.",
+      "terminal-state":
+        "This credential cannot be rotated from its current state.",
       "unauthorized-scope": "You cannot grant one or more selected scopes.",
       "unsupported-policy": "Choose an approved rotation policy.",
     },
@@ -1153,12 +1159,20 @@ export default {
       "The invitation could not be submitted. Check the visible fields or contact an administrator.",
     modifyFormHelp:
       "This form updates only the editable account profile fields saved by Idelium.",
+    placeholderReplacementAdmin: "Select a replacement administrator",
     placeholderEmail: "user@example.com",
     placeholderName: "Full name",
     placeholderPassword: "Password",
     placeholderConfirmPassword: "Confirm password",
     placeholderRole: "Select a role",
     placeholderCostumer: "Select a customer",
+    privilegedRoleConfirmation:
+      "Change {account} from {currentRole} to {nextRole}? This privileged change is revalidated by the API before it becomes durable.",
+    privilegedRoleSafeFailure:
+      "The privileged role change could not be completed. The account remains unchanged until the API confirms the administrator invariant.",
+    replacementAdmin: "Replacement administrator",
+    replacementAdminHelp:
+      "Required when changing the last active administrator to a non-administrator role.",
     rolePicker: {
       title: "Role assignment",
       description:
@@ -1224,8 +1238,7 @@ export default {
     lifecycleConfirmations: {
       "cancel-invite":
         "Cancel the invitation for {account}? Role: {role}. Impact: {impact}",
-      reactivate:
-        "Reactivate {account}? Role: {role}. Impact: {impact}",
+      reactivate: "Reactivate {account}? Role: {role}. Impact: {impact}",
       "resend-invite":
         "Resend the invitation for {account}? Role: {role}. Impact: {impact}",
       suspend: "Suspend {account}? Role: {role}. Impact: {impact}",

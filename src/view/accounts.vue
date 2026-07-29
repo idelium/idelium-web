@@ -54,7 +54,9 @@
               v-on:change="changeFilter('status', $event.target.value)"
             >
               <option value="">{{ copy.filterAll }}</option>
-              <option value="invited">{{ copy.accountStatuses.invited }}</option>
+              <option value="invited">
+                {{ copy.accountStatuses.invited }}
+              </option>
               <option value="active">{{ copy.accountStatuses.active }}</option>
               <option value="suspended">
                 {{ copy.accountStatuses.suspended }}
@@ -62,7 +64,9 @@
               <option value="expired-invitation">
                 {{ copy.accountStatuses["expired-invitation"] }}
               </option>
-              <option value="archived">{{ copy.accountStatuses.archived }}</option>
+              <option value="archived">
+                {{ copy.accountStatuses.archived }}
+              </option>
             </select>
           </label>
           <label>
@@ -80,8 +84,12 @@
               v-on:change="changeFilter('invitation', $event.target.value)"
             >
               <option value="">{{ copy.filterAll }}</option>
-              <option value="pending">{{ copy.invitationStates.pending }}</option>
-              <option value="expired">{{ copy.invitationStates.expired }}</option>
+              <option value="pending">
+                {{ copy.invitationStates.pending }}
+              </option>
+              <option value="expired">
+                {{ copy.invitationStates.expired }}
+              </option>
               <option value="none">{{ copy.invitationStates.none }}</option>
             </select>
           </label>
@@ -94,6 +102,7 @@
       :roles="arrayRoles"
       :costumers="arrayCostumers"
       :isSuperAdmin="isSuperAdmin"
+      :can-assign-roles="accountCapabilities.includes('account.role.assign')"
       v-on:updateData="updateData"
     />
   </EnterpriseListingPage>
@@ -262,7 +271,11 @@ export default {
     },
     actions() {
       return [
-        { capability: "account.detail", id: "detail", label: this.copy.btnDetail },
+        {
+          capability: "account.detail",
+          id: "detail",
+          label: this.copy.btnDetail,
+        },
         {
           capability: "account.invite",
           disabled: (account) => account.status !== "invited",
@@ -363,7 +376,10 @@ export default {
       if (account.status) return account.status;
       if (account.archivedAt) return "archived";
       if (account.suspendedAt) return "suspended";
-      if (account.invitationExpiresAt && new Date(account.invitationExpiresAt) < new Date()) {
+      if (
+        account.invitationExpiresAt &&
+        new Date(account.invitationExpiresAt) < new Date()
+      ) {
         return "expired-invitation";
       }
       if (account.invitedAt) return "invited";
@@ -521,12 +537,9 @@ export default {
     },
     handleAction({ action, row }) {
       if (
-        [
-          "cancel-invite",
-          "reactivate",
-          "resend-invite",
-          "suspend",
-        ].includes(action)
+        ["cancel-invite", "reactivate", "resend-invite", "suspend"].includes(
+          action,
+        )
       ) {
         return this.confirmAccountLifecycleAction(action, row);
       }
@@ -560,6 +573,8 @@ export default {
         actor: "current-user",
         actorAccountId: this.session.accountId,
         capabilities: this.accountCapabilities,
+        lastAdmin: this.isLastAdministrator(row),
+        replacementAdminId: row.replacementAdminId,
         tenantId: row.tenantId || row.idCostumer || "current-tenant",
         timestamp: new Date().toISOString(),
       });
@@ -571,12 +586,16 @@ export default {
         return Promise.resolve();
       }
       return apiClient
-        .post(this.accountLifecycleEndpoint(row.id, action), {
-          ...request.body,
-          audit: request.audit,
-        }, {
-          headers: { ...this.setHeaders(), ...request.headers },
-        })
+        .post(
+          this.accountLifecycleEndpoint(row.id, action),
+          {
+            ...request.body,
+            audit: request.audit,
+          },
+          {
+            headers: { ...this.setHeaders(), ...request.headers },
+          },
+        )
         .then((response) => {
           const durableStatus =
             response.data?.status || request.transition.nextStatus;
@@ -645,11 +664,9 @@ export default {
         return Promise.resolve();
       }
       return apiClient
-        .post(
-          this.accountInvitationEndpoint(),
-          request.body,
-          { headers: { ...this.setHeaders(), ...request.headers } },
-        )
+        .post(this.accountInvitationEndpoint(), request.body, {
+          headers: { ...this.setHeaders(), ...request.headers },
+        })
         .then(() => this.getAccounts())
         .catch((error) => {
           this.error = error;
@@ -664,17 +681,98 @@ export default {
       );
     },
     updateAccount(data) {
-      return apiClient
-        .put(
+      const account = this.arrayAccounts.find(
+        ({ id }) => String(id) === String(data.id),
+      );
+      const profileRequest = () =>
+        apiClient.put(
           `${this.config.serviceBaseUrl}${this.config.url.accounts}/${data.id}`,
           { name: data.name, password: data.password },
           { headers: this.setHeaders() },
-        )
-        .then(() => this.getAccounts())
+        );
+      const roleChanged = account && String(account.role) !== String(data.role);
+      const request = roleChanged
+        ? this.confirmPrivilegedRoleChange(account, data).then((confirmed) => {
+            if (!confirmed) return null;
+            return this.submitRoleChange(account, data).then(profileRequest);
+          })
+        : profileRequest();
+      return request
+        .then((response) => {
+          if (response === null) return null;
+          return this.getAccounts();
+        })
         .catch((error) => {
           this.error = error;
           this.Logout(this, error);
         });
+    },
+    confirmPrivilegedRoleChange(account, data) {
+      const currentRole = this.roleNameFor(account.role);
+      const nextRole = this.roleNameFor(data.role);
+      const message = String(this.copy.privilegedRoleConfirmation)
+        .replace("{account}", account.email || account.account || account.name)
+        .replace("{currentRole}", currentRole)
+        .replace("{nextRole}", nextRole);
+      return this.$showConfirm({ message, variant: "warning" });
+    },
+    submitRoleChange(account, data) {
+      const request = accountOperationContract("role-change", account, {
+        actor: "current-user",
+        actorAccountId: this.session.accountId,
+        allowedRoleIds: this.arrayRoles.map((role) => String(role.id)),
+        capabilities: this.accountCapabilities,
+        lastAdmin: this.isLastAdministrator(account),
+        replacementAdminId: data.replacementAdminId,
+        roleCanonicalId: this.roleNameFor(data.role),
+        roleId: data.role,
+        tenantId: account.tenantId || account.idCostumer || "current-tenant",
+        timestamp: new Date().toISOString(),
+      });
+      if (!request.allowed) {
+        this.error = {
+          safeErrors: [{ code: request.reason }],
+          safeFeedback: this.copy.privilegedRoleSafeFailure,
+        };
+        return Promise.resolve(null);
+      }
+      return apiClient.post(
+        this.accountLifecycleEndpoint(account.id, "role-change"),
+        {
+          ...request.body,
+          audit: request.audit,
+        },
+        { headers: { ...this.setHeaders(), ...request.headers } },
+      );
+    },
+    isLastAdministrator(account) {
+      if (!this.isAdministratorAccount(account)) return false;
+      const tenantId = account.tenantId || account.idCostumer;
+      return (
+        this.arrayAccounts.filter((candidate) => {
+          const sameTenant =
+            !tenantId ||
+            candidate.tenantId === tenantId ||
+            candidate.idCostumer === tenantId;
+          return (
+            sameTenant &&
+            String(candidate.id) !== String(account.id) &&
+            this.isAdministratorAccount(candidate) &&
+            this.accountStatus(candidate) === "active"
+          );
+        }).length === 0
+      );
+    },
+    isAdministratorAccount(account) {
+      return this.roleNameFor(account.role || account.roleName)
+        .toLowerCase()
+        .includes("admin");
+    },
+    roleNameFor(roleId) {
+      const role = this.arrayRoles.find(
+        ({ id }) => String(id) === String(roleId),
+      );
+      return role?.name || String(roleId || "");
     },
     updateData(data) {
       return data.type === "new"

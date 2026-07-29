@@ -16,6 +16,7 @@ describe("account modal", () => {
         arrayAccounts: [],
         roles: [{ id: 2, name: "admin" }],
         costumers: [{ id: 7, costumer: "demo" }],
+        canAssignRoles: false,
         isSuperAdmin: true,
         ...props,
       },
@@ -54,7 +55,11 @@ describe("account modal", () => {
                 placeholderEmail: "user@example.com",
                 placeholderName: "Full name",
                 placeholderPassword: "Password",
+                placeholderReplacementAdmin: "Select replacement admin",
                 placeholderRole: "Select a role",
+                replacementAdmin: "Replacement administrator",
+                replacementAdminHelp:
+                  "Required when changing the last administrator.",
                 rolePicker: {
                   title: "Role assignment",
                   description: "Choose a role after reviewing impact.",
@@ -186,7 +191,48 @@ describe("account modal", () => {
       id: 42,
       name: "Renamed User",
       password: "Password1",
+      replacementAdminId: null,
+      role: 2,
       type: "modify",
     });
+  });
+
+  it("requires a replacement administrator when demoting the last active administrator", async () => {
+    const wrapper = mountAccountModal({
+      arrayAccounts: [
+        {
+          email: "admin@example.test",
+          id: 42,
+          idCostumer: 7,
+          name: "Admin",
+          role: 2,
+          status: "active",
+        },
+      ],
+      canAssignRoles: true,
+      roles: [
+        { id: 2, name: "admin" },
+        { id: 3, name: "viewer" },
+      ],
+    });
+
+    wrapper.vm.showModal(
+      {
+        email: "admin@example.test",
+        id: 42,
+        idCostumer: 7,
+        name: "Admin",
+        role: 2,
+      },
+      "modify",
+    );
+    wrapper.vm.name = "Admin";
+    wrapper.vm.password = "Password1";
+    wrapper.vm.confirmPassword = "Password1";
+    wrapper.vm.selectedRole = 3;
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.find("#account-replacement-admin").exists()).toBe(true);
+    expect(wrapper.vm.disableButton).toBe(true);
   });
 });

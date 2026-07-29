@@ -62,15 +62,21 @@
             </div>
             <div class="account-readonly-summary" v-else>
               <div>
-                <span>{{ language[config.currentLanguage].Profile.email }}</span>
+                <span>{{
+                  language[config.currentLanguage].Profile.email
+                }}</span>
                 <strong>{{ email }}</strong>
               </div>
               <div v-if="isSuperAdmin == true">
-                <span>{{ language[config.currentLanguage].Accounts.costumer }}</span>
+                <span>{{
+                  language[config.currentLanguage].Accounts.costumer
+                }}</span>
                 <strong>{{ currentCustomerLabel }}</strong>
               </div>
               <div>
-                <span>{{ language[config.currentLanguage].Accounts.role }}</span>
+                <span>{{
+                  language[config.currentLanguage].Accounts.role
+                }}</span>
                 <strong>{{ currentRoleLabel }}</strong>
               </div>
             </div>
@@ -92,7 +98,9 @@
               </div>
             </div>
             <div class="account-invitation-notice" v-if="!isModifyType">
-              {{ language[config.currentLanguage].Accounts.invitationExpiryHelp }}
+              {{
+                language[config.currentLanguage].Accounts.invitationExpiryHelp
+              }}
             </div>
             <div class="mb-3" v-if="isModifyType">
               <label class="form-label" for="account-password">
@@ -164,6 +172,45 @@
                 :roles="roles"
               />
             </div>
+            <div class="mb-3" v-if="isModifyType && canAssignRoles">
+              <RolePicker
+                v-model="selectedRole"
+                :assignable-role-ids="assignableRoleIds"
+                :copy="rolePickerCopy"
+                :current-role="currentRoleDefinition"
+                :language-code="config.currentLanguage"
+                :roles="roles"
+              />
+            </div>
+            <div class="mb-3" v-if="isProtectedAdminChange">
+              <label class="form-label" for="account-replacement-admin">
+                {{ language[config.currentLanguage].Accounts.replacementAdmin }}
+              </label>
+              <select
+                class="form-select"
+                id="account-replacement-admin"
+                v-model="replacementAdminId"
+              >
+                <option value="" disabled>
+                  {{
+                    language[config.currentLanguage].Accounts
+                      .placeholderReplacementAdmin
+                  }}
+                </option>
+                <option
+                  v-for="account in availableReplacementAdmins"
+                  v-bind:key="account.id"
+                  :value="String(account.id)"
+                >
+                  {{ account.email || account.name }}
+                </option>
+              </select>
+              <div class="form-text">
+                {{
+                  language[config.currentLanguage].Accounts.replacementAdminHelp
+                }}
+              </div>
+            </div>
           </form>
         </div>
         <div class="modal-footer">
@@ -195,7 +242,13 @@ import { hideModalSafely } from "@/shared/bootstrapModal";
 import RolePicker from "@/components/account/RolePicker.vue";
 export default {
   components: { RolePicker },
-  props: ["arrayAccounts", "roles", "costumers", "isSuperAdmin"],
+  props: [
+    "arrayAccounts",
+    "roles",
+    "costumers",
+    "isSuperAdmin",
+    "canAssignRoles",
+  ],
   emits: ["updateData"],
   data() {
     return {
@@ -208,6 +261,7 @@ export default {
       checkName: false,
       selectedRole: null,
       selectedCostumer: null,
+      replacementAdminId: "",
       type: "",
       titleModal: "",
       isModifyType: true,
@@ -231,14 +285,55 @@ export default {
       let role = this.roles.find(({ id }) => id === this.selectedRole);
       return role ? role.name : "-";
     },
+    currentRoleDefinition() {
+      return this.roleById(this.dataAccount.role);
+    },
+    selectedRoleDefinition() {
+      return this.roleById(this.selectedRole);
+    },
     currentCustomerLabel() {
-      let customer = this.costumers.find(({ id }) => id === this.selectedCostumer);
+      let customer = this.costumers.find(
+        ({ id }) => id === this.selectedCostumer,
+      );
       return customer ? customer.costumer : "-";
+    },
+    isLastActiveAdministrator() {
+      if (!this.isAdministratorRole(this.currentRoleDefinition)) return false;
+      return this.availableReplacementAdmins.length === 0;
+    },
+    isProtectedAdminChange() {
+      if (!this.isModifyType || !this.canAssignRoles) return false;
+      if (String(this.selectedRole) === String(this.dataAccount.role))
+        return false;
+      return (
+        this.isLastActiveAdministrator &&
+        !this.isAdministratorRole(this.selectedRoleDefinition)
+      );
+    },
+    availableReplacementAdmins() {
+      const tenantId = this.dataAccount.tenantId || this.dataAccount.idCostumer;
+      return this.arrayAccounts.filter((account) => {
+        const sameTenant =
+          !tenantId ||
+          account.tenantId === tenantId ||
+          account.idCostumer === tenantId;
+        return (
+          sameTenant &&
+          String(account.id) !== String(this.dataAccount.id) &&
+          this.isAdministratorRole(this.roleById(account.role)) &&
+          this.accountStatus(account) === "active"
+        );
+      });
     },
     assignableRoleIds() {
       if (this.isSuperAdmin) return this.roles.map((role) => String(role.id));
       return this.roles
-        .filter((role) => !String(role.name ?? "").toLowerCase().includes("super"))
+        .filter(
+          (role) =>
+            !String(role.name ?? "")
+              .toLowerCase()
+              .includes("super"),
+        )
         .map((role) => String(role.id));
     },
     rolePickerCopy() {
@@ -274,7 +369,8 @@ export default {
         if (
           this.checkName == false ||
           this.checkPassword == false ||
-          this.password != this.confirmPassword
+          this.password != this.confirmPassword ||
+          (this.isProtectedAdminChange && !this.replacementAdminId)
         ) {
           this.disableButton = true;
         } else {
@@ -309,6 +405,7 @@ export default {
       this.checkName = false;
       this.disableButton = true;
       this.emailCheck = true;
+      this.replacementAdminId = "";
       if (type == "modify") {
         this.isModifyType = true;
         this.dataAccount = dataAccount;
@@ -351,6 +448,8 @@ export default {
       };
       if (this.type == "modify") {
         sendData.password = this.password;
+        sendData.role = this.selectedRole;
+        sendData.replacementAdminId = this.replacementAdminId || null;
       }
       if (this.type == "new") {
         sendData.email = this.email;
@@ -362,6 +461,20 @@ export default {
     },
     hideModal() {
       hideModalSafely(this.$refs.mymodal, this.modalElem);
+    },
+    roleById(roleId) {
+      return this.roles.find(({ id }) => String(id) === String(roleId));
+    },
+    isAdministratorRole(role) {
+      return String(role?.name ?? role ?? "")
+        .toLowerCase()
+        .includes("admin");
+    },
+    accountStatus(account) {
+      if (account.status) return account.status;
+      if (account.suspendedAt) return "suspended";
+      if (account.archivedAt) return "archived";
+      return "active";
     },
     toggleModal() {
       // this.$refs['my-modal'].toggle('#toggle-btn')
