@@ -735,6 +735,17 @@ export default {
   },
   DataTable: {
     actions: "Azioni",
+    preferences: {
+      title: "Preferenze tabella",
+      density: "Densità",
+      columns: "Colonne",
+      comfortable: "Comoda",
+      compact: "Compatta",
+      spacious: "Spaziosa",
+      moveUp: "Sposta la colonna in alto",
+      moveDown: "Sposta la colonna in basso",
+      reset: "Ripristina impostazioni",
+    },
     resultCount: "{count} risultati",
     scrollRegion: "Tabella dei risultati scorrevole",
     selectPage: "Seleziona tutte le righe di questa pagina",

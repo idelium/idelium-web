@@ -5,6 +5,17 @@ import EnterpriseDataTable from "@/components/grid/EnterpriseDataTable.vue";
 
 const copy = {
   actions: "Actions",
+  preferences: {
+    title: "Table preferences",
+    density: "Density",
+    columns: "Columns",
+    comfortable: "Comfortable",
+    compact: "Compact",
+    spacious: "Spacious",
+    moveUp: "Move up",
+    moveDown: "Move down",
+    reset: "Reset",
+  },
   resultCount: "{count} results",
   scrollRegion: "Scrollable results table",
   selectPage: "Select this page",
@@ -99,5 +110,28 @@ describe("EnterpriseDataTable", () => {
     await wrapper.setProps({ rows: [] });
     expect(wrapper.text()).toContain("No records");
     expect(wrapper.find("table").exists()).toBe(false);
+  });
+
+  it("applies and emits versioned column and density preferences", async () => {
+    const wrapper = mountTable({
+      preferencesEnabled: true,
+      preferences: {
+        visibleColumns: ["id", "name"],
+        columnOrder: ["name", "id", "token"],
+        density: "compact",
+      },
+    });
+
+    expect(wrapper.classes()).toContain("enterprise-data-table--compact");
+    expect(wrapper.findAll("thead th")[0].text()).toContain("Name");
+
+    const radios = wrapper.findAll('input[type="radio"]');
+    await radios[2].setValue(true);
+
+    expect(wrapper.emitted("preferences-change")[0][0]).toMatchObject({
+      schemaVersion: 1,
+      density: "spacious",
+      columnOrder: ["name", "id", "token"],
+    });
   });
 });

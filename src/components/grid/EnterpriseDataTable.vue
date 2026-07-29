@@ -1,12 +1,75 @@
 <template>
   <section
     class="enterprise-data-table"
-    :class="`enterprise-data-table--${density}`"
+    :class="`enterprise-data-table--${effectiveDensity}`"
     :aria-busy="loading ? 'true' : 'false'"
     :aria-label="accessibleLabel"
   >
-    <div v-if="$slots.toolbar" class="enterprise-data-table__toolbar">
+    <div
+      v-if="$slots.toolbar || preferencesEnabled"
+      class="enterprise-data-table__toolbar"
+    >
       <slot name="toolbar"></slot>
+      <details
+        v-if="preferencesEnabled"
+        class="enterprise-data-table__preferences"
+      >
+        <summary>{{ copy.preferences.title }}</summary>
+        <fieldset>
+          <legend>{{ copy.preferences.density }}</legend>
+          <label v-for="option in densityOptions" :key="option">
+            <input
+              type="radio"
+              name="grid-density"
+              :value="option"
+              :checked="effectiveDensity === option"
+              @change="updateDensity(option)"
+            />
+            {{ copy.preferences[option] }}
+          </label>
+        </fieldset>
+        <fieldset>
+          <legend>{{ copy.preferences.columns }}</legend>
+          <div
+            v-for="(column, index) in orderedColumns"
+            :key="column.key"
+            class="enterprise-data-table__preference-row"
+          >
+            <label>
+              <input
+                type="checkbox"
+                :checked="isColumnVisible(column)"
+                :disabled="column.required || !column.configurable"
+                @change="toggleColumn(column)"
+              />
+              {{ column.label }}
+            </label>
+            <IdButton
+              icon-only
+              :accessible-label="`${copy.preferences.moveUp}: ${column.label}`"
+              :disabled="index === 0 || !column.configurable"
+              variant="ghost"
+              @click="moveColumn(column.key, -1)"
+            >
+              <template #icon>↑</template>
+            </IdButton>
+            <IdButton
+              icon-only
+              :accessible-label="`${copy.preferences.moveDown}: ${column.label}`"
+              :disabled="
+                index === orderedColumns.length - 1 || !column.configurable
+              "
+              variant="ghost"
+              @click="moveColumn(column.key, 1)"
+            >
+              <template #icon>↓</template>
+            </IdButton>
+          </div>
+        </fieldset>
+        <IdButton variant="secondary" @click="resetPreferences">
+          {{ copy.preferences.reset }}
+        </IdButton>
+      </details>
     </div>
 
     <EnterpriseGridState
@@ -114,13 +177,20 @@ import {
   getGridRowIdentity,
   gridStateFromResult,
   normalizeGridActions,
+  sanitizeGridPreferences,
   validateGridColumns,
 } from "@/domain/enterpriseGrid";
 
 export default {
   name: "EnterpriseDataTable",
   components: { EnterpriseGridState, IdButton },
-  emits: ["action", "row-activate", "selection-change", "sort"],
+  emits: [
+    "action",
+    "preferences-change",
+    "row-activate",
+    "selection-change",
+    "sort",
+  ],
   props: {
     accessibleLabel: { type: String, required: true },
     actions: { type: Array, default: () => [] },
@@ -138,6 +208,8 @@ export default {
     localLimit: { type: Number, default: 1000 },
     meta: { type: Object, default: () => ({}) },
     permissionDenied: { type: Boolean, default: false },
+    preferences: { type: Object, default: null },
+    preferencesEnabled: { type: Boolean, default: false },
     rowKey: { type: [String, Function], default: "id" },
     rows: { type: Array, default: () => [] },
     selectable: { type: Boolean, default: false },
@@ -145,8 +217,26 @@ export default {
     sort: { type: Object, default: null },
   },
   computed: {
-    normalizedColumns() {
+    allColumns() {
       return validateGridColumns(this.columns);
+    },
+    normalizedPreferences() {
+      return sanitizeGridPreferences(this.preferences, this.allColumns);
+    },
+    orderedColumns() {
+      return this.normalizedPreferences.columnOrder.map((key) =>
+        this.allColumns.find((column) => column.key === key),
+      );
+    },
+    normalizedColumns() {
+      const visible = new Set(this.normalizedPreferences.visibleColumns);
+      return this.orderedColumns.filter((column) => visible.has(column.key));
+    },
+    effectiveDensity() {
+      return this.preferences?.density ?? this.density;
+    },
+    densityOptions() {
+      return ["comfortable", "compact", "spacious"];
     },
     displayRows() {
       return boundedLocalRows(this.rows, this.localLimit);
@@ -241,6 +331,51 @@ export default {
             : "asc",
       };
     },
+    isColumnVisible(column) {
+      return this.normalizedPreferences.visibleColumns.includes(column.key);
+    },
+    emitPreferences(changes) {
+      this.$emit(
+        "preferences-change",
+        sanitizeGridPreferences(
+          { ...this.normalizedPreferences, ...changes },
+          this.allColumns,
+        ),
+      );
+    },
+    updateDensity(density) {
+      this.emitPreferences({ density });
+    },
+    toggleColumn(column) {
+      if (column.required || !column.configurable) return;
+      const visibleColumns = new Set(this.normalizedPreferences.visibleColumns);
+      if (visibleColumns.has(column.key)) visibleColumns.delete(column.key);
+      else visibleColumns.add(column.key);
+      this.emitPreferences({ visibleColumns: [...visibleColumns] });
+    },
+    moveColumn(columnKey, direction) {
+      const columnOrder = [...this.normalizedPreferences.columnOrder];
+      const currentIndex = columnOrder.indexOf(columnKey);
+      const nextIndex = currentIndex + direction;
+      if (
+        currentIndex < 0 ||
+        nextIndex < 0 ||
+        nextIndex >= columnOrder.length
+      ) {
+        return;
+      }
+      [columnOrder[currentIndex], columnOrder[nextIndex]] = [
+        columnOrder[nextIndex],
+        columnOrder[currentIndex],
+      ];
+      this.emitPreferences({ columnOrder });
+    },
+    resetPreferences() {
+      this.$emit(
+        "preferences-change",
+        sanitizeGridPreferences(null, this.allColumns),
+      );
+    },
   },
 };
 </script>
@@ -258,6 +393,35 @@ export default {
   flex-wrap: wrap;
   gap: var(--id-space-3);
   justify-content: space-between;
+}
+
+.enterprise-data-table__preferences {
+  background: var(--id-color-surface-raised);
+  border: 1px solid var(--id-color-border);
+  border-radius: var(--id-radius-medium);
+  max-width: min(24rem, 100%);
+  padding: var(--id-space-3);
+}
+
+.enterprise-data-table__preferences summary {
+  cursor: pointer;
+  font-weight: var(--id-font-weight-bold);
+  min-height: var(--id-control-min-size);
+}
+
+.enterprise-data-table__preferences fieldset {
+  border: 0;
+  display: grid;
+  gap: var(--id-space-2);
+  margin: var(--id-space-3) 0;
+  padding: 0;
+}
+
+.enterprise-data-table__preference-row {
+  align-items: center;
+  display: grid;
+  gap: var(--id-space-2);
+  grid-template-columns: minmax(0, 1fr) auto auto;
 }
 
 .enterprise-data-table__viewport {

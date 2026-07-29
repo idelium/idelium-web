@@ -78,24 +78,31 @@ describe("enterprise grid contract", () => {
     expect(gridStateFromResult({ rows: [{ id: 1 }], meta: {} })).toBeNull();
   });
 
-  it("scopes column preferences by tenant and project", () => {
+  it("scopes column preferences by user, tenant, project, and schema", () => {
     const key = storageKeyForGrid({
+      userId: "user:7",
       tenantId: "tenant/one",
       projectId: "project:42",
       gridName: "tests",
     });
 
-    expect(key).toBe("idelium:grid:tenant-one:project-42:tests");
+    expect(key).toBe("idelium:grid:v1:user-7:tenant-one:project-42:tests");
 
     expect(
       sanitizeGridPreferences(
         { visibleColumns: ["name", "secret"], density: "compact" },
-        ["id", "name", "status"],
+        [{ key: "id", required: true }, { key: "name" }, { key: "status" }],
       ),
     ).toEqual({
-      visibleColumns: ["name"],
+      schemaVersion: 1,
+      visibleColumns: ["name", "id"],
+      columnOrder: ["id", "name", "status"],
       density: "compact",
+      configurableColumns: ["id", "name", "status"],
     });
+    expect(() =>
+      storageKeyForGrid({ tenantId: "tenant", gridName: "tests" }),
+    ).toThrow("user, tenant, and table");
   });
 
   it("requires confirmation for sensitive bulk actions", () => {

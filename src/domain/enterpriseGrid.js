@@ -2,6 +2,7 @@ const DEFAULT_PAGE_SIZE = 25;
 const MAX_PAGE_SIZE = 100;
 const MAX_LOCAL_ROWS = 1000;
 const REDACTED_VALUE = "••••••••";
+export const GRID_PREFERENCES_VERSION = 1;
 const SENSITIVE_QUERY_KEY =
   /(authorization|cookie|credential|password|secret|session|token)/i;
 
@@ -101,8 +102,14 @@ export function gridStateFromResult({
   return Array.isArray(rows) && rows.length > 0 ? null : GRID_STATES.EMPTY;
 }
 
-export function storageKeyForGrid({ tenantId, projectId, gridName }) {
+export function storageKeyForGrid({ userId, tenantId, projectId, gridName }) {
+  if (!userId || !tenantId || !gridName) {
+    throw new TypeError(
+      "Grid preferences require user, tenant, and table identifiers.",
+    );
+  }
   const safeGrid = String(gridName ?? "").replace(/[^a-zA-Z0-9_.-]/g, "-");
+  const safeUser = String(userId).replace(/[^a-zA-Z0-9_.-]/g, "-");
   const safeTenant = String(tenantId ?? "tenant").replace(
     /[^a-zA-Z0-9_.-]/g,
     "-",
@@ -111,14 +118,58 @@ export function storageKeyForGrid({ tenantId, projectId, gridName }) {
     /[^a-zA-Z0-9_.-]/g,
     "-",
   );
-  return `idelium:grid:${safeTenant}:${safeProject}:${safeGrid}`;
+  return `idelium:grid:v${GRID_PREFERENCES_VERSION}:${safeUser}:${safeTenant}:${safeProject}:${safeGrid}`;
 }
 
-export function sanitizeGridPreferences(preferences, allowedColumns) {
-  const allowed = new Set(allowedColumns);
+export function sanitizeGridPreferences(preferences, columns) {
+  const definitions = (columns ?? []).map((column) =>
+    typeof column === "string"
+      ? { key: column, configurable: true, required: false }
+      : column,
+  );
+  const allowed = new Set(definitions.map((column) => column.key));
+  const aliases = new Map();
+  for (const column of definitions) {
+    for (const legacyKey of column.legacyKeys ?? []) {
+      aliases.set(legacyKey, column.key);
+    }
+  }
+  const normalizePreferenceColumn = (column) => aliases.get(column) ?? column;
+  const required = definitions
+    .filter((column) => column.required === true)
+    .map((column) => column.key);
+  const configurable = new Set(
+    definitions
+      .filter((column) => column.configurable !== false)
+      .map((column) => column.key),
+  );
   const visibleColumns = Array.isArray(preferences?.visibleColumns)
-    ? preferences.visibleColumns.filter((column) => allowed.has(column))
+    ? [
+        ...new Set(
+          preferences.visibleColumns
+            .map(normalizePreferenceColumn)
+            .filter((column) => allowed.has(column)),
+        ),
+      ]
     : [...allowed];
+  for (const requiredColumn of required) {
+    if (!visibleColumns.includes(requiredColumn)) {
+      visibleColumns.push(requiredColumn);
+    }
+  }
+  const requestedOrder = Array.isArray(preferences?.columnOrder)
+    ? [
+        ...new Set(
+          preferences.columnOrder
+            .map(normalizePreferenceColumn)
+            .filter((column) => allowed.has(column)),
+        ),
+      ]
+    : [];
+  const columnOrder = [
+    ...requestedOrder,
+    ...[...allowed].filter((column) => !requestedOrder.includes(column)),
+  ];
   const density = ["comfortable", "compact", "spacious"].includes(
     preferences?.density,
   )
@@ -126,8 +177,11 @@ export function sanitizeGridPreferences(preferences, allowedColumns) {
     : "comfortable";
 
   return {
+    schemaVersion: GRID_PREFERENCES_VERSION,
     visibleColumns,
+    columnOrder,
     density,
+    configurableColumns: [...configurable],
   };
 }
 

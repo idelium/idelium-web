@@ -46,6 +46,20 @@ changes reset the page to one. Unrelated route parameters remain intact, which
 keeps deep links compatible with route-backed drawers. URLs must never contain
 tokens, credentials, sessions, authorization values, or protected payloads.
 
+## Preferences
+
+Column visibility, order, and density use schema version 1. The storage key
+contains the authenticated user ID, tenant ID, project ID, and table identifier.
+Consumers must not enable persistence until every scope value is known.
+Preferences contain presentation metadata only; entity rows and filter values are
+never persisted.
+
+Required columns cannot be hidden. Only configurable columns can be hidden or
+reordered. Invalid JSON, removed columns, invalid density values, and older
+preference shapes are sanitized against the current column contract. Reset removes
+only the current scoped key. Compact mode retains native selection targets and the
+shared minimum interactive size.
+
 ## Migration and rollback
 
 Existing routes and API endpoints remain compatible. Listings move to the shared

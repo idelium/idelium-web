@@ -730,6 +730,17 @@ export default {
   },
   DataTable: {
     actions: "Actions",
+    preferences: {
+      title: "Table preferences",
+      density: "Density",
+      columns: "Columns",
+      comfortable: "Comfortable",
+      compact: "Compact",
+      spacious: "Spacious",
+      moveUp: "Move column up",
+      moveDown: "Move column down",
+      reset: "Reset to default",
+    },
     resultCount: "{count} results",
     scrollRegion: "Scrollable results table",
     selectPage: "Select all rows on this page",
