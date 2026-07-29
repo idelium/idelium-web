@@ -870,6 +870,20 @@ export default {
     partialRunDetail:
       "Some related assets are deleted, expired, or not available in the current API payload. Snapshot values are shown when available.",
     drilldownTitle: "Execution drill-down",
+    artifactViewer: "Secure artifact viewer",
+    fullArtifact: "Open full view",
+    noArtifacts: "No artifacts are available for this run.",
+    artifactStates: {
+      available: "Content is available through an authorized expiring descriptor.",
+      expired: "This content has expired according to its retention policy.",
+      oversized:
+        "This content is too large for inline preview. Use the authorized download when available.",
+      quarantined:
+        "This content is quarantined and cannot be previewed until reviewed.",
+      redacted:
+        "This body was redacted by policy. The content is protected, not empty.",
+      unavailable: "This content is unavailable for the current run.",
+    },
     runDetailTabs: {
       overview: "Overview",
       tests: "Tests",

@@ -162,6 +162,43 @@
           <span v-if="node.failure">{{ node.failure.message }}</span>
         </button>
       </div>
+      <div
+        v-if="showArtifactViewer"
+        class="testsperformed-artifacts"
+        :aria-label="
+          language[config.currentLanguage].TestsPerformed.artifactViewer
+        "
+      >
+        <article
+          v-for="artifact in secureArtifacts"
+          v-bind:key="artifact.id"
+          class="testsperformed-artifact-card"
+        >
+          <div>
+            <strong>{{ artifact.name }}</strong>
+            <span
+              >{{ artifact.contentType }} · {{ artifact.sizeBytes }} bytes</span
+            >
+          </div>
+          <p>{{ artifactExplanationFor(artifact) }}</p>
+          <pre v-if="artifact.preview.available">{{
+            artifact.preview.content
+          }}</pre>
+          <button
+            type="button"
+            class="btn btn-sm btn-outline-light testsperformed-page-button"
+            v-on:click="openArtifactFullView(artifact)"
+          >
+            {{ language[config.currentLanguage].TestsPerformed.fullArtifact }}
+          </button>
+        </article>
+        <div
+          v-if="secureArtifacts.length === 0"
+          class="testsperformed-empty testsperformed-empty-compact"
+        >
+          {{ language[config.currentLanguage].TestsPerformed.noArtifacts }}
+        </div>
+      </div>
       <p v-if="currentRunDetail.partial" class="testsperformed-live-alert">
         {{ language[config.currentLanguage].TestsPerformed.partialRunDetail }}
       </p>
@@ -986,6 +1023,37 @@
   box-shadow: 0 0 0 1px rgba(255, 107, 30, 0.25);
 }
 
+.testsperformed-artifacts {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.testsperformed-artifact-card {
+  background: rgba(255, 255, 255, 0.045);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.85rem;
+  color: rgba(255, 255, 255, 0.82);
+  display: grid;
+  gap: 0.65rem;
+  padding: 0.85rem;
+}
+
+.testsperformed-artifact-card strong,
+.testsperformed-artifact-card span {
+  display: block;
+}
+
+.testsperformed-artifact-card pre {
+  background: rgba(5, 9, 18, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 0.75rem;
+  color: #dbeafe;
+  max-height: 18rem;
+  overflow: auto;
+  padding: 0.75rem;
+  white-space: pre-wrap;
+}
+
 .testsperformed-analytics-filters,
 .testsperformed-analytics-statuses,
 .testsperformed-live-toolbar,
@@ -1577,6 +1645,11 @@ import {
   normalizeDrilldownSelection,
   normalizeRunDrilldown,
 } from "@/domain/runDrilldown";
+import {
+  artifactExplanation,
+  fullArtifactRoute,
+  normalizeArtifactCollection,
+} from "@/domain/secureArtifacts";
 import { getSelectedProjectId } from "@/stores/session";
 
 export default {
@@ -1773,6 +1846,25 @@ export default {
     },
     drilldownNodes() {
       return normalizeRunDrilldown(this.arrayTest, { limit: 150 }).nodes;
+    },
+    showArtifactViewer() {
+      return (
+        this.currentRunDetail &&
+        ["artifacts", "logs", "reports"].includes(this.runDetailActiveTab)
+      );
+    },
+    secureArtifacts() {
+      const artifacts = [
+        ...this.arrayTest.flatMap((test) => test.artifacts ?? []),
+        ...this.drilldownNodes.flatMap((node) => node.artifacts ?? []),
+        ...this.arrayTestCyclesDate.flatMap((run) =>
+          String(run.id) === String(this.routeRunId) ? (run.reports ?? []) : [],
+        ),
+      ];
+      return normalizeArtifactCollection(artifacts, {
+        projectId: getSelectedProjectId(),
+        runId: this.routeRunId,
+      });
     },
     visibleLiveRuns() {
       return filterLiveRuns(this.parallelRuns, {
@@ -2220,6 +2312,29 @@ export default {
         );
       } else {
         this.replaceExecutionQuery({ detailId: node.id });
+      }
+    },
+    artifactExplanationFor(artifact) {
+      return artifactExplanation(
+        artifact,
+        this.language[this.config.currentLanguage].TestsPerformed
+          .artifactStates,
+      );
+    },
+    openArtifactFullView(artifact) {
+      if (this.$router?.push && this.currentRunDetail) {
+        this.$router.push(
+          fullArtifactRoute({
+            artifactId: artifact.id,
+            projectId: getSelectedProjectId(),
+            runId: this.currentRunDetail.id,
+          }),
+        );
+      } else {
+        this.replaceExecutionQuery({
+          artifactId: artifact.id,
+          tab: "artifacts",
+        });
       }
     },
     restoreSelectionFromRoute() {

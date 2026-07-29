@@ -112,6 +112,17 @@ describe("tests performed component", () => {
                 correlationId: "Correlation ID",
                 partialRunDetail: "Partial snapshot.",
                 drilldownTitle: "Execution drill-down",
+                artifactViewer: "Secure artifact viewer",
+                fullArtifact: "Open full view",
+                noArtifacts: "No artifacts.",
+                artifactStates: {
+                  available: "Available.",
+                  expired: "Expired.",
+                  oversized: "Oversized.",
+                  quarantined: "Quarantined.",
+                  redacted: "Redacted body.",
+                  unavailable: "Unavailable.",
+                },
                 runDetailTabs: {
                   overview: "Overview",
                   tests: "Tests",
@@ -779,6 +790,49 @@ describe("tests performed component", () => {
       name: "execution-detail",
       params: { projectId: "9", runId: "44" },
       query: { detailId: "postman:17:1", tab: "tests" },
+    });
+  });
+
+  it("renders secure artifacts and opens full view without losing route context", async () => {
+    const push = vi.fn();
+    api.get.mockResolvedValue({ data: [] });
+
+    const wrapper = mountTestsPerformed({
+      $route: {
+        name: "execution-detail",
+        params: { projectId: "9", runId: "44" },
+        query: { tab: "artifacts" },
+      },
+      $router: { push, replace: vi.fn() },
+    });
+    await wrapper.setData({
+      arrayTest: [
+        {
+          artifacts: [
+            {
+              body: { ok: true },
+              contentType: "application/json",
+              downloadUrl: "/api/projects/9/runs/44/artifacts/response",
+              id: "response",
+              name: "Response body",
+              runId: 44,
+              sizeBytes: 80,
+            },
+          ],
+          id: 17,
+        },
+      ],
+    });
+
+    expect(wrapper.find(".testsperformed-artifact-card").exists()).toBe(true);
+    expect(wrapper.text()).toContain("Response body");
+    expect(wrapper.text()).toContain("Available.");
+
+    await wrapper.get(".testsperformed-artifact-card button").trigger("click");
+    expect(push).toHaveBeenCalledWith({
+      name: "execution-detail",
+      params: { projectId: "9", runId: "44" },
+      query: { artifactId: "response", tab: "artifacts" },
     });
   });
 

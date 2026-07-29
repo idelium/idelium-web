@@ -118,6 +118,24 @@ which allows refresh and browser back navigation to restore the same authorized
 detail. Legacy result shapes remain inspectable through the adapters and are
 bounded before rendering large result sets.
 
+## Secure artifact, log, response, and report viewing
+
+Artifact, log, response, and report previews are rendered from authorized
+descriptors, not raw storage paths. A descriptor must be scoped to the active
+tenant, project, and run, expose a safe `/api/` download URL, and include
+retention, size, content type, redaction, and availability metadata.
+
+Inline previews are bounded to avoid browser and API exhaustion. Text and JSON
+payloads are truncated before rendering, images are represented through metadata
+and safe descriptors, and unsupported binary content is not previewed inline.
+Redacted bodies are explained as protected by policy rather than displayed as
+empty. Expired, oversized, quarantined, and unavailable content have explicit
+states so operators understand why a payload cannot be shown.
+
+Full-window artifact viewing is route-backed through the canonical execution
+route with `tab=artifacts` and `artifactId`. Closing or navigating back restores
+the previous run context and focused route state.
+
 ## Legacy compatibility
 
 Legacy status values are still accepted:

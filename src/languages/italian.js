@@ -877,6 +877,21 @@ export default {
     partialRunDetail:
       "Alcuni asset collegati sono cancellati, scaduti o non disponibili nel payload API corrente. Quando presenti vengono mostrati i valori snapshot.",
     drilldownTitle: "Drill-down esecuzione",
+    artifactViewer: "Viewer artifact sicuro",
+    fullArtifact: "Apri vista completa",
+    noArtifacts: "Non sono disponibili artifact per questo run.",
+    artifactStates: {
+      available:
+        "Il contenuto è disponibile tramite un descrittore autorizzato e temporaneo.",
+      expired: "Questo contenuto è scaduto secondo la policy di retention.",
+      oversized:
+        "Questo contenuto è troppo grande per la preview inline. Usa il download autorizzato se disponibile.",
+      quarantined:
+        "Questo contenuto è in quarantena e non può essere visualizzato finché non viene verificato.",
+      redacted:
+        "Questo body è stato oscurato dalla policy. Il contenuto è protetto, non vuoto.",
+      unavailable: "Questo contenuto non è disponibile per il run corrente.",
+    },
     runDetailTabs: {
       overview: "Overview",
       tests: "Test",
