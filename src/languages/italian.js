@@ -518,6 +518,15 @@ export default {
     pageStatus: "Pagina {page} di {pages}",
   },
   Tests: {
+    compositionTitle: "Configura la sequenza degli step",
+    compositionDescription:
+      "Seleziona gli step riutilizzabili, verifica runtime e versioni, configura l'ordine e salva il test.",
+    moveUp: "Sposta su",
+    moveDown: "Sposta giù",
+    moveImportedUp: "Sposta su lo step importato",
+    moveImportedDown: "Sposta giù lo step importato",
+    edit: "Modifica",
+    editImported: "Modifica step importato",
     tabTitleModify: "Modifica Test",
     tabTitleNewTest: "Crea Test",
     tabTitleImportTest: "Importa Selenium IDE",

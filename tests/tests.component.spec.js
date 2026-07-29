@@ -98,4 +98,149 @@ describe("tests component", () => {
     ]);
     expect(wrapper.vm.testsGridMeta.total).toBe(1);
   });
+
+  it("preserves Selenium, Appium, and Postman step order and configuration", async () => {
+    api.get
+      .mockResolvedValueOnce({ data: [] })
+      .mockResolvedValueOnce({ data: [] });
+    useSessionStore(pinia).selectProject(9);
+    const wrapper = mountTests();
+    await vi.waitFor(() => expect(wrapper.vm.testsLoaded).toBe(true));
+    const steps = [
+      {
+        id: 11,
+        name: "selenium",
+        description: "Open browser",
+        runtime: "selenium",
+        config: { runtime: "selenium", target: "https://example.invalid" },
+      },
+      {
+        id: 12,
+        name: "appium",
+        description: "Tap login",
+        runtime: "appium",
+        config: { runtime: "appium", strategy: "accessibility-id" },
+      },
+      {
+        id: 13,
+        name: "postman",
+        description: "Run collection",
+        runtime: "postman",
+        config: { runtime: "postman", collectionId: "collection-1" },
+      },
+    ];
+    await wrapper.setData({
+      arraySteps: steps,
+      listOriginalSteps: steps,
+      arrayStepsSelectedDragged: steps,
+    });
+
+    expect(
+      wrapper.vm.testStepSequenceItems.map((item) => item.identity),
+    ).toEqual(["step:11", "step:12", "step:13"]);
+    expect(
+      wrapper.vm.testStepSequenceItems.map((item) => item.metadata.runtime),
+    ).toEqual(["selenium", "appium", "postman"]);
+    expect(
+      wrapper.vm.testStepSequenceItems.map((item) => item.persisted.config),
+    ).toEqual(steps.map((step) => step.config));
+
+    wrapper.vm.updateTestStepSequence([
+      wrapper.vm.toBuilderStep(steps[2]),
+      wrapper.vm.toBuilderStep(steps[0]),
+      wrapper.vm.toBuilderStep(steps[1]),
+    ]);
+    await wrapper.vm.$nextTick();
+    expect(wrapper.vm.arrayStepsSelectedDragged).toEqual([
+      steps[2],
+      steps[0],
+      steps[1],
+    ]);
+    expect(wrapper.findComponent({ name: "SequenceBuilder" }).exists()).toBe(
+      true,
+    );
+    expect(wrapper.findComponent({ name: "draggable" }).exists()).toBe(false);
+  });
+
+  it("keeps stale, archived, and missing step references visible", async () => {
+    api.get
+      .mockResolvedValueOnce({ data: [] })
+      .mockResolvedValueOnce({ data: [] });
+    useSessionStore(pinia).selectProject(9);
+    const wrapper = mountTests();
+    await vi.waitFor(() => expect(wrapper.vm.testsLoaded).toBe(true));
+    const available = [
+      {
+        id: 1,
+        name: "active",
+        description: "Active step",
+        runtime: "selenium",
+        version: "v2",
+      },
+      {
+        id: 2,
+        name: "archived",
+        description: "Archived step",
+        runtime: "appium",
+        status: "archived",
+      },
+    ];
+    await wrapper.setData({
+      arraySteps: available,
+      listOriginalSteps: available,
+      arrayStepsSelectedDragged: [
+        { ...available[0], version: "v1" },
+        available[1],
+        { id: 99, name: "missing", description: "Missing step" },
+      ],
+    });
+
+    expect(wrapper.vm.testStepSequenceItems.map((item) => item.status)).toEqual(
+      ["stale", "archived", "missing"],
+    );
+    expect(wrapper.vm.testStepValidation.canSave).toBe(false);
+    expect(
+      wrapper.vm.testStepValidation.diagnostics.map((entry) => entry.code),
+    ).toEqual(
+      expect.arrayContaining([
+        "sequence.referenceStale",
+        "sequence.archivedDependency",
+        "sequence.referenceMissing",
+      ]),
+    );
+  });
+
+  it("reviews imported steps with stable keyboard reorder and no drag state", async () => {
+    api.get
+      .mockResolvedValueOnce({ data: [] })
+      .mockResolvedValueOnce({ data: [] });
+    useSessionStore(pinia).selectProject(9);
+    const wrapper = mountTests();
+    await vi.waitFor(() => expect(wrapper.vm.testsLoaded).toBe(true));
+    const imported = [
+      { id: "request-1", name: "GET users", steps: [{}] },
+      { id: "request-2", name: "POST user", steps: [{}] },
+    ];
+
+    wrapper.vm.importTest({
+      name: "Postman import",
+      description: "Imported collection",
+      seleniumImport: {
+        0: { targets: [] },
+        1: { targets: [] },
+      },
+      tests: imported,
+    });
+    await wrapper.vm.$nextTick();
+    const originalKeys = [...wrapper.vm.arrayImportedStepKeys];
+    wrapper.vm.moveImportedItem(1, 0);
+
+    expect(wrapper.vm.arrayStepsImported).toEqual([imported[1], imported[0]]);
+    expect(wrapper.vm.arrayImportedStepKeys).toEqual([
+      originalKeys[1],
+      originalKeys[0],
+    ]);
+    wrapper.vm.openTab("new");
+    expect(() => wrapper.unmount()).not.toThrow();
+  });
 });

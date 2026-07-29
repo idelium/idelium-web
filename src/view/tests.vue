@@ -130,104 +130,43 @@
             </div>
           </div>
         </div>
-        <div class="row tests-workspace" v-if="tabOpen != 2">
-          <div class="col-sm-6">
-            <span style="font-size: 16px !important">{{
-              language[config.currentLanguage].Tests.steps
-            }}</span>
-            <input
-              class="form-control"
-              type="text"
-              v-model.lazy="stepFilter"
-              :placeholder="
-                language[config.currentLanguage].Tests.placeholderFilterStep
-              "
-              style="margin-bottom: 5px"
-            />
-
-            <draggable
-              class="dragArea list-group tests-steps-list"
-              :list="arraySteps"
-              :group="{ name: 'people', pull: 'clone', put: false }"
-              @change="log"
-              :sort="false"
-              item-key="id"
-            >
-              <template #item="{ element }">
-                <div class="list-group-item" style="cursor: grab">
-                  <span style="text-transform: uppercase">{{
-                    element.description
-                  }}</span>
-                </div>
-              </template>
-            </draggable>
-          </div>
-          <div class="col-sm-1 tests-workspace-spacer"></div>
-          <div class="col-sm-5 tests-selected-panel">
-            <span style="font-size: 16px !important">{{
-              language[config.currentLanguage].Tests.stepsToDo
-            }}</span>
-            <draggable
-              class="dragArea list-group tests-selected-list"
-              :list="arrayStepsSelectedDragged"
-              group="people"
-              :drop="true"
-              @change="log"
-              item-key="id"
-            >
-              <template #item="{ element, index }">
-                <div>
-                  <div style="text-align: center; width: 100%" v-if="index > 0">
-                    <span>
-                      <font-awesome-icon
-                        icon="arrow-circle-down"
-                        style="
-                          font-size: 25px;
-                          margin-top: 5px;
-                          margin-bottom: 5px;
-                        "
-                    /></span>
-                  </div>
-
-                  <div
-                    class="list-group-item"
-                    style="
-                      cursor: move;
-                      border-radius: 25px;
-                      padding: 20px;
-                      text-align: center !important;
-                    "
-                  >
-                    <span style="text-transform: uppercase">{{
-                      element.description
-                    }}</span>
-                    <button
-                      type="button"
-                      class="tests-icon-action"
-                      v-on:click="deleteItem(index)"
-                      :title="language[config.currentLanguage].Actions.remove"
-                    >
-                      <font-awesome-icon
-                        icon="times-circle"
-                        class="deleteIcon iconClass idelium-action-icon--remove"
-                      />
-                    </button>
-                  </div>
-                </div>
-              </template>
-            </draggable>
-          </div>
-        </div>
+        <section
+          v-if="tabOpen != 2"
+          class="tests-composition"
+          aria-labelledby="test-composition-title"
+        >
+          <header>
+            <h2 id="test-composition-title">
+              {{ language[config.currentLanguage].Tests.compositionTitle }}
+            </h2>
+            <p>
+              {{
+                language[config.currentLanguage].Tests.compositionDescription
+              }}
+            </p>
+          </header>
+          <SequenceBuilder
+            :accessible-label="sequenceBuilderCopy.accessibleLabel"
+            :available-items="builderAvailableSteps"
+            :copy="sequenceBuilderCopy"
+            :picker-filters="testStepPickerFilters"
+            :picker-meta="testStepPickerMeta"
+            :picker-query="testStepPickerQuery"
+            :sequence="testStepSequenceItems"
+            :validation="testStepValidation"
+            v-on:picker-query-change="handleStepPickerQuery"
+            v-on:update:sequence="updateTestStepSequence"
+          />
+        </section>
         <div class="row tests-import-workspace" v-if="tabOpen == 2">
           <div class="col-sm-8 text-truncate">
             <div class="tests-import-list-wrapper">
-              <draggable
-                class="dragArea list-group"
-                :list="arrayStepsImported"
-                :sort="true"
-                item-key="id"
-              >
-                <template #item="{ element, index }">
+              <ol class="list-group tests-import-review">
+                <li
+                  v-for="(element, index) in arrayStepsImported"
+                  v-bind:key="arrayImportedStepKeys[index]"
+                  class="tests-import-review__item"
+                >
                   <div style="margin-right: 10px">
                     <div
                       style="text-align: center; width: 100%"
@@ -297,6 +236,39 @@
                       <button
                         type="button"
                         class="tests-icon-action"
+                        v-on:click="moveImportedItem(index, index - 1)"
+                        :disabled="index === 0"
+                        :title="
+                          language[config.currentLanguage].Tests.moveImportedUp
+                        "
+                      >
+                        {{ language[config.currentLanguage].Tests.moveUp }}
+                      </button>
+                      <button
+                        type="button"
+                        class="tests-icon-action"
+                        v-on:click="moveImportedItem(index, index + 1)"
+                        :disabled="index === arrayStepsImported.length - 1"
+                        :title="
+                          language[config.currentLanguage].Tests
+                            .moveImportedDown
+                        "
+                      >
+                        {{ language[config.currentLanguage].Tests.moveDown }}
+                      </button>
+                      <button
+                        type="button"
+                        class="tests-icon-action"
+                        v-on:click="editImportedItem(index)"
+                        :title="
+                          language[config.currentLanguage].Tests.editImported
+                        "
+                      >
+                        {{ language[config.currentLanguage].Tests.edit }}
+                      </button>
+                      <button
+                        type="button"
+                        class="tests-icon-action"
                         v-on:click="deleteItemImported(index)"
                         :title="language[config.currentLanguage].Actions.remove"
                       >
@@ -307,8 +279,8 @@
                       </button>
                     </div>
                   </div>
-                </template>
-              </draggable>
+                </li>
+              </ol>
             </div>
           </div>
           <div class="col-sm-3">
@@ -373,6 +345,31 @@
   margin-top: 1rem;
   min-height: 0;
   overflow: hidden;
+}
+
+.tests-composition {
+  display: grid;
+  gap: var(--id-space-4);
+  margin-top: var(--id-space-4);
+  min-height: 0;
+  overflow: auto;
+}
+
+.tests-composition > header h2,
+.tests-composition > header p {
+  margin: 0;
+}
+
+.tests-import-review {
+  display: grid;
+  gap: var(--id-space-3);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.tests-import-review__item {
+  min-width: 0;
 }
 
 .tests-workspace > .col-sm-6,
@@ -451,16 +448,21 @@
 import apiClient from "@/services/apiClient";
 import { getSelectedProjectId } from "@/stores/session";
 import { buildTestPayload } from "@/domain/workflowPayloads";
-
-import draggable from "vuedraggable";
+import {
+  loadPersistedSequence,
+  normalizeSequenceItem,
+  validateSequenceComposition,
+} from "@/domain/sequenceBuilder";
+import SequenceBuilder from "@/components/sequence/SequenceBuilder.vue";
+import english from "@/languages/english";
 import importSelenium from "./tests/importSelenium.vue";
 import { routableTabs } from "@/shared/routableTabs";
 
 export default {
   name: "TestsComponent",
   components: {
-    draggable,
     importSelenium,
+    SequenceBuilder,
   },
   mixins: [routableTabs("modify", ["modify", "new", "import"])],
   data() {
@@ -469,11 +471,17 @@ export default {
       arraySteps: [],
       arrayStepsSelectedDragged: [],
       arrayStepsImported: [],
+      arrayImportedStepKeys: [],
       arrayEditImportedSteps: [],
       listOriginalSteps: [],
       arrayTests: [],
       testSelected: null,
       stepFilter: "",
+      testStepPickerQuery: {
+        page: 1,
+        search: "",
+        filters: {},
+      },
       disableNameTest: true,
       disableTestDescription: true,
       disableBtnCreateTest: true,
@@ -536,8 +544,115 @@ export default {
     isModifyTabDisabled() {
       return this.testsLoaded && this.arrayTests.length === 0;
     },
+    sequenceBuilderCopy() {
+      const dictionary = this.language[this.config.currentLanguage] ?? english;
+      const sequenceCopy =
+        dictionary.SequenceBuilder ?? english.SequenceBuilder;
+      return {
+        ...sequenceCopy,
+        picker: {
+          ...sequenceCopy.picker,
+          states: dictionary.DataTable?.states ?? english.DataTable.states,
+        },
+      };
+    },
+    builderAvailableSteps() {
+      return this.arraySteps.map((step) => this.toBuilderStep(step));
+    },
+    testStepSequenceState() {
+      return loadPersistedSequence(this.arrayStepsSelectedDragged, {
+        availableItems: this.listOriginalSteps.map((step) =>
+          this.toBuilderStep(step),
+        ),
+        entityType: "step",
+      });
+    },
+    testStepSequenceItems() {
+      return this.testStepSequenceState.items.map((item) => ({
+        ...item.persisted,
+        disabledReason: item.disabledReason,
+        identity: item.identity,
+        metadata: item.metadata,
+        name: item.name,
+        persisted: item.persisted,
+        status: item.status,
+        version: item.version,
+      }));
+    },
+    testStepValidation() {
+      return validateSequenceComposition(this.testStepSequenceState, {
+        minimumItems: 1,
+      });
+    },
+    testStepPickerMeta() {
+      return {
+        page: 1,
+        lastPage: 1,
+        total: this.builderAvailableSteps.length,
+        hasNextPage: false,
+        hasPreviousPage: false,
+      };
+    },
+    testStepPickerFilters() {
+      const runtimes = [
+        ...new Set(
+          this.listOriginalSteps
+            .map((step) => this.stepRuntime(step))
+            .filter(Boolean),
+        ),
+      ];
+      return runtimes.length === 0
+        ? []
+        : [
+            {
+              key: "runtime",
+              label: this.sequenceBuilderCopy.metadata.runtime,
+              options: runtimes.map((runtime) => ({
+                label: runtime,
+                value: runtime,
+              })),
+            },
+          ];
+    },
   },
   methods: {
+    stepRuntime(step) {
+      return (
+        step.runtime ??
+        step.type ??
+        step.config?.runtime ??
+        step.config?.steps?.[0]?.runtime ??
+        ""
+      );
+    },
+    toBuilderStep(step) {
+      const persisted = JSON.parse(JSON.stringify(step));
+      const normalized = normalizeSequenceItem(
+        {
+          ...step,
+          name: step.description ?? step.name,
+          metadata: {
+            runtime: this.stepRuntime(step),
+            tags: Array.isArray(step.tags) ? step.tags.join(", ") : "",
+            version: step.version ?? step.catalogVersion ?? "",
+            status: step.status ?? "active",
+          },
+        },
+        { entityType: "step" },
+      );
+      return { ...normalized, persisted };
+    },
+    updateTestStepSequence(nextSequence) {
+      this.arrayStepsSelectedDragged = nextSequence.map((item) =>
+        JSON.parse(JSON.stringify(item.persisted)),
+      );
+      this.copyArray();
+    },
+    handleStepPickerQuery(query) {
+      this.testStepPickerQuery = query;
+      this.stepFilter = query.search ?? "";
+      this.searchTextSteps(this.stepFilter);
+    },
     onRoutableTabChange(tab) {
       this.tabOpen = ["modify", "new", "import"].indexOf(tab);
     },
@@ -550,13 +665,19 @@ export default {
       this.$refs.selenium.showUploadComponent();
       this.seleniumImport = {};
       this.arrayStepsImported = [];
+      this.arrayImportedStepKeys = [];
     },
     importTest(value) {
       this.importedNameTest = value.name;
       this.importedDescriptionTest = value.description;
       if (value.tests) {
         this.seleniumImport = value.seleniumImport;
-        this.arrayStepsImported = value.tests;
+        this.arrayStepsImported = value.tests.map((step) =>
+          JSON.parse(JSON.stringify(step)),
+        );
+        this.arrayImportedStepKeys = value.tests.map(
+          (_step, index) => `import-${Date.now()}-${index}`,
+        );
         this.importedFromSelenium = true;
         this.arrayEditImportedSteps = [];
         for (let i in this.arrayStepsImported) {
@@ -565,9 +686,17 @@ export default {
       }
     },
     searchTextSteps(filter) {
-      this.arraySteps = this.listOriginalSteps.filter((d) =>
-        d.name.toLowerCase().includes(filter.toLowerCase()),
-      );
+      const search = String(filter ?? "")
+        .trim()
+        .toLowerCase();
+      const runtime = this.testStepPickerQuery.filters?.runtime;
+      this.arraySteps = this.listOriginalSteps.filter((step) => {
+        const displayName = step.description ?? step.name ?? "";
+        const matchesSearch =
+          search === "" || displayName.toLowerCase().includes(search);
+        const matchesRuntime = !runtime || this.stepRuntime(step) === runtime;
+        return matchesSearch && matchesRuntime;
+      });
     },
     normalizeGridResponse(responseData, fallbackMeta) {
       if (Array.isArray(responseData)) {
@@ -769,6 +898,20 @@ export default {
     },
     deleteItemImported(index) {
       this.arrayStepsImported.splice(index, 1);
+      this.arrayImportedStepKeys.splice(index, 1);
+    },
+    moveImportedItem(index, destination) {
+      if (
+        destination < 0 ||
+        destination >= this.arrayStepsImported.length ||
+        destination === index
+      ) {
+        return;
+      }
+      const [step] = this.arrayStepsImported.splice(index, 1);
+      const [key] = this.arrayImportedStepKeys.splice(index, 1);
+      this.arrayStepsImported.splice(destination, 0, step);
+      this.arrayImportedStepKeys.splice(destination, 0, key);
     },
     editImportedItem(index) {
       for (let i in this.arrayEditImportedSteps)

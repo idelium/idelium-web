@@ -220,3 +220,19 @@ routes and the empty-cycle fallback remain unchanged.
 Rollback restores the legacy Test Cycle dual panel. Because persisted arrays and
 API payloads are unchanged, rollback requires no data migration. Test composition
 is migrated second after this Test Cycle release boundary.
+
+Test composition now uses the same builder for reusable steps. Authorized
+Selenium, Appium, and Postman runtime, tag, catalogue-version, and status
+metadata are mapped for filtering and diagnostics. Every selected builder item
+retains an opaque clone of the complete legacy step, including nested
+runtime-specific configuration. Reorder, remove, and add operations serialize
+only those original clones, so configuration and API shape remain unchanged.
+
+Missing, archived, and stale step versions stay visible and produce localized
+diagnostics. The import review flow uses a stable parallel key list and explicit
+keyboard-operable move/edit/remove controls rather than a drag library. Moving
+or editing imported steps does not mutate the current persisted sequence, and
+route changes or unmount cannot retain draggable state.
+
+Rollback restores the legacy Test dual panel and imported-step drag list. The
+unchanged `config` array and import API payload require no data migration.
