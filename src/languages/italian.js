@@ -1040,6 +1040,29 @@ export default {
       rotated: "Ruotata",
       unknown: "Sconosciuta",
     },
+    createCredentialTitle: "Crea credenziale nominale",
+    createCredentialHelp:
+      "Parti dallo scope minimo approvato e aggiungi solo i permessi necessari all'integrazione.",
+    description: "Descrizione",
+    constraints: "Vincoli approvati",
+    createFailed: "Creazione credenziale non riuscita.",
+    scopeRunExecute: "Esecuzione run",
+    scopeRunExecuteHelp: "Consente di avviare esecuzioni di test approvate.",
+    scopeArtifactRead: "Lettura artifact",
+    scopeArtifactReadHelp: "Consente di leggere artifact di esecuzione conservati.",
+    scopeCredentialAdmin: "Amministrazione credenziali",
+    scopeCredentialAdminHelp:
+      "Consente di gestire credenziali e va concesso solo agli amministratori.",
+    validation: {
+      duplicate: "Esiste già una credenziale con questo nome.",
+      "dangerous-combination":
+        "Questa combinazione di scope è rischiosa e richiede una credenziale più limitata.",
+      "invalid-date": "Scegli una data di scadenza valida.",
+      "maximum-lifetime": "La durata della credenziale non può superare 365 giorni.",
+      "missing-capability": "Non sei autorizzato a creare credenziali.",
+      required: "Completa i campi obbligatori della credenziale.",
+      "unauthorized-scope": "Non puoi concedere uno o più scope selezionati.",
+    },
   },
   Profile: {
     title: "Il mio profilo",

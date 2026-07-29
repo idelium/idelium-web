@@ -1030,6 +1030,29 @@ export default {
       rotated: "Rotated",
       unknown: "Unknown",
     },
+    createCredentialTitle: "Create named credential",
+    createCredentialHelp:
+      "Start with the minimum approved scope and add only the permissions this integration needs.",
+    description: "Description",
+    constraints: "Approved constraints",
+    createFailed: "Credential creation failed.",
+    scopeRunExecute: "Run execution",
+    scopeRunExecuteHelp: "Allows launching approved test executions.",
+    scopeArtifactRead: "Artifact read",
+    scopeArtifactReadHelp: "Allows reading retained execution artifacts.",
+    scopeCredentialAdmin: "Credential administration",
+    scopeCredentialAdminHelp:
+      "Allows managing credentials and should be granted only to administrators.",
+    validation: {
+      duplicate: "A credential with this name already exists.",
+      "dangerous-combination":
+        "This scope combination is dangerous and needs a narrower credential.",
+      "invalid-date": "Choose a valid expiration date.",
+      "maximum-lifetime": "Credential lifetime cannot exceed 365 days.",
+      "missing-capability": "You are not authorized to create credentials.",
+      required: "Complete the required credential fields.",
+      "unauthorized-scope": "You cannot grant one or more selected scopes.",
+    },
   },
   Profile: {
     title: "My profile",

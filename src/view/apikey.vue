@@ -207,6 +207,89 @@
         {{ language[config.currentLanguage].Apikey.revealOnceNotice }}
       </p>
     </section>
+
+    <section class="apikey-card apikey-create-card">
+      <div class="apikey-card-header">
+        <div>
+          <p class="apikey-eyebrow">
+            {{ language[config.currentLanguage].Apikey.createCredentialTitle }}
+          </p>
+          <h2 class="apikey-card-title">
+            {{ language[config.currentLanguage].Apikey.createCredentialTitle }}
+          </h2>
+          <p class="apikey-cli-copy">
+            {{ language[config.currentLanguage].Apikey.createCredentialHelp }}
+          </p>
+        </div>
+      </div>
+      <form class="apikey-create-form" v-on:submit.prevent="createCredential()">
+        <label>
+          <span>{{ language[config.currentLanguage].Apikey.colName }}</span>
+          <input
+            v-model="credentialCreate.name"
+            class="form-control apikey-filter"
+          />
+        </label>
+        <label>
+          <span>{{ language[config.currentLanguage].Apikey.description }}</span>
+          <textarea
+            v-model="credentialCreate.description"
+            class="form-control apikey-filter"
+            rows="3"
+          ></textarea>
+        </label>
+        <label>
+          <span>{{ language[config.currentLanguage].Apikey.colExpiry }}</span>
+          <input
+            v-model="credentialCreate.expiresAt"
+            class="form-control apikey-filter"
+            type="date"
+          />
+        </label>
+        <fieldset class="apikey-scope-fieldset">
+          <legend>
+            {{ language[config.currentLanguage].Apikey.colScopes }}
+          </legend>
+          <label
+            v-for="scope in credentialScopeOptions"
+            v-bind:key="scope.id"
+            class="apikey-scope-option"
+          >
+            <input
+              v-model="credentialCreate.scopes"
+              type="checkbox"
+              :value="scope.id"
+            />
+            <span>
+              <strong>{{ scope.label }}</strong>
+              {{ scope.description }}
+            </span>
+          </label>
+        </fieldset>
+        <label>
+          <span>{{ language[config.currentLanguage].Apikey.constraints }}</span>
+          <input
+            v-model="credentialCreate.constraints"
+            class="form-control apikey-filter"
+          />
+        </label>
+        <p
+          v-if="credentialCreateErrors.length > 0"
+          class="apikey-alert alert alert-danger"
+        >
+          {{ credentialCreateErrors.join(", ") }}
+        </p>
+        <button type="submit" class="btn btn-primary apikey-primary-action">
+          {{ language[config.currentLanguage].Apikey.actions.create }}
+        </button>
+      </form>
+      <div v-if="revealedCredential" class="apikey-reveal-panel">
+        <strong>{{
+          language[config.currentLanguage].Apikey.revealOnceNotice
+        }}</strong>
+        <code>{{ revealedCredential.secret }}</code>
+      </div>
+    </section>
   </div>
 </template>
 <style scoped>
@@ -439,6 +522,67 @@
   padding: 0.85rem;
 }
 
+.apikey-create-card,
+.apikey-create-form {
+  display: grid;
+  gap: 1rem;
+}
+
+.apikey-create-form label {
+  color: rgba(244, 244, 245, 0.72);
+  display: grid;
+  font-size: 0.72rem;
+  font-weight: 850;
+  gap: 0.4rem;
+  letter-spacing: 0.1rem;
+  text-transform: uppercase;
+}
+
+.apikey-scope-fieldset {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 0.9rem;
+  display: grid;
+  gap: 0.75rem;
+  padding: 1rem;
+}
+
+.apikey-scope-fieldset legend {
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 850;
+  letter-spacing: 0.12rem;
+  padding: 0 0.45rem;
+  text-transform: uppercase;
+}
+
+.apikey-scope-option {
+  align-items: flex-start;
+  display: grid;
+  gap: 0.7rem;
+  grid-template-columns: auto minmax(0, 1fr);
+  text-transform: none;
+}
+
+.apikey-scope-option strong {
+  color: #ffffff;
+  display: block;
+}
+
+.apikey-reveal-panel {
+  background: rgba(255, 193, 7, 0.12);
+  border: 1px solid rgba(255, 193, 7, 0.3);
+  border-radius: 0.9rem;
+  color: #ffe0a3;
+  display: grid;
+  gap: 0.65rem;
+  padding: 1rem;
+}
+
+.apikey-reveal-panel code {
+  color: #ffffff;
+  overflow-wrap: anywhere;
+}
+
 @media only screen and (max-width: 960px) {
   .apikey-grid {
     grid-template-columns: 1fr;
@@ -476,10 +620,13 @@ import copy from "copy-to-clipboard";
 import download from "@/shared/download";
 import EnterpriseDataTable from "@/components/grid/EnterpriseDataTable.vue";
 import {
+  createCredentialCreationRequest,
   credentialInventoryActions,
   credentialInventoryRow,
+  defaultCredentialCreationModel,
   normalizeCredentialInventory,
   normalizeCredentialInventoryFilters,
+  normalizeRevealOnceResult,
 } from "@/domain/credentialLifecycle";
 
 export default {
@@ -504,6 +651,9 @@ export default {
         scope: "",
         status: "",
       },
+      credentialCreate: defaultCredentialCreationModel(),
+      credentialCreateErrors: [],
+      revealedCredential: null,
       credentialStatusOptions: [
         "active",
         "expiring",
@@ -558,6 +708,26 @@ export default {
         ...action,
         label: copy.actions[action.id] || action.label,
       }));
+    },
+    credentialScopeOptions() {
+      const copy = this.language[this.config.currentLanguage].Apikey;
+      return [
+        {
+          description: copy.scopeRunExecuteHelp,
+          id: "run:execute",
+          label: copy.scopeRunExecute,
+        },
+        {
+          description: copy.scopeArtifactReadHelp,
+          id: "artifact:read",
+          label: copy.scopeArtifactRead,
+        },
+        {
+          description: copy.scopeCredentialAdminHelp,
+          id: "credential:admin",
+          label: copy.scopeCredentialAdmin,
+        },
+      ];
     },
     credentialTableCopy() {
       const copy = this.language[this.config.currentLanguage].Apikey;
@@ -646,6 +816,58 @@ export default {
           status: "legacy",
         },
       ];
+    },
+    createCredential() {
+      const request = createCredentialCreationRequest(this.credentialCreate, {
+        actor: "current-user",
+        actorScopes: ["run:execute", "artifact:read", "credential:admin"],
+        capabilities: this.credentialCapabilities,
+        existingCredentials: this.credentials,
+        tenantId: "current-tenant",
+      });
+      if (!request.allowed) {
+        this.credentialCreateErrors = request.errors.map((error) =>
+          this.credentialErrorLabel(error),
+        );
+        return;
+      }
+      this.credentialCreateErrors = [];
+      apiClient
+        .post(this.credentialEndpoint(), request.body, {
+          headers: { ...this.setHeaders(), ...request.headers },
+        })
+        .then((response) => {
+          const revealed = normalizeRevealOnceResult(response.data, {
+            tenantId: "current-tenant",
+          });
+          this.revealedCredential = revealed;
+          this.credentials = [...this.credentials, revealed];
+          if (this.$router?.push) {
+            this.$router.push({
+              name: "apikey",
+              query: { credentialId: revealed.id, mode: "reveal-once" },
+            });
+          }
+        })
+        .catch((e) => {
+          this.credentialCreateErrors = [
+            this.language[this.config.currentLanguage].Apikey.createFailed,
+          ];
+          this.Logout(this, e);
+        });
+    },
+    credentialEndpoint() {
+      return (
+        this.config.serviceBaseUrl +
+        (this.config.url.credentials || `${this.config.url.apikey}/credentials`)
+      );
+    },
+    credentialErrorLabel(error) {
+      return (
+        this.language[this.config.currentLanguage].Apikey.validation[
+          error.code
+        ] || error.code
+      );
     },
     credentialStatusLabel(status) {
       return (

@@ -3,11 +3,13 @@ import { describe, expect, it } from "vitest";
 import {
   CREDENTIAL_CONTRACT_VERSION,
   createCredentialLifecycleRequest,
+  createCredentialCreationRequest,
   credentialAuthorization,
   buildCredentialInventoryQuery,
   credentialInventoryActions,
   credentialInventoryRow,
   legacyCredentialMigrationPolicy,
+  validateCredentialCreation,
   normalizeCredentialInventory,
   normalizeCredentialDescriptor,
   normalizeCredentialList,
@@ -202,5 +204,60 @@ describe("credential lifecycle API and migration contract", () => {
         { capabilities: ["credential.rotate", "credential.audit"] },
       ).map((action) => action.id),
     ).toEqual(["rotate", "audit"]);
+  });
+
+  it("validates least-privilege credential creation and idempotent submission", () => {
+    expect(validateCredentialCreation({ name: "CI" })).toMatchObject({
+      valid: true,
+      model: { scopes: ["run:execute"] },
+    });
+    expect(
+      validateCredentialCreation(
+        {
+          expiresAt: "2028-12-31",
+          name: "CI",
+          scopes: ["run:execute", "credential:admin", "artifact:read"],
+        },
+        {
+          actorScopes: ["run:execute", "artifact:read"],
+          existingCredentials: [{ name: "CI" }],
+        },
+      ).errors.map((error) => error.code),
+    ).toEqual([
+      "duplicate",
+      "unauthorized-scope",
+      "maximum-lifetime",
+      "dangerous-combination",
+    ]);
+
+    expect(
+      createCredentialCreationRequest(
+        {
+          description: "CI token",
+          expiresAt: "2027-07-01",
+          name: "CI",
+          scopes: ["run:execute"],
+        },
+        {
+          actor: "admin@idelium.org",
+          actorScopes: ["run:execute"],
+          capabilities: ["credential.create"],
+          tenantId: "tenant-1",
+        },
+      ),
+    ).toMatchObject({
+      allowed: true,
+      body: {
+        description: "CI token",
+        expiresAt: "2027-07-01",
+        name: "CI",
+        scopes: ["run:execute"],
+        tenantId: "tenant-1",
+      },
+      headers: {
+        "Idempotency-Key":
+          "credential:create:tenant-1:admin@idelium.org:CI:2027-07-01:run:execute",
+      },
+    });
   });
 });

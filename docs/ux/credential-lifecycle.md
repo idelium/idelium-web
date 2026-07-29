@@ -62,6 +62,25 @@ Row actions are exposed only when the active operator has the matching
 capability. Rotate and revoke are disabled for terminal credential states such
 as revoked and expired. Revoke is a confirmation action.
 
+## Named credential creation
+
+Credential creation collects name, description, allowed scopes, expiration, and
+optional approved constraints. The default scope set is intentionally minimal:
+`run:execute`. Operators must add additional scopes deliberately.
+
+The client validates duplicate names, invalid or excessive lifetime, dangerous
+scope combinations, and whether the actor controls every selected scope before
+submitting. Recoverable validation errors preserve non-sensitive form fields and
+do not render or store secret material.
+
+Creation uses an idempotency key derived from tenant, actor, name, expiration,
+and scope set. Repeated submission of the same form therefore reconciles to the
+same logical request instead of creating multiple credentials.
+
+After successful creation, the user is routed to a reveal-once result state. The
+complete secret exists only in that creation response and is not part of list,
+detail, audit, or subsequent retrieval responses.
+
 ## Redaction and observability
 
 Credential diagnostics, audit records, screenshots, fixtures, and UI state must

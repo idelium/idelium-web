@@ -1,7 +1,7 @@
 import { shallowMount } from "@vue/test-utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const api = vi.hoisted(() => ({ get: vi.fn() }));
+const api = vi.hoisted(() => ({ get: vi.fn(), post: vi.fn(), put: vi.fn() }));
 
 vi.mock("@/services/apiClient", () => ({ default: api }));
 
@@ -10,6 +10,8 @@ import Apikey from "@/view/apikey.vue";
 describe("apikey component", () => {
   beforeEach(() => {
     api.get.mockReset();
+    api.post.mockReset();
+    api.put.mockReset();
     vi.spyOn(window, "open").mockImplementation(() => null);
   });
 
@@ -96,6 +98,26 @@ describe("apikey component", () => {
                   rotated: "Rotated",
                   unknown: "Unknown",
                 },
+                createCredentialTitle: "Create named credential",
+                createCredentialHelp: "Use least privilege.",
+                description: "Description",
+                constraints: "Approved constraints",
+                createFailed: "Credential creation failed.",
+                scopeRunExecute: "Run execution",
+                scopeRunExecuteHelp: "Allows launching approved tests.",
+                scopeArtifactRead: "Artifact read",
+                scopeArtifactReadHelp: "Allows reading artifacts.",
+                scopeCredentialAdmin: "Credential administration",
+                scopeCredentialAdminHelp: "Allows credential administration.",
+                validation: {
+                  duplicate: "Duplicate name.",
+                  "dangerous-combination": "Dangerous combination.",
+                  "invalid-date": "Invalid date.",
+                  "maximum-lifetime": "Maximum lifetime.",
+                  "missing-capability": "Missing capability.",
+                  required: "Required field.",
+                  "unauthorized-scope": "Unauthorized scope.",
+                },
               },
             },
           },
@@ -174,5 +196,56 @@ describe("apikey component", () => {
       "complete_secret",
     );
     expect(wrapper.text()).not.toContain("complete_secret");
+  });
+
+  it("submits a named credential once and navigates to reveal-once state", async () => {
+    const push = vi.fn();
+    api.get.mockResolvedValue({ data: { credentials: [] } });
+    api.post.mockResolvedValue({
+      data: {
+        id: "cred-3",
+        key: "idelium_secret_revealed_once_value",
+        name: "CI",
+        scopes: ["run:execute"],
+        tenantId: "current-tenant",
+      },
+    });
+
+    const wrapper = mountApikey();
+    wrapper.vm.$router = { push };
+    await wrapper.vm.$nextTick();
+    await vi.waitFor(() => expect(api.get).toHaveBeenCalled());
+    await wrapper.setData({
+      credentialCreate: {
+        constraints: "",
+        description: "CI token",
+        expiresAt: "2027-07-01",
+        name: "CI",
+        scopes: ["run:execute"],
+      },
+    });
+
+    await wrapper.get(".apikey-create-form").trigger("submit");
+    await vi.waitFor(() => expect(api.post).toHaveBeenCalled());
+
+    expect(api.post).toHaveBeenCalledWith(
+      "/api/apikey/credentials",
+      expect.objectContaining({
+        description: "CI token",
+        name: "CI",
+        scopes: ["run:execute"],
+      }),
+      {
+        headers: {
+          "Idempotency-Key":
+            "credential:create:current-tenant:current-user:CI:2027-07-01:run:execute",
+        },
+      },
+    );
+    expect(push).toHaveBeenCalledWith({
+      name: "apikey",
+      query: { credentialId: "cred-3", mode: "reveal-once" },
+    });
+    expect(wrapper.text()).toContain("idelium_secret_revealed_once_value");
   });
 });

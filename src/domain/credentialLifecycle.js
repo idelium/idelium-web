@@ -35,6 +35,8 @@ const STATUS_FILTERS = new Set([
   "rotated",
   "unknown",
 ]);
+const DEFAULT_SCOPES = ["run:execute"];
+const MAX_LIFETIME_DAYS = 365;
 
 export function normalizeCredentialDescriptor(input = {}, context = {}) {
   const tenantId = safeIdentifier(input.tenantId ?? context.tenantId);
@@ -234,6 +236,95 @@ export function createCredentialLifecycleRequest(
   };
 }
 
+export function defaultCredentialCreationModel(options = {}) {
+  return {
+    constraints: safeText(options.constraints),
+    description: safeText(options.description),
+    expiresAt: options.expiresAt ?? defaultExpiryDate(90),
+    name: safeText(options.name),
+    scopes: normalizeScopes(options.scopes ?? DEFAULT_SCOPES),
+  };
+}
+
+export function validateCredentialCreation(model = {}, options = {}) {
+  const normalized = defaultCredentialCreationModel(model);
+  const actorScopes = new Set(
+    normalizeScopes(options.actorScopes ?? DEFAULT_SCOPES),
+  );
+  const existingNames = new Set(
+    safeArray(options.existingCredentials).map((credential) =>
+      safeText(credential.name).toLowerCase(),
+    ),
+  );
+  const errors = [];
+  if (!normalized.name) errors.push({ field: "name", code: "required" });
+  if (existingNames.has(normalized.name.toLowerCase())) {
+    errors.push({ field: "name", code: "duplicate" });
+  }
+  if (normalized.scopes.length === 0) {
+    errors.push({ field: "scopes", code: "required" });
+  }
+  for (const scope of normalized.scopes) {
+    if (!actorScopes.has(scope)) {
+      errors.push({ field: "scopes", code: "unauthorized-scope", scope });
+    }
+  }
+  if (!safeIsoTimestamp(normalized.expiresAt)) {
+    errors.push({ field: "expiresAt", code: "invalid-date" });
+  } else if (daysUntil(normalized.expiresAt) > MAX_LIFETIME_DAYS) {
+    errors.push({ field: "expiresAt", code: "maximum-lifetime" });
+  }
+  if (
+    normalized.scopes.includes("credential:admin") &&
+    normalized.scopes.includes("artifact:read")
+  ) {
+    errors.push({ field: "scopes", code: "dangerous-combination" });
+  }
+  return { errors, model: normalized, valid: errors.length === 0 };
+}
+
+export function createCredentialCreationRequest(model = {}, options = {}) {
+  const validation = validateCredentialCreation(model, options);
+  const authorization = credentialAuthorization("create", {}, options);
+  if (!authorization.allowed) {
+    return {
+      allowed: false,
+      authorization,
+      errors: [{ field: "capability", code: authorization.reason }],
+      status: "rejected",
+      validation,
+    };
+  }
+  if (!validation.valid) {
+    return {
+      allowed: false,
+      errors: validation.errors,
+      status: "invalid",
+      validation,
+    };
+  }
+  const tenantId = safeIdentifier(options.tenantId);
+  const actor = safeIdentifier(options.actor ?? "actor");
+  return {
+    allowed: true,
+    body: {
+      constraints: validation.model.constraints,
+      description: validation.model.description,
+      expiresAt: validation.model.expiresAt,
+      name: validation.model.name,
+      scopes: validation.model.scopes,
+      tenantId,
+    },
+    headers: {
+      "Idempotency-Key":
+        options.idempotencyKey ??
+        `credential:create:${tenantId}:${actor}:${stableCreationHash(validation.model)}`,
+    },
+    status: "ready",
+    validation,
+  };
+}
+
 export function credentialAuthorization(action, credential = {}, options = {}) {
   const normalizedAction = String(action ?? "").toLowerCase();
   const requiredCapability = ACTION_CAPABILITIES[normalizedAction];
@@ -346,6 +437,23 @@ function formatDate(value) {
 function safeExpiryFilter(value) {
   const text = String(value ?? "").toLowerCase();
   return ["expired", "none"].includes(text) ? text : "";
+}
+
+function defaultExpiryDate(days) {
+  const date = new Date();
+  date.setUTCDate(date.getUTCDate() + days);
+  return date.toISOString().slice(0, 10);
+}
+
+function daysUntil(value) {
+  const expires = new Date(value).getTime();
+  return Math.ceil((expires - Date.now()) / (24 * 60 * 60 * 1000));
+}
+
+function stableCreationHash(model) {
+  return safeIdentifier(
+    `${model.name}:${model.expiresAt}:${model.scopes.join(".")}`,
+  );
 }
 
 function credentialFingerprint(input) {
