@@ -139,6 +139,18 @@ request carries the same account, tenant, filters, and idempotency scope as the
 visible audit query, and the API must apply the same authorization and redaction
 rules before making any downloadable artifact available.
 
+## Verification coverage
+
+The account governance journey is covered by unit and component tests for
+invitation creation, role assignment, protected role changes, suspension,
+reactivation, audit history, export authorization, forged tenant identifiers,
+missing capabilities, and legacy account migration. Accessibility-oriented tests
+verify that role choices, filters, audit actions, pagination, and confirmations
+are reachable through native keyboard controls with accessible names and live
+feedback. Security regression tests assert that invitation passwords, tokens,
+sessions, IP details, and protected audit metadata do not appear in UI artifacts
+or serialized test fixtures.
+
 ## Operations
 
 The contract defines these account operations:
