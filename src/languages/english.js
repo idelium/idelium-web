@@ -658,6 +658,45 @@ export default {
         "Select a supported local, platform, Selenium Grid, Appium, or API target.",
     },
   },
+  LaunchTarget: {
+    accessibleLabel: "Execution target and concurrency",
+    browserOverride: "Browser override",
+    capacity: "Capacity",
+    concurrency: "Concurrency",
+    description:
+      "Review target health, runtime compatibility, queue state, and safe parallelism before launch.",
+    deviceOverride: "Device override",
+    health: "Health",
+    healthStale: "Health data is stale; preflight will refresh capacity.",
+    queue: "Queue",
+    region: "Region",
+    runtime: "Runtime",
+    target: "Target",
+    title: "Execution target",
+    disabledReasons: {
+      capacity: "This target has no available capacity.",
+      health: "This target is unhealthy.",
+      runtime: "This target is incompatible with the selected runtime.",
+      unavailable: "This target is not available.",
+    },
+    remediation: {
+      browserOverride:
+        "Remove the browser override or choose a target that supports browser overrides.",
+      capacity:
+        "Select another target or wait for capacity to become available.",
+      concurrency:
+        "Reduce concurrency to the target capacity allowed by policy.",
+      deviceOverride:
+        "Remove the device override or choose a target that supports device overrides.",
+      health:
+        "Select a healthy target or wait until the infrastructure recovers.",
+      healthStale:
+        "Run preflight before launch so the API can refresh target capacity.",
+      required: "Select an execution target before launching.",
+      runtime:
+        "Select a target compatible with the selected cycle and environment.",
+    },
+  },
   TestCycles: {
     compositionTitle: "Configure test sequence",
     compositionDescription:

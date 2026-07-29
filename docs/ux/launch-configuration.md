@@ -45,6 +45,26 @@ credentials are never copied into the URL. Refreshing the page reloads the
 authorized bounded lists and revalidates whether the referenced selections are
 still available.
 
+## Target and concurrency configuration
+
+Execution target configuration lists authorized target pools with health,
+runtime, region, queue state, capacity, and capability metadata. The Console
+never renders infrastructure credentials, provider tokens, internal connection
+strings, authorization headers, or raw target payloads. If the canonical target
+endpoint is not available during rollout, the page falls back to the legacy
+platform pool so existing launch behavior remains usable.
+
+Unhealthy, incompatible, or capacity-exhausted targets are disabled with a
+localized reason. Stale health is visible as a non-blocking warning because the
+API preflight must refresh capacity immediately before launch. The UI validates
+concurrency against target capacity and the global client maximum, but the API
+must enforce policy, target capacity, cycle composition, and capacity changes
+again at preflight and launch.
+
+Browser and device overrides are editable only when the selected target exposes
+the corresponding capability. Unsupported overrides block the launch review and
+are never sent as hidden free-form options.
+
 The diagnostic model contains:
 
 - `severity`: `info`, `warning`, or `error`;

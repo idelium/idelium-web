@@ -141,6 +141,7 @@ app.config.globalProperties.config = {
     steps: "admin/steps",
     importtest: "admin/importtest",
     launchtest: "admin/launchtest",
+    launchTargets: "admin/launch/targets",
     tests: "admin/tests",
     testcycles: "admin/testcycles",
     getTestCyclePerformed: "admin/testcyclesperfomed",

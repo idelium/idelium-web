@@ -37,6 +37,17 @@
       />
     </section>
 
+    <LaunchTargetConfigurator
+      v-model="selectedTargetId"
+      :concurrency="concurrency"
+      :copy="language[config.currentLanguage].LaunchTarget"
+      :overrides="targetOverrides"
+      :targets="targetAssets"
+      v-on:update:concurrency="selectConcurrency"
+      v-on:update:model-value="selectTarget"
+      v-on:update:overrides="selectOverrides"
+    />
+
     <section class="launch-page__review" aria-live="polite">
       <div>
         <p>{{ launcherCopy.reviewEyebrow }}</p>
@@ -51,6 +62,16 @@
         <div>
           <dt>{{ launcherCopy.environment }}</dt>
           <dd>{{ selectedEnvironment?.name || launcherCopy.notSelected }}</dd>
+        </div>
+        <div>
+          <dt>{{ language[config.currentLanguage].LaunchTarget.target }}</dt>
+          <dd>{{ selectedTarget?.name || launcherCopy.notSelected }}</dd>
+        </div>
+        <div>
+          <dt>
+            {{ language[config.currentLanguage].LaunchTarget.concurrency }}
+          </dt>
+          <dd>{{ concurrency }}</dd>
         </div>
       </dl>
       <button
@@ -75,6 +96,7 @@
 
 <script>
 import LaunchAssetSelector from "@/components/launch/LaunchAssetSelector.vue";
+import LaunchTargetConfigurator from "@/components/launch/LaunchTargetConfigurator.vue";
 import {
   buildLaunchAssetQuery,
   buildLaunchSelectionQuery,
@@ -82,6 +104,11 @@ import {
   launchSelectionFromRoute,
   normalizeLaunchAssetRows,
 } from "@/domain/launchSelection";
+import {
+  defaultLaunchTargetsForRuntime,
+  normalizeLaunchTargets,
+  validateLaunchTargetConfiguration,
+} from "@/domain/launchTargets";
 import apiClient from "@/services/apiClient";
 import { getSelectedProjectId } from "@/stores/session";
 
@@ -91,6 +118,7 @@ export default {
   name: "TestLauncherComponent",
   components: {
     LaunchAssetSelector,
+    LaunchTargetConfigurator,
     platformLauncher,
   },
   data() {
@@ -105,8 +133,15 @@ export default {
       }),
       error: null,
       listEnvironments: [],
+      rawTargets: [],
+      concurrency: Number.parseInt(this.$route?.query?.concurrency, 10) || 1,
       selectedCycleId: routeSelection.cycleId,
       selectedEnvironmentId: routeSelection.environmentId,
+      selectedTargetId: this.$route?.query?.targetId ?? "platform-pool",
+      targetOverrides: {
+        browser: this.$route?.query?.browser ?? null,
+        device: this.$route?.query?.device ?? null,
+      },
     };
   },
   computed: {
@@ -123,6 +158,11 @@ export default {
         (item) => String(item.id) === String(this.selectedCycleId),
       );
     },
+    selectedTarget() {
+      return this.targetAssets.find(
+        (item) => String(item.id) === String(this.selectedTargetId),
+      );
+    },
     environmentAssets() {
       return normalizeLaunchAssetRows(this.listEnvironments, {
         projectId: getSelectedProjectId(),
@@ -136,17 +176,37 @@ export default {
         type: "cycle",
       });
     },
+    targetAssets() {
+      const runtime =
+        this.selectedEnvironment?.runtime ?? this.selectedCycle?.runtime;
+      const normalized = normalizeLaunchTargets(this.rawTargets, {
+        selectedRuntime: runtime,
+      });
+      return normalized.length > 0
+        ? normalized
+        : defaultLaunchTargetsForRuntime(runtime);
+    },
+    targetDiagnostics() {
+      return validateLaunchTargetConfiguration({
+        concurrency: this.concurrency,
+        overrides: this.targetOverrides,
+        target: this.selectedTarget,
+      });
+    },
     canOpenTargetSelection() {
       return (
         this.selectedCycle &&
         this.selectedEnvironment &&
+        this.selectedTarget &&
         !this.selectedCycle.disabledReason &&
-        !this.selectedEnvironment.disabledReason
+        !this.selectedEnvironment.disabledReason &&
+        this.targetDiagnostics.every((diagnostic) => !diagnostic.blocking)
       );
     },
   },
   created() {
     this.getTestCycles();
+    this.getLaunchTargets();
     this.emitter.on("refreshTestLauncher", () => {
       this.refreshLaunchAssets();
     });
@@ -155,6 +215,7 @@ export default {
     refreshLaunchAssets() {
       this.getTestCycles();
       this.getEnvironments();
+      this.getLaunchTargets();
     },
     getTestCycles() {
       this.emitter.emit("showLoader", true);
@@ -196,11 +257,34 @@ export default {
           this.listEnvironments = this.extractRows(response.data);
           this.ensureSelection("environment");
           this.clearIncompatibleCycle();
+          this.ensureTargetSelection();
           this.syncDraftRoute();
         })
         .catch((e) => {
           this.Logout(this, e);
           this.error = e;
+        });
+    },
+    getLaunchTargets() {
+      const endpoint =
+        this.config.url.launchTargets ??
+        `${this.config.url.launchtest}/targets`;
+      apiClient
+        .get(
+          this.config.serviceBaseUrl + endpoint + "/" + getSelectedProjectId(),
+          {
+            headers: this.setHeaders(),
+            params: { page: 1, pageSize: 50 },
+          },
+        )
+        .then((response) => {
+          this.rawTargets = this.extractRows(response.data);
+          this.ensureTargetSelection();
+          this.syncDraftRoute();
+        })
+        .catch(() => {
+          this.rawTargets = [];
+          this.ensureTargetSelection();
         });
     },
     extractRows(payload) {
@@ -229,6 +313,17 @@ export default {
         this.selectedCycleId = null;
       }
     },
+    ensureTargetSelection() {
+      if (
+        this.targetAssets.some(
+          (item) => String(item.id) === String(this.selectedTargetId),
+        )
+      ) {
+        return;
+      }
+      this.selectedTargetId =
+        this.targetAssets.find((item) => !item.disabledReason)?.id ?? null;
+    },
     updateCycleQuery(query) {
       this.cycleQuery = buildLaunchAssetQuery(query);
       this.getTestCycles();
@@ -244,6 +339,19 @@ export default {
     selectEnvironment(id) {
       this.selectedEnvironmentId = id;
       this.clearIncompatibleCycle();
+      this.ensureTargetSelection();
+      this.syncDraftRoute();
+    },
+    selectTarget(id) {
+      this.selectedTargetId = id;
+      this.syncDraftRoute();
+    },
+    selectConcurrency(value) {
+      this.concurrency = Math.max(Number.parseInt(value, 10) || 1, 1);
+      this.syncDraftRoute();
+    },
+    selectOverrides(value) {
+      this.targetOverrides = value;
       this.syncDraftRoute();
     },
     syncDraftRoute() {
@@ -252,11 +360,24 @@ export default {
         cycleId: this.selectedCycleId,
         environmentId: this.selectedEnvironmentId,
       });
+      nextQuery.targetId = this.selectedTargetId || undefined;
+      nextQuery.concurrency =
+        this.concurrency > 1 ? String(this.concurrency) : undefined;
+      nextQuery.browser = this.targetOverrides.browser || undefined;
+      nextQuery.device = this.targetOverrides.device || undefined;
       if (
         String(this.$route?.query?.cycleId ?? "") ===
           String(nextQuery.cycleId ?? "") &&
         String(this.$route?.query?.environmentId ?? "") ===
-          String(nextQuery.environmentId ?? "")
+          String(nextQuery.environmentId ?? "") &&
+        String(this.$route?.query?.targetId ?? "") ===
+          String(nextQuery.targetId ?? "") &&
+        String(this.$route?.query?.concurrency ?? "") ===
+          String(nextQuery.concurrency ?? "") &&
+        String(this.$route?.query?.browser ?? "") ===
+          String(nextQuery.browser ?? "") &&
+        String(this.$route?.query?.device ?? "") ===
+          String(nextQuery.device ?? "")
       ) {
         return;
       }
