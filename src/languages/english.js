@@ -697,6 +697,33 @@ export default {
         "Select a target compatible with the selected cycle and environment.",
     },
   },
+  LaunchPreflight: {
+    accessibleLabel: "Launch preflight diagnostics",
+    blocking: "Blocking",
+    description:
+      "Run validation before launch and review diagnostics tied to the current configuration.",
+    empty: "No preflight diagnostics for the current configuration.",
+    focus: "Review area",
+    run: "Run preflight",
+    running: "Running preflight",
+    selectionRequired: "Select a cycle, environment, and target before launch.",
+    stale:
+      "Preflight diagnostics are stale because the launch configuration changed.",
+    title: "Preflight",
+    areas: {
+      concurrency: "Concurrency",
+      environment: "Environment",
+      launch: "Launch",
+      overrides: "Overrides",
+      selection: "Selection",
+      target: "Target",
+    },
+    severities: {
+      error: "Error",
+      info: "Info",
+      warning: "Warning",
+    },
+  },
   TestCycles: {
     compositionTitle: "Configure test sequence",
     compositionDescription:

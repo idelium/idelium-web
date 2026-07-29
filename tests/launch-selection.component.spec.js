@@ -1,11 +1,17 @@
 import { mount, shallowMount } from "@vue/test-utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const api = vi.hoisted(() => ({ get: vi.fn() }));
+const api = vi.hoisted(() => ({ get: vi.fn(), post: vi.fn() }));
 vi.mock("@/services/apiClient", () => ({ default: api }));
 
 import LaunchAssetSelector from "@/components/launch/LaunchAssetSelector.vue";
+import LaunchPreflightPanel from "@/components/launch/LaunchPreflightPanel.vue";
 import LaunchTargetConfigurator from "@/components/launch/LaunchTargetConfigurator.vue";
+import {
+  isPreflightStale,
+  launchConfigurationHash,
+  normalizePreflightResult,
+} from "@/domain/launchPreflight";
 import {
   buildLaunchAssetQuery,
   normalizeLaunchAssetRows,
@@ -42,6 +48,7 @@ function mountLauncher(overrides = {}) {
           serviceBaseUrl: "/api/",
           url: {
             environments: "environments",
+            launchPreflight: "launch/preflight",
             launchTargets: "launch/targets",
             testcycles: "cycles",
           },
@@ -58,6 +65,7 @@ function mountLauncher(overrides = {}) {
 describe("launch asset selection", () => {
   beforeEach(() => {
     api.get.mockReset();
+    api.post.mockReset();
     useSessionStore(pinia).selectProject(7);
   });
 
@@ -209,6 +217,52 @@ describe("launch asset selection", () => {
     ).toBe("");
   });
 
+  it("groups sanitized preflight diagnostics by area and detects stale hashes", () => {
+    const hash = launchConfigurationHash({
+      options: { authorization: "Bearer complete-secret-token" },
+      target: "grid",
+    });
+    const result = normalizePreflightResult(
+      {
+        diagnostics: [
+          {
+            area: "target",
+            blocking: true,
+            code: "launch.preflight.targetDown",
+            location: "target.health",
+            message: "Authorization: Bearer complete-secret-token",
+            remediation: "Select another target",
+            severity: "error",
+          },
+          {
+            area: "environment",
+            blocking: false,
+            code: "launch.preflight.secretExpires",
+            location: "environment.secret",
+            message: "Secret expires soon",
+            severity: "warning",
+          },
+        ],
+      },
+      hash,
+    );
+    const wrapper = mount(LaunchPreflightPanel, {
+      props: {
+        copy: english.LaunchPreflight,
+        result,
+        stale: false,
+      },
+      global: { stubs: { fontAwesomeIcon: true } },
+    });
+
+    expect(JSON.stringify(result)).not.toContain("complete-secret-token");
+    expect(isPreflightStale(result, "different")).toBe(true);
+    expect(wrapper.text()).toContain("Target");
+    expect(wrapper.text()).toContain("Environment");
+    expect(wrapper.text()).toContain("[REDACTED]");
+    expect(wrapper.text()).toContain("Warning");
+  });
+
   it("loads cycle and environment selectors with bounded API queries", async () => {
     api.get
       .mockResolvedValueOnce({
@@ -281,6 +335,79 @@ describe("launch asset selection", () => {
     expect(router.replace).toHaveBeenCalledWith({
       query: { cycleId: "3", environmentId: "9", targetId: "platform-pool" },
     });
+  });
+
+  it("runs preflight against the current launch hash and blocks stale launch", async () => {
+    api.get
+      .mockResolvedValueOnce({
+        data: {
+          data: [
+            {
+              id: 3,
+              name: "Smoke",
+              projectId: 7,
+              runtime: "selenium",
+              status: "active",
+            },
+          ],
+        },
+      })
+      .mockResolvedValueOnce({
+        data: {
+          data: [
+            {
+              capacity: { available: 1, max: 1, queued: 0 },
+              health: "healthy",
+              id: "platform-pool",
+              lastHealthAt: new Date().toISOString(),
+              runtime: "selenium",
+            },
+          ],
+        },
+      })
+      .mockResolvedValueOnce({
+        data: {
+          data: [
+            {
+              id: 9,
+              name: "Demo",
+              projectId: 7,
+              runtimeType: "selenium",
+              status: "active",
+            },
+          ],
+        },
+      });
+    api.post.mockResolvedValueOnce({
+      data: {
+        diagnostics: [
+          {
+            area: "target",
+            blocking: true,
+            code: "launch.preflight.capacity",
+            location: "target.capacity",
+            message: "No capacity",
+            severity: "error",
+          },
+        ],
+      },
+    });
+    const wrapper = mountLauncher();
+    await vi.waitFor(() => expect(api.get).toHaveBeenCalledTimes(3));
+
+    expect(wrapper.vm.preflightStale).toBe(true);
+    await wrapper.vm.runPreflight();
+
+    expect(api.post).toHaveBeenCalledWith(
+      "/api/launch/preflight",
+      expect.objectContaining({ target: expect.any(Object) }),
+      { headers: {} },
+    );
+    expect(wrapper.vm.preflightStale).toBe(false);
+    expect(wrapper.vm.canOpenTargetSelection).toBe(false);
+
+    await wrapper.vm.selectConcurrency(2);
+    expect(wrapper.vm.preflightStale).toBe(true);
   });
 
   it("preserves route-backed selections and clears only incompatible cycles", async () => {

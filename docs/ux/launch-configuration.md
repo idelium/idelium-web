@@ -65,6 +65,25 @@ Browser and device overrides are editable only when the selected target exposes
 the corresponding capability. Unsupported overrides block the launch review and
 are never sent as hidden free-form options.
 
+## Preflight diagnostics
+
+Preflight diagnostics are tied to a stable hash of the redacted launch
+configuration. Any meaningful change to cycle, environment, target,
+concurrency, or overrides invalidates the current result and schedules a
+bounded debounced validation. Operators can also run preflight explicitly.
+
+Diagnostics are grouped by configuration area and severity. Blocking
+diagnostics prevent launch and provide a remediation and focus action. Warnings
+remain visually distinct and non-blocking unless policy turns them into errors
+server-side. The browser can surface local validation when the canonical
+preflight endpoint is unavailable during rollout, but stale or changed
+diagnostics cannot authorize a launch.
+
+Diagnostic text is sanitized before display. Tokens, passwords, authorization
+headers, API keys, sessions, cookies, and similar protected payload markers are
+replaced with `[REDACTED]`. Unauthorized entity metadata must not be returned by
+the API, and legacy client responses are still filtered before display.
+
 The diagnostic model contains:
 
 - `severity`: `info`, `warning`, or `error`;

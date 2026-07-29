@@ -703,6 +703,33 @@ export default {
         "Seleziona un target compatibile con ciclo e ambiente selezionati.",
     },
   },
+  LaunchPreflight: {
+    accessibleLabel: "Diagnostiche preflight avvio",
+    blocking: "Bloccante",
+    description:
+      "Esegui la validazione prima dell'avvio e verifica le diagnostiche riferite alla configurazione corrente.",
+    empty: "Non ci sono diagnostiche preflight per la configurazione corrente.",
+    focus: "Rivedi area",
+    run: "Esegui preflight",
+    running: "Preflight in corso",
+    selectionRequired: "Seleziona ciclo, ambiente e target prima dell'avvio.",
+    stale:
+      "Le diagnostiche preflight non sono aggiornate perché la configurazione di avvio è cambiata.",
+    title: "Preflight",
+    areas: {
+      concurrency: "Concorrenza",
+      environment: "Ambiente",
+      launch: "Avvio",
+      overrides: "Override",
+      selection: "Selezione",
+      target: "Target",
+    },
+    severities: {
+      error: "Errore",
+      info: "Info",
+      warning: "Warning",
+    },
+  },
   TestCycles: {
     compositionTitle: "Configura la sequenza dei test",
     compositionDescription:

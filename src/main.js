@@ -140,6 +140,7 @@ app.config.globalProperties.config = {
     plugins: "admin/plugins",
     steps: "admin/steps",
     importtest: "admin/importtest",
+    launchPreflight: "admin/launch/preflight",
     launchtest: "admin/launchtest",
     launchTargets: "admin/launch/targets",
     tests: "admin/tests",

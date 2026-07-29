@@ -48,6 +48,15 @@
       v-on:update:overrides="selectOverrides"
     />
 
+    <LaunchPreflightPanel
+      :copy="language[config.currentLanguage].LaunchPreflight"
+      :result="preflightResult"
+      :running="preflightRunning"
+      :stale="preflightStale"
+      v-on:focus-area="focusLaunchArea"
+      v-on:run="runPreflight"
+    />
+
     <section class="launch-page__review" aria-live="polite">
       <div>
         <p>{{ launcherCopy.reviewEyebrow }}</p>
@@ -96,7 +105,15 @@
 
 <script>
 import LaunchAssetSelector from "@/components/launch/LaunchAssetSelector.vue";
+import LaunchPreflightPanel from "@/components/launch/LaunchPreflightPanel.vue";
 import LaunchTargetConfigurator from "@/components/launch/LaunchTargetConfigurator.vue";
+import { createLaunchApiRequest } from "@/domain/launchContracts";
+import {
+  isPreflightStale,
+  launchConfigurationHash,
+  localPreflightResult,
+  normalizePreflightResult,
+} from "@/domain/launchPreflight";
 import {
   buildLaunchAssetQuery,
   buildLaunchSelectionQuery,
@@ -118,6 +135,7 @@ export default {
   name: "TestLauncherComponent",
   components: {
     LaunchAssetSelector,
+    LaunchPreflightPanel,
     LaunchTargetConfigurator,
     platformLauncher,
   },
@@ -133,6 +151,9 @@ export default {
       }),
       error: null,
       listEnvironments: [],
+      preflightResult: null,
+      preflightRunning: false,
+      preflightTimer: null,
       rawTargets: [],
       concurrency: Number.parseInt(this.$route?.query?.concurrency, 10) || 1,
       selectedCycleId: routeSelection.cycleId,
@@ -193,6 +214,23 @@ export default {
         target: this.selectedTarget,
       });
     },
+    launchRequest() {
+      return createLaunchApiRequest({
+        concurrency: { limit: this.concurrency },
+        cycle: this.selectedCycle?.raw ?? this.selectedCycle,
+        environment: this.selectedEnvironment?.raw ?? this.selectedEnvironment,
+        idProject: getSelectedProjectId(),
+        options: this.targetOverrides,
+        projectId: getSelectedProjectId(),
+        target: this.selectedTarget?.raw ?? this.selectedTarget,
+      });
+    },
+    currentPreflightHash() {
+      return launchConfigurationHash(this.launchRequest.body);
+    },
+    preflightStale() {
+      return isPreflightStale(this.preflightResult, this.currentPreflightHash);
+    },
     canOpenTargetSelection() {
       return (
         this.selectedCycle &&
@@ -200,8 +238,30 @@ export default {
         this.selectedTarget &&
         !this.selectedCycle.disabledReason &&
         !this.selectedEnvironment.disabledReason &&
-        this.targetDiagnostics.every((diagnostic) => !diagnostic.blocking)
+        this.targetDiagnostics.every((diagnostic) => !diagnostic.blocking) &&
+        !this.preflightStale &&
+        !this.preflightResult?.hasBlockingDiagnostics
       );
+    },
+  },
+  watch: {
+    concurrency() {
+      this.invalidatePreflight();
+    },
+    selectedCycleId() {
+      this.invalidatePreflight();
+    },
+    selectedEnvironmentId() {
+      this.invalidatePreflight();
+    },
+    selectedTargetId() {
+      this.invalidatePreflight();
+    },
+    targetOverrides: {
+      deep: true,
+      handler() {
+        this.invalidatePreflight();
+      },
     },
   },
   created() {
@@ -210,6 +270,9 @@ export default {
     this.emitter.on("refreshTestLauncher", () => {
       this.refreshLaunchAssets();
     });
+  },
+  beforeUnmount() {
+    clearTimeout(this.preflightTimer);
   },
   methods: {
     refreshLaunchAssets() {
@@ -353,6 +416,127 @@ export default {
     selectOverrides(value) {
       this.targetOverrides = value;
       this.syncDraftRoute();
+    },
+    invalidatePreflight() {
+      if (this.preflightResult) {
+        this.preflightResult = {
+          ...this.preflightResult,
+          configurationHash: "stale",
+        };
+      }
+      clearTimeout(this.preflightTimer);
+      this.preflightTimer = setTimeout(() => {
+        if (
+          this.selectedCycle &&
+          this.selectedEnvironment &&
+          this.selectedTarget
+        ) {
+          this.runPreflight();
+        }
+      }, 350);
+    },
+    localPreflightDiagnostics() {
+      return this.targetDiagnostics.map((diagnostic) => ({
+        area: String(diagnostic.location || "target").split(".")[0],
+        blocking: diagnostic.blocking,
+        code: diagnostic.code,
+        focusTarget: diagnostic.location,
+        location: diagnostic.location,
+        message: this.preflightMessage(diagnostic),
+        remediation: this.preflightRemediation(diagnostic),
+        severity: diagnostic.severity,
+      }));
+    },
+    preflightMessage(diagnostic) {
+      const key = String(diagnostic.remediationKey ?? "")
+        .split(".")
+        .pop();
+      return (
+        this.language[this.config.currentLanguage].LaunchTarget.remediation?.[
+          key
+        ] ?? diagnostic.code
+      );
+    },
+    preflightRemediation(diagnostic) {
+      const key = String(diagnostic.remediationKey ?? "")
+        .split(".")
+        .pop();
+      return (
+        this.language[this.config.currentLanguage].LaunchTarget.remediation?.[
+          key
+        ] ?? diagnostic.code
+      );
+    },
+    runPreflight() {
+      const hash = this.currentPreflightHash;
+      const localResult = localPreflightResult(
+        this.localPreflightDiagnostics(),
+        hash,
+      );
+      if (
+        !this.selectedCycle ||
+        !this.selectedEnvironment ||
+        !this.selectedTarget
+      ) {
+        this.preflightResult = localPreflightResult(
+          [
+            {
+              area: "selection",
+              blocking: true,
+              code: "launch.preflight.selectionRequired",
+              focusTarget: "selection",
+              location: "selection",
+              message:
+                this.language[this.config.currentLanguage].LaunchPreflight
+                  .selectionRequired,
+              remediation:
+                this.language[this.config.currentLanguage].LaunchPreflight
+                  .selectionRequired,
+              severity: "error",
+            },
+          ],
+          hash,
+        );
+        return Promise.resolve(this.preflightResult);
+      }
+      this.preflightRunning = true;
+      return apiClient
+        .post(
+          this.config.serviceBaseUrl +
+            (this.config.url.launchPreflight ?? "admin/launch/preflight"),
+          this.launchRequest.body,
+          {
+            headers: this.setHeaders(),
+          },
+        )
+        .then((response) => {
+          this.preflightResult = normalizePreflightResult(response.data, hash);
+          if (localResult.diagnostics.length > 0) {
+            this.preflightResult = normalizePreflightResult(
+              {
+                diagnostics: [
+                  ...this.preflightResult.diagnostics,
+                  ...localResult.diagnostics,
+                ],
+              },
+              hash,
+            );
+          }
+          return this.preflightResult;
+        })
+        .catch(() => {
+          this.preflightResult = localResult;
+          return this.preflightResult;
+        })
+        .finally(() => {
+          this.preflightRunning = false;
+        });
+    },
+    focusLaunchArea(area) {
+      const selector = String(area).includes("environment")
+        ? ".launch-asset-selector input"
+        : ".launch-target input";
+      this.$el.querySelector(selector)?.focus();
     },
     syncDraftRoute() {
       if (!this.$router?.replace) return;
