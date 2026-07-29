@@ -983,6 +983,58 @@ export default {
         schema: "Correct the value at the indicated schema path.",
       },
     },
+    dsl: {
+      accessibleLabel: "Idelium DSL editor",
+      title: "DSL source",
+      description:
+        "Author versioned Idelium DSL with catalog-aware diagnostics.",
+      editorLabel: "Idelium DSL source",
+      apply: "Apply DSL changes",
+      completions: "Available actions",
+      completionsDescription:
+        "Only authorized catalog actions with DSL support are shown.",
+      noCompletions: "No compatible DSL actions are available.",
+      documentation: "Documentation",
+      diagnostics: "DSL diagnostics",
+      location: "Line {line}, column {column}",
+      readyToApply: "Valid DSL changes are ready to apply.",
+      valid: "The DSL source is valid and matches the current model.",
+      validation: {
+        default: "The DSL source is invalid.",
+        DSL_SOURCE_EMPTY: "The DSL source cannot be empty.",
+        DSL_VERSION_MISSING: "The DSL language version is missing.",
+        DSL_VERSION_UNSUPPORTED: "The DSL language version is unsupported.",
+        DSL_TEST_BLOCK_MISSING: "At least one test block is required.",
+        DSL_OPEN_HTTP_URL: "The action uses an insecure HTTP URL.",
+        DSL_WAIT_TIMEOUT_IMPLICIT: "The wait timeout is implicit.",
+        DSL_SECRET_LITERAL: "An inline secret literal is prohibited.",
+        DSL_BRACE_UNEXPECTED: "A closing brace has no matching opening brace.",
+        DSL_BRACE_MISSING: "A block is missing its closing brace.",
+        DSL_SOURCE_TOO_LARGE: "The DSL source exceeds the supported size.",
+        DSL_ACTION_UNSUPPORTED:
+          "The action is unavailable in the authorized DSL catalog.",
+        DSL_ACTION_RUNTIME_INCOMPATIBLE:
+          "The action is incompatible with the active runtime.",
+      },
+      remediation: {
+        default: "Correct the source before applying.",
+        DSL_SOURCE_EMPTY: "Start with `idelium 1.0` and add a test block.",
+        DSL_VERSION_MISSING: "Add `idelium 1.0` as the first content line.",
+        DSL_VERSION_UNSUPPORTED:
+          "Migrate the source to Idelium DSL version 1.0.",
+        DSL_TEST_BLOCK_MISSING: "Add a named test block.",
+        DSL_OPEN_HTTP_URL: "Use HTTPS in shared and enterprise environments.",
+        DSL_WAIT_TIMEOUT_IMPLICIT: "Add an explicit timeout.",
+        DSL_SECRET_LITERAL:
+          "Use a secret variable or authorized runtime parameter.",
+        DSL_BRACE_UNEXPECTED: "Remove the extra brace or open the block.",
+        DSL_BRACE_MISSING: "Close every open block.",
+        DSL_SOURCE_TOO_LARGE: "Reduce the source below 500,000 bytes.",
+        DSL_ACTION_UNSUPPORTED: "Choose an action from the completion catalog.",
+        DSL_ACTION_RUNTIME_INCOMPATIBLE:
+          "Switch runtime or choose a compatible action.",
+      },
+    },
     diagnostics: {
       malformedConfig:
         "The saved step configuration is malformed. Open JSON mode to repair it.",

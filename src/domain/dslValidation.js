@@ -1,6 +1,8 @@
 export const DSL_SOURCE_SCHEMA_VERSION = "dsl.source.v1";
 export const DSL_LANGUAGE_VERSION = "1.0";
 export const DSL_LINT_SCHEMA_VERSION = "dsl-lint-result.v1";
+export const MAX_DSL_SOURCE_BYTES = 500_000;
+const MAX_DSL_COMPLETIONS = 200;
 
 const SENSITIVE_PATTERN =
   /\b(api[-_\s]?key|authorization|cookie|password|refresh[-_\s]?token|secret|session|token)\s*[:=]\s*([^&\s,;]+)/gi;
@@ -101,6 +103,24 @@ export function extractDslSource(rawConfig) {
 export function validateDslSource(source) {
   const diagnostics = [];
   const normalizedSource = typeof source === "string" ? source : "";
+  if (
+    new TextEncoder().encode(normalizedSource).length > MAX_DSL_SOURCE_BYTES
+  ) {
+    diagnostics.push(
+      diagnostic(
+        1,
+        1,
+        "DSL_SOURCE_TOO_LARGE",
+        "DSL source exceeds the supported size.",
+        "Reduce the DSL source below 500,000 bytes.",
+      ),
+    );
+    return {
+      schemaVersion: DSL_LINT_SCHEMA_VERSION,
+      valid: false,
+      diagnostics,
+    };
+  }
   const lines = normalizedSource.split(/\r?\n/);
   const firstContentLineIndex = lines.findIndex((line) => line.trim() !== "");
   const firstContentLine =
@@ -239,6 +259,72 @@ export function validateDslSource(source) {
     valid: errors.length === 0,
     diagnostics,
   };
+}
+
+export function createDslCompletions(catalog, options = {}) {
+  const authorizedIds = new Set(
+    Array.isArray(options.authorizedActionIds)
+      ? options.authorizedActionIds.map(String).slice(0, MAX_DSL_COMPLETIONS)
+      : [],
+  );
+  return (Array.isArray(catalog?.actions) ? catalog.actions : [])
+    .filter(
+      (action) =>
+        action.capabilities?.dsl === true &&
+        (authorizedIds.size === 0 || authorizedIds.has(String(action.id))),
+    )
+    .slice(0, MAX_DSL_COMPLETIONS)
+    .map((action) => ({
+      actionType: action.actionType,
+      documentationUrl: action.documentation?.url ?? null,
+      id: action.id,
+      insertText: `action ${action.actionType}`,
+      runtime: action.runtime,
+    }));
+}
+
+export function validateDslCatalogCompatibility(source, catalog, options = {}) {
+  const actions = new Map(
+    (Array.isArray(catalog?.actions) ? catalog.actions : []).map((action) => [
+      action.actionType,
+      action,
+    ]),
+  );
+  const activeRuntime = String(options.activeRuntime ?? "").trim();
+  const diagnostics = [];
+  String(source ?? "")
+    .split(/\r?\n/)
+    .forEach((line, index) => {
+      const match = line.match(/^\s*action\s+([a-zA-Z0-9_.:-]+)/);
+      if (match == null) return;
+      const action = actions.get(match[1]);
+      if (action == null || action.capabilities?.dsl !== true) {
+        diagnostics.push(
+          diagnostic(
+            index + 1,
+            Math.max(line.indexOf(match[1]) + 1, 1),
+            "DSL_ACTION_UNSUPPORTED",
+            "The referenced action is unavailable in the authorized DSL catalog.",
+            "Choose an action offered by the completion catalog.",
+          ),
+        );
+      } else if (
+        activeRuntime !== "" &&
+        action.runtime !== "shared" &&
+        action.runtime !== activeRuntime
+      ) {
+        diagnostics.push(
+          diagnostic(
+            index + 1,
+            Math.max(line.indexOf(match[1]) + 1, 1),
+            "DSL_ACTION_RUNTIME_INCOMPATIBLE",
+            "The referenced action is incompatible with the active runtime.",
+            "Switch runtime or choose a compatible action.",
+          ),
+        );
+      }
+    });
+  return diagnostics;
 }
 
 export function dslConstructCatalog() {

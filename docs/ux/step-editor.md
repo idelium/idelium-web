@@ -140,6 +140,23 @@ credentials and secrets are rejected; a field ending in `Ref` may contain only a
 bounded secret-reference identifier. Rollback to Wizard mode therefore restores
 the last durable model rather than incomplete JSON text.
 
+## DSL mode
+
+`DslStepEditor` integrates the existing versioned DSL parser and stable lint
+codes. The editor preserves the author's source text, exposes bounded
+line-numbered editing, and requires explicit Apply. Empty, legacy-version,
+malformed, insecure, secret-bearing, and oversized fixtures are rejected without
+changing the durable source. The current DSL contract accepts version `1.0` and
+limits source to 500,000 bytes.
+
+Completions are derived only from the already authorized action catalog, limited
+to 200 entries, and contain an action identifier, insertion text, runtime, and
+GitHub documentation URL. Environment variables, tenant payloads, and
+credentials are not completion inputs. Catalog checks report unsupported
+actions and runtime incompatibility before save. The UI localizes diagnostic
+codes but keeps each stable code, line, column, severity, and remediation
+available for support and automation.
+
 ## Rollout and rollback
 
 The contract is introduced before replacing the current wizard UI. Existing
