@@ -100,6 +100,20 @@ export default {
     emptyResults:
       "Non sono disponibili dettagli canonici del risultato per questo step.",
   },
+  ExecutionObservability: {
+    statusUnknown: "Sconosciuto",
+    statusQueued: "In coda",
+    statusRunning: "In esecuzione",
+    statusCancelling: "Annullamento",
+    statusPassed: "Superato",
+    statusFailed: "Fallito",
+    statusCancelled: "Annullato",
+    statusSkipped: "Saltato",
+    statusBlocked: "Bloccato",
+    replayRequired:
+      "Gli aggiornamenti live hanno perso eventi. Replay dall'ultimo cursore.",
+    redactedPayload: "Payload protetto oscurato",
+  },
   Login: {
     btnLogin: "Entra",
     placePassword: "password",

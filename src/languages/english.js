@@ -100,6 +100,19 @@ export default {
     emptyResults:
       "No canonical execution result details are available for this step.",
   },
+  ExecutionObservability: {
+    statusUnknown: "Unknown",
+    statusQueued: "Queued",
+    statusRunning: "Running",
+    statusCancelling: "Cancelling",
+    statusPassed: "Passed",
+    statusFailed: "Failed",
+    statusCancelled: "Cancelled",
+    statusSkipped: "Skipped",
+    statusBlocked: "Blocked",
+    replayRequired: "Live updates missed events. Replaying from the last cursor.",
+    redactedPayload: "Protected payload redacted",
+  },
   Login: {
     btnLogin: "enter",
     placePassword: "password",
