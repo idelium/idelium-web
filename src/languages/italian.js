@@ -684,6 +684,16 @@ export default {
       "Usa il nome visualizzato nelle liste account e nelle viste profilo.",
     passwordHelp:
       "Usa una password conforme alla policy configurata in Idelium.",
+    listEyebrow: "Amministrazione identità",
+    listTitle: "Account",
+    listDescription:
+      "Cerca e gestisci gli account utente autorizzati per il cliente corrente.",
+    searchLabel: "Cerca account",
+    searchPlaceholder: "Cerca per email, nome, cliente o ruolo",
+    paginationLabel: "Pagine dei risultati account",
+    previousPage: "Precedente",
+    nextPage: "Successiva",
+    pageStatus: "Pagina {page} di {pages}",
     modal: {
       titleModal: "Dettagli del account",
       modifyAccount: "Modifica account",
@@ -707,6 +717,16 @@ export default {
     titleModifyModal: "Modifica cliente",
     costumerIsDuplicated: "il cliente già esiste",
     textCopy: "chiave copiata",
+    listEyebrow: "Amministrazione tenant",
+    listTitle: "Clienti",
+    listDescription:
+      "Cerca e gestisci i tenant cliente senza esporne le credenziali.",
+    searchLabel: "Cerca clienti",
+    searchPlaceholder: "Cerca per nome o descrizione del cliente",
+    paginationLabel: "Pagine dei risultati cliente",
+    previousPage: "Precedente",
+    nextPage: "Successiva",
+    pageStatus: "Pagina {page} di {pages}",
   },
   TemplateTest: {
     permissionDenied: "Oops! Permesso negato",

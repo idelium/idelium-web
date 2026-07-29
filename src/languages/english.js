@@ -679,6 +679,16 @@ export default {
     nameHelp: "Use the display name shown in account lists and profile views.",
     passwordHelp:
       "Use a password that satisfies the configured Idelium password policy.",
+    listEyebrow: "Identity administration",
+    listTitle: "Accounts",
+    listDescription:
+      "Search and manage the user accounts authorized for the current customer.",
+    searchLabel: "Search accounts",
+    searchPlaceholder: "Search by email, name, customer, or role",
+    paginationLabel: "Account result pages",
+    previousPage: "Previous",
+    nextPage: "Next",
+    pageStatus: "Page {page} of {pages}",
     modal: {
       titleModal: "Account details",
       modifyAccount: "Modify account",
@@ -702,6 +712,16 @@ export default {
     titleModifyModal: "Modify customer",
     costumerIsDuplicated: "the customer already exists",
     textCopy: "key copied",
+    listEyebrow: "Tenant administration",
+    listTitle: "Customers",
+    listDescription:
+      "Search and manage customer tenants without exposing their credentials.",
+    searchLabel: "Search customers",
+    searchPlaceholder: "Search by customer name or description",
+    paginationLabel: "Customer result pages",
+    previousPage: "Previous",
+    nextPage: "Next",
+    pageStatus: "Page {page} of {pages}",
   },
   TemplateTest: {
     permissionDenied: "Oops! Permission denied",

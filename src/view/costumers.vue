@@ -1,259 +1,327 @@
 <template>
-  <div class="costum">
-    <div class="row">
-      <div class="col-sm-11">
-        <button
-          type="button"
-          size="sm"
-          class="btn btn-primary"
-          style="margin-bottom: 5px; float: right"
-          v-on:click="showModal(null, 'new')"
-        >
-          {{ language[config.currentLanguage].Costumers.btnNewCostumer }}
-        </button>
-      </div>
-      <div class="col-sm-1" />
-    </div>
-    <div class="row">
-      <div class="col-sm-1" />
-      <div class="col">
-        <table class="table table-striped costum">
-            <caption>{{language[config.currentLanguage].Costumers.costumer}}</caption>
-          <thead>
-            <tr>
-              <th>{{ language[config.currentLanguage].Costumers.id }}</th>
-              <th>{{ language[config.currentLanguage].Costumers.costumer }}</th>
-              <th>{{ language[config.currentLanguage].Costumers.description }}</th>
-              <th>{{ language[config.currentLanguage].Costumers.apiKey }}</th>
-              <th>
-                {{ language[config.currentLanguage].Costumers.licenseExpiration }}
-              </th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="(costumer, index) in arrayCostumers" v-bind:key="index">
-              <td>
-                {{ costumer.id }}
-              </td>
-              <td>
-                <button
-                  type="button"
-                  class="btn btn-link btn-sm"
-                  v-on:click="showModal(index, 'modify')"
-                >
-                  {{ costumer.costumer }}
-                </button>
-              </td>
-              <td>
-                <button
-                  type="button"
-                  class="btn btn-link btn-sm"
-                  v-on:click="showModal(index, 'modify')"
-                >
-                  {{ costumer.description }}
-                </button>
-              </td>
-              <td>
-                <button
-                  v-on:click="copyClipboard(costumer.apiKey, costumer.costumer)"
-                  class="btn btn-link btn-sm"
-                  :title="language[config.currentLanguage].Actions.copy"
-                >
-                  {{ costumer.apiKey.substring(0, 10) + '..' }}
-                  <font-awesome-icon
-                    class="idelium-action-icon idelium-action-icon--copy"
-                    icon="copy"
-                    style="margin-left: 5px; font-size: 20px; float: right"
-                  />
-                </button>
-              </td>
-              <td>
-                <button
-                  type="button"
-                  class="btn btn-link btn-sm"
-                  v-on:click="showModal(index, 'modify')"
-                >
-                  {{ costumer.licenseExpiration }}
-                </button>
-              </td>
-              <td>
-                <button
-                  type="button"
-                  size="sm"
-                  class="btn btn-danger"
-                  :disabled="costumer.usercostumer == 'admin'"
-                  v-on:click="deleteCostumer(costumer.id)"
-                >
-                  {{ language[config.currentLanguage].Costumers.btnDelete }}
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="col-sm-1" />
-    </div>
+  <EnterpriseListingPage
+    :create-label="copy.btnNewCostumer"
+    :description="copy.listDescription"
+    :eyebrow="copy.listEyebrow"
+    :title="copy.listTitle"
+    v-on:create="showModal(null, 'new')"
+  >
+    <EnterpriseListingGrid
+      v-model:search="search"
+      :accessible-label="copy.listTitle"
+      :actions="actions"
+      :columns="columns"
+      :error="error"
+      :has-active-filters="query.search !== ''"
+      :listing-copy="copy"
+      :loading="loading"
+      :meta="meta"
+      :rows="arrayCostumers"
+      :sort="sort"
+      :table-copy="tableCopy"
+      v-on:action="handleAction"
+      v-on:clear-filters="clearSearch"
+      v-on:create="showModal(null, 'new')"
+      v-on:page-change="changePage"
+      v-on:retry="getCostumers"
+      v-on:row-activate="showCostumerModal"
+      v-on:search="scheduleSearch"
+      v-on:sort="changeSort"
+    />
     <modalModifyCostumer
       ref="modifyModal"
       :arrayCostumers="arrayCostumers"
       v-on:updateData="updateData"
     />
-  </div>
+  </EnterpriseListingPage>
 </template>
-<style scoped>
-.key {
-  cursor: pointer;
-  text-overflow: 12px;
-  white-space: nowrap;
-  overflow: hidden;
-  max-width: 1rem;
-}
-</style>
-<script>
-import apiClient from '@/services/apiClient'
-import modalModifyCostumer from './costumer/modalModifyCostumer.vue'
 
-import copy from 'copy-to-clipboard'
+<script>
+import EnterpriseListingGrid from "@/components/grid/EnterpriseListingGrid.vue";
+import EnterpriseListingPage from "@/components/grid/EnterpriseListingPage.vue";
+import {
+  parseGridResponse,
+  parseGridRouteQuery,
+  serializeGridRouteQuery,
+} from "@/domain/enterpriseGrid";
+import apiClient from "@/services/apiClient";
+import modalModifyCostumer from "./costumer/modalModifyCostumer.vue";
+
+const ALLOWED_SORTS = [
+  "id",
+  "costumer",
+  "description",
+  "licenseExpiration",
+  "created_at",
+  "updated_at",
+];
 
 export default {
-  name: 'CostumersComponent',
+  name: "CostumersComponent",
+  components: {
+    EnterpriseListingGrid,
+    EnterpriseListingPage,
+    modalModifyCostumer,
+  },
   created() {
-    this.getCostumers()
-    this.$gtag.event('idelium-builder', { method: 'costumer' })
-    this.emitter.on('refreshCostumer', () => {
-      this.$forceUpdate()
-    })
+    this.restoreQuery();
+    this.getCostumers();
+    this.$gtag.event("idelium-builder", { method: "costumer" });
+    this.emitter.on("refreshCostumer", () => this.getCostumers(true));
+  },
+  beforeUnmount() {
+    if (this.searchTimer) clearTimeout(this.searchTimer);
   },
   watch: {
-    $route() {
-      this.$gtag.event('idelium-builder', { method: 'costumer' })
-      this.$forceUpdate()
-    }
+    "$route.query": {
+      deep: true,
+      handler() {
+        if (this.updatingRoute) return;
+        if (this.restoreQuery()) this.getCostumers();
+      },
+    },
   },
   data() {
     return {
-      newcostumer: null,
       arrayCostumers: [],
-      idSelected: null,
-      costumerToModify: null
-    }
+      error: null,
+      loading: false,
+      meta: {
+        page: 1,
+        pageSize: 25,
+        total: 0,
+        lastPage: 1,
+        hasNextPage: false,
+        hasPreviousPage: false,
+      },
+      query: {
+        page: 1,
+        pageSize: 25,
+        search: "",
+        sort: "created_at",
+        direction: "asc",
+      },
+      search: "",
+      searchTimer: null,
+      updatingRoute: false,
+    };
+  },
+  computed: {
+    copy() {
+      return this.language[this.config.currentLanguage].Costumers;
+    },
+    tableCopy() {
+      return {
+        ...this.language[this.config.currentLanguage].DataTable,
+        create: this.copy.btnNewCostumer,
+      };
+    },
+    columns() {
+      return [
+        {
+          key: "id",
+          label: this.copy.id,
+          required: true,
+          sortable: true,
+          type: "technical",
+        },
+        {
+          key: "costumer",
+          label: this.copy.costumer,
+          required: true,
+          sortable: true,
+        },
+        {
+          key: "description",
+          label: this.copy.description,
+          sortable: true,
+        },
+        {
+          key: "licenseExpiration",
+          label: this.copy.licenseExpiration,
+          sortable: true,
+          type: "timestamp",
+        },
+      ];
+    },
+    actions() {
+      return [
+        { id: "edit", label: this.copy.btnModify },
+        {
+          id: "delete",
+          label: this.copy.btnDelete,
+          variant: "danger",
+          disabled: (customer) => customer.usercostumer === "admin",
+        },
+      ];
+    },
+    sort() {
+      return { field: this.query.sort, direction: this.query.direction };
+    },
   },
   methods: {
-    copyClipboard(text, costumer) {
-      copy(text)
-      this.$wkToast(
-        this.language[this.config.currentLanguage].Costumers.textCopy + ' (' + costumer + ')'
-      )
+    restoreQuery() {
+      const parsed = parseGridRouteQuery(this.$route?.query || {}, {
+        allowedSorts: ALLOWED_SORTS,
+      });
+      const next = {
+        page: parsed.page,
+        pageSize: parsed.pageSize,
+        search: parsed.search,
+        sort: parsed.sort?.field || "created_at",
+        direction: parsed.sort?.direction || "asc",
+      };
+      const changed = JSON.stringify(next) !== JSON.stringify(this.query);
+      this.query = next;
+      this.search = parsed.search;
+      return changed;
     },
-    modify(id, costumer) {
-      this.idSelected = id
-      this.costumerToModify = costumer
+    async updateRoute(changes) {
+      const next = { ...this.query, ...changes };
+      if (
+        changes.search !== undefined ||
+        changes.sort !== undefined ||
+        changes.direction !== undefined
+      ) {
+        next.page = 1;
+      }
+      this.query = next;
+      if (this.$router && this.$route) {
+        this.updatingRoute = true;
+        try {
+          await this.$router.replace({
+            query: serializeGridRouteQuery(
+              {
+                ...next,
+                sort: { field: next.sort, direction: next.direction },
+              },
+              { allowedSorts: ALLOWED_SORTS },
+            ),
+          });
+        } finally {
+          this.updatingRoute = false;
+        }
+      }
+      return this.getCostumers();
     },
-
-    deleteCostumer(id) {
-      return this.$showConfirm({
-        message: this.language[this.config.currentLanguage].Costumers.textDelete,
-        variant: 'warning'
-      }).then((confirmed) => {
-        if (confirmed) this.deleteAction(id)
-      })
+    scheduleSearch(value) {
+      if (this.searchTimer) clearTimeout(this.searchTimer);
+      this.searchTimer = setTimeout(() => {
+        this.searchTimer = null;
+        this.updateRoute({ search: value });
+      }, 250);
     },
-    deleteAction(id) {
-      this.emitter.emit('showLoader', true)
-      apiClient
-        .delete(this.config.serviceBaseUrl + this.config.url.costumers + '/' + id, {
-          headers: this.setHeaders()
-        })
-        .then((response) => {
-          this.arrayCostumers = response.data
-          this.emitter.emit('showLoader', false)
-        })
-        .catch((e) => {
-          this.emitter.emit('showLoader', false)
-          this.Logout(this, e)
-          this.error = e
-        })
+    clearSearch() {
+      this.search = "";
+      return this.updateRoute({ search: "" });
     },
-    getCostumers() {
-      this.emitter.emit('showLoader', true)
-      apiClient
+    changePage(page) {
+      return this.updateRoute({ page: Math.max(Number(page) || 1, 1) });
+    },
+    changeSort(sort) {
+      return this.updateRoute({
+        sort: sort.field,
+        direction: sort.direction,
+      });
+    },
+    getCostumers(background = false) {
+      this.loading = true;
+      this.error = null;
+      if (!background) this.emitter.emit("showLoader", true);
+      return apiClient
         .get(this.config.serviceBaseUrl + this.config.url.costumers, {
-          headers: this.setHeaders()
+          headers: this.setHeaders(),
+          params: this.query,
         })
         .then((response) => {
-          this.emitter.emit('showLoader', false)
-
-          this.arrayCostumers = response.data
+          const result = parseGridResponse(response);
+          this.arrayCostumers = result.rows;
+          this.meta = {
+            ...result.meta,
+            lastPage: Math.max(
+              Math.ceil(result.meta.total / result.meta.pageSize),
+              1,
+            ),
+          };
         })
-        .catch((e) => {
-          this.Logout(this, e)
-          this.error = e
+        .catch((error) => {
+          this.error = error;
+          this.Logout(this, error);
         })
+        .finally(() => {
+          this.loading = false;
+          this.emitter.emit("showLoader", false);
+        });
     },
-    insertCostumer(data) {
-      apiClient
-        .post(
-          this.config.serviceBaseUrl + this.config.url.costumers,
-          {
-            costumer: data.costumer,
-            description: data.description
-          },
-          {
-            headers: this.setHeaders()
-          }
-        )
-        .then((response) => {
-          this.emitter.emit('showLoader', false)
-          this.arrayCostumers = response.data
-          this.emitter.emit('updateListCostumer', this.arrayCostumers)
-        })
-        .catch((e) => {
-          this.Logout(this, e)
-          this.error = e
-        })
+    handleAction({ action, row }) {
+      if (action === "edit") this.showCostumerModal(row);
+      if (action === "delete") this.deleteCostumer(row.id);
     },
-    updateCostumer(data) {
-      this.emitter.emit('showLoader', true)
-      apiClient
-        .put(
-          this.config.serviceBaseUrl + this.config.url.costumers + '/' + data.id,
-          {
-            costumer: data.costumer,
-            description: data.description
-          },
-          {
-            headers: this.setHeaders()
-          }
-        )
-        .then((response) => {
-          this.emitter.emit('showLoader', false)
-          this.arrayCostumers = response.data
-          this.emitter.emit('updateListCostumer', this.arrayCostumers)
-        })
-        .catch((e) => {
-          this.emitter.emit('showLoader', false)
-          this.Logout(this, e)
-          this.error = e
-        })
+    showCostumerModal(customer) {
+      this.$refs.modifyModal.showModal(customer, "modify");
     },
     showModal(index, type) {
-      if (type == 'new') {
-        this.$refs.modifyModal.showModal(null, type)
-      } else {
-        this.$refs.modifyModal.showModal(this.arrayCostumers[index], type)
-      }
+      const customer = index === null ? null : this.arrayCostumers[index];
+      this.$refs.modifyModal.showModal(customer, type);
+    },
+    deleteCostumer(id) {
+      return this.$showConfirm({
+        message: this.copy.textDelete,
+        variant: "warning",
+      }).then((confirmed) => {
+        if (confirmed) return this.deleteAction(id);
+        return null;
+      });
+    },
+    deleteAction(id) {
+      this.loading = true;
+      return apiClient
+        .delete(
+          `${this.config.serviceBaseUrl}${this.config.url.costumers}/${id}`,
+          { headers: this.setHeaders() },
+        )
+        .then(() => this.getCostumers())
+        .catch((error) => {
+          this.error = error;
+          this.Logout(this, error);
+        })
+        .finally(() => {
+          this.loading = false;
+        });
+    },
+    saveCostumer(method, path, data) {
+      this.loading = true;
+      return apiClient[method](
+        `${this.config.serviceBaseUrl}${this.config.url.costumers}${path}`,
+        {
+          costumer: data.costumer,
+          description: data.description,
+        },
+        { headers: this.setHeaders() },
+      )
+        .then(() => {
+          this.emitter.emit("updateListCostumer", this.arrayCostumers);
+          return this.getCostumers();
+        })
+        .catch((error) => {
+          this.error = error;
+          this.Logout(this, error);
+        })
+        .finally(() => {
+          this.loading = false;
+        });
+    },
+    insertCostumer(data) {
+      return this.saveCostumer("post", "", data);
+    },
+    updateCostumer(data) {
+      return this.saveCostumer("put", `/${data.id}`, data);
     },
     updateData(data) {
-      if (data.type == 'new') {
-        this.insertCostumer(data)
-      } else {
-        this.updateCostumer(data)
-      }
-    }
+      return data.type === "new"
+        ? this.insertCostumer(data)
+        : this.updateCostumer(data);
+    },
   },
-  components: {
-    modalModifyCostumer
-  }
-}
+};
 </script>

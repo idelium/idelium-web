@@ -1,92 +1,33 @@
 <template>
-  <div class="costum">
-    <div class="row">
-      <div class="col-sm-11">
-        <button
-          type="button"
-          size="sm"
-          class="btn btn-primary"
-          style="margin-bottom: 5px; float: right"
-          v-on:click="showModal(null, 'new')"
-        >
-          {{ language[config.currentLanguage].Accounts.newAccount }}
-        </button>
-      </div>
-      <div class="col-sm-1" />
-    </div>
-    <div class="row">
-      <div class="col-sm-1" />
-      <div class="col">
-        <table class="table table-striped costum">
-          <thead>
-            <tr>
-              <th scope="col">
-                {{ language[config.currentLanguage].Accounts.id }}
-              </th>
-              <th scope="col">
-                {{ language[config.currentLanguage].Accounts.account }}
-              </th>
-              <th scope="col">
-                {{ language[config.currentLanguage].Accounts.name }}
-              </th>
-              <th scope="col" v-if="isSuperAdmin == true">
-                {{ language[config.currentLanguage].Accounts.costumer }}
-              </th>
-              <th scope="col">
-                {{ language[config.currentLanguage].Accounts.role }}
-              </th>
-              <th scope="col"></th>
-              <th scope="col"></th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="(account, index) in arrayAccounts" v-bind:key="index">
-              <td>{{ account.id }}</td>
-              <td>
-                <span v-if="idSelected != account.id" style="min-width: 100%">{{
-                  account.email
-                }}</span>
-              </td>
-              <td>
-                <span v-if="idSelected != account.id" style="min-width: 100%">{{
-                  account.name
-                }}</span>
-              </td>
-              <td v-if="isSuperAdmin == true">
-                <span v-if="idSelected != account.id" style="min-width: 100%">{{
-                  account.costumer
-                }}</span>
-              </td>
-              <td>
-                <span v-if="idSelected != account.id" style="min-width: 100%">{{
-                  account.roleName
-                }}</span>
-              </td>
-              <td>
-                <button
-                  type="button"
-                  class="btn btn-warning"
-                  v-on:click="showModal(index, 'modify')"
-                >
-                  {{ language[config.currentLanguage].Accounts.btnModify }}
-                </button>
-              </td>
-              <td>
-                <button
-                  type="button"
-                  class="btn btn-danger"
-                  :disabled="account.email == 'admin'"
-                  v-on:click="deleteAccount(account.id)"
-                >
-                  {{ language[config.currentLanguage].Accounts.btnDelete }}
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="col-sm-1" />
-    </div>
+  <EnterpriseListingPage
+    :create-label="copy.newAccount"
+    :description="copy.listDescription"
+    :eyebrow="copy.listEyebrow"
+    :title="copy.listTitle"
+    v-on:create="showModal(null, 'new')"
+  >
+    <EnterpriseListingGrid
+      v-model:search="search"
+      :accessible-label="copy.listTitle"
+      :actions="actions"
+      :columns="columns"
+      :error="error"
+      :has-active-filters="query.search !== ''"
+      :listing-copy="copy"
+      :loading="loading"
+      :meta="meta"
+      :rows="arrayAccounts"
+      :sort="sort"
+      :table-copy="tableCopy"
+      v-on:action="handleAction"
+      v-on:clear-filters="clearSearch"
+      v-on:create="showModal(null, 'new')"
+      v-on:page-change="changePage"
+      v-on:retry="getAccounts"
+      v-on:row-activate="showAccountModal"
+      v-on:search="scheduleSearch"
+      v-on:sort="changeSort"
+    />
     <modalModifyAccount
       ref="modifyModal"
       :arrayAccounts="arrayAccounts"
@@ -95,123 +36,300 @@
       :isSuperAdmin="isSuperAdmin"
       v-on:updateData="updateData"
     />
-  </div>
+  </EnterpriseListingPage>
 </template>
+
 <script>
-import apiClient from '@/services/apiClient'
-import modalModifyAccount from './account/modalModifyAccount.vue'
+import EnterpriseListingGrid from "@/components/grid/EnterpriseListingGrid.vue";
+import EnterpriseListingPage from "@/components/grid/EnterpriseListingPage.vue";
+import {
+  parseGridResponse,
+  parseGridRouteQuery,
+  serializeGridRouteQuery,
+} from "@/domain/enterpriseGrid";
+import apiClient from "@/services/apiClient";
+import { pinia } from "@/stores/pinia";
+import { useSessionStore } from "@/stores/session";
+import modalModifyAccount from "./account/modalModifyAccount.vue";
+
+const ALLOWED_SORTS = [
+  "id",
+  "email",
+  "name",
+  "role",
+  "idCostumer",
+  "costumer",
+  "roleName",
+];
 
 export default {
-  name: 'AccountsComponent',
+  name: "AccountsComponent",
+  components: {
+    EnterpriseListingGrid,
+    EnterpriseListingPage,
+    modalModifyAccount,
+  },
+  setup() {
+    return { session: useSessionStore(pinia) };
+  },
   created() {
-    this.getAccounts()
-    this.$gtag.event('idelium', { method: 'account' })
-    this.emitter.on('refreshAccount', () => {
-      this.$forceUpdate()
-    })
+    this.restoreQuery();
+    this.getAccounts();
+    this.$gtag.event("idelium", { method: "account" });
+    this.emitter.on("refreshAccount", () => this.getAccounts(true));
+  },
+  beforeUnmount() {
+    if (this.searchTimer) clearTimeout(this.searchTimer);
   },
   watch: {
-    $route() {
-      this.$gtag.event('idelium', { method: 'account' })
-      this.$forceUpdate()
-    }
+    "$route.query": {
+      deep: true,
+      handler() {
+        if (this.updatingRoute) return;
+        if (this.restoreQuery()) this.getAccounts();
+      },
+    },
   },
   data() {
     return {
-      newaccount: null,
       arrayAccounts: [],
       arrayRoles: [],
       arrayCostumers: [],
-      idSelected: null,
-      accountToModify: null,
-      isSuperAdmin: false
-    }
+      error: null,
+      isSuperAdmin: false,
+      loading: false,
+      meta: {
+        page: 1,
+        pageSize: 25,
+        total: 0,
+        lastPage: 1,
+        hasNextPage: false,
+        hasPreviousPage: false,
+      },
+      query: {
+        page: 1,
+        pageSize: 25,
+        search: "",
+        sort: "email",
+        direction: "asc",
+      },
+      search: "",
+      searchTimer: null,
+      updatingRoute: false,
+    };
+  },
+  computed: {
+    copy() {
+      return this.language[this.config.currentLanguage].Accounts;
+    },
+    tableCopy() {
+      return {
+        ...this.language[this.config.currentLanguage].DataTable,
+        create: this.copy.newAccount,
+      };
+    },
+    columns() {
+      const definitions = [
+        {
+          key: "id",
+          label: this.copy.id,
+          required: true,
+          sortable: true,
+          type: "technical",
+        },
+        {
+          key: "email",
+          label: this.copy.account,
+          required: true,
+          sortable: true,
+        },
+        { key: "name", label: this.copy.name, sortable: true },
+      ];
+      if (this.isSuperAdmin) {
+        definitions.push({
+          key: "costumer",
+          label: this.copy.costumer,
+          sortable: true,
+        });
+      }
+      definitions.push({
+        key: "roleName",
+        label: this.copy.role,
+        sortable: true,
+      });
+      return definitions;
+    },
+    actions() {
+      return [
+        { id: "edit", label: this.copy.btnModify },
+        {
+          id: "delete",
+          label: this.copy.btnDelete,
+          variant: "danger",
+          disabled: (account) => account.email === "admin",
+        },
+      ];
+    },
+    sort() {
+      return { field: this.query.sort, direction: this.query.direction };
+    },
   },
   methods: {
-    modify(id, name) {
-      this.idSelected = id
-      this.accountToModify = name
+    restoreQuery() {
+      const parsed = parseGridRouteQuery(this.$route?.query || {}, {
+        allowedSorts: ALLOWED_SORTS,
+      });
+      const next = {
+        page: parsed.page,
+        pageSize: parsed.pageSize,
+        search: parsed.search,
+        sort: parsed.sort?.field || "email",
+        direction: parsed.sort?.direction || "asc",
+      };
+      const changed = JSON.stringify(next) !== JSON.stringify(this.query);
+      this.query = next;
+      this.search = parsed.search;
+      return changed;
     },
-    modifyRoles(id, name) {
-      this.idSelected = id
-      this.rolesToModify = name
+    async updateRoute(changes) {
+      const next = { ...this.query, ...changes };
+      if (
+        changes.search !== undefined ||
+        changes.sort !== undefined ||
+        changes.direction !== undefined
+      ) {
+        next.page = 1;
+      }
+      this.query = next;
+      if (this.$router && this.$route) {
+        this.updatingRoute = true;
+        try {
+          await this.$router.replace({
+            query: serializeGridRouteQuery(
+              {
+                ...next,
+                sort: { field: next.sort, direction: next.direction },
+              },
+              { allowedSorts: ALLOWED_SORTS },
+            ),
+          });
+        } finally {
+          this.updatingRoute = false;
+        }
+      }
+      return this.getAccounts();
+    },
+    scheduleSearch(value) {
+      if (this.searchTimer) clearTimeout(this.searchTimer);
+      this.searchTimer = setTimeout(() => {
+        this.searchTimer = null;
+        this.updateRoute({ search: value });
+      }, 250);
+    },
+    clearSearch() {
+      this.search = "";
+      return this.updateRoute({ search: "" });
+    },
+    changePage(page) {
+      return this.updateRoute({ page: Math.max(Number(page) || 1, 1) });
+    },
+    changeSort(sort) {
+      return this.updateRoute({
+        sort: sort.field,
+        direction: sort.direction,
+      });
+    },
+    getAccounts(background = false) {
+      this.loading = true;
+      this.error = null;
+      if (!background) this.emitter.emit("showLoader", true);
+      return apiClient
+        .get(this.config.serviceBaseUrl + this.config.url.accounts, {
+          headers: this.setHeaders(),
+          params: this.query,
+        })
+        .then((response) => {
+          const result = parseGridResponse(response);
+          this.arrayAccounts = result.rows;
+          this.meta = {
+            ...result.meta,
+            lastPage: Math.max(
+              Math.ceil(result.meta.total / result.meta.pageSize),
+              1,
+            ),
+          };
+          this.isSuperAdmin =
+            this.session.hasCapability("customers.manage") ||
+            this.arrayAccounts.some((account) => Number(account.role) === 1);
+          return Promise.all([this.getRoles(), this.getCostumers()]);
+        })
+        .catch((error) => {
+          this.error = error;
+          this.Logout(this, error);
+        })
+        .finally(() => {
+          this.loading = false;
+          this.emitter.emit("showLoader", false);
+        });
+    },
+    getRoles() {
+      return apiClient
+        .get(this.config.serviceBaseUrl + this.config.url.roles, {
+          headers: this.setHeaders(),
+        })
+        .then((response) => {
+          this.arrayRoles = response.data;
+        });
+    },
+    getCostumers() {
+      if (!this.isSuperAdmin) {
+        this.arrayCostumers = [];
+        return Promise.resolve();
+      }
+      return apiClient
+        .get(this.config.serviceBaseUrl + this.config.url.costumers, {
+          headers: this.setHeaders(),
+        })
+        .then((response) => {
+          this.arrayCostumers = Array.isArray(response.data)
+            ? response.data
+            : response.data.data || [];
+        });
+    },
+    handleAction({ action, row }) {
+      if (action === "edit") this.showAccountModal(row);
+      if (action === "delete") this.deleteAccount(row.id);
+    },
+    showAccountModal(account) {
+      this.$refs.modifyModal.showModal(account, "modify");
+    },
+    showModal(index, type) {
+      const account = index === null ? null : this.arrayAccounts[index];
+      this.$refs.modifyModal.showModal(account, type);
     },
     deleteAccount(id) {
       return this.$showConfirm({
-        message: this.language[this.config.currentLanguage].Accounts.confirmDeleteAccount,
-        variant: 'warning'
+        message: this.copy.confirmDeleteAccount,
+        variant: "warning",
       }).then((confirmed) => {
-        if (confirmed) this.deleteAction(id)
-      })
+        if (confirmed) return this.deleteAction(id);
+        return null;
+      });
     },
     deleteAction(id) {
-      this.emitter.emit('showLoader', true)
-      apiClient
-        .delete(this.config.serviceBaseUrl + this.config.url.accounts + '/' + id, {
-          headers: this.setHeaders()
-        })
-        .then((response) => {
-          this.arrayAccounts = response.data
-          this.emitter.emit('showLoader', false)
-        })
-        .catch((e) => {
-          this.emitter.emit('showLoader', false)
-          this.Logout(this, e)
-          this.error = e
-        })
-    },
-    getRoles() {
-      apiClient
-        .get(this.config.serviceBaseUrl + this.config.url.roles, {
-          headers: this.setHeaders()
-        })
-        .then((response) => {
-          this.arrayRoles = response.data
-          this.getCostumers()
-        })
-        .catch((e) => {
-          this.Logout(this, e)
-          this.error = e
-        })
-    },
-    getCostumers() {
-      apiClient
-        .get(this.config.serviceBaseUrl + this.config.url.costumers, {
-          headers: this.setHeaders()
-        })
-        .then((response) => {
-          if (response.data != 'ok') {
-            this.arrayCostumers = response.data
-          }
-        })
-        .catch((e) => {
-          this.Logout(this, e)
-          this.error = e
-        })
-    },
-    getAccounts() {
-      this.emitter.emit('showLoader', true)
-      apiClient
-        .get(this.config.serviceBaseUrl + this.config.url.accounts, {
-          headers: this.setHeaders()
-        })
-        .then((response) => {
-          this.emitter.emit('showLoader', false)
-          this.arrayAccounts = response.data
-          let obj = this.arrayAccounts.find(({ role }) => role === 1)
-          if (obj != null) {
-            this.isSuperAdmin = true
-            this.getCostumers()
-          }
-          this.getRoles()
-        })
-        .catch((e) => {
-          this.Logout(this, e)
-          this.error = e
-        })
+      return apiClient
+        .delete(
+          `${this.config.serviceBaseUrl}${this.config.url.accounts}/${id}`,
+          { headers: this.setHeaders() },
+        )
+        .then(() => this.getAccounts())
+        .catch((error) => {
+          this.error = error;
+          this.Logout(this, error);
+        });
     },
     insertAccount(data) {
-      apiClient
+      return apiClient
         .post(
           this.config.serviceBaseUrl + this.config.url.accounts,
           {
@@ -219,57 +337,34 @@ export default {
             email: data.email,
             password: data.password,
             role: data.role,
-            idCostumer: data.idCostumer
+            idCostumer: data.idCostumer,
           },
-          {
-            headers: this.setHeaders()
-          }
+          { headers: this.setHeaders() },
         )
-        .then((response) => {
-          //this.emitter.emit('showLoader',false)
-          this.arrayAccounts = response.data
-        })
-        .catch((e) => {
-          this.Logout(this, e)
-          this.error = e
-        })
+        .then(() => this.getAccounts())
+        .catch((error) => {
+          this.error = error;
+          this.Logout(this, error);
+        });
     },
     updateAccount(data) {
-      this.emitter.emit('showLoader', true)
-      apiClient
+      return apiClient
         .put(
-          this.config.serviceBaseUrl + this.config.url.accounts + '/' + data.id,
-          {
-            name: data.name,
-            password: data.password
-          },
-          {
-            headers: this.setHeaders()
-          }
+          `${this.config.serviceBaseUrl}${this.config.url.accounts}/${data.id}`,
+          { name: data.name, password: data.password },
+          { headers: this.setHeaders() },
         )
-        .then((response) => {
-          this.emitter.emit('showLoader', false)
-          this.arrayAccounts = response.data
-        })
-        .catch((e) => {
-          this.emitter.emit('showLoader', false)
-          this.Logout(this, e)
-          this.error = e
-        })
-    },
-    showModal(index, type) {
-      this.$refs.modifyModal.showModal(this.arrayAccounts[index], type)
+        .then(() => this.getAccounts())
+        .catch((error) => {
+          this.error = error;
+          this.Logout(this, error);
+        });
     },
     updateData(data) {
-      if (data.type == 'new') {
-        this.insertAccount(data)
-      } else {
-        this.updateAccount(data)
-      }
-    }
+      return data.type === "new"
+        ? this.insertAccount(data)
+        : this.updateAccount(data);
+    },
   },
-  components: {
-    modalModifyAccount
-  }
-}
+};
 </script>
