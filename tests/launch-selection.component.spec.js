@@ -476,6 +476,63 @@ describe("launch asset selection", () => {
     expect(wrapper.vm.preflightStale).toBe(true);
   });
 
+  it("falls back to local diagnostics when preflight client returns no promise", async () => {
+    api.get.mockReturnValue(new Promise(() => {}));
+    api.post.mockReturnValueOnce(undefined);
+    const wrapper = mountLauncher();
+
+    await wrapper.setData({
+      arrayTestCycles: [
+        {
+          id: 3,
+          name: "Smoke",
+          projectId: 7,
+          runtime: "selenium",
+          status: "active",
+        },
+      ],
+      listEnvironments: [
+        {
+          id: 9,
+          name: "Demo",
+          projectId: 7,
+          runtimeType: "selenium",
+          status: "active",
+        },
+      ],
+      rawTargets: [
+        {
+          capacity: { available: 1, max: 1, queued: 0 },
+          health: "healthy",
+          id: "platform-pool",
+          lastHealthAt: new Date().toISOString(),
+          runtime: "selenium",
+        },
+      ],
+      selectedCycleId: 3,
+      selectedEnvironmentId: 9,
+      selectedTargetId: "platform-pool",
+    });
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.vm.selectedCycle).toBeTruthy();
+    expect(wrapper.vm.selectedEnvironment).toBeTruthy();
+    expect(wrapper.vm.selectedTarget).toBeTruthy();
+    await wrapper.vm.runPreflight();
+
+    expect(api.post).toHaveBeenCalledWith(
+      "/api/launch/preflight",
+      expect.objectContaining({ target: expect.any(Object) }),
+      { headers: {} },
+    );
+    expect(wrapper.vm.preflightRunning).toBe(false);
+    expect(wrapper.vm.preflightResult).toMatchObject({
+      configurationHash: wrapper.vm.currentPreflightHash,
+      diagnostics: [],
+      hasBlockingDiagnostics: false,
+    });
+  });
+
   it("submits one idempotent launch and redirects to the canonical run route", async () => {
     api.get
       .mockResolvedValueOnce({

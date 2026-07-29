@@ -530,14 +530,16 @@ export default {
         return Promise.resolve(this.preflightResult);
       }
       this.preflightRunning = true;
-      return apiClient
-        .post(
-          this.config.serviceBaseUrl +
-            (this.config.url.launchPreflight ?? "admin/launch/preflight"),
-          this.launchRequest.body,
-          {
-            headers: this.setHeaders(),
-          },
+      return Promise.resolve()
+        .then(() =>
+          apiClient.post(
+            this.config.serviceBaseUrl +
+              (this.config.url.launchPreflight ?? "admin/launch/preflight"),
+            this.launchRequest.body,
+            {
+              headers: this.setHeaders(),
+            },
+          ),
         )
         .then((response) => {
           this.preflightResult = normalizePreflightResult(response.data, hash);
