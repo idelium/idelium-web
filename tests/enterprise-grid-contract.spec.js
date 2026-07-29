@@ -75,6 +75,13 @@ describe("enterprise grid contract", () => {
       "partial",
     );
     expect(gridStateFromResult({ rows: [], meta: {} })).toBe("empty");
+    expect(
+      gridStateFromResult({
+        rows: [],
+        meta: {},
+        hasActiveFilters: true,
+      }),
+    ).toBe("no-results");
     expect(gridStateFromResult({ rows: [{ id: 1 }], meta: {} })).toBeNull();
   });
 

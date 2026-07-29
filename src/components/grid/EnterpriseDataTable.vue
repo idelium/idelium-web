@@ -77,7 +77,31 @@
       :title="stateCopy.title"
       :description="stateCopy.description"
       :variant="visibleState"
-    />
+    >
+      <template #actions>
+        <IdButton
+          v-if="visibleState === 'error' || visibleState === 'stale'"
+          variant="secondary"
+          @click="$emit('retry')"
+        >
+          {{ copy.retry }}
+        </IdButton>
+        <IdButton
+          v-if="visibleState === 'no-results'"
+          variant="secondary"
+          @click="$emit('clear-filters')"
+        >
+          {{ copy.clearFilters }}
+        </IdButton>
+        <IdButton
+          v-if="visibleState === 'empty' && copy.create"
+          variant="primary"
+          @click="$emit('create')"
+        >
+          {{ copy.create }}
+        </IdButton>
+      </template>
+    </EnterpriseGridState>
 
     <div
       v-if="displayRows.length > 0"
@@ -186,7 +210,7 @@
     </div>
 
     <p class="visually-hidden" aria-live="polite">
-      {{ resultAnnouncement }}
+      {{ liveAnnouncement }}
     </p>
   </section>
 </template>
@@ -210,8 +234,11 @@ export default {
   emits: [
     "action",
     "confirm-action",
+    "clear-filters",
+    "create",
     "preferences-change",
     "row-activate",
+    "retry",
     "selection-change",
     "sort",
   ],
@@ -228,10 +255,12 @@ export default {
         ["comfortable", "compact", "spacious"].includes(value),
     },
     error: { type: [Error, Object, String], default: null },
+    hasActiveFilters: { type: Boolean, default: false },
     loading: { type: Boolean, default: false },
     localLimit: { type: Number, default: 1000 },
     meta: { type: Object, default: () => ({}) },
     permissionDenied: { type: Boolean, default: false },
+    refreshCompleted: { type: Boolean, default: false },
     preferences: { type: Object, default: null },
     preferencesEnabled: { type: Boolean, default: false },
     rowKey: { type: [String, Function], default: "id" },
@@ -239,6 +268,7 @@ export default {
     selectable: { type: Boolean, default: false },
     selectedIds: { type: Array, default: () => [] },
     sort: { type: Object, default: null },
+    stale: { type: Boolean, default: false },
   },
   computed: {
     allColumns() {
@@ -284,7 +314,8 @@ export default {
         error: this.error,
         permissionDenied: this.permissionDenied,
         rows: this.displayRows,
-        meta: this.meta,
+        meta: { ...this.meta, stale: this.stale || this.meta.stale },
+        hasActiveFilters: this.hasActiveFilters,
       });
       return state === "partial" ? "stale" : state;
     },
@@ -305,6 +336,11 @@ export default {
         "{count}",
         String(this.meta.total ?? this.displayRows.length),
       );
+    },
+    liveAnnouncement() {
+      return this.refreshCompleted
+        ? `${this.copy.refreshComplete} ${this.resultAnnouncement}`
+        : this.resultAnnouncement;
     },
     actionsLabel() {
       return this.copy.actions ?? "Actions";

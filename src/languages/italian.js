@@ -735,6 +735,10 @@ export default {
   },
   DataTable: {
     actions: "Azioni",
+    clearFilters: "Rimuovi filtri",
+    create: "Crea elemento",
+    refreshComplete: "Risultati aggiornati.",
+    retry: "Riprova",
     moreActions: "Altre azioni",
     detail: {
       eyebrow: "Dettaglio elemento",
@@ -767,6 +771,10 @@ export default {
       loading: {
         title: "Caricamento risultati",
         description: "Caricamento degli elementi autorizzati in corso.",
+      },
+      "no-results": {
+        title: "Nessun risultato corrispondente",
+        description: "Rimuovi o modifica i filtri attivi.",
       },
       permission: {
         title: "Autorizzazione necessaria",

@@ -10,6 +10,9 @@
     <div>
       <h3>{{ title }}</h3>
       <p>{{ description }}</p>
+      <div v-if="$slots.actions" class="enterprise-grid-state__actions">
+        <slot name="actions"></slot>
+      </div>
     </div>
   </section>
 </template>
@@ -33,6 +36,7 @@ export default {
         return [
           "empty",
           "loading",
+          "no-results",
           "error",
           "permission",
           "partial",
@@ -101,6 +105,13 @@ export default {
 
 .enterprise-grid-state p {
   margin: 0;
+}
+
+.enterprise-grid-state__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--id-space-2);
+  margin-top: var(--id-space-3);
 }
 
 .enterprise-grid-state--error .enterprise-grid-state__icon,

@@ -21,6 +21,7 @@ export const GRID_STATES = Object.freeze({
   EMPTY: "empty",
   LOADING: "loading",
   ERROR: "error",
+  NO_RESULTS: "no-results",
   PERMISSION: "permission",
   PARTIAL: "partial",
   STALE: "stale",
@@ -83,6 +84,7 @@ export function gridStateFromResult({
   permissionDenied,
   rows,
   meta,
+  hasActiveFilters,
 }) {
   if (loading) {
     return GRID_STATES.LOADING;
@@ -99,7 +101,8 @@ export function gridStateFromResult({
   if (meta?.partial) {
     return GRID_STATES.PARTIAL;
   }
-  return Array.isArray(rows) && rows.length > 0 ? null : GRID_STATES.EMPTY;
+  if (Array.isArray(rows) && rows.length > 0) return null;
+  return hasActiveFilters ? GRID_STATES.NO_RESULTS : GRID_STATES.EMPTY;
 }
 
 export function storageKeyForGrid({ userId, tenantId, projectId, gridName }) {

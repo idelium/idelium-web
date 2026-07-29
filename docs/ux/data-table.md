@@ -75,6 +75,19 @@ closes with Escape or its labelled close control, and restores focus to the
 originating row action. Closing the drawer retains table scroll because it changes
 only route query state.
 
+## Loading, refresh, and recovery
+
+Initial loading, empty data, filtered no-results, permission denial, recoverable
+error, stale data, and partial data are separate states. Empty data may offer the
+first-create action, while no-results offers filter reset. A failed background
+refresh retains the last authorized rows and marks them stale; a permission denial
+clears them immediately.
+
+Every request receives an `AbortSignal`. Starting a newer search, filter, page, or
+context request aborts the previous request and ignores late responses. Context
+changes must call `reset` before loading the new scope. Result counts and completed
+background refreshes are announced through the table live region.
+
 ## Migration and rollback
 
 Existing routes and API endpoints remain compatible. Listings move to the shared

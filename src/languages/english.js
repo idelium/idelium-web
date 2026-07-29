@@ -730,6 +730,10 @@ export default {
   },
   DataTable: {
     actions: "Actions",
+    clearFilters: "Clear filters",
+    create: "Create record",
+    refreshComplete: "Results refreshed.",
+    retry: "Retry",
     moreActions: "More actions",
     detail: {
       eyebrow: "Record detail",
@@ -762,6 +766,10 @@ export default {
       loading: {
         title: "Loading results",
         description: "The authorized records are being loaded.",
+      },
+      "no-results": {
+        title: "No matching results",
+        description: "Clear or adjust the active filters.",
       },
       permission: {
         title: "Permission required",

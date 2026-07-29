@@ -5,7 +5,11 @@ import EnterpriseDataTable from "@/components/grid/EnterpriseDataTable.vue";
 
 const copy = {
   actions: "Actions",
+  clearFilters: "Clear filters",
+  create: "Create record",
   moreActions: "More actions",
+  refreshComplete: "Results refreshed.",
+  retry: "Retry",
   preferences: {
     title: "Table preferences",
     density: "Density",
@@ -25,6 +29,10 @@ const copy = {
     empty: { title: "No records", description: "Create one." },
     error: { title: "Unavailable", description: "Try again." },
     loading: { title: "Loading", description: "Please wait." },
+    "no-results": {
+      title: "No matching results",
+      description: "Clear filters.",
+    },
     permission: { title: "Permission required", description: "Contact admin." },
     stale: { title: "Stale results", description: "Refreshing." },
   },
@@ -137,6 +145,29 @@ describe("EnterpriseDataTable", () => {
     await wrapper.setProps({ rows: [] });
     expect(wrapper.text()).toContain("No records");
     expect(wrapper.find("table").exists()).toBe(false);
+  });
+
+  it("distinguishes filtered no-results and exposes recovery actions", async () => {
+    const wrapper = mountTable({
+      rows: [],
+      hasActiveFilters: true,
+    });
+
+    expect(wrapper.text()).toContain("No matching results");
+    await wrapper.find(".enterprise-grid-state button").trigger("click");
+    expect(wrapper.emitted("clear-filters")).toHaveLength(1);
+  });
+
+  it("keeps stale authorized rows visible after a refresh failure", async () => {
+    const wrapper = mountTable({
+      error: new Error("Network unavailable"),
+      stale: true,
+    });
+
+    expect(wrapper.findAll("tbody tr")).toHaveLength(2);
+    expect(wrapper.text()).toContain("Unavailable");
+    await wrapper.find(".enterprise-grid-state button").trigger("click");
+    expect(wrapper.emitted("retry")).toHaveLength(1);
   });
 
   it("applies and emits versioned column and density preferences", async () => {
