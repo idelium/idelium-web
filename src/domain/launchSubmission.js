@@ -15,6 +15,18 @@ export function createLaunchSubmission(request, existingKey = null) {
   };
 }
 
+export function canReplayLaunchRequest(previousSubmission, nextSubmission) {
+  if (!previousSubmission?.idempotencyKey || !nextSubmission?.idempotencyKey) {
+    return false;
+  }
+  return (
+    previousSubmission.idempotencyKey === nextSubmission.idempotencyKey &&
+    previousSubmission.endpoint === nextSubmission.endpoint &&
+    JSON.stringify(previousSubmission.body ?? {}) ===
+      JSON.stringify(nextSubmission.body ?? {})
+  );
+}
+
 export function normalizeLaunchSubmissionResult(response = {}) {
   const data = response.data ?? response;
   const statusCode = Number(response.status ?? data.statusCode ?? 200);

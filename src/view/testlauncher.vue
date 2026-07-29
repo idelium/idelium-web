@@ -616,10 +616,10 @@ export default {
         .then((response) => this.handleLaunchSubmissionResponse(response))
         .catch((error) => {
           if (shouldReconcileLaunchOutcome(error)) {
-          this.launchStatus = "unknown";
-        } else {
-          this.launchStatus = "rejected";
-        }
+            this.launchStatus = "unknown";
+          } else {
+            this.launchStatus = "rejected";
+          }
           this.launchError = normalizeLaunchError(error);
           if (this.launchError.clearProtectedDraft) {
             this.targetOverrides = { browser: null, device: null };
@@ -657,6 +657,7 @@ export default {
 .launch-page {
   display: grid;
   gap: var(--id-space-5);
+  min-width: 0;
   width: 100%;
 }
 

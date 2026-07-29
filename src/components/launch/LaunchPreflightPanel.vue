@@ -100,6 +100,7 @@ export default {
   border-radius: var(--id-radius-large);
   display: grid;
   gap: var(--id-space-4);
+  min-width: 0;
   padding: var(--id-space-4);
 }
 
