@@ -92,6 +92,25 @@ recent removal can be undone, restoring the removed items at their original
 indexes and restoring the previous selection. Visible positions are always
 one-based and recalculated from the current sequence; they are never persisted.
 
+## Accessible reorder
+
+Every selected item has a native drag handle and explicit **Move to start**,
+**Move up**, **Move down**, and **Move to end** actions. The commands and native
+drag operation use the same reorder function and therefore produce the same
+persisted array. First and last boundary commands are disabled with localized
+reasons.
+
+After a keyboard or pointer reorder, the moved row receives focus after the
+controlled sequence prop updates. A polite live region announces the entity name
+and its source and destination positions. Stable entity identities remain the
+render keys, while visible one-based positions are recalculated.
+
+The selected list has a bounded viewport. Native drag-over events scroll it by
+at most 24 pixels per event near either edge and clamp the scroll position to the
+container bounds. The component does not use a drag library or global listener;
+its unmount hook clears drag, focus, and element references so route changes
+cannot leave library state behind.
+
 ## Audit events
 
 Comparing the last persisted sequence with the next sequence produces ordered
