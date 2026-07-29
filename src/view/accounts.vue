@@ -10,13 +10,14 @@
       v-model:search="search"
       :accessible-label="copy.listTitle"
       :actions="actions"
+      :capabilities="accountCapabilities"
       :columns="columns"
       :error="error"
-      :has-active-filters="query.search !== ''"
+      :has-active-filters="hasActiveFilters"
       :listing-copy="copy"
       :loading="loading"
       :meta="meta"
-      :rows="arrayAccounts"
+      :rows="accountRows"
       :sort="sort"
       :table-copy="tableCopy"
       v-on:action="handleAction"
@@ -27,7 +28,66 @@
       v-on:row-activate="showAccountModal"
       v-on:search="scheduleSearch"
       v-on:sort="changeSort"
-    />
+    >
+      <template #toolbar>
+        <div class="accounts-governance-filters">
+          <label>
+            <span>{{ copy.filterRole }}</span>
+            <select
+              :value="query.filters.role"
+              v-on:change="changeFilter('role', $event.target.value)"
+            >
+              <option value="">{{ copy.filterAll }}</option>
+              <option
+                v-for="role in arrayRoles"
+                v-bind:key="role.id"
+                :value="role.id"
+              >
+                {{ role.name }}
+              </option>
+            </select>
+          </label>
+          <label>
+            <span>{{ copy.filterStatus }}</span>
+            <select
+              :value="query.filters.status"
+              v-on:change="changeFilter('status', $event.target.value)"
+            >
+              <option value="">{{ copy.filterAll }}</option>
+              <option value="invited">{{ copy.accountStatuses.invited }}</option>
+              <option value="active">{{ copy.accountStatuses.active }}</option>
+              <option value="suspended">
+                {{ copy.accountStatuses.suspended }}
+              </option>
+              <option value="expired-invitation">
+                {{ copy.accountStatuses["expired-invitation"] }}
+              </option>
+              <option value="archived">{{ copy.accountStatuses.archived }}</option>
+            </select>
+          </label>
+          <label>
+            <span>{{ copy.filterTeam }}</span>
+            <input
+              :value="query.filters.team"
+              :placeholder="copy.filterTeam"
+              v-on:input="changeFilter('team', $event.target.value)"
+            />
+          </label>
+          <label>
+            <span>{{ copy.filterInvitation }}</span>
+            <select
+              :value="query.filters.invitation"
+              v-on:change="changeFilter('invitation', $event.target.value)"
+            >
+              <option value="">{{ copy.filterAll }}</option>
+              <option value="pending">{{ copy.invitationStates.pending }}</option>
+              <option value="expired">{{ copy.invitationStates.expired }}</option>
+              <option value="none">{{ copy.invitationStates.none }}</option>
+            </select>
+          </label>
+        </div>
+      </template>
+    </EnterpriseListingGrid>
     <modalModifyAccount
       ref="modifyModal"
       :arrayAccounts="arrayAccounts"
@@ -44,6 +104,7 @@ import EnterpriseListingGrid from "@/components/grid/EnterpriseListingGrid.vue";
 import EnterpriseListingPage from "@/components/grid/EnterpriseListingPage.vue";
 import { createAccountInvitationRequest } from "@/domain/accountGovernance";
 import {
+  buildGridQuery,
   parseGridResponse,
   parseGridRouteQuery,
   serializeGridRouteQuery,
@@ -57,11 +118,16 @@ const ALLOWED_SORTS = [
   "id",
   "email",
   "name",
+  "status",
+  "teams",
+  "lastActivityAt",
+  "updatedAt",
   "role",
   "idCostumer",
   "costumer",
   "roleName",
 ];
+const ALLOWED_FILTERS = ["role", "status", "team", "invitation"];
 
 export default {
   name: "AccountsComponent",
@@ -108,6 +174,12 @@ export default {
         hasPreviousPage: false,
       },
       query: {
+        filters: {
+          invitation: "",
+          role: "",
+          status: "",
+          team: "",
+        },
         page: 1,
         pageSize: 25,
         search: "",
@@ -145,6 +217,12 @@ export default {
           sortable: true,
         },
         { key: "name", label: this.copy.name, sortable: true },
+        {
+          key: "statusLabel",
+          label: this.copy.status,
+          sortable: true,
+          type: "status",
+        },
       ];
       if (this.isSuperAdmin) {
         definitions.push({
@@ -154,16 +232,75 @@ export default {
         });
       }
       definitions.push({
+        key: "teams",
+        label: this.copy.teams,
+        sortable: true,
+      });
+      definitions.push({
         key: "roleName",
         label: this.copy.role,
         sortable: true,
+      });
+      if (this.canReadAccountActivity) {
+        definitions.push({
+          key: "lastActivityAt",
+          label: this.copy.lastActivity,
+          sortable: true,
+          type: "timestamp",
+        });
+      }
+      definitions.push({
+        key: "updatedAt",
+        label: this.copy.updatedAt,
+        sortable: true,
+        type: "timestamp",
       });
       return definitions;
     },
     actions() {
       return [
-        { id: "edit", label: this.copy.btnModify },
+        { capability: "account.detail", id: "detail", label: this.copy.btnDetail },
         {
+          capability: "account.invite",
+          disabled: (account) => account.status !== "invited",
+          id: "resend-invite",
+          label: this.copy.btnResendInvite,
+          variant: "info",
+        },
+        {
+          capability: "account.invite",
+          disabled: (account) =>
+            !["invited", "expired-invitation"].includes(account.status),
+          id: "cancel-invite",
+          label: this.copy.btnCancelInvite,
+          variant: "warning",
+        },
+        {
+          capability: "account.role.assign",
+          id: "edit",
+          label: this.copy.btnModify,
+        },
+        {
+          capability: "account.suspend",
+          disabled: (account) => account.status !== "active",
+          id: "suspend",
+          label: this.copy.btnSuspend,
+          variant: "warning",
+        },
+        {
+          capability: "account.reactivate",
+          disabled: (account) => account.status !== "suspended",
+          id: "reactivate",
+          label: this.copy.btnReactivate,
+          variant: "success",
+        },
+        {
+          capability: "account.audit",
+          id: "audit",
+          label: this.copy.btnAudit,
+        },
+        {
+          capability: "account.archive",
           id: "delete",
           label: this.copy.btnDelete,
           variant: "danger",
@@ -174,13 +311,73 @@ export default {
     sort() {
       return { field: this.query.sort, direction: this.query.direction };
     },
+    hasActiveFilters() {
+      return (
+        this.query.search !== "" ||
+        Object.values(this.query.filters).some((value) => value !== "")
+      );
+    },
+    canReadAccountActivity() {
+      return this.session.hasCapability("account.activity.read");
+    },
+    accountCapabilities() {
+      return [
+        "account.archive",
+        "account.audit",
+        "account.detail",
+        "account.invite",
+        "account.reactivate",
+        "account.role.assign",
+        "account.suspend",
+      ].filter(
+        (capability) =>
+          this.isSuperAdmin ||
+          this.session.hasCapability(capability) ||
+          this.session.hasCapability("accounts.manage") ||
+          this.session.hasCapability("customers.manage"),
+      );
+    },
+    accountRows() {
+      return this.arrayAccounts.map((account) => {
+        const status = this.accountStatus(account);
+        return {
+          ...account,
+          lastActivityAt: this.canReadAccountActivity
+            ? account.lastActivityAt || account.lastLoginAt
+            : null,
+          status,
+          statusLabel: this.copy.accountStatuses[status] || status,
+          teams: Array.isArray(account.teams)
+            ? account.teams.join(", ")
+            : account.team || account.teamName || "—",
+          updatedAt: account.updatedAt || account.modifiedAt || null,
+        };
+      });
+    },
   },
   methods: {
+    accountStatus(account) {
+      if (account.status) return account.status;
+      if (account.archivedAt) return "archived";
+      if (account.suspendedAt) return "suspended";
+      if (account.invitationExpiresAt && new Date(account.invitationExpiresAt) < new Date()) {
+        return "expired-invitation";
+      }
+      if (account.invitedAt) return "invited";
+      return "active";
+    },
     restoreQuery() {
       const parsed = parseGridRouteQuery(this.$route?.query || {}, {
+        allowedFilters: ALLOWED_FILTERS,
         allowedSorts: ALLOWED_SORTS,
       });
       const next = {
+        filters: {
+          invitation: parsed.filters.invitation || "",
+          role: parsed.filters.role || "",
+          status: parsed.filters.status || "",
+          team: parsed.filters.team || "",
+        },
         page: parsed.page,
         pageSize: parsed.pageSize,
         search: parsed.search,
@@ -196,6 +393,7 @@ export default {
       const next = { ...this.query, ...changes };
       if (
         changes.search !== undefined ||
+        changes.filters !== undefined ||
         changes.sort !== undefined ||
         changes.direction !== undefined
       ) {
@@ -209,9 +407,10 @@ export default {
             query: serializeGridRouteQuery(
               {
                 ...next,
+                filters: next.filters,
                 sort: { field: next.sort, direction: next.direction },
               },
-              { allowedSorts: ALLOWED_SORTS },
+              { allowedFilters: ALLOWED_FILTERS, allowedSorts: ALLOWED_SORTS },
             ),
           });
         } finally {
@@ -229,7 +428,15 @@ export default {
     },
     clearSearch() {
       this.search = "";
-      return this.updateRoute({ search: "" });
+      return this.updateRoute({
+        filters: { invitation: "", role: "", status: "", team: "" },
+        search: "",
+      });
+    },
+    changeFilter(filter, value) {
+      return this.updateRoute({
+        filters: { ...this.query.filters, [filter]: value },
+      });
     },
     changePage(page) {
       return this.updateRoute({ page: Math.max(Number(page) || 1, 1) });
@@ -247,7 +454,19 @@ export default {
       return apiClient
         .get(this.config.serviceBaseUrl + this.config.url.accounts, {
           headers: this.setHeaders(),
-          params: this.query,
+          params: Object.fromEntries(
+            buildGridQuery({
+              allowedSorts: ALLOWED_SORTS,
+              filters: this.query.filters,
+              page: this.query.page,
+              pageSize: this.query.pageSize,
+              search: this.query.search,
+              sort: {
+                field: this.query.sort,
+                direction: this.query.direction,
+              },
+            }).entries(),
+          ),
         })
         .then((response) => {
           const result = parseGridResponse(response);
@@ -298,6 +517,19 @@ export default {
         });
     },
     handleAction({ action, row }) {
+      if (
+        [
+          "audit",
+          "cancel-invite",
+          "detail",
+          "reactivate",
+          "resend-invite",
+          "suspend",
+        ].includes(action)
+      ) {
+        this.$wkToast?.(`${this.copy.governanceActionQueued}: ${row.email}`);
+        return;
+      }
       if (action === "edit") this.showAccountModal(row);
       if (action === "delete") this.deleteAccount(row.id);
     },
@@ -384,3 +616,42 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.accounts-governance-filters {
+  display: grid;
+  gap: var(--id-space-3);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  width: 100%;
+}
+
+.accounts-governance-filters label {
+  display: grid;
+  gap: var(--id-space-2);
+  color: var(--id-color-text-muted);
+  font-size: var(--id-font-size-caption);
+  font-weight: var(--id-font-weight-bold);
+}
+
+.accounts-governance-filters input,
+.accounts-governance-filters select {
+  min-height: var(--id-control-min-size);
+  padding: 0 var(--id-space-3);
+  border: 1px solid var(--id-color-border);
+  border-radius: var(--id-radius-medium);
+  color: var(--id-color-text);
+  background: var(--id-color-surface);
+}
+
+@media (max-width: 64rem) {
+  .accounts-governance-filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 40rem) {
+  .accounts-governance-filters {
+    grid-template-columns: 1fr;
+  }
+}
+</style>

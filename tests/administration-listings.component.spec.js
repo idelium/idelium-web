@@ -35,11 +35,36 @@ function commonMocks(section, url) {
       gb: {
         Accounts: {
           account: "Account",
+          accountStatuses: {
+            active: "Active",
+            archived: "Archived",
+            "expired-invitation": "Expired invitation",
+            invited: "Invited",
+            suspended: "Suspended",
+          },
+          btnAudit: "Audit",
+          btnCancelInvite: "Cancel invite",
           btnDelete: "Delete",
+          btnDetail: "Details",
           btnModify: "Edit",
+          btnReactivate: "Reactivate",
+          btnResendInvite: "Resend invite",
+          btnSuspend: "Suspend",
           confirmDeleteAccount: "Delete account?",
           costumer: "Customer",
+          filterAll: "All",
+          filterInvitation: "Invitation",
+          filterRole: "Role",
+          filterStatus: "Status",
+          filterTeam: "Team",
+          governanceActionQueued: "Governance action selected",
           id: "ID",
+          invitationStates: {
+            expired: "Expired",
+            none: "None",
+            pending: "Pending",
+          },
+          lastActivity: "Last activity",
           listDescription: "Manage accounts",
           listEyebrow: "Administration",
           listTitle: "Accounts",
@@ -52,6 +77,9 @@ function commonMocks(section, url) {
           role: "Role",
           searchLabel: "Search",
           searchPlaceholder: "Search accounts",
+          status: "Status",
+          teams: "Teams",
+          updatedAt: "Updated",
         },
         Costumers: {
           btnDelete: "Delete",
@@ -141,6 +169,9 @@ describe("administration enterprise listings", () => {
                 name: "User",
                 role: 3,
                 roleName: "user",
+                status: "invited",
+                team: "QA",
+                updatedAt: "2026-07-29T10:00:00Z",
               },
             ],
             meta: { page: 1, pageSize: 25, total: 1 },
@@ -171,14 +202,106 @@ describe("administration enterprise listings", () => {
     await vi.waitFor(() => expect(wrapper.vm.arrayAccounts).toHaveLength(1));
     expect(api.get).toHaveBeenCalledWith("/api/admin/accounts", {
       headers: {},
-      params: {
+      params: expect.objectContaining({
         direction: "asc",
-        page: 1,
-        pageSize: 25,
-        search: "",
+        page: "1",
+        pageSize: "25",
+        sort: "email",
+      }),
+    });
+    expect(wrapper.vm.arrayAccounts[0]).not.toHaveProperty("password");
+    expect(wrapper.vm.columns.map((column) => column.key)).toEqual([
+      "id",
+      "email",
+      "name",
+      "statusLabel",
+      "teams",
+      "roleName",
+      "updatedAt",
+    ]);
+    expect(wrapper.vm.accountRows[0]).toMatchObject({
+      status: "invited",
+      statusLabel: "Invited",
+      teams: "QA",
+    });
+    expect(wrapper.vm.actions.map((action) => action.id)).toEqual([
+      "detail",
+      "resend-invite",
+      "cancel-invite",
+      "edit",
+      "suspend",
+      "reactivate",
+      "audit",
+      "delete",
+    ]);
+  });
+
+  it("persists account governance filters in the route and request contract", async () => {
+    api.get.mockImplementation((url) => {
+      if (url === "/api/admin/accounts") {
+        return Promise.resolve({
+          data: { data: [], meta: { page: 2, pageSize: 25, total: 0 } },
+        });
+      }
+      if (url === "/api/admin/roles") {
+        return Promise.resolve({ data: [{ id: 3, name: "viewer" }] });
+      }
+      return Promise.resolve({ data: [] });
+    });
+    const replace = vi.fn().mockResolvedValue();
+
+    const wrapper = shallowMount(Accounts, {
+      global: {
+        stubs: {
+          EnterpriseListingGrid: true,
+          EnterpriseListingPage: true,
+          modalModifyAccount: true,
+        },
+        mocks: commonMocks(
+          {
+            $route: {
+              query: {
+                "f.invitation": "pending",
+                "f.role": "3",
+                "f.status": "invited",
+                "f.team": "qa",
+                page: "2",
+              },
+            },
+            $router: { replace },
+          },
+          {
+            accounts: "admin/accounts",
+            costumers: "admin/costumers",
+            roles: "admin/roles",
+          },
+        ),
+      },
+    });
+
+    await vi.waitFor(() => expect(api.get).toHaveBeenCalled());
+    const accountRequest = api.get.mock.calls.find(
+      ([url]) => url === "/api/admin/accounts",
+    )[1];
+    expect(accountRequest.params).toMatchObject({
+      "filter[invitation]": "pending",
+      "filter[role]": "3",
+      "filter[status]": "invited",
+      "filter[team]": "qa",
+      page: "2",
+      pageSize: "25",
+    });
+
+    await wrapper.vm.changeFilter("status", "suspended");
+    expect(replace).toHaveBeenCalledWith({
+      query: {
+        direction: "asc",
+        "f.invitation": "pending",
+        "f.role": "3",
+        "f.status": "suspended",
+        "f.team": "qa",
         sort: "email",
       },
     });
-    expect(wrapper.vm.arrayAccounts[0]).not.toHaveProperty("password");
   });
 });

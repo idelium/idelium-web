@@ -53,6 +53,36 @@ The picker warns when a role change would reduce governance or critical platform
 ownership permissions. The API must still enforce the final assignment boundary,
 including attempts to submit a role above the actor's capability.
 
+## Account listing
+
+The account listing uses the shared enterprise DataTable through a bounded
+server-side grid contract. The client sends page, page size, search, sort, and
+safe filter parameters only; it must not request or render unbounded customer
+account sets.
+
+Authorized columns include account, display name, customer, role, lifecycle
+status, teams, last activity, and updated timestamp. Last activity is shown only
+when the active session has the activity-read capability. Otherwise the column is
+omitted rather than rendering sensitive activity details.
+
+Filters are persisted in the URL with safe `f.*` keys for role, status, team,
+and invitation state. Reloading the page reconstructs the authorized filtered
+view and resets pagination when search or filters change.
+
+Governance actions are capability-scoped and semantically colored:
+
+- resend and cancel invitation require `account.invite`;
+- role change requires `account.role.assign`;
+- suspend requires `account.suspend`;
+- reactivate requires `account.reactivate`;
+- audit requires `account.audit`;
+- archive requires `account.archive`;
+- detail requires `account.detail`.
+
+The UI may expose unavailable actions as disabled when the current row state does
+not allow the operation. The API remains responsible for tenant ownership,
+current lifecycle state, and capability enforcement.
+
 ## Operations
 
 The contract defines these account operations:
