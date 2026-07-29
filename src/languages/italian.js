@@ -1040,6 +1040,53 @@ export default {
       json: "Inserisci un oggetto JSON valido.",
     },
   },
+  EnvironmentVariables: {
+    title: "Variabili effettive",
+    description:
+      "Verifica i valori di progetto, ambiente e avvio nell'ordine di esecuzione.",
+    caption: "Variabili ambiente risolte e relative origini effettive",
+    ready: "Pronto per l'esecuzione",
+    blocked: "Esecuzione bloccata",
+    empty: "Non sono definite variabili per questa esecuzione.",
+    diagnostics: "Errori di validazione delle variabili",
+    unknown: "Sconosciuta",
+    columns: {
+      name: "Nome",
+      source: "Origine effettiva",
+      type: "Tipo",
+      override: "Sovrascrittura",
+      validation: "Validazione",
+      value: "Anteprima",
+    },
+    sources: {
+      project: "Progetto",
+      environment: "Ambiente",
+      launch: "Avvio",
+    },
+    types: {
+      string: "Testo",
+      number: "Numero",
+      boolean: "Booleano",
+      json: "JSON",
+      secret: "Riferimento segreto",
+    },
+    overrides: "Sovrascrive {sources}",
+    notOverridden: "Ereditata senza sovrascrittura",
+    valid: "Valida",
+    invalid: "Non valida",
+    secretReference: "Riferimento protetto: {reference}",
+    validation: {
+      invalid: "Una variabile non valida è stata rifiutata da {source}.",
+      crossTenant:
+        "La variabile {name} è stata rifiutata perché appartiene a un altro cliente.",
+      duplicate: "La variabile {name} è duplicata in {source}.",
+      forbiddenOverride:
+        "La variabile {name} non può essere sovrascritta da {source}.",
+      unresolved:
+        "La variabile {name} fa riferimento alla variabile mancante {reference}.",
+      cycle: "Rilevato ciclo tra le dipendenze delle variabili: {members}.",
+    },
+  },
   StepEditor: {
     shell: {
       accessibleLabel: "Editor degli step riutilizzabili",

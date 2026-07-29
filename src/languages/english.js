@@ -1025,6 +1025,53 @@ export default {
       json: "Enter a valid JSON object.",
     },
   },
+  EnvironmentVariables: {
+    title: "Effective variables",
+    description:
+      "Review project, environment, and launch values in execution order.",
+    caption: "Resolved environment variables and their effective sources",
+    ready: "Ready for execution",
+    blocked: "Execution blocked",
+    empty: "No variables are defined for this execution.",
+    diagnostics: "Variable validation errors",
+    unknown: "Unknown",
+    columns: {
+      name: "Name",
+      source: "Effective source",
+      type: "Type",
+      override: "Override",
+      validation: "Validation",
+      value: "Preview",
+    },
+    sources: {
+      project: "Project",
+      environment: "Environment",
+      launch: "Launch",
+    },
+    types: {
+      string: "Text",
+      number: "Number",
+      boolean: "Boolean",
+      json: "JSON",
+      secret: "Secret reference",
+    },
+    overrides: "Overrides {sources}",
+    notOverridden: "Inherited without override",
+    valid: "Valid",
+    invalid: "Invalid",
+    secretReference: "Protected reference: {reference}",
+    validation: {
+      invalid: "A malformed variable was rejected from {source}.",
+      crossTenant:
+        "Variable {name} was rejected because it belongs to another customer.",
+      duplicate: "Variable {name} is duplicated in {source}.",
+      forbiddenOverride:
+        "Variable {name} cannot be overridden by {source}.",
+      unresolved:
+        "Variable {name} references missing variable {reference}.",
+      cycle: "Variable dependency cycle detected: {members}.",
+    },
+  },
   StepEditor: {
     shell: {
       accessibleLabel: "Reusable step editor",

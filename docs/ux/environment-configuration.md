@@ -66,6 +66,28 @@ the author cancels; confirmation removes only the listed incompatible values and
 applies target defaults. Inline secret fields block save and diagnostics never
 contain their values.
 
+## Variable inheritance
+
+Execution variables use the versioned `environment.variables.v1` contract and a
+deterministic precedence order: project defaults, environment overrides, then
+launch-time overrides. A layer may not replace a variable whose effective
+definition disables overrides. Duplicate names within a layer, forbidden
+overrides, missing references, dependency cycles, malformed records, and
+cross-customer records block execution with stable diagnostics.
+
+The effective-variable table shows name, source, type, override history,
+validation state, and a safe preview. Secret variables persist only an
+authorized reference identifier. Their values and any derived value that
+depends on them are masked; diagnostics, previews, and serialized Console
+payloads never contain resolved secret material.
+
+The adapter preserves the three explicit layers used by current persisted
+environments and CLI launch parameters. Existing configurations without the
+version marker remain readable through the environment compatibility loader.
+The API must revalidate customer ownership and variable policy before execution;
+the Console resolver is a deterministic preview and not an authorization
+boundary.
+
 ## Rollout and rollback
 
 The versioned loader can be introduced before route migration because unchanged
