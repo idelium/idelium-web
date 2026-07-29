@@ -242,7 +242,12 @@
   width: 100%;
 }
 
-.testcycles-setup-card,
+.testcycles-setup-card {
+  overflow: visible;
+  position: relative;
+  z-index: 5;
+}
+
 .testcycles-panel {
   overflow: hidden;
 }
@@ -263,7 +268,10 @@
 }
 
 .testcycles-tab-content {
+  overflow: visible;
   padding: 1rem;
+  position: relative;
+  z-index: 6;
 }
 
 .testcycles-form-grid {
@@ -454,6 +462,17 @@
 .testcycles-composition {
   display: grid;
   gap: var(--id-space-4);
+  position: relative;
+  z-index: 1;
+}
+
+.testcycles-setup-card :deep(.vs--open) {
+  position: relative;
+  z-index: 30;
+}
+
+.testcycles-setup-card :deep(.vs__dropdown-menu) {
+  z-index: 40;
 }
 
 .testcycles-composition > header h2,
