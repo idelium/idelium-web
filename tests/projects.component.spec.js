@@ -121,6 +121,21 @@ describe("projects component", () => {
     expect(wrapper.vm.projectsGridMeta.total).toBeNull();
   });
 
+  it("does not fail when analytics is unavailable in local development", async () => {
+    api.get.mockResolvedValueOnce({
+      data: [{ id: 3, name: "DEMO", description: "Local project" }],
+    });
+
+    const wrapper = mountProjects({ $gtag: undefined });
+
+    await vi.waitFor(() =>
+      expect(wrapper.vm.arrayProjects).toEqual([
+        { id: 3, name: "DEMO", description: "Local project" },
+      ]),
+    );
+    expect(() => wrapper.vm.trackProjectView()).not.toThrow();
+  });
+
   it("keeps search, sorting, and pagination in the route query", async () => {
     vi.useFakeTimers();
     api.get.mockResolvedValue({

@@ -96,7 +96,7 @@ export default {
   created() {
     this.restoreProjectQuery();
     this.getProjects();
-    this.$gtag.event("idelium-builder", { method: "project" });
+    this.trackProjectView();
     this.emitter.on("refreshProject", (msg) => {
       if (msg == true) this.getProjects(true);
       else this.$forceUpdate();
@@ -112,7 +112,7 @@ export default {
       },
     },
     $route() {
-      this.$gtag.event("idelium-builder", { method: "project" });
+      this.trackProjectView();
       this.$forceUpdate();
     },
   },
@@ -202,6 +202,9 @@ export default {
     },
   },
   methods: {
+    trackProjectView() {
+      this.$gtag?.event?.("idelium-builder", { method: "project" });
+    },
     modify(id, name) {
       this.idSelected = id;
       this.projectToModify = name;
