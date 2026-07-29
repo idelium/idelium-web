@@ -953,6 +953,36 @@ export default {
       validationDiagnostic:
         "Action {number}, property {property} requires attention.",
     },
+    json: {
+      accessibleLabel: "JSON step source editor",
+      title: "JSON source",
+      description:
+        "Edit the serialized step safely and apply valid changes explicitly.",
+      editorLabel: "Step JSON source",
+      format: "Format JSON",
+      apply: "Apply JSON changes",
+      diagnostics: "JSON diagnostics",
+      sourceSize: "{count} bytes",
+      location: "Line {line}, column {column}, path {path}",
+      readyToApply: "Valid changes are ready to apply.",
+      valid: "The JSON source is valid and matches the current model.",
+      validation: {
+        syntax: "The JSON syntax is invalid.",
+        size: "The JSON source exceeds the supported size.",
+        depth: "The JSON source is nested too deeply.",
+        nodes: "The JSON source contains too many values.",
+        inlineSecret: "Inline secret values are prohibited.",
+        schema: "The JSON source does not match the action schema.",
+      },
+      remediation: {
+        syntax: "Correct the indicated syntax before applying.",
+        size: "Reduce the source below the supported one-megabyte limit.",
+        depth: "Reduce nesting to 50 levels or fewer.",
+        nodes: "Reduce the document to 20,000 values or fewer.",
+        inlineSecret: "Replace the value with an authorized secret reference.",
+        schema: "Correct the value at the indicated schema path.",
+      },
+    },
     diagnostics: {
       malformedConfig:
         "The saved step configuration is malformed. Open JSON mode to repair it.",

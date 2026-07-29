@@ -960,6 +960,37 @@ export default {
       validationDiagnostic:
         "L'azione {number}, proprietà {property}, richiede attenzione.",
     },
+    json: {
+      accessibleLabel: "Editor JSON dello step",
+      title: "Sorgente JSON",
+      description:
+        "Modifica in sicurezza lo step serializzato e applica esplicitamente le modifiche valide.",
+      editorLabel: "Sorgente JSON dello step",
+      format: "Formatta JSON",
+      apply: "Applica modifiche JSON",
+      diagnostics: "Diagnostica JSON",
+      sourceSize: "{count} byte",
+      location: "Riga {line}, colonna {column}, percorso {path}",
+      readyToApply: "Le modifiche valide sono pronte per essere applicate.",
+      valid: "Il sorgente JSON è valido e corrisponde al modello corrente.",
+      validation: {
+        syntax: "La sintassi JSON non è valida.",
+        size: "Il sorgente JSON supera la dimensione supportata.",
+        depth: "Il sorgente JSON contiene troppi livelli.",
+        nodes: "Il sorgente JSON contiene troppi valori.",
+        inlineSecret: "I valori segreti inline non sono consentiti.",
+        schema: "Il sorgente JSON non rispetta lo schema dell'azione.",
+      },
+      remediation: {
+        syntax: "Correggi la sintassi indicata prima di applicare.",
+        size: "Riduci il sorgente sotto il limite supportato di un megabyte.",
+        depth: "Riduci la nidificazione a un massimo di 50 livelli.",
+        nodes: "Riduci il documento a un massimo di 20.000 valori.",
+        inlineSecret:
+          "Sostituisci il valore con un riferimento segreto autorizzato.",
+        schema: "Correggi il valore nel percorso dello schema indicato.",
+      },
+    },
     diagnostics: {
       malformedConfig:
         "La configurazione salvata dello step non è valida. Apri la modalità JSON per correggerla.",

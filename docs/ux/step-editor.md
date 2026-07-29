@@ -124,6 +124,22 @@ dirty comparison. Dirty editors register a `beforeunload` safeguard and remove
 it on unmount. Parent routes remain responsible for tenant-authorized save
 requests and server conflict handling.
 
+## JSON mode
+
+`SafeJsonStepEditor` uses the same serialized model as Wizard mode and provides
+JSON syntax highlighting, line numbers, bounded viewport sizing, formatting,
+and explicit Apply. Editing source never mutates the durable parent model.
+Temporarily invalid source retains the last valid parsed model; only a valid,
+schema-compatible, changed source enables Apply. Formatting uses JSON
+serialization without sorting object keys or semantically ordered arrays.
+
+The parser limits source to one megabyte, 50 nesting levels, and 20,000 values.
+Syntax and schema diagnostics include a stable path, line, column, localization
+key, and remediation key. Diagnostics never contain submitted values. Inline
+credentials and secrets are rejected; a field ending in `Ref` may contain only a
+bounded secret-reference identifier. Rollback to Wizard mode therefore restores
+the last durable model rather than incomplete JSON text.
+
 ## Rollout and rollback
 
 The contract is introduced before replacing the current wizard UI. Existing
