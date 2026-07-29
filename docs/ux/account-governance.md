@@ -1,0 +1,69 @@
+# Account lifecycle and role governance contract
+
+Idelium account governance uses the `2026-07-29.accounts.v1` contract to align
+Web and API behavior for invitations, activation, suspension, role assignment,
+audit, and protected administrator invariants.
+
+## Lifecycle states
+
+- `invited`: an invitation has been issued and can be accepted, resent, or
+  cancelled.
+- `active`: the account can sign in and use permissions granted by its role.
+- `suspended`: sign-in and privileged operations are disabled until reactivated.
+- `expired-invitation`: the invitation was not accepted before its expiration.
+- `archived`: the account or invitation is retained for audit but no longer
+  usable.
+
+Existing accounts without explicit lifecycle metadata map deterministically to
+`active`. Existing archived or suspended metadata maps to the matching lifecycle
+state. Expired invitations are derived from `invitationExpiresAt`.
+
+## Roles and permissions
+
+Canonical role IDs are `superadmin`, `admin`, `operator`, and `viewer`. Every
+role exposes localized display metadata, a permissions summary, and assignment
+constraints. Role assignments are always tenant-bound and must be validated by
+the API independently of the UI.
+
+The UI may explain permissions, but it is not the authority. Server-side checks
+must enforce role existence, tenant ownership, capability authorization, and
+assignment constraints for every mutation.
+
+## Operations
+
+The contract defines these account operations:
+
+- `invite`;
+- `resend-invite`;
+- `cancel-invite`;
+- `suspend`;
+- `reactivate`;
+- `role-change`;
+- `archive`;
+- `audit`.
+
+Every mutation uses an idempotency key derived from operation, tenant, target
+account, and actor. Audit records contain actor, timestamp, target account,
+tenant, operation, outcome, role, status, and reason when provided.
+
+## Protected invariants
+
+The API must independently enforce:
+
+- no cross-tenant account mutation;
+- no unsupported or missing capability mutation;
+- no self-suspension, self-archive, or self-role downgrade through the standard
+  account-management path;
+- no removal, suspension, archive, or downgrade of the last administrator;
+- no invalid lifecycle transition, such as reactivating an already active
+  account or resending an invitation for an active account.
+
+Failures must not disclose whether forged customer, project, tenant, account, or
+role identifiers exist outside the active tenant.
+
+## Compatibility and rollback
+
+Legacy active accounts remain compatible and are normalized into the new
+descriptor without requiring a data migration. Rollback may continue to treat
+legacy accounts as active, but it must not bypass tenant ownership,
+last-administrator protection, or role assignment constraints.
