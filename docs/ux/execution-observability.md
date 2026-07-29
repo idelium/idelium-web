@@ -202,6 +202,23 @@ The live panel shows the active transport, connection health, and last-updated
 time. Degraded state is intentionally neutral: it tells the operator that the UI
 is retrying without implying that the underlying execution failed.
 
+## Regression, scale, and accessibility coverage
+
+The UX-08 regression suite includes fixtures for queued, running, cancelling,
+passed, failed, interrupted, partial, unknown, and expired execution states. A
+failed assertion or interrupted state is always aggregated as failed and is never
+rendered as passed.
+
+Scale tests bound live history windows and large result drill-down hierarchies.
+Current client-side thresholds keep live windows to the requested page size and
+cap execution drill-down nodes at 500 rendered nodes per normalization pass.
+
+Negative-security tests cover forged artifact identifiers, cross-project
+download descriptors, canonical execution routes, and redaction of protected
+transport diagnostics. Accessibility tests cover keyboard sorting, keyboard row
+activation, accessible scroll-region names, action buttons, and non-color status
+treatments suitable for zoomed enterprise layouts.
+
 ## Legacy compatibility
 
 Legacy status values are still accepted:
