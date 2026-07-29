@@ -32,6 +32,21 @@ describe("tests component", () => {
                 tabTitleModify: "Modify Test",
                 tabTitleNewTest: "New Test",
                 tabTitleImportTest: "Import Test",
+                importReviewEyebrow: "Import review",
+                importReviewFallbackTitle: "Imported test definition",
+                importReviewDescription: "Review imported steps.",
+                importedSteps: "Steps",
+                importedActions: "Actions",
+                importedActionsCount: "{count} action(s)",
+                importReadyEyebrow: "Ready to save",
+                importReadyTitle: "Finalize import",
+                importReadyDescription: "Save imported steps.",
+                moveImportedUp: "Move imported step up",
+                moveImportedDown: "Move imported step down",
+                editImported: "Edit imported step",
+              },
+              Actions: {
+                remove: "Remove",
               },
             },
           },
@@ -227,6 +242,7 @@ describe("tests component", () => {
       description: "Imported collection",
       tests: imported,
     });
+    wrapper.vm.tabOpen = 2;
     await wrapper.vm.$nextTick();
     const originalKeys = [...wrapper.vm.arrayImportedStepKeys];
     wrapper.vm.moveImportedItem(1, 0);
@@ -236,6 +252,12 @@ describe("tests component", () => {
       originalKeys[1],
       originalKeys[0],
     ]);
+    expect(wrapper.find(".tests-import-review-panel").exists()).toBe(true);
+    expect(wrapper.find(".tests-import-actions-panel").exists()).toBe(true);
+    expect(wrapper.vm.importedActionsTotal()).toBe(2);
+    expect(wrapper.vm.actionTargetSummary({ findBy: "#submit" })).toBe(
+      "#submit",
+    );
     wrapper.vm.openTab("new");
     expect(() => wrapper.unmount()).not.toThrow();
   });

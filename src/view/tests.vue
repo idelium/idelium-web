@@ -161,76 +161,111 @@
             v-on:update:sequence="updateTestStepSequence"
           />
         </section>
-        <div class="row tests-import-workspace" v-if="tabOpen == 2">
-          <div class="col-sm-8 text-truncate">
+        <section
+          class="tests-import-workspace"
+          v-if="tabOpen == 2 && arrayStepsImported.length != 0"
+          aria-labelledby="tests-import-review-title"
+        >
+          <div class="tests-import-review-panel">
+            <header class="tests-import-review-header">
+              <div>
+                <p class="tests-import-eyebrow">
+                  {{ language[config.currentLanguage].Tests.importReviewEyebrow }}
+                </p>
+                <h2 id="tests-import-review-title">
+                  {{
+                    importedNameTest ||
+                    language[config.currentLanguage].Tests.importReviewFallbackTitle
+                  }}
+                </h2>
+                <p>
+                  {{
+                    importedDescriptionTest ||
+                    language[config.currentLanguage].Tests.importReviewDescription
+                  }}
+                </p>
+              </div>
+              <dl class="tests-import-summary">
+                <div>
+                  <dt>{{ language[config.currentLanguage].Tests.importedSteps }}</dt>
+                  <dd>{{ arrayStepsImported.length }}</dd>
+                </div>
+                <div>
+                  <dt>
+                    {{ language[config.currentLanguage].Tests.importedActions }}
+                  </dt>
+                  <dd>{{ importedActionsTotal() }}</dd>
+                </div>
+              </dl>
+            </header>
             <div class="tests-import-list-wrapper">
-              <ol class="list-group tests-import-review">
+              <ol class="tests-import-review">
                 <li
                   v-for="(element, index) in arrayStepsImported"
                   v-bind:key="arrayImportedStepKeys[index]"
                   class="tests-import-review__item"
                 >
-                  <div style="margin-right: 10px">
-                    <div
-                      style="text-align: center; width: 100%"
-                      v-if="index > 0"
-                    >
-                      <span>
-                        <font-awesome-icon
-                          icon="arrow-circle-down"
-                          style="
-                            font-size: 25px;
-                            margin-top: 5px;
-                            margin-bottom: 5px;
-                          "
-                      /></span>
+                  <article class="tests-import-step-card">
+                    <div class="tests-import-step-card__order">
+                      {{ index + 1 }}
                     </div>
-
-                    <div
-                      class="list-group-item"
-                      style="
-                        cursor: pointer;
-                        border-radius: 25px;
-                        padding: 20px;
-                        text-align: center !important;
-                      "
-                    >
-                      <span
-                        style="text-transform: uppercase"
+                    <div class="tests-import-step-card__body">
+                      <button
+                        type="button"
+                        class="tests-import-step-card__title"
                         v-on:click="editImportedItem(index)"
                         v-if="arrayEditImportedSteps[index] == false"
-                        >{{ element.name }},,,</span
                       >
-                      <span
-                        style="text-transform: uppercase"
-                        v-on:click="editImportedItem(index)"
-                        v-if="
-                          arrayEditImportedSteps[index] == false &&
-                          element.steps[0].findBy
-                        "
-                        ><br />({{ element.steps[0].findBy }})</span
-                      >
+                        {{ element.name }}
+                      </button>
                       <input
-                        class="form-control formTest"
+                        class="form-control tests-import-step-card__input"
                         v-if="arrayEditImportedSteps[index] == true"
                         v-on:keyup.enter="endEditImportedItem(index)"
                         v-model="arrayStepsImported[index].name"
-                        style="width: 80%"
                       />
+                      <p class="tests-import-step-card__meta">
+                        {{
+                          formatImportCount(
+                            importedActionCount(element),
+                            language[config.currentLanguage].Tests.importedActionsCount,
+                          )
+                        }}
+                        <span v-if="element.steps?.[0]?.findBy">
+                          · {{ element.steps[0].findBy }}
+                        </span>
+                      </p>
+                      <ul
+                        class="tests-import-action-preview"
+                        v-if="Array.isArray(element.steps)"
+                      >
+                        <li
+                          v-for="(action, actionIndex) in element.steps.slice(0, 3)"
+                          v-bind:key="`${arrayImportedStepKeys[index]}-${actionIndex}`"
+                        >
+                          <span>{{ action.stepType || action.type || "action" }}</span>
+                          <code>{{ actionTargetSummary(action) }}</code>
+                        </li>
+                      </ul>
+                    </div>
+                    <div class="tests-import-step-card__actions">
                       <button
                         type="button"
-                        class="tests-icon-action"
+                        class="tests-icon-action tests-icon-action--reorder"
                         v-on:click="moveImportedItem(index, index - 1)"
                         :disabled="index === 0"
                         :title="
                           language[config.currentLanguage].Tests.moveImportedUp
                         "
                       >
-                        {{ language[config.currentLanguage].Tests.moveUp }}
+                        <font-awesome-icon
+                          icon="arrow-up"
+                          class="idelium-action-icon--update"
+                        />
                       </button>
                       <button
                         type="button"
-                        class="tests-icon-action"
+                        class="tests-icon-action tests-icon-action--reorder"
                         v-on:click="moveImportedItem(index, index + 1)"
                         :disabled="index === arrayStepsImported.length - 1"
                         :title="
@@ -238,21 +273,27 @@
                             .moveImportedDown
                         "
                       >
-                        {{ language[config.currentLanguage].Tests.moveDown }}
+                        <font-awesome-icon
+                          icon="arrow-down"
+                          class="idelium-action-icon--update"
+                        />
                       </button>
                       <button
                         type="button"
-                        class="tests-icon-action"
+                        class="tests-icon-action tests-icon-action--edit"
                         v-on:click="editImportedItem(index)"
                         :title="
                           language[config.currentLanguage].Tests.editImported
                         "
                       >
-                        {{ language[config.currentLanguage].Tests.edit }}
+                        <font-awesome-icon
+                          icon="pen"
+                          class="idelium-action-icon--modify"
+                        />
                       </button>
                       <button
                         type="button"
-                        class="tests-icon-action"
+                        class="tests-icon-action tests-icon-action--delete"
                         v-on:click="deleteItemImported(index)"
                         :title="language[config.currentLanguage].Actions.remove"
                       >
@@ -262,33 +303,35 @@
                         />
                       </button>
                     </div>
-                  </div>
+                  </article>
                 </li>
               </ol>
             </div>
           </div>
-          <div class="col-sm-3">
+          <aside class="tests-import-actions-panel">
+            <p class="tests-import-eyebrow">
+              {{ language[config.currentLanguage].Tests.importReadyEyebrow }}
+            </p>
+            <h3>{{ language[config.currentLanguage].Tests.importReadyTitle }}</h3>
+            <p>
+              {{ language[config.currentLanguage].Tests.importReadyDescription }}
+            </p>
             <button
               type="button"
-              class="btn btn-success"
-              v-if="arrayStepsImported.length != 0"
-              size="sm"
-              style="float: right"
+              class="btn btn-success tests-import-primary-action"
               v-on:click="saveImportTest()"
             >
               {{ language[config.currentLanguage].Tests.btnImportTest }}
             </button>
             <button
               type="button"
-              class="btn btn-secondary"
-              v-if="arrayStepsImported.length != 0"
-              style="float: right; color: black !important; margin-right: 5px"
+              class="btn btn-secondary tests-import-secondary-action"
               v-on:click="cancelUpload()"
             >
               {{ language[config.currentLanguage].Tests.btnCancel }}
             </button>
-          </div>
-        </div>
+          </aside>
+        </section>
       </div>
     </div>
   </div>
@@ -323,10 +366,19 @@
   text-transform: uppercase;
 }
 
-.tests-workspace,
-.tests-import-workspace {
+.tests-workspace {
   flex: 1 1 auto;
   margin-top: 1rem;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.tests-import-workspace {
+  display: grid;
+  flex: 1 1 auto;
+  gap: var(--id-space-4);
+  grid-template-columns: minmax(0, 1fr) minmax(16rem, 22rem);
+  margin-top: var(--id-space-4);
   min-height: 0;
   overflow: hidden;
 }
@@ -344,20 +396,7 @@
   margin: 0;
 }
 
-.tests-import-review {
-  display: grid;
-  gap: var(--id-space-3);
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.tests-import-review__item {
-  min-width: 0;
-}
-
 .tests-workspace > .col-sm-6,
-.tests-import-workspace > .col-sm-8,
 .tests-selected-panel {
   display: flex;
   flex-direction: column;
@@ -387,21 +426,246 @@
   border-radius: 0.9rem;
 }
 
+.tests-import-review-panel,
+.tests-import-actions-panel {
+  background:
+    linear-gradient(145deg, rgba(255, 122, 24, 0.08), transparent 34%),
+    rgba(38, 42, 54, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 1.15rem;
+  box-shadow: 0 1rem 2.5rem rgba(0, 0, 0, 0.18);
+  min-height: 0;
+}
+
+.tests-import-review-panel {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.tests-import-review-header {
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  gap: var(--id-space-4);
+  justify-content: space-between;
+  padding: var(--id-space-4);
+}
+
+.tests-import-review-header h2,
+.tests-import-review-header p,
+.tests-import-actions-panel h3,
+.tests-import-actions-panel p {
+  margin: 0;
+}
+
+.tests-import-review-header h2 {
+  color: #ffffff;
+  font-size: 1.35rem;
+  letter-spacing: 0.02em;
+  margin-bottom: 0.35rem;
+}
+
+.tests-import-review-header p,
+.tests-import-actions-panel p {
+  color: rgba(255, 255, 255, 0.72);
+  line-height: 1.55;
+}
+
+.tests-import-eyebrow {
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.tests-import-summary {
+  display: grid;
+  gap: var(--id-space-3);
+  grid-template-columns: repeat(2, minmax(6rem, 1fr));
+  margin: 0;
+  min-width: 16rem;
+}
+
+.tests-import-summary div {
+  background: rgba(10, 13, 24, 0.34);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.85rem;
+  padding: 0.85rem 1rem;
+}
+
+.tests-import-summary dt {
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.tests-import-summary dd {
+  color: #ffffff;
+  font-size: 1.35rem;
+  font-weight: 800;
+  margin: 0.2rem 0 0;
+}
+
 .tests-import-list-wrapper {
+  padding: var(--id-space-4);
+  scrollbar-color: rgba(255, 122, 24, 0.8) rgba(255, 255, 255, 0.08);
+}
+
+.tests-import-review {
+  display: grid;
+  gap: var(--id-space-3);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.tests-import-review__item {
+  min-width: 0;
+}
+
+.tests-import-step-card {
+  align-items: flex-start;
+  background: rgba(49, 53, 67, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 1rem;
+  display: grid;
+  gap: var(--id-space-3);
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  padding: 1rem;
+}
+
+.tests-import-step-card__order {
+  align-items: center;
+  background: rgba(255, 122, 24, 0.16);
+  border: 1px solid rgba(255, 122, 24, 0.35);
+  border-radius: 0.85rem;
+  color: #ffb36c;
+  display: inline-flex;
+  font-weight: 800;
+  height: 2.35rem;
+  justify-content: center;
+  min-width: 2.35rem;
+}
+
+.tests-import-step-card__body {
+  min-width: 0;
+}
+
+.tests-import-step-card__title {
+  background: transparent;
+  border: 0;
+  color: #ffffff;
+  display: block;
+  font-size: 0.92rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  overflow: hidden;
+  padding: 0;
+  text-align: left;
   text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+  width: 100%;
+}
+
+.tests-import-step-card__input {
+  background: rgba(10, 13, 24, 0.75);
+  color: #ffffff;
+  max-width: 42rem;
+}
+
+.tests-import-step-card__meta {
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  margin: 0.35rem 0 0;
+  text-transform: uppercase;
+}
+
+.tests-import-action-preview {
+  display: grid;
+  gap: 0.4rem;
+  list-style: none;
+  margin: 0.75rem 0 0;
+  padding: 0;
+}
+
+.tests-import-action-preview li {
+  align-items: center;
+  color: rgba(255, 255, 255, 0.72);
+  display: grid;
+  gap: var(--id-space-2);
+  grid-template-columns: minmax(6rem, auto) minmax(0, 1fr);
+  min-width: 0;
+}
+
+.tests-import-action-preview span {
+  color: #9ed4ff;
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.tests-import-action-preview code {
+  background: rgba(10, 13, 24, 0.48);
+  border-radius: 0.45rem;
+  color: rgba(255, 255, 255, 0.75);
+  overflow: hidden;
+  padding: 0.2rem 0.45rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tests-import-step-card__actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.tests-import-actions-panel {
+  align-self: start;
+  display: grid;
+  gap: var(--id-space-3);
+  padding: var(--id-space-4);
+}
+
+.tests-import-actions-panel h3 {
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.tests-import-primary-action,
+.tests-import-secondary-action {
+  width: 100%;
 }
 
 .deleteIcon {
-  float: right;
   color: white;
   font-size: 12px;
-  margin-right: -0.6rem;
 }
 .tests-icon-action {
-  background: transparent;
-  border: 0;
-  float: right;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.7rem;
+  display: inline-flex;
+  height: 2rem;
+  justify-content: center;
   padding: 0;
+  width: 2rem;
+}
+
+.tests-icon-action:disabled {
+  cursor: not-allowed;
+  opacity: 0.35;
 }
 .modal-dialog {
   min-width: 80vw;
@@ -420,6 +684,25 @@
   .tests-selected-list,
   .tests-import-list-wrapper {
     min-height: 20rem;
+  }
+
+  .tests-import-workspace {
+    grid-template-columns: 1fr;
+    overflow: visible;
+  }
+
+  .tests-import-review-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .tests-import-summary {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .tests-import-step-card {
+    grid-template-columns: 1fr;
   }
 
   .tests-workspace-spacer {
@@ -648,6 +931,29 @@ export default {
       this.$refs.importTestUpload.showUploadComponent();
       this.arrayStepsImported = [];
       this.arrayImportedStepKeys = [];
+    },
+    importedActionCount(step) {
+      return Array.isArray(step?.steps) ? step.steps.length : 0;
+    },
+    importedActionsTotal() {
+      return this.arrayStepsImported.reduce(
+        (total, step) => total + this.importedActionCount(step),
+        0,
+      );
+    },
+    formatImportCount(count, template) {
+      return String(template ?? "{count}").replace("{count}", count);
+    },
+    actionTargetSummary(action) {
+      return (
+        action?.findBy ??
+        action?.url ??
+        action?.value ??
+        action?.locator ??
+        action?.selector ??
+        action?.name ??
+        "configured action"
+      );
     },
     importTest(value) {
       this.importedNameTest = value.name;

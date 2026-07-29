@@ -559,6 +559,17 @@ export default {
     btnModifyTest: "Modify",
     btnImportTest: "Import Test",
     btnCancel: "Cancel",
+    importReviewEyebrow: "Import review",
+    importReviewFallbackTitle: "Imported test definition",
+    importReviewDescription:
+      "Review the imported reusable steps, adjust names or ordering, then save the test into the selected project.",
+    importedSteps: "Steps",
+    importedActions: "Actions",
+    importedActionsCount: "{count} action(s)",
+    importReadyEyebrow: "Ready to save",
+    importReadyTitle: "Finalize import",
+    importReadyDescription:
+      "The definition has been parsed locally. Saving will create the test and its reusable steps for the current project.",
     placeholderFilterStep: "search test",
     placeholderNameTest: " test",
     placeholderDescriptionTest: "Test description",

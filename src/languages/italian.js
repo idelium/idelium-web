@@ -563,6 +563,17 @@ export default {
     btnModifyTest: "Modifica",
     btnImportTest: "Importa Test",
     btnCancel: "Annulla",
+    importReviewEyebrow: "Revisione import",
+    importReviewFallbackTitle: "Definizione test importata",
+    importReviewDescription:
+      "Verifica gli step riutilizzabili importati, modifica nomi o ordine e salva il test nel progetto selezionato.",
+    importedSteps: "Step",
+    importedActions: "Azioni",
+    importedActionsCount: "{count} azioni",
+    importReadyEyebrow: "Pronto al salvataggio",
+    importReadyTitle: "Completa import",
+    importReadyDescription:
+      "La definizione è stata analizzata localmente. Il salvataggio creerà il test e gli step riutilizzabili nel progetto corrente.",
     placeholderFilterStep: "cerca test",
     placeholderNameTest: "nome del test",
     placeholderDescriptionTest: "descrizone del test",
