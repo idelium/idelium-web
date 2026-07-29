@@ -3,9 +3,12 @@ import { describe, expect, it } from "vitest";
 import {
   ACCOUNT_GOVERNANCE_CONTRACT_VERSION,
   accountOperationContract,
+  buildAccountAuditQuery,
   buildRolePickerOptions,
+  createAccountAuditExportRequest,
   createAccountInvitationRequest,
   legacyAccountCompatibility,
+  normalizeAccountAuditPage,
   normalizeAccountDescriptor,
   permissionMatrixForRoles,
   roleMetadata,
@@ -324,6 +327,75 @@ describe("account lifecycle and role governance contract", () => {
         replacementAdminId: "account-2",
         roleId: "3",
         tenantId: "tenant-1",
+      },
+    });
+  });
+
+  it("normalizes bounded redacted account audit history and authorized exports", () => {
+    const query = buildAccountAuditQuery({
+      accountId: "account-1",
+      filters: { action: "role-change", unsafe: "ignored" },
+      page: -10,
+      pageSize: 500,
+      tenantId: "tenant-1",
+    });
+    expect(Object.fromEntries(query.entries())).toEqual({
+      accountId: "account-1",
+      action: "role-change",
+      page: "1",
+      pageSize: "50",
+      tenantId: "tenant-1",
+    });
+
+    const page = normalizeAccountAuditPage(
+      {
+        data: {
+          data: [
+            {
+              accountId: "account-1",
+              actor: "admin@example.test",
+              correlationId: "corr-1",
+              id: "event-1",
+              message:
+                "changed token=secret session=abc from 10.0.0.1 with Bearer abc",
+              operation: "role-change",
+              status: "success",
+              targetLabel: "Admin token=secret",
+              tenantId: "tenant-1",
+            },
+          ],
+          meta: { page: 1, pageSize: 25, total: 1 },
+        },
+      },
+      { accountId: "account-1", tenantId: "tenant-1" },
+    );
+    expect(page.rows[0]).toMatchObject({
+      accountId: "account-1",
+      action: "role-change",
+      correlationId: "corr-1",
+      eventId: "event-1",
+      outcome: "success",
+    });
+    expect(JSON.stringify(page)).not.toContain("secret");
+    expect(JSON.stringify(page)).not.toContain("10.0.0.1");
+
+    expect(
+      createAccountAuditExportRequest({
+        accountId: "account-1",
+        actor: "admin@example.test",
+        capabilities: ["account.audit.export"],
+        tenantId: "tenant-1",
+      }),
+    ).toMatchObject({
+      allowed: true,
+      body: {
+        accountId: "account-1",
+        format: "csv",
+        tenantId: "tenant-1",
+      },
+      headers: {
+        "Idempotency-Key":
+          "account-audit-export:tenant-1:account-1:admin@example.test",
       },
     });
   });

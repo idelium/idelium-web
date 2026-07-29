@@ -565,4 +565,113 @@ describe("administration enterprise listings", () => {
       { headers: {} },
     );
   });
+
+  it("loads tenant-scoped redacted audit history and queues authorized exports", async () => {
+    api.get.mockImplementation((url) => {
+      if (url === "/api/admin/accounts") {
+        return Promise.resolve({
+          data: {
+            data: [
+              {
+                email: "admin@example.test",
+                id: 42,
+                idCostumer: "tenant-1",
+                name: "Admin",
+                role: 2,
+                status: "active",
+              },
+            ],
+            meta: { page: 1, pageSize: 25, total: 1 },
+          },
+        });
+      }
+      if (url === "/api/admin/roles") {
+        return Promise.resolve({ data: [{ id: 2, name: "admin" }] });
+      }
+      if (url === "/api/admin/costumers") {
+        return Promise.resolve({ data: [] });
+      }
+      if (url === "/api/admin/accounts/42/audit") {
+        return Promise.resolve({
+          data: {
+            data: [
+              {
+                accountId: "42",
+                actor: "admin@example.test",
+                correlationId: "corr-1",
+                id: "event-1",
+                message: "token=secret from 10.0.0.1",
+                operation: "suspend",
+                status: "success",
+                targetLabel: "admin@example.test",
+                tenantId: "tenant-1",
+              },
+            ],
+            meta: { page: 1, pageSize: 25, total: 1 },
+          },
+        });
+      }
+      return Promise.resolve({ data: [] });
+    });
+    api.post.mockResolvedValue({ data: { exportId: "export-1" } });
+
+    const wrapper = shallowMount(Accounts, {
+      global: {
+        stubs: {
+          AccountAuditHistory: true,
+          EnterpriseListingGrid: true,
+          EnterpriseListingPage: true,
+          modalModifyAccount: true,
+        },
+        mocks: commonMocks(
+          {},
+          {
+            accounts: "admin/accounts",
+            costumers: "admin/costumers",
+            roles: "admin/roles",
+          },
+        ),
+      },
+    });
+    wrapper.vm.session.capabilities = ["account.audit", "account.audit.export"];
+    await vi.waitFor(() => expect(wrapper.vm.accountRows).toHaveLength(1));
+
+    await wrapper.vm.handleAction({
+      action: "audit",
+      row: wrapper.vm.accountRows[0],
+    });
+
+    expect(api.get).toHaveBeenCalledWith("/api/admin/accounts/42/audit", {
+      headers: {},
+      params: {
+        accountId: "42",
+        page: "1",
+        pageSize: "25",
+        tenantId: "tenant-1",
+      },
+    });
+    expect(wrapper.vm.auditEvents[0]).toMatchObject({
+      action: "suspend",
+      correlationId: "corr-1",
+      eventId: "event-1",
+      outcome: "success",
+    });
+    expect(JSON.stringify(wrapper.vm.auditEvents)).not.toContain("secret");
+    expect(JSON.stringify(wrapper.vm.auditEvents)).not.toContain("10.0.0.1");
+
+    await wrapper.vm.exportAccountAudit();
+    expect(api.post).toHaveBeenCalledWith(
+      "/api/admin/accounts/42/audit/exports",
+      expect.objectContaining({
+        accountId: "42",
+        format: "csv",
+        tenantId: "tenant-1",
+      }),
+      {
+        headers: {
+          "Idempotency-Key": "account-audit-export:tenant-1:42:current-user",
+        },
+      },
+    );
+  });
 });

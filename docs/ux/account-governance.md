@@ -120,6 +120,25 @@ or concurrent transitions that would leave the tenant without an administrator.
 The UI treats such rejections as durable failures and leaves the existing account
 state visible until the API confirms a successful transition.
 
+## Account and role audit history
+
+Account governance events are displayed as immutable audit records. The console
+shows actor, action, target, timestamp, outcome, reason, and correlation ID only
+when the operator has the account audit capability. Display names are always
+paired with durable non-secret identifiers such as account ID and correlation ID
+so an event remains traceable after a name or email changes.
+
+Audit retrieval uses tenant-scoped, bounded pagination with an allowlisted filter
+set. Tokens, session identifiers, IP addresses, and protected metadata are
+redacted before they reach the visible audit table. Cross-tenant or unauthorized
+access failures are shown as safe localized feedback without leaking protected
+details.
+
+Audit exports are requested through an asynchronous authorized flow. The export
+request carries the same account, tenant, filters, and idempotency scope as the
+visible audit query, and the API must apply the same authorization and redaction
+rules before making any downloadable artifact available.
+
 ## Operations
 
 The contract defines these account operations:

@@ -96,6 +96,19 @@
         </div>
       </template>
     </EnterpriseListingGrid>
+    <AccountAuditHistory
+      :account="auditTarget"
+      :copy="copy.auditHistory"
+      :error="auditError"
+      :events="auditEvents"
+      :filters="auditQuery.filters"
+      :loading="auditLoading"
+      :meta="auditMeta"
+      v-on:close="closeAuditHistory"
+      v-on:export="exportAccountAudit"
+      v-on:filter-change="changeAuditFilters"
+      v-on:page-change="changeAuditPage"
+    />
     <modalModifyAccount
       ref="modifyModal"
       :arrayAccounts="arrayAccounts"
@@ -109,11 +122,15 @@
 </template>
 
 <script>
+import AccountAuditHistory from "@/components/account/AccountAuditHistory.vue";
 import EnterpriseListingGrid from "@/components/grid/EnterpriseListingGrid.vue";
 import EnterpriseListingPage from "@/components/grid/EnterpriseListingPage.vue";
 import {
   accountOperationContract,
+  buildAccountAuditQuery,
   createAccountInvitationRequest,
+  createAccountAuditExportRequest,
+  normalizeAccountAuditPage,
 } from "@/domain/accountGovernance";
 import {
   buildGridQuery,
@@ -144,6 +161,7 @@ const ALLOWED_FILTERS = ["role", "status", "team", "invitation"];
 export default {
   name: "AccountsComponent",
   components: {
+    AccountAuditHistory,
     EnterpriseListingGrid,
     EnterpriseListingPage,
     modalModifyAccount,
@@ -174,6 +192,22 @@ export default {
       arrayAccounts: [],
       arrayRoles: [],
       arrayCostumers: [],
+      auditError: null,
+      auditEvents: [],
+      auditLoading: false,
+      auditMeta: {
+        page: 1,
+        pageSize: 25,
+        total: 0,
+        hasNextPage: false,
+        hasPreviousPage: false,
+      },
+      auditQuery: {
+        filters: { action: "", outcome: "" },
+        page: 1,
+        pageSize: 25,
+      },
+      auditTarget: null,
       error: null,
       isSuperAdmin: false,
       loading: false,
@@ -340,6 +374,7 @@ export default {
       return [
         "account.archive",
         "account.audit",
+        "account.audit.export",
         "account.detail",
         "account.invite",
         "account.reactivate",
@@ -543,7 +578,10 @@ export default {
       ) {
         return this.confirmAccountLifecycleAction(action, row);
       }
-      if (["audit", "detail"].includes(action)) {
+      if (action === "audit") {
+        return this.openAuditHistory(row);
+      }
+      if (action === "detail") {
         this.$wkToast?.(`${this.copy.governanceActionQueued}: ${row.email}`);
         return null;
       }
@@ -619,6 +657,117 @@ export default {
     },
     accountLifecycleEndpoint(id, action) {
       return `${this.config.serviceBaseUrl}${this.config.url.accounts}/${id}/${action}`;
+    },
+    openAuditHistory(row) {
+      this.auditTarget = row;
+      this.auditQuery = {
+        filters: { action: "", outcome: "" },
+        page: 1,
+        pageSize: 25,
+      };
+      return this.getAccountAuditHistory();
+    },
+    closeAuditHistory() {
+      this.auditTarget = null;
+      this.auditEvents = [];
+      this.auditError = null;
+    },
+    changeAuditFilters(filters) {
+      this.auditQuery = {
+        ...this.auditQuery,
+        filters,
+        page: 1,
+      };
+      return this.getAccountAuditHistory();
+    },
+    changeAuditPage(page) {
+      this.auditQuery = {
+        ...this.auditQuery,
+        page: Math.max(Number(page) || 1, 1),
+      };
+      return this.getAccountAuditHistory();
+    },
+    getAccountAuditHistory() {
+      if (!this.auditTarget) return Promise.resolve();
+      this.auditLoading = true;
+      this.auditError = null;
+      const tenantId =
+        this.auditTarget.tenantId ||
+        this.auditTarget.idCostumer ||
+        "current-tenant";
+      const query = buildAccountAuditQuery({
+        accountId: this.auditTarget.id,
+        filters: this.auditQuery.filters,
+        page: this.auditQuery.page,
+        pageSize: this.auditQuery.pageSize,
+        tenantId,
+      });
+      return apiClient
+        .get(this.accountAuditEndpoint(this.auditTarget.id), {
+          headers: this.setHeaders(),
+          params: Object.fromEntries(query.entries()),
+        })
+        .then((response) => {
+          const result = normalizeAccountAuditPage(response, {
+            accountId: this.auditTarget.id,
+            page: this.auditQuery.page,
+            pageSize: this.auditQuery.pageSize,
+            tenantId,
+          });
+          this.auditEvents = result.rows;
+          this.auditMeta = result.meta;
+        })
+        .catch((error) => {
+          this.auditError = error;
+          this.auditEvents = [];
+        })
+        .finally(() => {
+          this.auditLoading = false;
+        });
+    },
+    exportAccountAudit() {
+      if (!this.auditTarget) return Promise.resolve();
+      const tenantId =
+        this.auditTarget.tenantId ||
+        this.auditTarget.idCostumer ||
+        "current-tenant";
+      const request = createAccountAuditExportRequest({
+        accountId: this.auditTarget.id,
+        actor: "current-user",
+        capabilities: this.accountCapabilities,
+        filters: this.auditQuery.filters,
+        tenantId,
+      });
+      if (!request.allowed) {
+        this.auditError = { safeFeedback: this.copy.auditHistory.exportDenied };
+        return Promise.resolve();
+      }
+      return apiClient
+        .post(
+          this.accountAuditExportEndpoint(this.auditTarget.id),
+          request.body,
+          {
+            headers: { ...this.setHeaders(), ...request.headers },
+          },
+        )
+        .then(() => {
+          this.$wkToast?.(this.copy.auditHistory.exportQueued);
+        })
+        .catch((error) => {
+          this.auditError = error;
+        });
+    },
+    accountAuditEndpoint(id) {
+      const base =
+        this.config.url.accountAudit ||
+        `${this.config.url.accounts}/${id}/audit`;
+      return `${this.config.serviceBaseUrl}${base}`;
+    },
+    accountAuditExportEndpoint(id) {
+      const base =
+        this.config.url.accountAuditExports ||
+        `${this.config.url.accounts}/${id}/audit/exports`;
+      return `${this.config.serviceBaseUrl}${base}`;
     },
     showAccountModal(account) {
       this.$refs.modifyModal.showModal(account, "modify");

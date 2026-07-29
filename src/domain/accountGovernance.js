@@ -459,6 +459,94 @@ export function accountAuditRecord(
   };
 }
 
+export function buildAccountAuditQuery(options = {}) {
+  const page = Math.max(Number(options.page) || 1, 1);
+  const pageSize = Math.min(Math.max(Number(options.pageSize) || 25, 1), 50);
+  const query = new URLSearchParams();
+  query.set("accountId", safeIdentifier(options.accountId));
+  query.set("tenantId", safeIdentifier(options.tenantId));
+  query.set("page", String(page));
+  query.set("pageSize", String(pageSize));
+  for (const key of ["action", "outcome"]) {
+    const value = safeIdentifier(options.filters?.[key]);
+    if (value) query.set(key, value);
+  }
+  return query;
+}
+
+export function normalizeAccountAuditEvent(event = {}, context = {}) {
+  return {
+    accountId: safeIdentifier(event.accountId ?? context.accountId),
+    action: safeIdentifier(event.action ?? event.operation),
+    actorId: safeIdentifier(event.actorId ?? event.actor),
+    correlationId: safeIdentifier(event.correlationId ?? event.requestId),
+    eventId: safeIdentifier(event.eventId ?? event.id),
+    outcome: safeIdentifier(event.outcome ?? event.status),
+    reason: redactProtectedText(event.reason ?? event.message),
+    targetId: safeIdentifier(
+      event.targetId ?? event.accountId ?? context.accountId,
+    ),
+    targetLabel: redactProtectedText(
+      event.targetLabel ?? event.email ?? event.account,
+    ),
+    tenantId: safeIdentifier(event.tenantId ?? context.tenantId),
+    timestamp: safeIsoTimestamp(event.timestamp ?? event.createdAt),
+  };
+}
+
+export function normalizeAccountAuditPage(response = {}, context = {}) {
+  const payload = response.data ?? response;
+  const rows = safeArray(payload.data ?? payload.rows ?? payload.events).map(
+    (event) => normalizeAccountAuditEvent(event, context),
+  );
+  const meta = payload.meta ?? {};
+  return {
+    meta: {
+      hasNextPage: Boolean(meta.hasNextPage),
+      hasPreviousPage: Boolean(meta.hasPreviousPage),
+      page: Math.max(Number(meta.page) || Number(context.page) || 1, 1),
+      pageSize: Math.min(
+        Math.max(Number(meta.pageSize) || Number(context.pageSize) || 25, 1),
+        50,
+      ),
+      total: Math.max(Number(meta.total) || rows.length, rows.length),
+    },
+    rows,
+  };
+}
+
+export function createAccountAuditExportRequest(options = {}) {
+  const query = buildAccountAuditQuery({
+    accountId: options.accountId,
+    filters: options.filters,
+    page: 1,
+    pageSize: 50,
+    tenantId: options.tenantId,
+  });
+  const capabilities = new Set(safeArray(options.capabilities));
+  if (!capabilities.has("account.audit.export")) {
+    return rejected("missing-capability");
+  }
+  return {
+    allowed: true,
+    body: {
+      accountId: safeIdentifier(options.accountId),
+      filters: Object.fromEntries(query.entries()),
+      format: safeIdentifier(options.format || "csv"),
+      tenantId: safeIdentifier(options.tenantId),
+    },
+    headers: {
+      "Idempotency-Key": [
+        "account-audit-export",
+        safeIdentifier(options.tenantId),
+        safeIdentifier(options.accountId),
+        safeIdentifier(options.actor ?? "actor"),
+      ].join(":"),
+    },
+    status: "ready",
+  };
+}
+
 export function privilegedChangeRisk(currentRole, nextRole, options = {}) {
   const current = roleMetadata(
     inferCanonicalRole(options.currentRoleName ?? currentRole),
@@ -552,6 +640,14 @@ function safeText(value) {
   return String(value ?? "")
     .trim()
     .slice(0, 500);
+}
+
+function redactProtectedText(value) {
+  return safeText(value)
+    .replace(/bearer\s+[a-z0-9._~+/=-]+/gi, "Bearer [REDACTED]")
+    .replace(/token[=:]\s*[^,\s]+/gi, "token=[REDACTED]")
+    .replace(/session[=:]\s*[^,\s]+/gi, "session=[REDACTED]")
+    .replace(/\b\d{1,3}(?:\.\d{1,3}){3}\b/g, "[REDACTED_IP]");
 }
 
 function safeArray(value) {

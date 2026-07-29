@@ -1233,6 +1233,48 @@ export default {
     },
     governanceActionQueued:
       "Governance action selected. The detailed workflow is available from the next governance step",
+    auditHistory: {
+      action: "Action",
+      actions: {
+        invite: "Invitation",
+        reactivate: "Reactivation",
+        "role-change": "Role change",
+        suspend: "Suspension",
+      },
+      actor: "Actor",
+      all: "All",
+      close: "Close audit",
+      correlationId: "Correlation ID",
+      description:
+        "Immutable governance events for {account} ({accountId}). Display names are shown with durable non-secret identifiers.",
+      empty: "No audit events are available for the selected account.",
+      export: "Request export",
+      exportDenied:
+        "Audit export is not available for the current authorization context.",
+      exportQueued:
+        "Audit export requested. The authorized download will be prepared asynchronously.",
+      eyebrow: "Governance audit",
+      failed: "failed",
+      filters: "Audit filters",
+      loading: "Loading account audit history.",
+      next: "Next",
+      outcome: "Outcome",
+      outcomes: {
+        failed: "Failed",
+        rejected: "Rejected",
+        requested: "Requested",
+        success: "Success",
+      },
+      pageStatus: "Page {page} of {pages}",
+      pagination: "Audit event pages",
+      previous: "Previous",
+      reason: "Reason",
+      safeFailure:
+        "Audit history could not be loaded. Cross-tenant and unauthorized access fail without exposing protected details.",
+      target: "Target",
+      timestamp: "Timestamp",
+      title: "Account and role audit history",
+    },
     lifecycleSafeFailure:
       "The lifecycle action could not be completed. The account remains unchanged until the API confirms a durable transition.",
     lifecycleConfirmations: {

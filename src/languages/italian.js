@@ -1243,6 +1243,47 @@ export default {
     },
     governanceActionQueued:
       "Azione governance selezionata. Il workflow dettagliato è disponibile dal prossimo step governance",
+    auditHistory: {
+      action: "Azione",
+      actions: {
+        invite: "Invito",
+        reactivate: "Riattivazione",
+        "role-change": "Cambio ruolo",
+        suspend: "Sospensione",
+      },
+      actor: "Attore",
+      all: "Tutti",
+      close: "Chiudi audit",
+      correlationId: "Correlation ID",
+      description:
+        "Eventi governance immutabili per {account} ({accountId}). I nomi visualizzati sono accompagnati da identificativi durevoli non segreti.",
+      empty: "Non sono disponibili eventi audit per l'account selezionato.",
+      export: "Richiedi export",
+      exportDenied:
+        "L'export audit non è disponibile per il contesto autorizzativo corrente.",
+      exportQueued:
+        "Export audit richiesto. Il download autorizzato verrà preparato in modo asincrono.",
+      eyebrow: "Audit governance",
+      filters: "Filtri audit",
+      loading: "Caricamento storico audit account.",
+      next: "Successiva",
+      outcome: "Esito",
+      outcomes: {
+        failed: "Fallito",
+        rejected: "Respinto",
+        requested: "Richiesto",
+        success: "Successo",
+      },
+      pageStatus: "Pagina {page} di {pages}",
+      pagination: "Pagine eventi audit",
+      previous: "Precedente",
+      reason: "Motivo",
+      safeFailure:
+        "Non è stato possibile caricare lo storico audit. Accessi cross-tenant e non autorizzati falliscono senza esporre dettagli protetti.",
+      target: "Target",
+      timestamp: "Timestamp",
+      title: "Storico audit account e ruoli",
+    },
     lifecycleSafeFailure:
       "Non è stato possibile completare l'azione lifecycle. L'account resta invariato finché l'API non conferma una transizione durevole.",
     lifecycleConfirmations: {
