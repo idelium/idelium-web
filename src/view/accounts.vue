@@ -172,7 +172,7 @@ export default {
   created() {
     this.restoreQuery();
     this.getAccounts();
-    this.$gtag.event("idelium", { method: "account" });
+    this.$gtag?.event?.("idelium", { method: "account" });
     this.emitter.on("refreshAccount", () => this.getAccounts(true));
   },
   beforeUnmount() {

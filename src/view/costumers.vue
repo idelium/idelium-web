@@ -66,7 +66,7 @@ export default {
   created() {
     this.restoreQuery();
     this.getCostumers();
-    this.$gtag.event("idelium-builder", { method: "costumer" });
+    this.$gtag?.event?.("idelium-builder", { method: "costumer" });
     this.emitter.on("refreshCostumer", () => this.getCostumers(true));
   },
   beforeUnmount() {

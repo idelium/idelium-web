@@ -6,6 +6,7 @@ import router from "./router";
 import { pinia } from "./stores/pinia";
 import { useSessionStore } from "./stores/session";
 import { setUnsavedChangesConfirmationHandler } from "./stores/navigation";
+import { installAnalytics } from "./services/analytics";
 import { setUnauthorizedHandler } from "./services/apiClient";
 import "bootstrap";
 import ElementPlus from "element-plus";
@@ -17,11 +18,9 @@ import Konva from "konva";
 import appKonva from "vue-konva";
 import appFullscreen from "vue-fullscreen";
 import { VueReCaptcha } from "vue-recaptcha-v3";
-import { createGtag } from "vue-gtag";
 import "ace-builds/src-noconflict/mode-python";
 import "ace-builds/src-noconflict/theme-chrome";
 
-//import appGtag from 'vue-gtag'
 import mitt from "mitt";
 
 import { library } from "@fortawesome/fontawesome-svg-core";
@@ -122,9 +121,6 @@ app.use(Toast, {
 app.use(appKonva);
 app.use(appFullscreen);
 app.use(VueReCaptcha, { siteKey: import.meta.env.VITE_GOOGLE_SITE_KEY });
-if (import.meta.env.VITE_GOOGLE_TAG_ID) {
-  app.use(createGtag({ tagId: import.meta.env.VITE_GOOGLE_TAG_ID }));
-}
 app.component("v-select", vSelect);
 
 app.component("font-awesome-icon", FontAwesomeIcon);
@@ -247,4 +243,5 @@ setUnauthorizedHandler(() => {
   }
 });
 
+void installAnalytics(app);
 app.mount("#app");
