@@ -5,6 +5,7 @@ import EnterpriseDataTable from "@/components/grid/EnterpriseDataTable.vue";
 
 const copy = {
   actions: "Actions",
+  moreActions: "More actions",
   preferences: {
     title: "Table preferences",
     density: "Density",
@@ -99,6 +100,32 @@ describe("EnterpriseDataTable", () => {
     expect(buttons).toHaveLength(2);
     expect(buttons[0].attributes("aria-label")).toBeUndefined();
     expect(wrapper.text()).not.toContain("Delete");
+  });
+
+  it("separates overflow actions and requests confirmation for high impact actions", async () => {
+    const wrapper = mountTable({
+      actions: [
+        { id: "view", label: "View" },
+        {
+          id: "archive",
+          label: "Archive",
+          placement: "overflow",
+          requiresConfirmation: true,
+          variant: "danger",
+        },
+      ],
+    });
+
+    expect(
+      wrapper.findAll(".enterprise-data-table__actions > button"),
+    ).toHaveLength(2);
+    expect(wrapper.findAll('[role="menuitem"]')).toHaveLength(2);
+
+    await wrapper.find('[role="menuitem"]').trigger("click");
+    expect(wrapper.emitted("confirm-action")[0][0]).toMatchObject({
+      action: "archive",
+      row: { id: 10 },
+    });
   });
 
   it("emits bounded page selection and renders empty feedback", async () => {

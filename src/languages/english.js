@@ -730,6 +730,11 @@ export default {
   },
   DataTable: {
     actions: "Actions",
+    moreActions: "More actions",
+    detail: {
+      eyebrow: "Record detail",
+      close: "Close details",
+    },
     preferences: {
       title: "Table preferences",
       density: "Density",

@@ -60,6 +60,21 @@ preference shapes are sanitized against the current column contract. Reset remov
 only the current scoped key. Compact mode retains native selection targets and the
 shared minimum interactive size.
 
+## Row actions and detail routes
+
+Each row may expose a small number of primary actions and an overflow menu for
+secondary actions. Actions require localized labels, semantic variants, and an
+optional capability. Capability filtering improves the interface only; every API
+mutation must still enforce tenant ownership and authorization. Destructive and
+high-impact actions emit `confirm-action` and must be completed through the shared
+enterprise confirmation workflow with entity context.
+
+Detail views use the `detail` query parameter and preserve table query state. IDs
+are limited to safe stable identifiers. The shared drawer traps keyboard focus,
+closes with Escape or its labelled close control, and restores focus to the
+originating row action. Closing the drawer retains table scroll because it changes
+only route query state.
+
 ## Migration and rollback
 
 Existing routes and API endpoints remain compatible. Listings move to the shared

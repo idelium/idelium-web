@@ -735,6 +735,11 @@ export default {
   },
   DataTable: {
     actions: "Azioni",
+    moreActions: "Altre azioni",
+    detail: {
+      eyebrow: "Dettaglio elemento",
+      close: "Chiudi dettagli",
+    },
     preferences: {
       title: "Preferenze tabella",
       density: "Densità",

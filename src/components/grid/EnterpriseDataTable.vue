@@ -147,15 +147,38 @@
               class="enterprise-data-table__actions"
             >
               <IdButton
-                v-for="action in visibleActions"
+                v-for="action in inlineActions"
                 :key="action.id"
                 :accessible-label="`${action.label}: ${rowLabel(row)}`"
+                :title="action.tooltip || action.label"
                 :variant="action.variant || 'ghost'"
-                :disabled="action.disabled === true"
-                @click="$emit('action', { action: action.id, row })"
+                :disabled="actionDisabled(action, row)"
+                @click="emitAction(action, row)"
               >
                 {{ action.label }}
               </IdButton>
+              <details
+                v-if="overflowActions.length > 0"
+                class="enterprise-data-table__action-menu"
+              >
+                <summary :aria-label="`${copy.moreActions}: ${rowLabel(row)}`">
+                  ⋯
+                </summary>
+                <div role="menu">
+                  <button
+                    v-for="action in overflowActions"
+                    :key="action.id"
+                    type="button"
+                    role="menuitem"
+                    :class="`enterprise-data-table__menu-action--${action.variant || 'secondary'}`"
+                    :title="action.tooltip || action.label"
+                    :disabled="actionDisabled(action, row)"
+                    @click="emitAction(action, row)"
+                  >
+                    {{ action.label }}
+                  </button>
+                </div>
+              </details>
             </td>
           </tr>
         </tbody>
@@ -186,6 +209,7 @@ export default {
   components: { EnterpriseGridState, IdButton },
   emits: [
     "action",
+    "confirm-action",
     "preferences-change",
     "row-activate",
     "selection-change",
@@ -243,6 +267,16 @@ export default {
     },
     visibleActions() {
       return normalizeGridActions(this.actions, this.capabilities);
+    },
+    inlineActions() {
+      return this.visibleActions.filter(
+        (action) => action.placement !== "overflow",
+      );
+    },
+    overflowActions() {
+      return this.visibleActions.filter(
+        (action) => action.placement === "overflow",
+      );
     },
     visibleState() {
       const state = gridStateFromResult({
@@ -376,6 +410,15 @@ export default {
         sanitizeGridPreferences(null, this.allColumns),
       );
     },
+    actionDisabled(action, row) {
+      return typeof action.disabled === "function"
+        ? action.disabled(row)
+        : action.disabled === true;
+    },
+    emitAction(action, row) {
+      const event = action.requiresConfirmation ? "confirm-action" : "action";
+      this.$emit(event, { action: action.id, row });
+    },
   },
 };
 </script>
@@ -505,6 +548,58 @@ tbody tr:focus-visible {
   flex-wrap: wrap;
   gap: var(--id-space-2);
   justify-content: flex-end;
+}
+
+.enterprise-data-table__action-menu {
+  position: relative;
+}
+
+.enterprise-data-table__action-menu summary {
+  align-items: center;
+  border: 1px solid var(--id-color-border);
+  border-radius: var(--id-radius-small);
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 1.25rem;
+  justify-content: center;
+  min-height: var(--id-control-min-size);
+  min-width: var(--id-control-min-size);
+}
+
+.enterprise-data-table__action-menu summary::marker {
+  content: "";
+}
+
+.enterprise-data-table__action-menu [role="menu"] {
+  background: var(--id-color-surface-raised);
+  border: 1px solid var(--id-color-border);
+  border-radius: var(--id-radius-medium);
+  box-shadow: var(--id-shadow-raised);
+  display: grid;
+  min-width: 12rem;
+  padding: var(--id-space-2);
+  position: absolute;
+  right: 0;
+  z-index: 3;
+}
+
+.enterprise-data-table__action-menu button {
+  background: transparent;
+  border: 0;
+  border-radius: var(--id-radius-small);
+  color: var(--id-color-text);
+  min-height: var(--id-control-min-size);
+  padding: var(--id-space-2) var(--id-space-3);
+  text-align: left;
+}
+
+.enterprise-data-table__action-menu button:hover,
+.enterprise-data-table__action-menu button:focus-visible {
+  background: var(--id-color-surface-muted);
+}
+
+.enterprise-data-table__menu-action--danger {
+  color: var(--id-color-danger) !important;
 }
 
 .enterprise-data-table__cell--technical {
