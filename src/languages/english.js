@@ -558,6 +558,9 @@ export default {
     },
   },
   TestCycles: {
+    compositionTitle: "Configure test sequence",
+    compositionDescription:
+      "Select authorized tests, review dependencies, configure their order, and save the cycle.",
     tabTitleModify: "Modify  test cycle",
     tabTitleNewTestCycle: "Create  test cycle",
     btnCreateTestCycle: "Create",

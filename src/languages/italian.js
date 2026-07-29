@@ -562,6 +562,9 @@ export default {
     },
   },
   TestCycles: {
+    compositionTitle: "Configura la sequenza dei test",
+    compositionDescription:
+      "Seleziona i test autorizzati, verifica le dipendenze, configura l'ordine e salva il ciclo.",
     tabTitleModify: "Modifica  ciclo di test",
     tabTitleNewTestCycle: "Crea  ciclo di test",
     btnCreateTestCycle: "crea",

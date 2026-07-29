@@ -149,72 +149,32 @@
       </div>
     </section>
 
-    <section class="testcycles-workspace">
-      <article class="card testcycles-panel">
-        <div class="testcycles-panel-header">
-          <span class="testcycles-section-title">
-            {{ language[config.currentLanguage].TestCycles.tests }}
-          </span>
-          <span class="testcycles-counter">{{ arrayTests.length }}</span>
-        </div>
-        <input
-          class="form-control testcycles-search"
-          type="text"
-          v-model.lazy="testFilter"
-          :placeholder="
-            language[config.currentLanguage].TestCycles.placeholderFilterTest
-          "
-        />
-        <draggable
-          class="dragArea list-group testcycles-list"
-          :list="arrayTests"
-          :group="{ name: 'people', pull: 'clone', put: false }"
-          @change="log"
-          item-key="id"
-        >
-          <template #item="{ element }">
-            <div class="list-group-item testcycles-test-item">
-              <span>{{ element.name }}</span>
-            </div>
-          </template>
-        </draggable>
-      </article>
-
-      <article class="card testcycles-panel testcycles-drop-panel">
-        <div class="testcycles-panel-header">
-          <span class="testcycles-section-title">
-            {{ language[config.currentLanguage].TestCycles.testsToDo }}
-          </span>
-          <span class="testcycles-counter">{{
-            arrayTestsSelectedDragged.length
-          }}</span>
-        </div>
-        <draggable
-          class="dragArea list-group testcycles-list testcycles-selected-list"
-          :class="{ empty: arrayTestsSelectedDragged.length === 0 }"
-          :list="arrayTestsSelectedDragged"
-          group="people"
-          item-key="id"
-          @change="log"
-        >
-          <template #item="{ element, index }">
-            <div class="list-group-item testcycles-test-item selected">
-              <span>{{ element.name }}</span>
-              <button
-                type="button"
-                class="testcycles-remove"
-                v-on:click="deleteItem(index)"
-                :title="language[config.currentLanguage].Actions.remove"
-              >
-                <font-awesome-icon
-                  icon="times-circle"
-                  class="iconClass idelium-action-icon--remove"
-                />
-              </button>
-            </div>
-          </template>
-        </draggable>
-      </article>
+    <section
+      class="testcycles-composition"
+      aria-labelledby="cycle-composition-title"
+    >
+      <header>
+        <h2 id="cycle-composition-title">
+          {{ language[config.currentLanguage].TestCycles.compositionTitle }}
+        </h2>
+        <p>
+          {{
+            language[config.currentLanguage].TestCycles.compositionDescription
+          }}
+        </p>
+      </header>
+      <SequenceBuilder
+        :accessible-label="sequenceBuilderCopy.accessibleLabel"
+        :available-items="builderAvailableTests"
+        :copy="sequenceBuilderCopy"
+        :picker-filters="testCyclePickerFilters"
+        :picker-meta="testCyclePickerMeta"
+        :picker-query="testCyclePickerQuery"
+        :sequence="testCycleSequenceItems"
+        :validation="testCycleValidation"
+        v-on:picker-query-change="handleTestCyclePickerQuery"
+        v-on:update:sequence="updateTestCycleSequence"
+      />
     </section>
   </div>
 </template>
@@ -309,6 +269,16 @@
   display: grid;
   gap: 1.25rem;
   grid-template-columns: minmax(0, 1fr) minmax(22rem, 0.8fr);
+}
+
+.testcycles-composition {
+  display: grid;
+  gap: var(--id-space-4);
+}
+
+.testcycles-composition > header h2,
+.testcycles-composition > header p {
+  margin: 0;
 }
 
 .testcycles-panel {
@@ -420,15 +390,20 @@
 import apiClient from "@/services/apiClient";
 import { getSelectedProjectId } from "@/stores/session";
 import { buildTestCyclePayload } from "@/domain/workflowPayloads";
-
-import draggable from "vuedraggable";
+import {
+  loadPersistedSequence,
+  normalizeSequenceItem,
+  validateSequenceComposition,
+} from "@/domain/sequenceBuilder";
+import SequenceBuilder from "@/components/sequence/SequenceBuilder.vue";
+import english from "@/languages/english";
 import copy from "copy-to-clipboard";
 import { routableTabs } from "@/shared/routableTabs";
 
 export default {
   name: "TestCyclesComponent",
   components: {
-    draggable,
+    SequenceBuilder,
   },
   mixins: [routableTabs("modify", ["modify", "new"])],
   data() {
@@ -455,6 +430,11 @@ export default {
         hasPreviousPage: false,
       },
       testFilter: "",
+      testCyclePickerQuery: {
+        page: 1,
+        search: "",
+        filters: {},
+      },
       disableNameTestCycle: true,
       disableTestCycleDescription: true,
       disableBtnCreateTestCycle: true,
@@ -497,8 +477,105 @@ export default {
     isTestCycleModifyTabDisabled() {
       return this.testCyclesLoaded && this.arrayTestCycles.length === 0;
     },
+    sequenceBuilderCopy() {
+      const dictionary = this.language[this.config.currentLanguage] ?? english;
+      const sequenceCopy =
+        dictionary.SequenceBuilder ?? english.SequenceBuilder;
+      return {
+        ...sequenceCopy,
+        picker: {
+          ...sequenceCopy.picker,
+          states: dictionary.DataTable?.states ?? english.DataTable.states,
+        },
+      };
+    },
+    builderAvailableTests() {
+      return this.arrayTests.map((test) => this.toBuilderTest(test));
+    },
+    testCycleSequenceState() {
+      return loadPersistedSequence(this.arrayTestsSelectedDragged, {
+        availableItems: this.listOriginalTests.map((test) =>
+          this.toBuilderTest(test),
+        ),
+        entityType: "test",
+      });
+    },
+    testCycleSequenceItems() {
+      return this.testCycleSequenceState.items.map((item) => ({
+        ...item.persisted,
+        disabledReason: item.disabledReason,
+        identity: item.identity,
+        metadata: item.metadata,
+        name: item.name,
+        persisted: item.persisted,
+        status: item.status,
+        version: item.version,
+      }));
+    },
+    testCycleValidation() {
+      return validateSequenceComposition(this.testCycleSequenceState, {
+        minimumItems: 1,
+      });
+    },
+    testCyclePickerMeta() {
+      return {
+        page: 1,
+        lastPage: 1,
+        total: this.builderAvailableTests.length,
+        hasNextPage: false,
+        hasPreviousPage: false,
+      };
+    },
+    testCyclePickerFilters() {
+      const runtimes = [
+        ...new Set(
+          this.listOriginalTests
+            .map((test) => test.runtime ?? test.type)
+            .filter(Boolean),
+        ),
+      ];
+      return runtimes.length === 0
+        ? []
+        : [
+            {
+              key: "runtime",
+              label: this.sequenceBuilderCopy.metadata.runtime,
+              options: runtimes.map((runtime) => ({
+                label: runtime,
+                value: runtime,
+              })),
+            },
+          ];
+    },
   },
   methods: {
+    toBuilderTest(test) {
+      const persisted = JSON.parse(JSON.stringify(test));
+      const normalized = normalizeSequenceItem(
+        {
+          ...test,
+          metadata: {
+            runtime: test.runtime ?? test.type ?? "",
+            tags: Array.isArray(test.tags) ? test.tags.join(", ") : "",
+            version: test.version ?? "",
+            status: test.status ?? "active",
+          },
+        },
+        { entityType: "test" },
+      );
+      return { ...normalized, persisted };
+    },
+    updateTestCycleSequence(nextSequence) {
+      this.arrayTestsSelectedDragged = nextSequence.map((item) =>
+        JSON.parse(JSON.stringify(item.persisted)),
+      );
+      this.copyArray();
+    },
+    handleTestCyclePickerQuery(query) {
+      this.testCyclePickerQuery = query;
+      this.testFilter = query.search ?? "";
+      this.searchTextTests(this.testFilter);
+    },
     copyClipboard(text) {
       copy(text);
       this.$wkToast(
@@ -506,9 +583,17 @@ export default {
       );
     },
     searchTextTests(filter) {
-      this.arrayTests = this.listOriginalTests.filter((d) =>
-        d.name.includes(filter),
-      );
+      const search = String(filter ?? "")
+        .trim()
+        .toLowerCase();
+      const runtime = this.testCyclePickerQuery.filters?.runtime;
+      this.arrayTests = this.listOriginalTests.filter((test) => {
+        const matchesSearch =
+          search === "" || String(test.name).toLowerCase().includes(search);
+        const matchesRuntime =
+          !runtime || (test.runtime ?? test.type) === runtime;
+        return matchesSearch && matchesRuntime;
+      });
     },
     normalizeGridResponse(responseData, fallbackMeta) {
       if (Array.isArray(responseData)) {

@@ -204,7 +204,19 @@ payloads.
 
 ## Rollout and rollback
 
-The shared builder will migrate Test Cycle first and Test second after picker,
-reorder, validation, undo, and performance tickets are complete. Rollback restores
-the legacy route component; serialized arrays remain compatible and require no
-data migration.
+Test Cycle is the first migrated route. Existing `config` JSON arrays are loaded
+in their persisted order and each shared-builder item retains an opaque clone of
+the original test object. Add, remove, and reorder operations update the UI
+contract, while create and modify requests serialize only those original objects.
+No builder identity, metadata, status, or position field enters the legacy API
+payload.
+
+The route maps authorized test runtime, tags, version, and status into display
+metadata and exposes runtime filtering. A reference absent from the current
+project-scoped test response remains visible as missing and creates a blocking
+diagnostic; it is never silently removed. Existing modify/new canonical tab
+routes and the empty-cycle fallback remain unchanged.
+
+Rollback restores the legacy Test Cycle dual panel. Because persisted arrays and
+API payloads are unchanged, rollback requires no data migration. Test composition
+is migrated second after this Test Cycle release boundary.

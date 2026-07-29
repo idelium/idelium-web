@@ -591,6 +591,12 @@ function positiveInteger(value, fallback) {
 }
 
 function structuredCloneSafe(value) {
-  if (typeof structuredClone === "function") return structuredClone(value);
+  if (typeof structuredClone === "function") {
+    try {
+      return structuredClone(value);
+    } catch {
+      // Vue reactive proxies use the JSON-compatible persisted fallback.
+    }
+  }
   return JSON.parse(JSON.stringify(value));
 }

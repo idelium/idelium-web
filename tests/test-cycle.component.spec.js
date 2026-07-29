@@ -116,4 +116,98 @@ describe("test-cycle creation component", () => {
       wrapper.find("#nav-tabTitleNewTestCycle-tab").classes(),
     ).not.toContain("active");
   });
+
+  it("maps legacy cycle tests to the shared builder without changing order or payload", async () => {
+    api.get.mockResolvedValue({ data: [] });
+    useSessionStore(pinia).selectProject(9);
+    const wrapper = mountTestCycles();
+    await vi.waitFor(() => expect(wrapper.vm.testCyclesLoaded).toBe(true));
+    const legacyTests = [
+      { id: 7, name: "Postman smoke", type: "postman", config: { retries: 1 } },
+      {
+        id: 3,
+        name: "Selenium login",
+        type: "selenium",
+        config: { retries: 2 },
+      },
+    ];
+
+    await wrapper.setData({
+      arrayTests: legacyTests,
+      listOriginalTests: legacyTests,
+      arrayTestsSelectedDragged: legacyTests,
+    });
+
+    expect(
+      wrapper.vm.testCycleSequenceItems.map((item) => item.identity),
+    ).toEqual(["test:7", "test:3"]);
+    expect(
+      wrapper.vm.testCycleSequenceItems.map((item) => item.persisted),
+    ).toEqual(legacyTests);
+    expect(wrapper.findComponent({ name: "SequenceBuilder" }).exists()).toBe(
+      true,
+    );
+    expect(wrapper.findComponent({ name: "draggable" }).exists()).toBe(false);
+  });
+
+  it("preserves the legacy save shape after keyboard-capable composition", async () => {
+    api.get.mockResolvedValue({ data: [] });
+    useSessionStore(pinia).selectProject(9);
+    const wrapper = mountTestCycles();
+    await vi.waitFor(() => expect(wrapper.vm.testCyclesLoaded).toBe(true));
+    const tests = [
+      { id: 2, name: "Appium checkout", type: "appium" },
+      { id: 1, name: "Selenium login", type: "selenium" },
+    ];
+    await wrapper.setData({
+      arrayTests: tests,
+      listOriginalTests: tests,
+    });
+
+    wrapper.vm.updateTestCycleSequence([
+      wrapper.vm.toBuilderTest(tests[1]),
+      wrapper.vm.toBuilderTest(tests[0]),
+    ]);
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.vm.arrayTestsSelectedDragged).toEqual([tests[1], tests[0]]);
+    expect(wrapper.vm.testCycleValidation.canSave).toBe(true);
+  });
+
+  it("keeps missing test references visible and blocking", async () => {
+    api.get.mockResolvedValue({ data: [] });
+    useSessionStore(pinia).selectProject(9);
+    const wrapper = mountTestCycles();
+    await vi.waitFor(() => expect(wrapper.vm.testCyclesLoaded).toBe(true));
+    await wrapper.setData({
+      arrayTests: [{ id: 1, name: "Available test" }],
+      listOriginalTests: [{ id: 1, name: "Available test" }],
+      arrayTestsSelectedDragged: [{ id: 99, name: "Removed test" }],
+    });
+
+    expect(wrapper.vm.testCycleSequenceItems[0]).toMatchObject({
+      identity: "test:99",
+      status: "missing",
+      disabledReason: "sequence.referenceMissing",
+    });
+    expect(wrapper.vm.testCycleValidation).toMatchObject({ canSave: false });
+    expect(
+      wrapper.vm.testCycleValidation.diagnostics.map((entry) => entry.code),
+    ).toContain("sequence.referenceMissing");
+  });
+
+  it("keeps the canonical new-cycle deep link active on reload", () => {
+    api.get.mockResolvedValue({ data: [] });
+    useSessionStore(pinia).selectProject(9);
+    const wrapper = mountTestCycles({
+      $route: {
+        name: "testcycles",
+        params: { projectId: "9", tab: "new" },
+      },
+    });
+
+    expect(wrapper.find("#nav-tabTitleNewTestCycle-tab").classes()).toContain(
+      "active",
+    );
+  });
 });
