@@ -944,6 +944,22 @@ export default {
           "Seleziona un riferimento segreto valido. I valori segreti non possono essere inseriti qui.",
       },
     },
+    wizard: {
+      accessibleLabel: "Editor visuale della sequenza di step",
+      inspector: "Proprietà dell'azione",
+      actionNumber: "Azione {number}",
+      closeInspector: "Chiudi proprietà",
+      noSummary: "Non è disponibile un riepilogo dell'azione.",
+      runtime: "Runtime",
+      failureBehavior: "Comportamento in caso di errore",
+      screenshotPolicy: "Criterio screenshot",
+      validationStatus: "Validazione",
+      valid: "Valida",
+      invalid: "{count} problemi",
+      notAvailable: "Non configurato",
+      validationDiagnostic:
+        "L'azione {number}, proprietà {property}, richiede attenzione.",
+    },
     diagnostics: {
       malformedConfig:
         "La configurazione salvata dello step non è valida. Apri la modalità JSON per correggerla.",
@@ -969,6 +985,9 @@ export default {
       "Seleziona gli elementi disponibili e aggiungili alla sequenza.",
     removeSelected: "Rimuovi selezionati",
     removeItem: "Rimuovi {name}",
+    configureItem: "Configura {name}",
+    duplicateItem: "Duplica {name}",
+    duplicated: "{name} è stata duplicata.",
     selectItem: "Seleziona {name}",
     undo: "Annulla rimozione",
     position: "Posizione {position}",

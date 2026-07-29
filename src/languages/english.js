@@ -937,6 +937,22 @@ export default {
           "Select a valid secret reference. Secret values cannot be entered here.",
       },
     },
+    wizard: {
+      accessibleLabel: "Visual step sequence editor",
+      inspector: "Action properties",
+      actionNumber: "Action {number}",
+      closeInspector: "Close properties",
+      noSummary: "No action summary is available.",
+      runtime: "Runtime",
+      failureBehavior: "Failure behavior",
+      screenshotPolicy: "Screenshot policy",
+      validationStatus: "Validation",
+      valid: "Valid",
+      invalid: "{count} issues",
+      notAvailable: "Not configured",
+      validationDiagnostic:
+        "Action {number}, property {property} requires attention.",
+    },
     diagnostics: {
       malformedConfig:
         "The saved step configuration is malformed. Open JSON mode to repair it.",
@@ -962,6 +978,9 @@ export default {
       "Select available items and add them to build the sequence.",
     removeSelected: "Remove selected",
     removeItem: "Remove {name}",
+    configureItem: "Configure {name}",
+    duplicateItem: "Duplicate {name}",
+    duplicated: "{name} was duplicated.",
     selectItem: "Select {name}",
     undo: "Undo removal",
     position: "Position {position}",

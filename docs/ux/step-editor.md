@@ -106,6 +106,24 @@ Unknown legacy properties are retained separately and merged back during
 serialization, providing a non-destructive rollback path for compatible schema
 extensions.
 
+## Wizard mode
+
+`WizardStepEditor` composes the shared `SequenceBuilder`,
+`SequenceValidationPanel`, and `SequenceSaveBar`. Authors can add, configure,
+duplicate, multi-select, remove, and reorder actions without drag-and-drop.
+Action instance identities remain stable across reorder, so the open properties
+inspector continues to address the same action. Duplicates receive a deterministic
+instance identity and every rendered sequence child uses that identity as its
+Vue key.
+
+The inspector shows the action number, runtime, summary, failure behavior,
+screenshot policy, and field-level diagnostics. The save action remains disabled
+until sequence validation and required warning acknowledgements pass. A bounded
+history supplies undo and redo; the initial value is retained for discard and
+dirty comparison. Dirty editors register a `beforeunload` safeguard and remove
+it on unmount. Parent routes remain responsible for tenant-authorized save
+requests and server conflict handling.
+
 ## Rollout and rollback
 
 The contract is introduced before replacing the current wizard UI. Existing

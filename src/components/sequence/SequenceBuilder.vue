@@ -91,6 +91,20 @@
           </label>
           <div class="sequence-builder__item-actions">
             <IdButton
+              v-if="showConfigure"
+              variant="primary"
+              v-on:click="$emit('activate', item)"
+            >
+              {{ copy.configureItem.replace("{name}", item.name) }}
+            </IdButton>
+            <IdButton
+              v-if="allowDuplicates"
+              variant="secondary"
+              v-on:click="duplicateItem(item.identity)"
+            >
+              {{ copy.duplicateItem.replace("{name}", item.name) }}
+            </IdButton>
+            <IdButton
               class="sequence-builder__drag-handle"
               variant="ghost"
               draggable="true"
@@ -203,6 +217,7 @@ export default {
     SequenceValidationPanel,
   },
   emits: [
+    "activate",
     "acknowledge-warnings",
     "duplicate",
     "picker-query-change",
@@ -211,6 +226,7 @@ export default {
   ],
   props: {
     accessibleLabel: { type: String, required: true },
+    allowDuplicates: { type: Boolean, default: false },
     availableItems: { type: Array, default: () => [] },
     copy: { type: Object, required: true },
     impactSummary: {
@@ -231,6 +247,7 @@ export default {
     },
     pickerStale: { type: Boolean, default: false },
     sequence: { type: Array, default: () => [] },
+    showConfigure: { type: Boolean, default: false },
     validation: { type: Object, default: null },
   },
   data() {
@@ -353,6 +370,33 @@ export default {
         (item) => item.identity === targetIdentity,
       );
       this.moveItem(sourceIdentity, targetIndex);
+    },
+    duplicateItem(identity) {
+      const sourceIndex = this.sequenceItems.findIndex(
+        (item) => item.identity === identity,
+      );
+      if (sourceIndex < 0) return;
+      const source = this.withoutPosition(this.sequenceItems[sourceIndex]);
+      let copyIndex = 1;
+      let copyIdentity = `${source.identity}:copy:${copyIndex}`;
+      while (this.sequenceIdentitySet.has(copyIdentity)) {
+        copyIndex += 1;
+        copyIdentity = `${source.identity}:copy:${copyIndex}`;
+      }
+      const duplicate = {
+        ...source,
+        identity: copyIdentity,
+        persisted: {
+          ...(source.persisted ?? {}),
+          identity: copyIdentity,
+        },
+      };
+      const next = this.sequenceItems.map(this.withoutPosition);
+      next.splice(sourceIndex + 1, 0, duplicate);
+      this.pendingFocusIdentity = copyIdentity;
+      this.undoEntry = null;
+      this.announcement = this.copy.duplicated.replace("{name}", source.name);
+      this.$emit("update:sequence", next);
     },
     autoScroll(event) {
       event.preventDefault();
