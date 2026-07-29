@@ -1165,6 +1165,39 @@ export default {
         "Il servizio di validazione non ha completato la richiesta. Riprova più tardi.",
     },
   },
+  EnvironmentPreview: {
+    title: "Configurazione risolta",
+    description:
+      "Verifica la rappresentazione approvata e oscurata che può raggiungere un runner.",
+    caption: "Campi risolti della configurazione ambiente",
+    copy: "Copia JSON oscurato",
+    download: "Scarica JSON oscurato",
+    copied: "Configurazione oscurata copiata.",
+    downloaded: "Configurazione oscurata scaricata.",
+    launchWarning:
+      "Le sovrascritture all'avvio possono ancora modificare la configurazione effettiva.",
+    versions:
+      "Contratto {contract} · schema {schema} · catalogo {catalog}",
+    columns: {
+      field: "Campo",
+      source: "Origine",
+      override: "Risoluzione",
+      validation: "Validazione",
+      value: "Anteprima sicura",
+    },
+    sources: {
+      default: "Valore predefinito dello schema",
+      project: "Progetto",
+      environment: "Ambiente",
+      launch: "Avvio",
+    },
+    overridden: "Sovrascritto",
+    inherited: "Ereditato",
+    valid: "Valido",
+    invalid: "Non valido",
+    redacted: "[OSCURATO: {descriptor}]",
+    redactedReference: "[OSCURATO: {descriptor} · {reference}]",
+  },
   StepEditor: {
     shell: {
       accessibleLabel: "Editor degli step riutilizzabili",

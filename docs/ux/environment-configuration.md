@@ -131,6 +131,28 @@ ownership, approved targets, egress policy, bounded logs and artifacts, and
 metadata-only audit retention. Compatibility is additive: existing environment
 save and execution contracts are unchanged.
 
+## Resolved preview and export
+
+The `environment.preview.v1` representation explains the configuration that can
+reach a runner. Every field records its path, non-sensitive source layer,
+override marker, validation state, and safe value. The document also records the
+environment schema version and action-catalogue version required to reproduce
+resolution. A visible warning remains when launch-time overrides can still
+change the effective result.
+
+Preview, clipboard, and download use the same deterministic serializer. Object
+keys and field paths are sorted, external lists and text are bounded, and nested
+content is limited to eight levels. Sensitive keys, authorization text, embedded
+URL credentials, private-key material, explicit secret references, nested
+objects, arrays, and custom fields become stable redaction descriptors. Only an
+opaque safe reference ID may remain as metadata.
+
+The export is a diagnostic artifact, not an executable environment payload.
+Existing persisted and CLI contracts remain unchanged. Tenant authorization and
+final launch-time resolution remain API and runner responsibilities, and
+unredacted configuration must never be copied, downloaded, logged, or added to
+telemetry.
+
 ## Rollout and rollback
 
 The versioned loader can be introduced before route migration because unchanged

@@ -1149,6 +1149,39 @@ export default {
         "The validation service could not complete the request. Try again later.",
     },
   },
+  EnvironmentPreview: {
+    title: "Resolved configuration",
+    description:
+      "Review the approved redacted representation that can reach a runner.",
+    caption: "Resolved environment configuration fields",
+    copy: "Copy redacted JSON",
+    download: "Download redacted JSON",
+    copied: "Redacted configuration copied.",
+    downloaded: "Redacted configuration downloaded.",
+    launchWarning:
+      "Launch-time overrides can still change the effective configuration.",
+    versions:
+      "Contract {contract} · schema {schema} · catalogue {catalog}",
+    columns: {
+      field: "Field",
+      source: "Source",
+      override: "Resolution",
+      validation: "Validation",
+      value: "Safe preview",
+    },
+    sources: {
+      default: "Schema default",
+      project: "Project",
+      environment: "Environment",
+      launch: "Launch",
+    },
+    overridden: "Overridden",
+    inherited: "Inherited",
+    valid: "Valid",
+    invalid: "Invalid",
+    redacted: "[REDACTED: {descriptor}]",
+    redactedReference: "[REDACTED: {descriptor} · {reference}]",
+  },
   StepEditor: {
     shell: {
       accessibleLabel: "Reusable step editor",
