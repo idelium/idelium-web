@@ -844,6 +844,19 @@ export default {
       },
     },
   },
+  SequenceBuilder: {
+    diagnostics: {
+      invalid: "This item is invalid and cannot be selected.",
+      malformed: "The saved sequence is malformed.",
+      duplicate: "This item already exists in the sequence.",
+      limit: "The sequence exceeds the supported item limit.",
+      referenceMissing:
+        "The referenced item is missing or is no longer available.",
+      referenceStale:
+        "A newer version of this item is available. Review it before saving.",
+    },
+    unavailableItem: "Unavailable item",
+  },
   Platforms: {
     platforms: "Platforms",
     os: "Operative Systems",

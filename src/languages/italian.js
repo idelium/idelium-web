@@ -850,6 +850,19 @@ export default {
       },
     },
   },
+  SequenceBuilder: {
+    diagnostics: {
+      invalid: "Questo elemento non è valido e non può essere selezionato.",
+      malformed: "La sequenza salvata non è valida.",
+      duplicate: "Questo elemento è già presente nella sequenza.",
+      limit: "La sequenza supera il limite di elementi supportato.",
+      referenceMissing:
+        "L'elemento referenziato è mancante o non è più disponibile.",
+      referenceStale:
+        "È disponibile una versione più recente. Verificala prima di salvare.",
+    },
+    unavailableItem: "Elemento non disponibile",
+  },
   Platforms: {
     platforms: "Piattaforme",
     os: "Sistemi Operativi",
