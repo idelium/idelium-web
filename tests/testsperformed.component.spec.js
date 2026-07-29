@@ -79,9 +79,18 @@ describe("tests performed component", () => {
                 emptyParallelRuns: "No parallel runs.",
                 cancelRun: "Cancel run",
                 cancelRunTitle: "Cancel parallel execution?",
-                cancelRunMessage: "Ask the server to cancel this run.",
+                cancelRunMessage:
+                  "Ask the server to cancel run #{runId}. Impact {scope}.",
                 confirmCancelRun: "Cancel execution",
                 keepRunning: "Keep running",
+                cancellationStates: {
+                  "cancellation-requested": "Cancellation requested.",
+                  cancelled: "Cancellation confirmed.",
+                  cancelling: "Cancellation is in progress.",
+                  rejected: "Cancellation rejected.",
+                  requested: "Cancellation requested.",
+                  retryable: "Retry safely.",
+                },
                 workerConcurrency: "Active",
                 progress: "Progress",
                 workerCompleted: "Completed",
@@ -882,11 +891,20 @@ describe("tests performed component", () => {
 
     expect(api.post).toHaveBeenCalledWith(
       "/api/projects/9/parallel-runs/92/cancel",
-      {},
-      { headers: {} },
+      {
+        actor: "current-user",
+        reason: "",
+        runId: "92",
+      },
+      {
+        headers: {
+          "Idempotency-Key": "cancel:92:current-user",
+        },
+      },
     );
     expect(wrapper.text()).toContain("Cancelled");
     expect(wrapper.text()).toContain("Classified cancellation.");
+    expect(wrapper.text()).toContain("Cancellation confirmed.");
   });
 
   it("stops polling and aborts pending parallel run requests on unmount", async () => {

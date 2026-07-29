@@ -835,9 +835,17 @@ export default {
     cancelRun: "Cancel run",
     cancelRunTitle: "Cancel parallel execution?",
     cancelRunMessage:
-      "Idelium will ask the server to cancel this run and then refresh the state returned by the API.",
+      "Idelium will ask the server to cancel run #{runId}. Expected impact: {scope} active/requested workers. The UI will show cancelling until durable server state confirms cancellation.",
     confirmCancelRun: "Cancel execution",
     keepRunning: "Keep running",
+    cancellationStates: {
+      "cancellation-requested": "Cancellation requested and awaiting server state.",
+      cancelled: "Cancellation confirmed by durable server state.",
+      cancelling: "Cancellation is in progress.",
+      rejected: "Cancellation was rejected by the server.",
+      requested: "Cancellation requested.",
+      retryable: "Cancellation outcome is unknown. You can retry safely.",
+    },
     workerConcurrency: "Active",
     progress: "Progress",
     workerCompleted: "Completed",

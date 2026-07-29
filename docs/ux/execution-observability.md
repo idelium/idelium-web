@@ -136,6 +136,25 @@ Full-window artifact viewing is route-backed through the canonical execution
 route with `tab=artifacts` and `artifactId`. Closing or navigating back restores
 the previous run context and focused route state.
 
+## Safe run cancellation
+
+Cancellation is available only when the run is still queued, running, or already
+cancelling, and only when the API capability contract authorizes the active
+operator. Terminal runs are not cancellable. Unauthorized cancellation controls
+are hidden and rejected requests fail safely without revealing protected run
+details.
+
+Every cancellation request carries a stable idempotency key for the logical run
+and actor. Repeated clicks or network retries therefore submit the same logical
+request. The UI transitions to `cancelling` after confirmation, but it does not
+display `cancelled` until the durable server state confirms the terminal
+cancelled status.
+
+The local audit envelope records actor, optional reason, request timestamp,
+completion timestamp when returned by the API, retryability, and final outcome.
+Timeout, conflict, network, and server failures are treated as unknown/retryable;
+authorization failures are rejected and are not retried automatically.
+
 ## Legacy compatibility
 
 Legacy status values are still accepted:

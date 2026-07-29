@@ -842,9 +842,18 @@ export default {
     cancelRun: "Annulla run",
     cancelRunTitle: "Annullare l'esecuzione parallela?",
     cancelRunMessage:
-      "Idelium chiederà al server di annullare questo run e aggiornerà lo stato con la risposta dell'API.",
+      "Idelium chiederà al server di annullare il run #{runId}. Impatto previsto: {scope} worker attivi/richiesti. La UI mostrerà annullamento finché lo stato server durevole conferma.",
     confirmCancelRun: "Annulla esecuzione",
     keepRunning: "Mantieni attiva",
+    cancellationStates: {
+      "cancellation-requested":
+        "Annullamento richiesto, in attesa dello stato server.",
+      cancelled: "Annullamento confermato dallo stato server durevole.",
+      cancelling: "Annullamento in corso.",
+      rejected: "Annullamento rifiutato dal server.",
+      requested: "Annullamento richiesto.",
+      retryable: "Esito annullamento sconosciuto. Puoi riprovare in sicurezza.",
+    },
     workerConcurrency: "Attivi",
     progress: "Avanzamento",
     workerCompleted: "Completati",

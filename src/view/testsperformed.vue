@@ -559,6 +559,12 @@
                     .degradedChannel
             }}
           </p>
+          <p
+            v-if="cancellationAudit[run.id]"
+            class="testsperformed-cancellation-audit"
+          >
+            {{ cancellationAuditLabel(run) }}
+          </p>
           <ul
             v-if="parallelResultSummary(run).length > 0"
             class="testsperformed-worker-list"
@@ -1248,6 +1254,15 @@
   padding: 0.7rem;
 }
 
+.testsperformed-cancellation-audit {
+  background: rgba(13, 110, 253, 0.12);
+  border: 1px solid rgba(13, 110, 253, 0.24);
+  border-radius: 0.75rem;
+  color: #b7d6ff;
+  margin: 0 0 0.85rem;
+  padding: 0.7rem;
+}
+
 .testsperformed-cancel-button {
   border-color: rgba(255, 143, 155, 0.42);
   color: #ffd2d7;
@@ -1650,6 +1665,12 @@ import {
   fullArtifactRoute,
   normalizeArtifactCollection,
 } from "@/domain/secureArtifacts";
+import {
+  cancellationEligibility,
+  createCancellationRequest,
+  normalizeCancellationResponse,
+  shouldRetryCancellation,
+} from "@/domain/runCancellation";
 import { getSelectedProjectId } from "@/stores/session";
 
 export default {
@@ -1687,6 +1708,7 @@ export default {
       ],
       parallelRunPoller: null,
       parallelRunAbortController: null,
+      cancellationAudit: {},
       reportDownloadErrors: {},
       reportFormats: ["junit", "json", "markdown", "html"],
       analyticsWindow: "7d",
@@ -2055,7 +2077,8 @@ export default {
       return labels?.[status] || status || labels?.unknown || "Unknown";
     },
     canCancelParallelRun(run) {
-      return normalizeLiveRun(run).canCancel;
+      return cancellationEligibility(normalizeLiveRun(run), ["run.cancel"])
+        .allowed;
     },
     parallelResultSummary(run) {
       return normalizeLiveRun(run).workerSummary;
@@ -2070,6 +2093,18 @@ export default {
       }
       if (run?.status === "failed") return labels.executionFailure;
       return null;
+    },
+    cancellationAuditLabel(run) {
+      const audit = this.cancellationAudit[run.id];
+      const labels =
+        this.language[this.config.currentLanguage].TestsPerformed
+          .cancellationStates;
+      return (
+        labels?.[audit.status] ??
+        labels?.[audit.audit?.outcome] ??
+        labels?.requested ??
+        "Cancellation requested"
+      );
     },
     toggleLiveRunStatus(status) {
       if (this.liveRunStatuses.includes(status)) {
@@ -2518,32 +2553,74 @@ export default {
     },
     async confirmCancelParallelRun(run) {
       const labels = this.language[this.config.currentLanguage].TestsPerformed;
+      const normalizedRun = normalizeLiveRun(run);
+      const request = createCancellationRequest(normalizedRun, {
+        actor: "current-user",
+        capabilities: ["run.cancel"],
+        idempotencyKey:
+          this.cancellationAudit[normalizedRun.id]?.idempotencyKey,
+        requestedAt: new Date(),
+      });
+      if (!request.allowed) return;
       const confirmed = await this.$showConfirm({
         cancelLabel: labels.keepRunning,
         confirmLabel: labels.confirmCancelRun,
-        message: labels.cancelRunMessage,
+        message: labels.cancelRunMessage
+          .replace("{runId}", normalizedRun.id)
+          .replace(
+            "{scope}",
+            `${normalizedRun.activeConcurrency}/${normalizedRun.requestedConcurrency}`,
+          ),
         title: labels.cancelRunTitle,
         variant: "warning",
       });
       if (!confirmed) return;
 
+      this.cancellationAudit = {
+        ...this.cancellationAudit,
+        [normalizedRun.id]: request,
+      };
+      this.parallelRuns = this.parallelRuns.map((parallelRun) =>
+        String(parallelRun.id) === String(normalizedRun.id)
+          ? { ...parallelRun, status: "cancelling" }
+          : parallelRun,
+      );
       this.emitter.emit("showLoader", true);
       apiClient
         .post(
-          this.parallelRunEndpoint(run.id, "/cancel"),
-          {},
+          this.parallelRunEndpoint(normalizedRun.id, "/cancel"),
+          request.body,
           {
-            headers: this.setHeaders(),
+            headers: { ...this.setHeaders(), ...request.headers },
           },
         )
         .then((response) => {
           this.emitter.emit("showLoader", false);
+          const result = normalizeCancellationResponse(response, request);
           this.parallelRuns = this.parallelRuns.map((parallelRun) =>
-            parallelRun.id === run.id ? response.data : parallelRun,
+            String(parallelRun.id) === String(normalizedRun.id)
+              ? { ...parallelRun, ...result.run }
+              : parallelRun,
           );
+          this.cancellationAudit = {
+            ...this.cancellationAudit,
+            [normalizedRun.id]: {
+              ...request,
+              audit: result.audit,
+              status: result.uiState,
+            },
+          };
         })
         .catch((e) => {
           this.emitter.emit("showLoader", false);
+          this.cancellationAudit = {
+            ...this.cancellationAudit,
+            [normalizedRun.id]: {
+              ...request,
+              retryable: shouldRetryCancellation(e),
+              status: shouldRetryCancellation(e) ? "retryable" : "rejected",
+            },
+          };
           this.Logout(this, e);
           this.error = e;
         });
