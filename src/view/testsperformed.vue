@@ -480,6 +480,9 @@
       <p class="sr-only" aria-live="polite">
         {{ liveRunAnnouncement }}
       </p>
+      <p class="testsperformed-live-transport" aria-live="polite">
+        {{ liveTransportLabel }}
+      </p>
       <div
         v-if="visibleLiveRuns.length > 0"
         class="testsperformed-parallel-grid"
@@ -1322,6 +1325,15 @@
   padding: 0.7rem;
 }
 
+.testsperformed-live-transport {
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  margin: -0.25rem 0 0;
+  text-transform: uppercase;
+}
+
 .testsperformed-cancellation-audit {
   background: rgba(13, 110, 253, 0.12);
   border: 1px solid rgba(13, 110, 253, 0.24);
@@ -1708,10 +1720,13 @@ import {
 } from "@/domain/resultAnalytics";
 import {
   boundedLiveRunAnnouncements,
+  createLivePollingState,
   filterLiveRuns,
   liveRunStatusVariant,
   mergeLiveRunWindow,
+  nextLivePollingState,
   normalizeLiveRun,
+  shouldContinueLivePolling,
 } from "@/domain/liveRuns";
 import {
   buildRunHistoryQuery,
@@ -1781,6 +1796,7 @@ export default {
       ],
       parallelRunPoller: null,
       parallelRunAbortController: null,
+      livePollingState: createLivePollingState(),
       cancellationAudit: {},
       retryAudit: {},
       reportDownloadErrors: {},
@@ -2011,6 +2027,20 @@ export default {
         3,
       ).join(". ");
     },
+    liveTransportLabel() {
+      const labels = this.language[this.config.currentLanguage].TestsPerformed;
+      const state = this.livePollingState;
+      const updated = state.lastUpdatedAt
+        ? new Date(state.lastUpdatedAt).toLocaleTimeString()
+        : labels.liveTransportPending;
+      const status = state.degraded
+        ? labels.liveTransportDegraded
+        : labels.liveTransportHealthy;
+      return labels.liveTransportStatus
+        .replace("{transport}", labels.liveTransportPolling)
+        .replace("{status}", status)
+        .replace("{updated}", updated);
+    },
   },
   watch: {
     $route() {
@@ -2027,6 +2057,12 @@ export default {
     this.getTestCycles({ restoreFromRoute: true });
     this.loadParallelRuns();
     this.startParallelRunPolling();
+    if (typeof document !== "undefined") {
+      document.addEventListener(
+        "visibilitychange",
+        this.handleLiveVisibilityChange,
+      );
+    }
     this.emitter.on("refreshTestCyclePerformed", (msg) => {
       if (msg == true) {
         this.getTestCycles({ restoreFromRoute: true });
@@ -2036,6 +2072,12 @@ export default {
   },
   beforeUnmount() {
     this.stopParallelRunPolling();
+    if (typeof document !== "undefined") {
+      document.removeEventListener(
+        "visibilitychange",
+        this.handleLiveVisibilityChange,
+      );
+    }
   },
   methods: {
     getVariant(status) {
@@ -2152,22 +2194,37 @@ export default {
             Array.isArray(response.data) ? response.data : [],
             { projectId: getSelectedProjectId() },
           );
+          this.livePollingState = nextLivePollingState(
+            this.livePollingState,
+            {
+              baseDelayMs: this.config.timeCheck || 5000,
+              hidden: this.isDocumentHidden(),
+            },
+          );
+          this.scheduleNextParallelRunPoll();
         })
         .catch((e) => {
           if (e?.code === "ERR_CANCELED") return;
+          this.livePollingState = nextLivePollingState(
+            this.livePollingState,
+            {
+              baseDelayMs: this.config.timeCheck || 5000,
+              error: e,
+              hidden: this.isDocumentHidden(),
+            },
+          );
+          this.scheduleNextParallelRunPoll();
           this.Logout(this, e);
           this.error = e;
         });
     },
     startParallelRunPolling() {
       if (this.parallelRunPoller != null) return;
-      this.parallelRunPoller = window.setInterval(() => {
-        this.loadParallelRuns();
-      }, this.config.timeCheck || 5000);
+      this.scheduleNextParallelRunPoll();
     },
     stopParallelRunPolling() {
       if (this.parallelRunPoller != null) {
-        window.clearInterval(this.parallelRunPoller);
+        window.clearTimeout(this.parallelRunPoller);
         this.parallelRunPoller = null;
       }
       this.cancelParallelRunRequest();
@@ -2175,6 +2232,38 @@ export default {
     cancelParallelRunRequest() {
       this.parallelRunAbortController?.abort();
       this.parallelRunAbortController = null;
+    },
+    scheduleNextParallelRunPoll() {
+      if (this.parallelRunPoller != null) {
+        window.clearTimeout(this.parallelRunPoller);
+        this.parallelRunPoller = null;
+      }
+      if (
+        !shouldContinueLivePolling(this.parallelRuns, {
+          routeActive: this.$route?.name !== "login",
+        })
+      ) {
+        return;
+      }
+      this.parallelRunPoller = window.setTimeout(() => {
+        this.parallelRunPoller = null;
+        this.loadParallelRuns();
+      }, this.livePollingState.nextDelayMs);
+    },
+    handleLiveVisibilityChange() {
+      this.livePollingState = createLivePollingState({
+        ...this.livePollingState,
+        hidden: this.isDocumentHidden(),
+        nextDelayMs: this.isDocumentHidden()
+          ? Math.max(this.livePollingState.nextDelayMs, 20_000)
+          : this.config.timeCheck || 5000,
+      });
+      this.stopParallelRunPolling();
+      if (!this.isDocumentHidden()) this.loadParallelRuns();
+      this.startParallelRunPolling();
+    },
+    isDocumentHidden() {
+      return typeof document !== "undefined" && document.hidden === true;
     },
     parallelRunVariant(status) {
       return liveRunStatusVariant(status);

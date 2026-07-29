@@ -75,6 +75,12 @@ describe("tests performed component", () => {
                 liveRuns: "Live runs workspace",
                 parallelRunsDescription: "Monitor distributed runs.",
                 liveRunsDescription: "Track live execution telemetry.",
+                liveTransportStatus:
+                  "Live updates: {transport} · {status} · Last updated {updated}",
+                liveTransportPolling: "secure polling",
+                liveTransportHealthy: "connected",
+                liveTransportDegraded: "retrying",
+                liveTransportPending: "pending",
                 parallelRunLabel: "Run",
                 emptyParallelRuns: "No parallel runs.",
                 cancelRun: "Cancel run",
@@ -1000,9 +1006,34 @@ describe("tests performed component", () => {
     expect(wrapper.vm.arrayTestCyclesDate[0].status).toBe("failed");
   });
 
+  it("shows degraded live transport state and schedules bounded fallback polling", async () => {
+    vi.useFakeTimers();
+    api.get.mockRejectedValue({
+      code: "ERR_NETWORK",
+      message: "token=abc123 failed",
+      response: { status: 503 },
+    });
+
+    const wrapper = mountTestsPerformed();
+
+    await vi.waitFor(() =>
+      expect(wrapper.vm.livePollingState.degraded).toBe(true),
+    );
+
+    expect(wrapper.text()).toContain("retrying");
+    expect(wrapper.vm.livePollingState.lastError).toEqual({
+      code: "ERR_NETWORK",
+      message: "token=[REDACTED] failed",
+      status: 503,
+    });
+    expect(wrapper.vm.livePollingState.nextDelayMs).toBeGreaterThan(5000);
+
+    wrapper.unmount();
+  });
+
   it("stops polling and aborts pending parallel run requests on unmount", async () => {
     vi.useFakeTimers();
-    const clearIntervalSpy = vi.spyOn(window, "clearInterval");
+    const clearTimeoutSpy = vi.spyOn(window, "clearTimeout");
     const abort = vi.fn();
     const originalAbortController = global.AbortController;
     global.AbortController = vi.fn(function AbortController() {
@@ -1013,7 +1044,7 @@ describe("tests performed component", () => {
     const wrapper = mountTestsPerformed();
     wrapper.unmount();
 
-    expect(clearIntervalSpy).toHaveBeenCalled();
+    expect(clearTimeoutSpy).toHaveBeenCalled();
     expect(abort).toHaveBeenCalled();
 
     global.AbortController = originalAbortController;

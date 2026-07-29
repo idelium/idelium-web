@@ -829,6 +829,12 @@ export default {
       "Monitor queued, active, completed, failed, and cancelled distributed runs from the server state.",
     liveRunsDescription:
       "Track queued, running, cancelling, and recently completed executions with bounded live telemetry.",
+    liveTransportStatus:
+      "Live updates: {transport} · {status} · Last updated {updated}",
+    liveTransportPolling: "secure polling",
+    liveTransportHealthy: "connected",
+    liveTransportDegraded: "retrying",
+    liveTransportPending: "pending",
     parallelRunLabel: "Run",
     emptyParallelRuns:
       "No parallel executions are currently tracked for this project.",

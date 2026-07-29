@@ -180,6 +180,28 @@ and actor. Confirmation is required before submission. When the API creates the
 derived run, the UI redirects to the canonical execution-detail route for the
 new run and preserves the trace back to the source run.
 
+## Resilient live updates and fallback polling
+
+The supported execution-observability transport is authenticated HTTP polling
+against the project-scoped parallel-run endpoint. The application does not rely
+on the Vite development WebSocket for execution state, so a missing development
+hot-reload socket cannot interrupt run monitoring.
+
+Live payloads are merged with sequence awareness. Older sequence identifiers do
+not overwrite newer durable state, and progress never regresses when updates
+arrive out of order after reconnect, browser tab suspension, or API retry.
+
+Polling uses bounded exponential backoff with jitter after failures. The client
+reduces update frequency for hidden tabs, resumes with an immediate refresh when
+the tab becomes visible, and stops polling after the visible run window contains
+only terminal runs or when the route is left. Transport diagnostics expose only
+redacted status, code, and safe message metadata; session tokens, authorization
+headers, cookies, and API keys are never rendered or logged.
+
+The live panel shows the active transport, connection health, and last-updated
+time. Degraded state is intentionally neutral: it tells the operator that the UI
+is retrying without implying that the underlying execution failed.
+
 ## Legacy compatibility
 
 Legacy status values are still accepted:

@@ -836,6 +836,12 @@ export default {
       "Monitora run distribuiti in coda, attivi, completati, falliti e cancellati usando lo stato restituito dal server.",
     liveRunsDescription:
       "Traccia esecuzioni in coda, attive, in annullamento e recenti con telemetria live limitata.",
+    liveTransportStatus:
+      "Aggiornamenti live: {transport} · {status} · Ultimo aggiornamento {updated}",
+    liveTransportPolling: "polling sicuro",
+    liveTransportHealthy: "connesso",
+    liveTransportDegraded: "retry in corso",
+    liveTransportPending: "in attesa",
     parallelRunLabel: "Run",
     emptyParallelRuns:
       "Non ci sono esecuzioni parallele tracciate per questo progetto.",

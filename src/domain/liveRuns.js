@@ -6,6 +6,9 @@ import {
 
 const DEFAULT_WINDOW_SIZE = 50;
 const STALE_AFTER_MS = 30_000;
+const DEFAULT_POLLING_INTERVAL_MS = 5_000;
+const MAX_POLLING_INTERVAL_MS = 60_000;
+const HIDDEN_TAB_MULTIPLIER = 4;
 
 export function normalizeLiveRun(payload = {}, options = {}) {
   const lastUpdateAt = safeIsoTimestamp(
@@ -137,6 +140,77 @@ export function boundedLiveRunAnnouncements(runs, labels = {}, limit = 3) {
     });
 }
 
+export function createLivePollingState(overrides = {}) {
+  return {
+    attempt: nonNegativeInteger(overrides.attempt),
+    degraded: Boolean(overrides.degraded),
+    hidden: Boolean(overrides.hidden),
+    lastError: normalizeTransportDiagnostic(overrides.lastError),
+    lastUpdatedAt: safeIsoTimestamp(overrides.lastUpdatedAt),
+    nextDelayMs: positiveInteger(
+      overrides.nextDelayMs,
+      DEFAULT_POLLING_INTERVAL_MS,
+    ),
+    transport: "polling",
+  };
+}
+
+export function nextLivePollingState(previous = {}, result = {}) {
+  const previousState = createLivePollingState(previous);
+  const failed = Boolean(result.error);
+  const attempt = failed ? previousState.attempt + 1 : 0;
+  return createLivePollingState({
+    attempt,
+    degraded: failed || Boolean(result.degraded),
+    hidden: Boolean(result.hidden),
+    lastError: failed ? result.error : null,
+    lastUpdatedAt: failed ? previousState.lastUpdatedAt : new Date(),
+    nextDelayMs: nextLivePollingDelay({
+      attempt,
+      baseDelayMs: result.baseDelayMs,
+      hidden: result.hidden,
+      jitterSeed: result.jitterSeed,
+    }),
+  });
+}
+
+export function nextLivePollingDelay(options = {}) {
+  const baseDelay = positiveInteger(
+    options.baseDelayMs,
+    DEFAULT_POLLING_INTERVAL_MS,
+  );
+  const attempt = Math.min(nonNegativeInteger(options.attempt), 6);
+  const backoff = baseDelay * 2 ** attempt;
+  const jitter = Math.round(
+    Math.min(baseDelay, 1_000) * boundedFraction(options.jitterSeed),
+  );
+  const hiddenMultiplier = options.hidden ? HIDDEN_TAB_MULTIPLIER : 1;
+  return Math.min(
+    (backoff + jitter) * hiddenMultiplier,
+    MAX_POLLING_INTERVAL_MS,
+  );
+}
+
+export function shouldContinueLivePolling(runs, options = {}) {
+  if (options.routeActive === false) return false;
+  const normalizedRuns = safeArray(runs).map((run) => normalizeLiveRun(run));
+  if (normalizedRuns.length === 0) return true;
+  return normalizedRuns.some((run) => !run.terminal);
+}
+
+export function normalizeTransportDiagnostic(error) {
+  if (!error) return null;
+  const status = nonNegativeInteger(error.status ?? error.response?.status);
+  const code = safeIdentifier(error.code ?? error.name ?? "transport-error");
+  return {
+    code,
+    message: redactDiagnostic(
+      error.message ?? error.response?.data?.message ?? "Live update failed",
+    ),
+    status,
+  };
+}
+
 export function liveRunStatusVariant(status) {
   const normalized = normalizeExecutionStatus(status);
   if (normalized === EXECUTION_STATUSES.PASSED) return "success";
@@ -229,6 +303,27 @@ function safeText(value) {
 
 function safeArray(value) {
   return Array.isArray(value) ? value : [];
+}
+
+function redactDiagnostic(value) {
+  return safeText(value)
+    .replace(
+      /authorization\s+bearer\s+[^\s,;]+/gi,
+      "authorization Bearer [REDACTED]",
+    )
+    .replace(/bearer\s+[^\s,;]+/gi, "Bearer [REDACTED]")
+    .replace(/authorization([:=]+\s*)[^\s,;]+/gi, "authorization$1[REDACTED]")
+    .replace(
+      /(cookie|password|secret|session|token|x-api-key)([=: ]+)[^\s,;]+/gi,
+      "$1$2[REDACTED]",
+    );
+}
+
+function boundedFraction(seed) {
+  if (typeof seed === "number" && Number.isFinite(seed)) {
+    return Math.min(Math.max(seed, 0), 1);
+  }
+  return 0.25;
 }
 
 function nonNegativeNumber(value) {

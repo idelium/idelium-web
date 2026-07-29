@@ -2,10 +2,15 @@ import { describe, expect, it } from "vitest";
 
 import {
   boundedLiveRunAnnouncements,
+  createLivePollingState,
   filterLiveRuns,
   liveRunStatusVariant,
   mergeLiveRunWindow,
+  nextLivePollingDelay,
+  nextLivePollingState,
   normalizeLiveRun,
+  normalizeTransportDiagnostic,
+  shouldContinueLivePolling,
 } from "@/domain/liveRuns";
 
 describe("live runs workspace contract", () => {
@@ -120,5 +125,85 @@ describe("live runs workspace contract", () => {
     expect(announcements).toEqual(["A: Running, 1/2", "B: Passed, 2/2"]);
     expect(liveRunStatusVariant("failed")).toBe("danger");
     expect(liveRunStatusVariant("mystery")).toBe("secondary");
+  });
+
+  it("backs off bounded polling and slows hidden tabs", () => {
+    expect(
+      nextLivePollingDelay({
+        attempt: 2,
+        baseDelayMs: 1000,
+        hidden: false,
+        jitterSeed: 0,
+      }),
+    ).toBe(4000);
+    expect(
+      nextLivePollingDelay({
+        attempt: 2,
+        baseDelayMs: 1000,
+        hidden: true,
+        jitterSeed: 0,
+      }),
+    ).toBe(16000);
+    expect(
+      nextLivePollingDelay({
+        attempt: 99,
+        baseDelayMs: 5000,
+        hidden: true,
+        jitterSeed: 1,
+      }),
+    ).toBe(60000);
+  });
+
+  it("resets polling after success and redacts transport diagnostics", () => {
+    const failed = nextLivePollingState(createLivePollingState(), {
+      baseDelayMs: 1000,
+      error: {
+        code: "ERR_NETWORK",
+        message: "token=abc123 authorization Bearer abc123 failed",
+        status: 503,
+      },
+      jitterSeed: 0,
+    });
+
+    expect(failed).toMatchObject({
+      attempt: 1,
+      degraded: true,
+      lastError: {
+        code: "ERR_NETWORK",
+        message: "token=[REDACTED] authorization Bearer [REDACTED] failed",
+        status: 503,
+      },
+      nextDelayMs: 2000,
+      transport: "polling",
+    });
+    expect(
+      nextLivePollingState(failed, { baseDelayMs: 1000, jitterSeed: 0 }),
+    ).toMatchObject({
+      attempt: 0,
+      degraded: false,
+      lastError: null,
+      nextDelayMs: 1000,
+    });
+    expect(
+      normalizeTransportDiagnostic({ message: "cookie=session123" }).message,
+    ).toBe("cookie=[REDACTED]");
+  });
+
+  it("stops polling on terminal-only windows or route exit", () => {
+    expect(
+      shouldContinueLivePolling([{ id: 1, status: "passed" }], {
+        routeActive: true,
+      }),
+    ).toBe(false);
+    expect(
+      shouldContinueLivePolling([{ id: 1, status: "running" }], {
+        routeActive: true,
+      }),
+    ).toBe(true);
+    expect(
+      shouldContinueLivePolling([{ id: 1, status: "running" }], {
+        routeActive: false,
+      }),
+    ).toBe(false);
   });
 });
