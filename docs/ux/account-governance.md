@@ -46,6 +46,19 @@ Every mutation uses an idempotency key derived from operation, tenant, target
 account, and actor. Audit records contain actor, timestamp, target account,
 tenant, operation, outcome, role, status, and reason when provided.
 
+## Invitation-based creation
+
+New accounts are created through invitations, not administrator-selected
+passwords. The invitation request collects email, display name, role, and an
+optional approved team or customer assignment. The API is responsible for
+validating tenant membership, role assignment capability, duplicate accounts,
+and delivery policy.
+
+The UI must not display or log invitation tokens. Delivery feedback is generic
+so duplicate or cross-tenant conditions do not reveal protected account
+existence. Repeated submissions use an idempotency key derived from tenant,
+email, role, and actor to prevent uncontrolled duplicate invitations.
+
 ## Protected invariants
 
 The API must independently enforce:

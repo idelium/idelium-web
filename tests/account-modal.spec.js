@@ -38,6 +38,10 @@ describe("account modal", () => {
                 emailHelp: "The email address is used as the sign-in account.",
                 formHelp:
                   "Create an account by filling only the fields managed by Idelium.",
+                invitationFormHelp:
+                  "Invite the user by email and assign the role they will receive after activation.",
+                invitationExpiryHelp:
+                  "Idelium sends an activation invitation. The administrator never enters the user's password.",
                 modifyFormHelp:
                   "This form updates only the editable account profile fields saved by Idelium.",
                 name: "name",
@@ -70,7 +74,7 @@ describe("account modal", () => {
     });
   }
 
-  it("renders a localized form matching the account creation payload fields", async () => {
+  it("renders an invitation form without administrator-entered password fields", async () => {
     const wrapper = mountAccountModal();
 
     wrapper.vm.showModal(null, "new");
@@ -81,11 +85,9 @@ describe("account modal", () => {
       "user@example.com",
     );
     expect(wrapper.find("label[for='account-name']").text()).toBe("name");
-    expect(wrapper.find("label[for='account-password']").text()).toBe(
-      "password",
-    );
-    expect(wrapper.find("label[for='account-confirm-password']").text()).toBe(
-      "confirm password",
+    expect(wrapper.find("label[for='account-password']").exists()).toBe(false);
+    expect(wrapper.find("label[for='account-confirm-password']").exists()).toBe(
+      false,
     );
     expect(wrapper.find("label[for='account-role']").text()).toBe("role");
     expect(wrapper.find("label[for='account-customer']").text()).toBe(
@@ -93,8 +95,8 @@ describe("account modal", () => {
     );
     expect(wrapper.findAll("#account-email")).toHaveLength(1);
     expect(wrapper.findAll("#account-name")).toHaveLength(1);
-    expect(wrapper.findAll("#account-password")).toHaveLength(1);
-    expect(wrapper.findAll("#account-confirm-password")).toHaveLength(1);
+    expect(wrapper.findAll("#account-password")).toHaveLength(0);
+    expect(wrapper.findAll("#account-confirm-password")).toHaveLength(0);
     expect(wrapper.findAll("#account-role")).toHaveLength(1);
     expect(wrapper.findAll("#account-customer")).toHaveLength(1);
     expect(wrapper.findAll("#accountModal")).toHaveLength(1);
@@ -102,14 +104,12 @@ describe("account modal", () => {
     expect(wrapper.text()).not.toContain("Modal title");
   });
 
-  it("emits only the fields persisted by the account endpoint", () => {
+  it("emits only invitation fields during account creation", () => {
     const wrapper = mountAccountModal();
 
     wrapper.vm.showModal(null, "new");
     wrapper.vm.email = "user@example.com";
     wrapper.vm.name = "User Example";
-    wrapper.vm.password = "Password1";
-    wrapper.vm.confirmPassword = "Password1";
     wrapper.vm.selectedRole = 2;
     wrapper.vm.selectedCostumer = 7;
 
@@ -120,7 +120,6 @@ describe("account modal", () => {
       id: null,
       idCostumer: 7,
       name: "User Example",
-      password: "Password1",
       role: 2,
       type: "new",
     });

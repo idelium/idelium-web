@@ -42,6 +42,7 @@
 <script>
 import EnterpriseListingGrid from "@/components/grid/EnterpriseListingGrid.vue";
 import EnterpriseListingPage from "@/components/grid/EnterpriseListingPage.vue";
+import { createAccountInvitationRequest } from "@/domain/accountGovernance";
 import {
   parseGridResponse,
   parseGridRouteQuery,
@@ -329,23 +330,38 @@ export default {
         });
     },
     insertAccount(data) {
+      const request = createAccountInvitationRequest(data, {
+        actor: "current-user",
+        allowedRoleIds: this.arrayRoles.map((role) => role.id),
+        capabilities: ["account.invite"],
+        existingAccounts: this.arrayAccounts,
+        tenantId: data.idCostumer || "current-tenant",
+      });
+      if (!request.allowed) {
+        this.error = {
+          safeErrors: request.errors,
+          safeFeedback: this.copy.invitationSafeFailure,
+        };
+        return Promise.resolve();
+      }
       return apiClient
         .post(
-          this.config.serviceBaseUrl + this.config.url.accounts,
-          {
-            name: data.name,
-            email: data.email,
-            password: data.password,
-            role: data.role,
-            idCostumer: data.idCostumer,
-          },
-          { headers: this.setHeaders() },
+          this.accountInvitationEndpoint(),
+          request.body,
+          { headers: { ...this.setHeaders(), ...request.headers } },
         )
         .then(() => this.getAccounts())
         .catch((error) => {
           this.error = error;
           this.Logout(this, error);
         });
+    },
+    accountInvitationEndpoint() {
+      return (
+        this.config.serviceBaseUrl +
+        (this.config.url.accountInvitations ||
+          `${this.config.url.accounts}/invitations`)
+      );
     },
     updateAccount(data) {
       return apiClient

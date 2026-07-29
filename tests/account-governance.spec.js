@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   ACCOUNT_GOVERNANCE_CONTRACT_VERSION,
   accountOperationContract,
+  createAccountInvitationRequest,
   legacyAccountCompatibility,
   normalizeAccountDescriptor,
   roleMetadata,
@@ -115,6 +116,61 @@ describe("account lifecycle and role governance contract", () => {
       body: { roleId: "admin" },
       transition: { nextStatus: "active" },
     });
+  });
+
+  it("builds safe idempotent invitation requests without administrator passwords or tokens", () => {
+    expect(
+      createAccountInvitationRequest(
+        {
+          email: "New.User@IDELIUM.ORG",
+          idCostumer: "team-1",
+          name: "New User",
+          password: "must-not-be-used",
+          role: "2",
+        },
+        {
+          actor: "admin@idelium.org",
+          allowedRoleIds: ["1", "2"],
+          capabilities: ["account.invite"],
+          existingAccounts: [],
+          tenantId: "tenant-1",
+        },
+      ),
+    ).toMatchObject({
+      allowed: true,
+      body: {
+        displayName: "New User",
+        email: "new.user@idelium.org",
+        roleId: "2",
+        teamId: "team-1",
+        tenantId: "tenant-1",
+      },
+      headers: {
+        "Idempotency-Key":
+          "account:invite:tenant-1:new.user@idelium.org:2:admin@idelium.org",
+      },
+      safeFeedback: "invitation-requested",
+    });
+    const invalid = createAccountInvitationRequest(
+      {
+        email: "existing@idelium.org",
+        name: "",
+        role: "admin",
+      },
+      {
+        actor: "admin@idelium.org",
+        capabilities: ["account.invite"],
+        existingAccounts: [{ email: "existing@idelium.org" }],
+        tenantId: "tenant-1",
+      },
+    );
+    expect(invalid).toMatchObject({ allowed: false, status: "invalid" });
+    expect(invalid.errors.map((error) => error.code)).toEqual([
+      "required",
+      "duplicate",
+    ]);
+    expect(JSON.stringify(invalid)).not.toContain("token");
+    expect(JSON.stringify(invalid)).not.toContain("must-not-be-used");
   });
 
   it("rejects invalid transitions, forged tenants, self-modification, and last-admin removal", () => {

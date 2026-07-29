@@ -30,7 +30,7 @@
               {{
                 isModifyType
                   ? language[config.currentLanguage].Accounts.modifyFormHelp
-                  : language[config.currentLanguage].Accounts.createFormHelp
+                  : language[config.currentLanguage].Accounts.invitationFormHelp
               }}
             </div>
             <div class="mb-3" v-if="!isModifyType">
@@ -91,7 +91,10 @@
                 {{ language[config.currentLanguage].Accounts.nameHelp }}
               </div>
             </div>
-            <div class="mb-3">
+            <div class="account-invitation-notice" v-if="!isModifyType">
+              {{ language[config.currentLanguage].Accounts.invitationExpiryHelp }}
+            </div>
+            <div class="mb-3" v-if="isModifyType">
               <label class="form-label" for="account-password">
                 {{ language[config.currentLanguage].Profile.password }}
               </label>
@@ -109,7 +112,7 @@
                 {{ language[config.currentLanguage].Accounts.passwordHelp }}
               </div>
             </div>
-            <div class="mb-3">
+            <div class="mb-3" v-if="isModifyType">
               <label class="form-label" for="account-confirm-password">
                 {{ language[config.currentLanguage].Profile.confirmPassword }}
               </label>
@@ -282,8 +285,6 @@ export default {
         }
       } else {
         if (
-          this.checkPassword == false ||
-          this.password != this.confirmPassword ||
           this.selectedRole == null ||
           (this.selectedCostumer == null && this.isSuperAdmin == true) ||
           this.email.length < 3 ||
@@ -348,10 +349,12 @@ export default {
     sendData() {
       let sendData = {
         name: this.name,
-        password: this.password,
         id: this.dataAccount.id,
         type: this.type,
       };
+      if (this.type == "modify") {
+        sendData.password = this.password;
+      }
       if (this.type == "new") {
         sendData.email = this.email;
         sendData.role = this.selectedRole;
@@ -369,3 +372,17 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.account-invitation-notice {
+  background: rgba(13, 202, 240, 0.1);
+  border: 1px solid rgba(13, 202, 240, 0.28);
+  border-radius: 0.8rem;
+  color: rgba(244, 244, 245, 0.82);
+  font-size: 0.85rem;
+  font-weight: 700;
+  line-height: 1.55;
+  margin-bottom: 1rem;
+  padding: 0.85rem;
+}
+</style>

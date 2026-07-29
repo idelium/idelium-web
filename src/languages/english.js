@@ -1139,6 +1139,12 @@ export default {
       "Create an account by filling only the fields managed by Idelium.",
     createFormHelp:
       "This form creates the sign-in account and assigns the customer and role used at first access.",
+    invitationFormHelp:
+      "Invite the user by email and assign the role they will receive after activation.",
+    invitationExpiryHelp:
+      "Idelium sends an activation invitation. The administrator never enters the user's password, and invitation delivery feedback is intentionally generic.",
+    invitationSafeFailure:
+      "The invitation could not be submitted. Check the visible fields or contact an administrator.",
     modifyFormHelp:
       "This form updates only the editable account profile fields saved by Idelium.",
     placeholderEmail: "user@example.com",

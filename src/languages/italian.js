@@ -1149,6 +1149,12 @@ export default {
     formHelp: "Crea un account compilando solo i campi gestiti da Idelium.",
     createFormHelp:
       "Questa form crea l'account di accesso e assegna cliente e ruolo usati al primo accesso.",
+    invitationFormHelp:
+      "Invita l'utente via email e assegna il ruolo che riceverà dopo l'attivazione.",
+    invitationExpiryHelp:
+      "Idelium invia un invito di attivazione. L'amministratore non inserisce mai la password dell'utente e il feedback di consegna è volutamente generico.",
+    invitationSafeFailure:
+      "Non è stato possibile inviare l'invito. Controlla i campi visibili o contatta un amministratore.",
     modifyFormHelp:
       "Questa form aggiorna solo i campi profilo account modificabili e salvati da Idelium.",
     placeholderEmail: "utente@example.com",

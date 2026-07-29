@@ -154,6 +154,87 @@ export function accountOperationContract(
   };
 }
 
+export function createAccountInvitationRequest(model = {}, options = {}) {
+  const requestedRoleId = safeIdentifier(
+    model.roleId ?? model.role,
+  ).toLowerCase();
+  const allowedRoleIds = new Set(
+    safeArray(options.allowedRoleIds).map((roleId) =>
+      safeIdentifier(roleId).toLowerCase(),
+    ),
+  );
+  const normalized = {
+    displayName: safeText(model.name ?? model.displayName),
+    email: safeEmail(model.email),
+    roleId: requestedRoleId,
+    teamId: safeIdentifier(model.teamId ?? model.idCostumer),
+    tenantId: safeIdentifier(model.tenantId ?? options.tenantId),
+  };
+  const errors = [];
+  if (
+    !normalized.email ||
+    !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(normalized.email)
+  ) {
+    errors.push({ field: "email", code: "invalid-email" });
+  }
+  if (!normalized.displayName) {
+    errors.push({ field: "displayName", code: "required" });
+  }
+  if (
+    !ROLE_DEFINITIONS[requestedRoleId] &&
+    !allowedRoleIds.has(requestedRoleId)
+  ) {
+    errors.push({ field: "roleId", code: "invalid-role" });
+  }
+  if (
+    safeArray(options.existingAccounts).some(
+      (account) =>
+        safeEmail(account.email ?? account.account) === normalized.email,
+    )
+  ) {
+    errors.push({ field: "email", code: "duplicate" });
+  }
+  const authorization = accountAuthorization(
+    "invite",
+    { tenantId: normalized.tenantId },
+    options,
+  );
+  if (!authorization.allowed) {
+    return {
+      allowed: false,
+      authorization,
+      errors: [{ field: "capability", code: authorization.reason }],
+      reason: authorization.reason,
+      status: "rejected",
+    };
+  }
+  if (errors.length > 0) {
+    return { allowed: false, errors, status: "invalid" };
+  }
+  return {
+    allowed: true,
+    body: {
+      displayName: normalized.displayName,
+      email: normalized.email,
+      roleId: normalized.roleId,
+      teamId: normalized.teamId || null,
+      tenantId: normalized.tenantId,
+    },
+    headers: {
+      "Idempotency-Key": [
+        "account",
+        "invite",
+        normalized.tenantId,
+        normalized.email,
+        normalized.roleId,
+        safeIdentifier(options.actor ?? "actor"),
+      ].join(":"),
+    },
+    safeFeedback: "invitation-requested",
+    status: "ready",
+  };
+}
+
 export function accountAuthorization(operation, account = {}, options = {}) {
   const requiredCapability = OPERATION_CAPABILITIES[operation];
   if (!requiredCapability) {
