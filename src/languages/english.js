@@ -878,6 +878,38 @@ export default {
       webservice: "Web service",
       plugin: "Plugin",
     },
+    catalog: {
+      accessibleLabel: "Available step actions",
+      searchLabel: "Search actions",
+      searchPlaceholder: "Search by name, purpose, or tag",
+      resultCount: "{count} actions available",
+      empty: "No actions match the current search and runtime.",
+      deprecated: "Deprecated",
+      experimental: "Experimental",
+      unsupported: "Unavailable",
+      documentation: "Open English documentation",
+      opensNewWindow: "Documentation for {action} opens in a new window.",
+      noDescription: "No localized description is available.",
+      groups: {
+        selenium: "Selenium",
+        appium: "Appium",
+        postman: "Postman",
+        webservice: "Web service",
+        plugin: "Plugins",
+        "control-flow": "Control flow",
+        shared: "Shared actions",
+      },
+      remediation: {
+        unsupported:
+          "This action is not supported. Choose a supported replacement.",
+        runtime:
+          "Switch the active runtime to {runtime} before adding this action.",
+        "minimum-version":
+          "Upgrade the {runtime} runtime to version {minimum} or later.",
+        "maximum-version":
+          "This action supports {runtime} up to version {maximum}. Choose a compatible action.",
+      },
+    },
     diagnostics: {
       malformedConfig:
         "The saved step configuration is malformed. Open JSON mode to repair it.",

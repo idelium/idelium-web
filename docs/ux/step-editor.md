@@ -74,6 +74,21 @@ pointer listeners, and transient resize state are removed on unmount. Every
 control is permanently visible and keyboard reachable; no operation depends on
 hover.
 
+## Action catalogue
+
+`ActionCatalog` consumes the versioned contract instead of maintaining a
+component-specific action list. It groups core and plugin actions, searches
+localized labels and descriptions together with stable technical names and
+tags, and reports runtime-version incompatibilities before mutation. Unsupported
+actions remain discoverable for compatibility diagnostics but cannot be added.
+Every action links to English documentation hosted in an Idelium GitHub
+repository; external plugin data cannot introduce arbitrary documentation
+origins.
+
+The catalogue accepts a bounded action collection and query, never loads tenant
+data by itself, and emits only the selected catalog contract. The containing
+route remains responsible for authorization and tenant-scoped persistence.
+
 ## Rollout and rollback
 
 The contract is introduced before replacing the current wizard UI. Existing

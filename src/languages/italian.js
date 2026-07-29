@@ -884,6 +884,39 @@ export default {
       webservice: "Servizio web",
       plugin: "Plugin",
     },
+    catalog: {
+      accessibleLabel: "Azioni step disponibili",
+      searchLabel: "Cerca azioni",
+      searchPlaceholder: "Cerca per nome, finalità o tag",
+      resultCount: "{count} azioni disponibili",
+      empty: "Nessuna azione corrisponde alla ricerca e al runtime correnti.",
+      deprecated: "Deprecata",
+      experimental: "Sperimentale",
+      unsupported: "Non disponibile",
+      documentation: "Apri documentazione in inglese",
+      opensNewWindow:
+        "La documentazione per {action} si apre in una nuova finestra.",
+      noDescription: "Non è disponibile una descrizione localizzata.",
+      groups: {
+        selenium: "Selenium",
+        appium: "Appium",
+        postman: "Postman",
+        webservice: "Servizio web",
+        plugin: "Plugin",
+        "control-flow": "Controllo del flusso",
+        shared: "Azioni condivise",
+      },
+      remediation: {
+        unsupported:
+          "Questa azione non è supportata. Scegli un'alternativa supportata.",
+        runtime:
+          "Passa al runtime {runtime} prima di aggiungere questa azione.",
+        "minimum-version":
+          "Aggiorna il runtime {runtime} alla versione {minimum} o successiva.",
+        "maximum-version":
+          "Questa azione supporta {runtime} fino alla versione {maximum}. Scegli un'azione compatibile.",
+      },
+    },
     diagnostics: {
       malformedConfig:
         "La configurazione salvata dello step non è valida. Apri la modalità JSON per correggerla.",

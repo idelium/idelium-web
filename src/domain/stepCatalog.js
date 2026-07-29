@@ -7,6 +7,16 @@ export const STEP_CATALOG_VERSION = "2026.07";
 export const STEP_CATALOG_MINIMUM_READABLE_VERSION = "2026.01";
 const SAFE_IDENTIFIER = /^[a-zA-Z0-9_.:-]+$/;
 const MAX_PLUGIN_ACTIONS = 500;
+const MAX_CATALOG_QUERY_LENGTH = 200;
+const ACTION_GROUPS = new Set([
+  "selenium",
+  "appium",
+  "postman",
+  "webservice",
+  "plugin",
+  "control-flow",
+  "shared",
+]);
 
 export const STEP_RUNTIMES = {
   appium: {
@@ -117,6 +127,46 @@ export function resolveActionCatalogEntry(reference, options = {}) {
   return { action, diagnostics };
 }
 
+export function searchActionCatalog(catalog, options = {}) {
+  const query = normalizeSearchText(options.query).slice(
+    0,
+    MAX_CATALOG_QUERY_LENGTH,
+  );
+  const localizedActions = options.localizedActions ?? {};
+  const runtimeVersions = options.runtimeVersions ?? {};
+  const activeRuntime = safeIdentifier(options.activeRuntime);
+  const results = (Array.isArray(catalog?.actions) ? catalog.actions : [])
+    .slice(0, MAX_PLUGIN_ACTIONS + 2_000)
+    .map((action) => {
+      const localized = localizedActions[action.id] ?? {};
+      const compatibility = actionCompatibility(action, {
+        activeRuntime,
+        runtimeVersions,
+      });
+      const searchDocument = [
+        action.actionType,
+        action.runtime,
+        action.group,
+        localized.label,
+        localized.description,
+        ...(action.tags ?? []),
+        ...(localized.tags ?? []),
+      ]
+        .map(normalizeSearchText)
+        .join(" ");
+      return { action, compatibility, localized, searchDocument };
+    })
+    .filter((result) => query === "" || result.searchDocument.includes(query));
+
+  const groups = groupActions(results.map((result) => result.action))
+    .map((group) => ({
+      ...group,
+      results: results.filter((result) => result.action.group === group.id),
+    }))
+    .filter((group) => group.results.length > 0);
+  return { groups, query, total: results.length };
+}
+
 function actionContract(runtime, entry, pluginId = null) {
   const actionType = safeIdentifier(entry?.name) ?? "unknown_action";
   const fields = (Array.isArray(entry?.syntax) ? entry.syntax : [])
@@ -130,7 +180,7 @@ function actionContract(runtime, entry, pluginId = null) {
     actionType,
     catalogVersion: STEP_CATALOG_VERSION,
     runtime,
-    group: runtime,
+    group: normalizeActionGroup(entry?.category, runtime),
     pluginId,
     schemaVersion: normalizeCatalogVersion(entry?.schemaVersion) ?? "1",
     schema: {
@@ -150,7 +200,9 @@ function actionContract(runtime, entry, pluginId = null) {
     ),
     documentation: {
       key: `StepEditor.actions.${runtime}.${actionType}`,
-      url: safeDocumentationUrl(entry?.documentationUrl),
+      url:
+        safeDocumentationUrl(entry?.documentationUrl) ??
+        `https://github.com/idelium/idelium-docker/wiki/Step-Editor#${actionType}`,
     },
     deprecation: {
       deprecated: entry?.deprecated === true,
@@ -158,6 +210,15 @@ function actionContract(runtime, entry, pluginId = null) {
       replacement: safeIdentifier(entry?.replacement),
     },
     capabilities: actionCapabilities(runtime, entry),
+    tags: normalizeTags(entry?.tags),
+    lifecycle: {
+      experimental: entry?.experimental === true,
+      unsupported: entry?.unsupported === true,
+    },
+    runtimeConstraint: {
+      minimum: normalizeCatalogVersion(entry?.minimumRuntimeVersion),
+      maximum: normalizeCatalogVersion(entry?.maximumRuntimeVersion),
+    },
   };
 }
 
@@ -240,7 +301,78 @@ function groupActions(actions) {
     }
     groups.get(action.group).actionIds.push(action.id);
   }
-  return [...groups.values()];
+  return [...groups.values()].sort(
+    (left, right) =>
+      [...ACTION_GROUPS].indexOf(left.id) -
+      [...ACTION_GROUPS].indexOf(right.id),
+  );
+}
+
+function actionCompatibility(action, options) {
+  if (action.lifecycle?.unsupported) {
+    return {
+      addable: false,
+      code: "unsupported",
+      remediation: "StepEditor.catalog.remediation.unsupported",
+    };
+  }
+  if (
+    options.activeRuntime != null &&
+    action.runtime !== "shared" &&
+    action.runtime !== options.activeRuntime
+  ) {
+    return {
+      addable: false,
+      code: "runtime",
+      remediation: "StepEditor.catalog.remediation.runtime",
+    };
+  }
+  const version = normalizeCatalogVersion(
+    options.runtimeVersions[action.runtime],
+  );
+  if (
+    version != null &&
+    action.runtimeConstraint?.minimum != null &&
+    compareCatalogVersions(version, action.runtimeConstraint.minimum) < 0
+  ) {
+    return {
+      addable: false,
+      code: "minimum-version",
+      remediation: "StepEditor.catalog.remediation.minimumVersion",
+    };
+  }
+  if (
+    version != null &&
+    action.runtimeConstraint?.maximum != null &&
+    compareCatalogVersions(version, action.runtimeConstraint.maximum) > 0
+  ) {
+    return {
+      addable: false,
+      code: "maximum-version",
+      remediation: "StepEditor.catalog.remediation.maximumVersion",
+    };
+  }
+  return { addable: true, code: null, remediation: null };
+}
+
+function normalizeActionGroup(category, runtime) {
+  const normalized = safeIdentifier(category);
+  return ACTION_GROUPS.has(normalized) ? normalized : runtime;
+}
+
+function normalizeTags(tags) {
+  return (Array.isArray(tags) ? tags : [])
+    .map((tag) => String(tag).trim().slice(0, 80))
+    .filter(Boolean)
+    .slice(0, 20);
+}
+
+function normalizeSearchText(value) {
+  return String(value ?? "")
+    .normalize("NFKD")
+    .replace(/\p{Diacritic}/gu, "")
+    .toLocaleLowerCase()
+    .trim();
 }
 
 function catalogVersionDiagnostic(version) {
