@@ -819,6 +819,26 @@ export default {
     selectTestCycle: "-- select a test cycle --",
     commandLineInfo: "Command line for run this testcycle:",
     commandLineCopy: "command line is copied to clipboard",
+    nameLabel: "Cycle name",
+    descriptionLabel: "Cycle description",
+    builderEyebrow: "Cycle builder",
+    builderTitle: "Build the execution flow step by step",
+    builderDescription:
+      "A test cycle is an ordered run plan. Choose the tests that must run together, arrange them in the execution order, then name and save the cycle.",
+    builderStepSelectTitle: "Select tests",
+    builderStepSelectDescription:
+      "Use the catalog below to add one or more tests to the cycle.",
+    builderStepOrderTitle: "Confirm execution order",
+    builderStepOrderDescription:
+      "Move selected tests until the left-to-right execution sequence is correct.",
+    builderStepDescribeTitle: "Name and save",
+    builderStepDescribeDescription:
+      "Enter a recognizable cycle name and description, then create the test cycle.",
+    availableTests: "Available",
+    selectedTests: "Selected",
+    readyStatus: "Status",
+    readyStatusIncomplete: "Incomplete",
+    readyStatusReady: "Ready",
   },
   TestsPerformed: {
     pageEyebrow: "Execution insights",

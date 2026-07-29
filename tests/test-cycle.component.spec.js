@@ -9,6 +9,27 @@ import { pinia } from "@/stores/pinia";
 import { useSessionStore } from "@/stores/session";
 
 describe("test-cycle creation component", () => {
+  const testCycleCopy = {
+    availableTests: "Available",
+    builderDescription: "Build a run plan.",
+    builderEyebrow: "Cycle builder",
+    builderStepDescribeDescription: "Name and save the cycle.",
+    builderStepDescribeTitle: "Name and save",
+    builderStepOrderDescription: "Confirm the sequence.",
+    builderStepOrderTitle: "Confirm order",
+    builderStepSelectDescription: "Select tests.",
+    builderStepSelectTitle: "Select tests",
+    builderTitle: "Build the execution flow",
+    commandLineCopy: "Copied",
+    commandLineInfo: "Command",
+    descriptionLabel: "Cycle description",
+    nameLabel: "Cycle name",
+    readyStatus: "Status",
+    readyStatusIncomplete: "Incomplete",
+    readyStatusReady: "Ready",
+    selectedTests: "Selected",
+  };
+
   function mountTestCycles(overrides = {}) {
     return shallowMount(TestCycles, {
       global: {
@@ -21,7 +42,7 @@ describe("test-cycle creation component", () => {
             serviceBaseUrl: "/api/",
             url: { tests: "tests", testcycles: "cycles" },
           },
-          language: { gb: { TestCycles: {} } },
+          language: { gb: { TestCycles: testCycleCopy } },
           emitter: { on: vi.fn(), emit: vi.fn() },
           setHeaders: () => ({}),
           Logout: vi.fn(),
@@ -209,5 +230,34 @@ describe("test-cycle creation component", () => {
     expect(wrapper.find("#nav-tabTitleNewTestCycle-tab").classes()).toContain(
       "active",
     );
+  });
+
+  it("explains the new test cycle creation flow with progress indicators", async () => {
+    api.get.mockResolvedValue({ data: [] });
+    useSessionStore(pinia).selectProject(9);
+    const wrapper = mountTestCycles({
+      $route: {
+        name: "testcycles",
+        params: { projectId: "9", tab: "new" },
+      },
+    });
+
+    await wrapper.setData({
+      arrayTests: [{ id: 1, name: "Smoke", type: "postman" }],
+      listOriginalTests: [{ id: 1, name: "Smoke", type: "postman" }],
+      newNameTestCycle: "Release",
+      newDescriptionTestCycle: "Release validation",
+      disableBtnCreateTestCycle: false,
+    });
+    wrapper.vm.updateTestCycleSequence([
+      wrapper.vm.toBuilderTest({ id: 1, name: "Smoke", type: "postman" }),
+    ]);
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.find(".testcycles-guidance").exists()).toBe(true);
+    expect(wrapper.vm.cycleCreationSteps).toHaveLength(3);
+    expect(wrapper.vm.cycleCreationSteps[0].complete).toBe(true);
+    expect(wrapper.vm.cycleCreationSteps[2].complete).toBe(true);
+    expect(wrapper.vm.cycleCreationStatus).toBe("Ready");
   });
 });

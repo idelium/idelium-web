@@ -115,24 +115,32 @@
           aria-labelledby="tabTitleNewTestCycle-tab"
         >
           <div class="testcycles-form-grid">
-            <input
-              class="form-control testcycles-field"
-              :placeholder="
-                language[config.currentLanguage].TestCycles
-                  .placeholderNameTestCycle
-              "
-              v-model="newNameTestCycle"
-              :disabled="disableNameTestCycle"
-            />
-            <input
-              class="form-control testcycles-field"
-              :placeholder="
-                language[config.currentLanguage].TestCycles
-                  .placeholderDescriptionTestCycle
-              "
-              v-model="newDescriptionTestCycle"
-              :disabled="disableTestCycleDescription"
-            />
+            <label class="testcycles-field-group">
+              <span>{{ language[config.currentLanguage].TestCycles.nameLabel }}</span>
+              <input
+                class="form-control testcycles-field"
+                :placeholder="
+                  language[config.currentLanguage].TestCycles
+                    .placeholderNameTestCycle
+                "
+                v-model="newNameTestCycle"
+                :disabled="disableNameTestCycle"
+              />
+            </label>
+            <label class="testcycles-field-group">
+              <span>
+                {{ language[config.currentLanguage].TestCycles.descriptionLabel }}
+              </span>
+              <input
+                class="form-control testcycles-field"
+                :placeholder="
+                  language[config.currentLanguage].TestCycles
+                    .placeholderDescriptionTestCycle
+                "
+                v-model="newDescriptionTestCycle"
+                :disabled="disableTestCycleDescription"
+              />
+            </label>
             <button
               type="button"
               class="btn btn-success testcycles-primary-action"
@@ -147,6 +155,51 @@
           </div>
         </div>
       </div>
+    </section>
+
+    <section
+      class="testcycles-guidance"
+      v-if="isActiveTab('new')"
+      aria-labelledby="cycle-guidance-title"
+    >
+      <div class="testcycles-guidance__intro">
+        <p class="testcycles-eyebrow">
+          {{ language[config.currentLanguage].TestCycles.builderEyebrow }}
+        </p>
+        <h2 id="cycle-guidance-title">
+          {{ language[config.currentLanguage].TestCycles.builderTitle }}
+        </h2>
+        <p>
+          {{ language[config.currentLanguage].TestCycles.builderDescription }}
+        </p>
+      </div>
+      <ol class="testcycles-guidance__steps">
+        <li
+          v-for="step in cycleCreationSteps"
+          v-bind:key="step.key"
+          :class="{ complete: step.complete }"
+        >
+          <span>{{ step.order }}</span>
+          <div>
+            <strong>{{ step.title }}</strong>
+            <p>{{ step.description }}</p>
+          </div>
+        </li>
+      </ol>
+      <dl class="testcycles-guidance__summary">
+        <div>
+          <dt>{{ language[config.currentLanguage].TestCycles.availableTests }}</dt>
+          <dd>{{ builderAvailableTests.length }}</dd>
+        </div>
+        <div>
+          <dt>{{ language[config.currentLanguage].TestCycles.selectedTests }}</dt>
+          <dd>{{ arrayTestsSelectedDragged.length }}</dd>
+        </div>
+        <div>
+          <dt>{{ language[config.currentLanguage].TestCycles.readyStatus }}</dt>
+          <dd>{{ cycleCreationStatus }}</dd>
+        </div>
+      </dl>
     </section>
 
     <section
@@ -220,6 +273,21 @@
   grid-template-columns: minmax(16rem, 1fr) minmax(16rem, 1fr) auto;
 }
 
+.testcycles-field-group {
+  display: grid;
+  gap: 0.45rem;
+  margin: 0;
+}
+
+.testcycles-field-group span,
+.testcycles-eyebrow {
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
 .testcycles-field {
   margin: 0;
   text-transform: uppercase;
@@ -228,6 +296,7 @@
 
 .testcycles-primary-action {
   justify-self: end;
+  margin-top: 1.55rem;
   min-width: 9rem;
 }
 
@@ -237,6 +306,117 @@
   box-shadow: none;
   margin-top: 1rem;
   padding: 1rem;
+}
+
+.testcycles-guidance {
+  align-items: stretch;
+  background:
+    linear-gradient(135deg, rgba(255, 122, 24, 0.14), transparent 34%),
+    rgba(38, 42, 54, 0.94);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 1.2rem;
+  box-shadow: 0 1.2rem 3rem rgba(0, 0, 0, 0.18);
+  display: grid;
+  gap: 1.15rem;
+  grid-template-columns: minmax(0, 1fr) minmax(20rem, 1.2fr) minmax(16rem, 0.75fr);
+  padding: 1.15rem;
+}
+
+.testcycles-guidance__intro h2,
+.testcycles-guidance__intro p,
+.testcycles-guidance__steps p {
+  margin: 0;
+}
+
+.testcycles-guidance__intro h2 {
+  color: #ffffff;
+  font-size: clamp(1.35rem, 2.2vw, 2rem);
+  margin: 0.2rem 0 0.45rem;
+}
+
+.testcycles-guidance__intro p,
+.testcycles-guidance__steps p {
+  color: rgba(255, 255, 255, 0.72);
+  line-height: 1.55;
+}
+
+.testcycles-guidance__steps {
+  display: grid;
+  gap: 0.7rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.testcycles-guidance__steps li {
+  align-items: flex-start;
+  background: rgba(10, 13, 24, 0.32);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.95rem;
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: auto minmax(0, 1fr);
+  padding: 0.8rem;
+}
+
+.testcycles-guidance__steps li.complete {
+  border-color: rgba(32, 201, 151, 0.38);
+}
+
+.testcycles-guidance__steps li > span {
+  align-items: center;
+  background: rgba(255, 122, 24, 0.18);
+  border: 1px solid rgba(255, 122, 24, 0.34);
+  border-radius: 999px;
+  color: #ffd1b2;
+  display: inline-flex;
+  font-weight: 900;
+  height: 2rem;
+  justify-content: center;
+  width: 2rem;
+}
+
+.testcycles-guidance__steps li.complete > span {
+  background: rgba(32, 201, 151, 0.18);
+  border-color: rgba(32, 201, 151, 0.4);
+  color: #baf7df;
+}
+
+.testcycles-guidance__steps strong {
+  color: #ffffff;
+  display: block;
+  font-size: 0.86rem;
+  letter-spacing: 0.12em;
+  margin-bottom: 0.25rem;
+  text-transform: uppercase;
+}
+
+.testcycles-guidance__summary {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+}
+
+.testcycles-guidance__summary div {
+  background: rgba(10, 13, 24, 0.38);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.95rem;
+  padding: 0.9rem;
+}
+
+.testcycles-guidance__summary dt {
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.testcycles-guidance__summary dd {
+  color: #ffffff;
+  font-size: 1.4rem;
+  font-weight: 900;
+  margin: 0.2rem 0 0;
 }
 
 .testcycles-command-copy,
@@ -376,12 +556,14 @@
 
 @media only screen and (max-width: 980px) {
   .testcycles-form-grid,
-  .testcycles-workspace {
+  .testcycles-workspace,
+  .testcycles-guidance {
     grid-template-columns: 1fr;
   }
 
   .testcycles-primary-action {
     justify-self: stretch;
+    margin-top: 0;
   }
 }
 </style>
@@ -546,6 +728,44 @@ export default {
               })),
             },
           ];
+    },
+    cycleCreationSteps() {
+      const copy = this.language[this.config.currentLanguage].TestCycles;
+      return [
+        {
+          key: "select",
+          order: "1",
+          title: copy.builderStepSelectTitle,
+          description: copy.builderStepSelectDescription,
+          complete: this.arrayTestsSelectedDragged.length > 0,
+        },
+        {
+          key: "order",
+          order: "2",
+          title: copy.builderStepOrderTitle,
+          description: copy.builderStepOrderDescription,
+          complete:
+            this.testCycleSequenceItems.length > 0 &&
+            this.testCycleSequenceItems.every(
+              (item) => item.status !== "missing" && !item.disabledReason,
+            ),
+        },
+        {
+          key: "describe",
+          order: "3",
+          title: copy.builderStepDescribeTitle,
+          description: copy.builderStepDescribeDescription,
+          complete:
+            this.newNameTestCycle.trim() !== "" &&
+            this.newDescriptionTestCycle.trim() !== "",
+        },
+      ];
+    },
+    cycleCreationStatus() {
+      const copy = this.language[this.config.currentLanguage].TestCycles;
+      return this.disableBtnCreateTestCycle
+        ? copy.readyStatusIncomplete
+        : copy.readyStatusReady;
     },
   },
   methods: {

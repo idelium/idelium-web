@@ -825,6 +825,26 @@ export default {
     selectTestCycle: "-- seleziona un ciclo di test --",
     commandLineInfo: "Linea di comando per questo ciclo di test:",
     commandLineCopy: "command line copiato",
+    nameLabel: "Nome ciclo",
+    descriptionLabel: "Descrizione ciclo",
+    builderEyebrow: "Costruzione ciclo",
+    builderTitle: "Costruisci il flusso di esecuzione passo per passo",
+    builderDescription:
+      "Un ciclo di test è un piano di esecuzione ordinato. Scegli i test che devono girare insieme, disponili nell'ordine corretto e poi salva il ciclo.",
+    builderStepSelectTitle: "Seleziona i test",
+    builderStepSelectDescription:
+      "Usa il catalogo sotto per aggiungere uno o più test al ciclo.",
+    builderStepOrderTitle: "Conferma l'ordine di esecuzione",
+    builderStepOrderDescription:
+      "Sposta i test selezionati finché la sequenza di esecuzione è corretta.",
+    builderStepDescribeTitle: "Nomina e salva",
+    builderStepDescribeDescription:
+      "Inserisci un nome riconoscibile, una descrizione e crea il ciclo di test.",
+    availableTests: "Disponibili",
+    selectedTests: "Selezionati",
+    readyStatus: "Stato",
+    readyStatusIncomplete: "Incompleto",
+    readyStatusReady: "Pronto",
   },
   TestsPerformed: {
     pageEyebrow: "Insight esecuzioni",
