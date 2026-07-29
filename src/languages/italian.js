@@ -1122,6 +1122,49 @@ export default {
       confirm: "Rimuovi riferimento",
     },
   },
+  EnvironmentConnectionTest: {
+    title: "Test connessione",
+    description:
+      "Richiedi a Idelium API di validare il target autorizzato dell'ambiente.",
+    start: "Esegui test connessione",
+    cancel: "Annulla test",
+    running: "Validazione della connessione in corso.",
+    duration: "{duration} ms",
+    notAvailable: "Non disponibile",
+    metadata: {
+      outcome: "Esito",
+      duration: "Durata",
+      target: "Target",
+      diagnostic: "Codice diagnostico",
+    },
+    outcomes: {
+      success: "Riuscito",
+      timeout: "Timeout",
+      dns: "Errore DNS",
+      tls: "Errore TLS",
+      authentication: "Autenticazione fallita",
+      capabilityMismatch: "Capacità non compatibile",
+      targetUnavailable: "Target non disponibile",
+      cancelled: "Annullato",
+      unexpected: "Errore imprevisto",
+    },
+    remediation: {
+      success: "Il target è raggiungibile e compatibile.",
+      timeout:
+        "Verifica la disponibilità del target o modifica il timeout limitato dell'API.",
+      dns: "Verifica il nome host autorizzato e la sua configurazione DNS.",
+      tls: "Verifica la catena del certificato e la policy di attendibilità.",
+      authentication:
+        "Sostituisci o autorizza nuovamente la credenziale referenziata e riprova.",
+      capabilityMismatch:
+        "Seleziona un target che esponga le capacità runtime richieste.",
+      targetUnavailable:
+        "Verifica lo stato del target gestito o contatta il suo amministratore.",
+      cancelled: "Il test di connessione è stato annullato in sicurezza.",
+      unexpected:
+        "Il servizio di validazione non ha completato la richiesta. Riprova più tardi.",
+    },
+  },
   StepEditor: {
     shell: {
       accessibleLabel: "Editor degli step riutilizzabili",

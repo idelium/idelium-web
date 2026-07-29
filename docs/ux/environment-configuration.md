@@ -109,6 +109,28 @@ values are excluded from URLs, browser storage, diagnostics, logs, validation
 output, and export payloads. API authorization, capability enforcement,
 rotation, and audit logging remain server-side responsibilities.
 
+## Connection validation
+
+Connection tests are server-side operations for WebDriver, Appium, API
+endpoints, and approved providers. Console requests contain only customer,
+environment, optional managed-target identifiers, test type, and a timeout
+bounded between 1 and 30 seconds. They cannot contain an arbitrary URL, headers,
+payload, credentials, or free-form network options, so the UI cannot turn this
+feature into an unrestricted network probe.
+
+The normalized result is limited to outcome, sanitized target, bounded duration,
+timestamps, stable diagnostic code, and audit-event ID. Success, timeout, DNS,
+TLS, authentication, capability mismatch, unavailable target, cancellation, and
+unexpected failure have distinct localized remediation. URL user information,
+query strings, fragments, logs, response bodies, headers, and artifacts are
+discarded.
+
+Closing the panel or navigating away aborts the browser request. The API may
+safely detach already-running validation, but it must keep enforcing customer
+ownership, approved targets, egress policy, bounded logs and artifacts, and
+metadata-only audit retention. Compatibility is additive: existing environment
+save and execution contracts are unchanged.
+
 ## Rollout and rollback
 
 The versioned loader can be introduced before route migration because unchanged
