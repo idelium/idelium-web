@@ -173,6 +173,28 @@ is not exposed. These additive contracts do not change legacy environment
 payloads. The API remains responsible for destination authorization, optimistic
 locking, audit events, retention, archive recovery, and final ownership checks.
 
+## Canonical routes and listing migration
+
+Project-scoped environment routes support direct navigation and reload:
+
+- `/projects/:projectId/environments` and `/new` for list and creation;
+- `/projects/:projectId/environments/:environmentId/detail`;
+- `/projects/:projectId/environments/:environmentId/edit`;
+- `/projects/:projectId/environments/:environmentId/clone`.
+
+Legacy `/environments` and `/environments/new` bookmarks redirect through the
+authorized selected project without copying customer context into query
+parameters. Detail route names map to the single Environments sidebar section,
+so exactly one item is active.
+
+The shared server-backed listing uses a maximum page size of 100 and exposes
+code, description, runtime type, status, owner, updated time, bounded search,
+runtime and status filters, and sortable allowlisted columns. Test connection,
+clone, archive, and restore actions are capability-filtered. Archive and restore
+use optimistic environment versions. Existing environments still open through
+the legacy configuration adapter; route migration does not rewrite persisted
+data.
+
 ## Rollout and rollback
 
 The versioned loader can be introduced before route migration because unchanged

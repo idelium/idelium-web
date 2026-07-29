@@ -72,6 +72,36 @@ const router = createRouter({
           meta: { projectScoped: true, requiresAuth: true },
         },
         {
+          path: "projects/:projectId/environments/:environmentId/detail",
+          name: "environment-detail",
+          component: environments,
+          meta: {
+            environmentMode: "detail",
+            projectScoped: true,
+            requiresAuth: true,
+          },
+        },
+        {
+          path: "projects/:projectId/environments/:environmentId/edit",
+          name: "environment-edit",
+          component: environments,
+          meta: {
+            environmentMode: "edit",
+            projectScoped: true,
+            requiresAuth: true,
+          },
+        },
+        {
+          path: "projects/:projectId/environments/:environmentId/clone",
+          name: "environment-clone",
+          component: environments,
+          meta: {
+            environmentMode: "clone",
+            projectScoped: true,
+            requiresAuth: true,
+          },
+        },
+        {
           path: "projects/:projectId/environments/:tab?",
           name: "environments",
           component: environments,

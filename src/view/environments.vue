@@ -43,9 +43,14 @@
           class="idelium-tab-grid"
           :accessible-label="environmentCopy.listTitle"
           :actions="environmentActions"
+          :capabilities="environmentCapabilities"
           :columns="environmentColumns"
           :error="error"
-          :has-active-filters="environmentGridQuery.search !== ''"
+          :has-active-filters="
+            environmentGridQuery.search !== '' ||
+            environmentGridQuery.status !== '' ||
+            environmentGridQuery.runtime !== ''
+          "
           :listing-copy="environmentCopy"
           :loading="environmentGridLoading"
           :meta="environmentGridMeta"
@@ -59,7 +64,46 @@
           v-on:row-activate="openEnvironment"
           v-on:search="scheduleEnvironmentSearch"
           v-on:sort="sortEnvironments"
-        />
+        >
+          <template #toolbar>
+            <label>
+              <span>{{ environmentCopy.statusFilter }}</span>
+              <select
+                :value="environmentGridQuery.status"
+                v-on:change="
+                  updateEnvironmentFilter('status', $event.target.value)
+                "
+              >
+                <option value="">{{ environmentCopy.allStatuses }}</option>
+                <option value="active">
+                  {{ environmentCopy.statusActive }}
+                </option>
+                <option value="archived">
+                  {{ environmentCopy.statusArchived }}
+                </option>
+                <option value="invalid">
+                  {{ environmentCopy.statusInvalid }}
+                </option>
+              </select>
+            </label>
+            <label>
+              <span>{{ environmentCopy.runtimeFilter }}</span>
+              <select
+                :value="environmentGridQuery.runtime"
+                v-on:change="
+                  updateEnvironmentFilter('runtime', $event.target.value)
+                "
+              >
+                <option value="">{{ environmentCopy.allRuntimes }}</option>
+                <option value="web">{{ environmentCopy.typeWeb }}</option>
+                <option value="mobile">{{ environmentCopy.typeApp }}</option>
+                <option value="api">
+                  {{ environmentCopy.typeWebservice }}
+                </option>
+              </select>
+            </label>
+          </template>
+        </EnterpriseListingGrid>
         <!-- end content tab -->
       </div>
       <div
@@ -491,7 +535,8 @@ import {
   parseGridRouteQuery,
   serializeGridRouteQuery,
 } from "@/domain/enterpriseGrid";
-import { getSelectedProjectId } from "@/stores/session";
+import { getSelectedProjectId, useSessionStore } from "@/stores/session";
+import { pinia } from "@/stores/pinia";
 import { buildEnvironmentPayload } from "@/domain/workflowPayloads";
 import { hideModalSafely } from "@/shared/bootstrapModal";
 //import draggable from 'vuedraggable'
@@ -504,6 +549,9 @@ const ENVIRONMENT_SORTS = [
   "id",
   "code",
   "description",
+  "owner",
+  "runtime_type",
+  "status",
   "created_at",
   "updated_at",
 ];
@@ -557,9 +605,12 @@ export default {
         search: "",
         sort: "created_at",
         direction: "asc",
+        runtime: "",
+        status: "",
       },
       environmentSearch: "",
       environmentSearchTimer: null,
+      lastEnvironmentRouteKey: null,
       updatingEnvironmentRoute: false,
       skeletonJsonType: "web",
       codeSelected: null,
@@ -624,15 +675,62 @@ export default {
           label: this.environmentCopy.description,
           sortable: true,
         },
+        {
+          key: "runtime_type",
+          label: this.environmentCopy.runtimeType,
+          sortable: true,
+        },
+        {
+          key: "status",
+          label: this.environmentCopy.status,
+          sortable: true,
+          type: "status",
+        },
+        {
+          key: "owner",
+          label: this.environmentCopy.owner,
+          sortable: true,
+        },
+        {
+          key: "updated_at",
+          label: this.environmentCopy.updatedAt,
+          sortable: true,
+          type: "timestamp",
+        },
       ];
+    },
+    environmentCapabilities() {
+      return useSessionStore(pinia).capabilities;
     },
     environmentActions() {
       const actions = this.language[this.config.currentLanguage].Actions;
       return [
         { id: "edit", label: actions.edit },
-        { id: "duplicate", label: actions.duplicate },
+        {
+          id: "testConnection",
+          label: this.environmentCopy.testConnection,
+          capability: "environment:test",
+          disabled: (row) => row.status === "archived",
+        },
+        {
+          id: "duplicate",
+          label: actions.duplicate,
+          capability: "environment:clone",
+        },
         { id: "download", label: actions.download },
-        { id: "delete", label: actions.delete, variant: "danger" },
+        {
+          id: "archive",
+          label: this.environmentCopy.archive,
+          capability: "environment:archive",
+          disabled: (row) => row.status === "archived",
+          variant: "danger",
+        },
+        {
+          id: "restore",
+          label: this.environmentCopy.restore,
+          capability: "environment:restore",
+          disabled: (row) => row.status !== "archived",
+        },
       ];
     },
     environmentSort() {
@@ -661,6 +759,8 @@ export default {
   watch: {
     $route() {
       this.page = 0;
+      this.syncTabFromRoute();
+      this.applyEnvironmentRouteMode();
       if (!this.updatingEnvironmentRoute && this.restoreEnvironmentQuery()) {
         this.getEnvironments();
       }
@@ -672,6 +772,7 @@ export default {
     this.modalElem = new Modal(document.getElementById("myModal"));
     this.buttonElem = new Button(document.getElementById("nav-newenv-tab"));
     this.getEnvironments();
+    this.applyEnvironmentRouteMode();
     this.wizardGenerateTimer = setTimeout(() => {
       this.$refs.wizard?.generateJson(null);
       this.wizardGenerateTimer = null;
@@ -699,6 +800,14 @@ export default {
         search: parsed.search,
         sort: parsed.sort?.field || "created_at",
         direction: parsed.sort?.direction || "asc",
+        runtime: ["web", "mobile", "api"].includes(this.$route?.query?.runtime)
+          ? this.$route.query.runtime
+          : "",
+        status: ["active", "archived", "invalid"].includes(
+          this.$route?.query?.status,
+        )
+          ? this.$route.query.status
+          : "",
       };
       const changed =
         JSON.stringify(next) !== JSON.stringify(this.environmentGridQuery);
@@ -751,7 +860,32 @@ export default {
     },
     clearEnvironmentSearch() {
       this.environmentSearch = "";
-      return this.updateEnvironmentRoute({ search: "" });
+      this.environmentGridQuery.runtime = "";
+      this.environmentGridQuery.status = "";
+      return this.$router.replace({
+        query: {
+          ...this.$route.query,
+          page: undefined,
+          runtime: undefined,
+          search: undefined,
+          status: undefined,
+        },
+      });
+    },
+    updateEnvironmentFilter(key, value) {
+      const allowed = {
+        runtime: ["", "web", "mobile", "api"],
+        status: ["", "active", "archived", "invalid"],
+      };
+      if (!allowed[key]?.includes(value)) return;
+      this.environmentGridQuery[key] = value;
+      return this.$router.replace({
+        query: {
+          ...this.$route.query,
+          [key]: value || undefined,
+          page: undefined,
+        },
+      });
     },
     changeEnvironmentPage(page) {
       return this.updateEnvironmentRoute({
@@ -770,14 +904,63 @@ export default {
       );
     },
     openEnvironment(environment) {
-      return this.getJson(environment.id, environment.code);
+      return this.openEnvironmentRoute("environment-detail", environment.id);
     },
     handleEnvironmentAction({ action, row }) {
       const index = this.environmentIndex(row);
-      if (action === "edit") this.openEnvironment(row);
-      if (action === "duplicate") this.duplicateEnvironment(index);
+      if (action === "edit") {
+        return this.openEnvironmentRoute("environment-edit", row.id);
+      }
+      if (action === "testConnection") {
+        return this.$router.push({
+          name: "environment-detail",
+          params: {
+            environmentId: row.id,
+            projectId: getSelectedProjectId(),
+          },
+          query: { panel: "connection" },
+        });
+      }
+      if (action === "duplicate") {
+        return this.openEnvironmentRoute("environment-clone", row.id);
+      }
       if (action === "download") this.downloadEnvironment(index);
-      if (action === "delete") this.deleteEnvironment(index);
+      if (action === "archive") this.deleteEnvironment(index);
+      if (action === "restore") this.restoreEnvironment(index);
+    },
+    openEnvironmentRoute(name, environmentId) {
+      return this.$router.push({
+        name,
+        params: {
+          environmentId,
+          projectId: getSelectedProjectId(),
+        },
+      });
+    },
+    applyEnvironmentRouteMode() {
+      const mode = this.$route?.meta?.environmentMode;
+      const environmentId = this.$route?.params?.environmentId;
+      if (!mode || !environmentId || !this.modalElem) return;
+      const routeKey = `${mode}:${environmentId}`;
+      if (routeKey === this.lastEnvironmentRouteKey) return;
+      this.lastEnvironmentRouteKey = routeKey;
+      this.getJson(environmentId, null, null, mode === "clone", false);
+    },
+    openTab(tab) {
+      if (!["order", "new"].includes(tab) || this.isActiveTab(tab)) return;
+      return this.$router.push({
+        name: "environments",
+        params: {
+          projectId: getSelectedProjectId(),
+          ...(tab === "new" ? { tab: "new" } : {}),
+        },
+      });
+    },
+    syncTabFromRoute() {
+      const routeMode = this.$route?.meta?.environmentMode;
+      const tab =
+        routeMode === "clone" ? "new" : this.$route?.params?.tab || "order";
+      this.activeTab = ["order", "new"].includes(tab) ? tab : "order";
     },
     redirectEmptyEnvironments() {
       if (this.isEnvironmentOrderTabDisabled && this.isActiveTab("order")) {
@@ -803,46 +986,43 @@ export default {
       return this.$showConfirm({
         message:
           this.language[this.config.currentLanguage].Environments
-            .confirmationDelete +
+            .confirmationArchive +
           this.listEnvironments[index].code +
           " ?",
         variant: "warning",
       }).then((confirmed) => {
-        if (confirmed) this.deleteAction(index);
+        if (confirmed) this.archiveEnvironment(index);
       });
     },
-    deleteAction(index) {
+    archiveEnvironment(index) {
+      return this.changeEnvironmentLifecycle(index, "archive");
+    },
+    restoreEnvironment(index) {
+      return this.changeEnvironmentLifecycle(index, "restore");
+    },
+    changeEnvironmentLifecycle(index, operation) {
+      const environment = this.listEnvironments[index];
+      if (!environment) return Promise.resolve();
       this.emitter.emit("showLoader", true);
-      apiClient
-        .delete(
+      return apiClient
+        .post(
           this.config.serviceBaseUrl +
             this.config.url.environments +
             "/" +
             getSelectedProjectId() +
             "/" +
-            this.listEnvironments[index].id,
-          {
-            headers: this.setHeaders(),
-          },
+            environment.id +
+            "/" +
+            operation,
+          { expectedVersion: environment.version ?? null },
+          { headers: this.setHeaders() },
         )
-        .then(() => {
-          this.btnSaveEnable = false;
-          this.environmentsLoaded = true;
-          return this.getEnvironments();
+        .then(() => this.getEnvironments())
+        .catch((error) => {
+          this.Logout(this, error);
+          this.error = error;
         })
-        .catch((e) => {
-          this.Logout(this, e);
-          this.error = e;
-        });
-    },
-    duplicateEnvironment(index) {
-      this.getJson(
-        this.listEnvironments[index].id,
-        this.listEnvironments[index].code,
-        this.listEnvironments[index].description,
-        true,
-        false,
-      );
+        .finally(() => this.emitter.emit("showLoader", false));
     },
     downloadEnvironment(index) {
       this.getJson(
@@ -875,16 +1055,20 @@ export default {
         )
         .then((response) => {
           this.emitter.emit("showLoader", false);
+          const resolvedCode =
+            code ?? response.data.code ?? `environment-${id}`;
+          const resolvedDescription =
+            description ?? response.data.description ?? resolvedCode;
           if (isDuplicate == false) {
             if (isDownload == false) {
               this.jsonResumeNameSelected = id;
               this.modalElem.show();
               this.resumeJson = JSON.parse(response.data.config);
               this.idJsonSelecteds = id;
-              this.codeSelected = code;
+              this.codeSelected = resolvedCode;
             } else {
               download.file(
-                code + ".json",
+                resolvedCode + ".json",
                 response.data.config,
                 "application/json",
               );
@@ -893,8 +1077,8 @@ export default {
             this.openTab("new");
             this.loadJsonToEdit = JSON.parse(response.data.config);
             this.jsonEnvironments = this.loadJsonToEdit;
-            this.environmentDescription = description + "(copy)";
-            this.environmentNameFile = code + "_copy";
+            this.environmentDescription = resolvedDescription + " (copy)";
+            this.environmentNameFile = resolvedCode + "_copy";
           }
         })
         .catch((e) => {
@@ -961,6 +1145,12 @@ export default {
     },
     hideEditorModal() {
       hideModalSafely(this.$refs.mymodal, this.modalElem);
+      if (this.$route?.meta?.environmentMode) {
+        this.$router.replace({
+          name: "environments",
+          params: { projectId: getSelectedProjectId() },
+        });
+      }
     },
     saveJson(isNew = null) {
       let fileName = null;

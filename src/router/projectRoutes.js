@@ -10,10 +10,23 @@ export const PROJECT_SCOPED_ROUTE_NAMES = new Set([
   "environments",
   "platforms",
   "postman",
+  "environment-detail",
+  "environment-edit",
+  "environment-clone",
 ]);
+
+const PROJECT_ROUTE_SECTIONS = Object.freeze({
+  "environment-detail": "environments",
+  "environment-edit": "environments",
+  "environment-clone": "environments",
+});
 
 export function isProjectScopedRouteName(routeName) {
   return PROJECT_SCOPED_ROUTE_NAMES.has(routeName);
+}
+
+export function projectRouteSection(routeName) {
+  return PROJECT_ROUTE_SECTIONS[routeName] ?? routeName;
 }
 
 export function selectedProjectRoute(link, projectId) {

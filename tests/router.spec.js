@@ -65,6 +65,20 @@ describe("route smoke checks", () => {
     expect(router.currentRoute.value.params.tab).toBe(tab);
   });
 
+  it.each([
+    ["/projects/7/environments/environment-2/detail", "environment-detail"],
+    ["/projects/7/environments/environment-2/edit", "environment-edit"],
+    ["/projects/7/environments/environment-2/clone", "environment-clone"],
+  ])("opens canonical environment route %s", async (path, name) => {
+    useSessionStore(pinia).establishSession();
+    await router.push(path);
+    expect(router.currentRoute.value.name).toBe(name);
+    expect(router.currentRoute.value.params.projectId).toBe("7");
+    expect(router.currentRoute.value.params.environmentId).toBe(
+      "environment-2",
+    );
+  });
+
   it("redirects legacy project routes to the selected project URL", async () => {
     const session = useSessionStore(pinia);
     session.establishSession();

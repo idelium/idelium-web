@@ -24,6 +24,7 @@ describe("environments component", () => {
     api.get.mockReset();
     modal.show.mockClear();
     modal.hide.mockClear();
+    useSessionStore(pinia).setAvailableContexts({ capabilities: [] });
   });
 
   function mountEnvironments(overrides = {}, mountOptions = {}) {
@@ -76,6 +77,20 @@ describe("environments component", () => {
                 code: "Code",
                 description: "Description",
                 id: "ID",
+                runtimeType: "Runtime",
+                status: "Status",
+                owner: "Owner",
+                updatedAt: "Updated",
+                testConnection: "Test connection",
+                archive: "Archive",
+                restore: "Restore",
+                statusFilter: "Status",
+                runtimeFilter: "Runtime",
+                allStatuses: "All statuses",
+                allRuntimes: "All runtimes",
+                statusActive: "Active",
+                statusArchived: "Archived",
+                statusInvalid: "Invalid",
                 listTitle: "Environments",
                 nextPage: "Next",
                 pageStatus: "Page {page} of {pages}",
@@ -118,7 +133,7 @@ describe("environments component", () => {
     await vi.waitFor(() =>
       expect(router.push).toHaveBeenCalledWith({
         name: "environments",
-        params: { tab: "new" },
+        params: { projectId: 9, tab: "new" },
       }),
     );
     expect(wrapper.find("#nav-home-tab").attributes("disabled")).toBeDefined();
@@ -164,6 +179,41 @@ describe("environments component", () => {
     );
     expect(wrapper.find(".idelium-environment-form__save").text()).toContain(
       "Add environment",
+    );
+  });
+
+  it("defines enterprise columns and capability-filtered lifecycle actions", () => {
+    api.get.mockResolvedValue({ data: [{ id: 1, code: "dev" }] });
+    useSessionStore(pinia).setAvailableContexts({
+      capabilities: ["environment:test", "environment:clone"],
+    });
+    const wrapper = mountEnvironments();
+
+    expect(wrapper.vm.environmentColumns.map((column) => column.key)).toEqual(
+      expect.arrayContaining([
+        "code",
+        "description",
+        "runtime_type",
+        "status",
+        "owner",
+        "updated_at",
+      ]),
+    );
+    expect(wrapper.vm.environmentCapabilities).toEqual([
+      "environment:test",
+      "environment:clone",
+    ]);
+    expect(wrapper.vm.environmentActions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          capability: "environment:test",
+          id: "testConnection",
+        }),
+        expect.objectContaining({
+          capability: "environment:archive",
+          id: "archive",
+        }),
+      ]),
     );
   });
 });

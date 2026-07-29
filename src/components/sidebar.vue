@@ -128,7 +128,10 @@
 <script>
 import apiClient from "@/services/apiClient";
 import { getSelectedProjectId } from "@/stores/session";
-import { isProjectScopedRouteName } from "@/router/projectRoutes";
+import {
+  isProjectScopedRouteName,
+  projectRouteSection,
+} from "@/router/projectRoutes";
 
 export default {
   name: "SidebarComponent",
@@ -153,6 +156,7 @@ export default {
   methods: {
     isActiveMenuItem(link) {
       const currentRoute = this.$router.currentRoute.value;
+      if (projectRouteSection(currentRoute.name) === link) return true;
       if (!isProjectScopedRouteName(link)) {
         return currentRoute.name === link;
       }
@@ -167,7 +171,9 @@ export default {
         this.$router.push({ path: "/" + link });
       else {
         this.$showAlert({
-          message: this.language[this.config.currentLanguage].Dialog.firstProjectRequired,
+          message:
+            this.language[this.config.currentLanguage].Dialog
+              .firstProjectRequired,
           variant: "warning",
         });
         this.$router.push({ path: "/projects" });

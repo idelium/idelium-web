@@ -48,4 +48,16 @@ describe("tabler sidebar component", () => {
     expect(wrapper.vm.isActiveMenuItem("steps")).toBe(true);
     expect(wrapper.vm.isActiveMenuItem("projects")).toBe(false);
   });
+
+  it("highlights only environments on canonical environment detail routes", () => {
+    useSessionStore(pinia).selectProject(7);
+    const wrapper = mountSidebar(
+      "/projects/7/environments/environment-2/detail",
+      "environment-detail",
+    );
+
+    expect(wrapper.vm.isActiveMenuItem("environments")).toBe(true);
+    expect(wrapper.vm.isActiveMenuItem("projects")).toBe(false);
+    expect(wrapper.vm.isActiveMenuItem("steps")).toBe(false);
+  });
 });

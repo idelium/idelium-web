@@ -47,7 +47,10 @@
 <script>
 import apiClient from "@/services/apiClient";
 import { getSelectedProjectId } from "@/stores/session";
-import { selectedProjectRoute } from "@/router/projectRoutes";
+import {
+  projectRouteSection,
+  selectedProjectRoute,
+} from "@/router/projectRoutes";
 import { pinia } from "@/stores/pinia";
 import { useSessionStore } from "@/stores/session";
 
@@ -130,7 +133,7 @@ export default {
     isActiveMenuItem(link) {
       const currentRoute = this.$router.currentRoute.value;
       const routeName = link === "account" ? "accounts" : link;
-      return currentRoute.name === routeName;
+      return projectRouteSection(currentRoute.name) === routeName;
     },
     go(link, active) {
       const projectId = getSelectedProjectId();
