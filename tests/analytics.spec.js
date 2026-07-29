@@ -22,7 +22,9 @@ describe("analytics service", () => {
 
     expect(loader).not.toHaveBeenCalled();
     expect(app.use).not.toHaveBeenCalled();
-    expect(() => app.config.globalProperties.$gtag.event("route")).not.toThrow();
+    expect(() =>
+      app.config.globalProperties.$gtag.event("route"),
+    ).not.toThrow();
   });
 
   it("installs vue-gtag when the module exposes createGtag", async () => {
@@ -31,11 +33,9 @@ describe("analytics service", () => {
     const createGtag = vi.fn(() => plugin);
 
     await expect(
-      installAnalytics(
-        app,
-        { VITE_GOOGLE_TAG_ID: "G-123" },
-        async () => ({ createGtag }),
-      ),
+      installAnalytics(app, { VITE_GOOGLE_TAG_ID: "G-123" }, async () => ({
+        createGtag,
+      })),
     ).resolves.toBe(true);
 
     expect(createGtag).toHaveBeenCalledWith({ tagId: "G-123" });
@@ -52,6 +52,8 @@ describe("analytics service", () => {
     ).resolves.toBe(false);
 
     expect(app.use).not.toHaveBeenCalled();
-    expect(() => app.config.globalProperties.$gtag.event("route")).not.toThrow();
+    expect(() =>
+      app.config.globalProperties.$gtag.event("route"),
+    ).not.toThrow();
   });
 });

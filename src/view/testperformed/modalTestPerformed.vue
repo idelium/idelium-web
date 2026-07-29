@@ -27,12 +27,7 @@
               <div class="execution-result-header">
                 <div>
                   <h6>
-                    {{
-                      resultLabel(
-                        "stepOverview",
-                        "Step execution overview",
-                      )
-                    }}
+                    {{ resultLabel("stepOverview", "Step execution overview") }}
                   </h6>
                   <p>
                     {{
@@ -72,8 +67,12 @@
                   <strong>{{ executionSummary.failed }}</strong>
                 </article>
                 <article class="execution-kpi-card">
-                  <span>{{ resultLabel("totalDuration", "total duration") }}</span>
-                  <strong>{{ formatDuration(executionSummary.durationMs) }}</strong>
+                  <span>{{
+                    resultLabel("totalDuration", "total duration")
+                  }}</span>
+                  <strong>{{
+                    formatDuration(executionSummary.durationMs)
+                  }}</strong>
                 </article>
                 <article class="execution-kpi-card">
                   <span>{{ resultLabel("totalGap", "between steps") }}</span>
@@ -187,7 +186,9 @@
                           .stepStatus
                       }}
                     </th>
-                    <th scope="col">{{ resultLabel("duration", "duration") }}</th>
+                    <th scope="col">
+                      {{ resultLabel("duration", "duration") }}
+                    </th>
                     <th scope="col">{{ resultLabel("gap", "gap") }}</th>
                     <th scope="col">
                       {{
@@ -640,7 +641,11 @@
 }
 .execution-overview-panel {
   background:
-    radial-gradient(circle at top right, rgba(255, 109, 31, 0.2), transparent 34%),
+    radial-gradient(
+      circle at top right,
+      rgba(255, 109, 31, 0.2),
+      transparent 34%
+    ),
     rgba(15, 18, 28, 0.82);
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 20px;
@@ -855,7 +860,10 @@
   align-items: center;
   display: grid;
   gap: 0.75rem;
-  grid-template-columns: minmax(10rem, 1.2fr) minmax(12rem, 3fr) minmax(6rem, auto);
+  grid-template-columns: minmax(10rem, 1.2fr) minmax(12rem, 3fr) minmax(
+      6rem,
+      auto
+    );
 }
 .execution-step-chart-label,
 .execution-step-chart-value {
@@ -1473,8 +1481,9 @@ export default {
       const gaps = this.arrayStep.map((step, index) =>
         this.stepGap(step, index),
       );
-      const passed = this.arrayStep.filter((step) => this.isStepPassed(step))
-        .length;
+      const passed = this.arrayStep.filter((step) =>
+        this.isStepPassed(step),
+      ).length;
       const failed = this.arrayStep.length - passed;
       return {
         total: this.arrayStep.length,

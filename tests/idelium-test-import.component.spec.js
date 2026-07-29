@@ -62,9 +62,7 @@ describe("Idelium test import component", () => {
     });
 
     expect(wrapper.vm.showUpload).toBe(true);
-    expect(wrapper.vm.errortext).toBe(
-      english.Tests.ideliumImport.invalidStep,
-    );
+    expect(wrapper.vm.errortext).toBe(english.Tests.ideliumImport.invalidStep);
     expect(wrapper.emitted("importTest")).toBeUndefined();
   });
 });

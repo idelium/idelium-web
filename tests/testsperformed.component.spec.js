@@ -256,9 +256,9 @@ describe("tests performed component", () => {
     await wrapper.vm.$nextTick();
 
     expect(wrapper.vm.activeExecutionTab).toBe("running");
-    expect(wrapper.find(".testsperformed-summary").attributes("style")).toContain(
-      "display: none",
-    );
+    expect(
+      wrapper.find(".testsperformed-summary").attributes("style"),
+    ).toContain("display: none");
     expect(
       wrapper.find(".testsperformed-parallel-panel").attributes("style"),
     ).not.toContain("display: none");
@@ -718,7 +718,9 @@ describe("tests performed component", () => {
     await wrapper.vm.getTestCyclesDate(7);
     await wrapper.vm.getTest(45);
 
-    await vi.waitFor(() => expect(wrapper.vm.selectedTestSteps).toHaveLength(2));
+    await vi.waitFor(() =>
+      expect(wrapper.vm.selectedTestSteps).toHaveLength(2),
+    );
     expect(wrapper.findAll(".testsperformed-test-card")).toHaveLength(3);
     expect(wrapper.text()).toContain("login");
     expect(wrapper.text()).toContain("checkout");
