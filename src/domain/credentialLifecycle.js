@@ -352,6 +352,7 @@ export function createCredentialCreationRequest(model = {}, options = {}) {
       allowed: false,
       authorization,
       errors: [{ field: "capability", code: authorization.reason }],
+      reason: authorization.reason,
       status: "rejected",
       validation,
     };
@@ -421,6 +422,7 @@ export function createCredentialRotationRequest(
       allowed: false,
       authorization,
       errors: [{ field: "capability", code: authorization.reason }],
+      reason: authorization.reason,
       status: "rejected",
       validation,
     };
@@ -520,6 +522,7 @@ export function createCredentialRevocationRequest(
       allowed: false,
       authorization,
       errors: [{ field: "capability", code: authorization.reason }],
+      reason: authorization.reason,
       status: "rejected",
       validation,
     };
@@ -622,6 +625,41 @@ export function validateCredentialUsageSnippet(snippet = {}) {
       !/(@latest|main|master|HEAD)/.test(body) &&
       !/(idelium_(?:secret|live|rotated|complete)|Bearer\s+\S+)/i.test(body),
   };
+}
+
+export function credentialAuditRecord(
+  action,
+  outcome,
+  credential = {},
+  context = {},
+) {
+  const descriptor = normalizeCredentialDescriptor(credential, context);
+  return redactCredentialPayload({
+    action: safeIdentifier(action),
+    actor: safeText(context.actor ?? "unknown"),
+    credentialId: descriptor.id,
+    fingerprint: descriptor.fingerprint || descriptor.prefix,
+    outcome: safeIdentifier(outcome),
+    reason: safeText(context.reason),
+    scopes: descriptor.scopes,
+    tenantId: descriptor.tenantId,
+    timestamp: safeIsoTimestamp(context.timestamp) ?? new Date().toISOString(),
+  });
+}
+
+export function scanCredentialLeakage(channels = {}, secrets = []) {
+  const needles = safeArray(secrets)
+    .map((secret) => safeSecret(secret))
+    .filter(Boolean);
+  return Object.entries(channels).flatMap(([channel, value]) => {
+    const rendered = stringifyForScan(value);
+    return needles
+      .filter((secret) => rendered.includes(secret))
+      .map((secret) => ({
+        channel: safeIdentifier(channel),
+        fingerprint: `${secret.slice(0, 8)}…${secret.slice(-4)}`,
+      }));
+  });
 }
 
 export function applyCredentialRotationResult(
@@ -898,6 +936,15 @@ function safePublicBaseUrl(value) {
     return text.replace(/\/+$/, "");
   }
   return "https://idelium.org";
+}
+
+function stringifyForScan(value) {
+  if (typeof value === "string") return value;
+  try {
+    return JSON.stringify(value);
+  } catch {
+    return String(value ?? "");
+  }
 }
 
 function isSensitiveKey(key) {

@@ -163,6 +163,23 @@ scope, monitor its last-used timestamp, and rotate it during incidents, operator
 changes, CI migration, or suspected exposure. Incident response should revoke
 known-compromised credentials after a replacement has been validated.
 
+## Security regression coverage
+
+Credential security tests run with synthetic credentials only. They cover create,
+reveal cleanup, list, rotate, revoke, expiration, and last-used transitions, plus
+negative forged tenant, customer, project, credential, and scope identifiers.
+Cross-tenant attempts fail through the same rejected authorization contract and
+must not disclose whether the forged target exists.
+
+Leakage scans cover representative UI logs, API logs, DOM snapshots, URLs,
+browser storage, and generated artifacts. Findings report only channel and safe
+fingerprint fragments; they must not print complete credential material.
+
+Incident response should validate a replacement credential before revoking the
+compromised one unless the incident requires immediate cutover. Rollback may
+restore client compatibility and read-only metadata, but it must not re-enable
+complete secret retrieval through list, detail, audit, logs, or cached artifacts.
+
 ## Redaction and observability
 
 Credential diagnostics, audit records, screenshots, fixtures, and UI state must
