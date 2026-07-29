@@ -1049,6 +1049,43 @@ export default {
           "Cambia runtime o scegli un'azione compatibile.",
       },
     },
+    conversion: {
+      title: "Verifica conversione modalità",
+      description: "Converti da {source} a {target}.",
+      modes: {
+        wizard: "Wizard",
+        json: "JSON",
+        dsl: "DSL",
+      },
+      dispositions: {
+        preserved: "Preservati",
+        normalized: "Normalizzati",
+        lossy: "Con perdita",
+        unsupported: "Non supportati",
+      },
+      location: "Posizione interessata: {path}",
+      blocked:
+        "La conversione è bloccata perché almeno un costrutto non è supportato.",
+      acknowledgeLoss:
+        "Comprendo che i commenti o la formattazione indicati non potranno essere recuperati dalla rappresentazione di destinazione.",
+      cancel: "Annulla",
+      convert: "Converti modalità",
+      constructs: {
+        default: "Questo costrutto richiede una verifica.",
+        "stepEditor.conversion.preserved.mode":
+          "La rappresentazione corrente viene preservata.",
+        "stepEditor.conversion.preserved.action":
+          "L'azione è supportata dalla modalità di destinazione.",
+        "stepEditor.conversion.normalized.formatting":
+          "La formattazione del sorgente sarà normalizzata.",
+        "stepEditor.conversion.lossy.comment":
+          "Un commento del sorgente non può essere rappresentato nella modalità di destinazione.",
+        "stepEditor.conversion.unsupported.action":
+          "Un'azione non è supportata dalla modalità di destinazione.",
+        "stepEditor.conversion.unsupported.dslAst":
+          "Il sorgente DSL non dispone di un modello di azioni convertibile.",
+      },
+    },
     diagnostics: {
       malformedConfig:
         "La configurazione salvata dello step non è valida. Apri la modalità JSON per correggerla.",

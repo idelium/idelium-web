@@ -157,6 +157,21 @@ actions and runtime incompatibility before save. The UI localizes diagnostic
 codes but keeps each stable code, line, column, severity, and remediation
 available for support and automation.
 
+## Mode conversion
+
+Every representation change first creates a conversion plan. The plan classifies
+each action or source construct as preserved, normalized, lossy, or unsupported
+and reports an exact action index or source location. Unsupported constructs
+block conversion. Lossy constructs—such as DSL comments that have no Wizard or
+JSON representation—require explicit acknowledgement.
+
+Cancellation does not mutate the model, source, or active mode. A successful
+conversion retains an in-memory recovery snapshot containing the exact previous
+mode and source. Recovery content is not displayed in diagnostics or logs.
+Wizard-to-JSON-to-Wizard round trips preserve action configuration; JSON
+formatting may be normalized. DSL conversion without a parser-produced action
+model is blocked rather than guessing or silently dropping source constructs.
+
 ## Rollout and rollback
 
 The contract is introduced before replacing the current wizard UI. Existing

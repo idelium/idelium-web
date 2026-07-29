@@ -1035,6 +1035,43 @@ export default {
           "Switch runtime or choose a compatible action.",
       },
     },
+    conversion: {
+      title: "Review mode conversion",
+      description: "Convert from {source} to {target}.",
+      modes: {
+        wizard: "Wizard",
+        json: "JSON",
+        dsl: "DSL",
+      },
+      dispositions: {
+        preserved: "Preserved",
+        normalized: "Normalized",
+        lossy: "Lossy",
+        unsupported: "Unsupported",
+      },
+      location: "Affected location: {path}",
+      blocked:
+        "Conversion is blocked because at least one construct is unsupported.",
+      acknowledgeLoss:
+        "I understand that the listed comments or formatting cannot be recovered from the target representation.",
+      cancel: "Cancel",
+      convert: "Convert mode",
+      constructs: {
+        default: "This construct requires review.",
+        "stepEditor.conversion.preserved.mode":
+          "The current representation is preserved.",
+        "stepEditor.conversion.preserved.action":
+          "The action is supported by the target mode.",
+        "stepEditor.conversion.normalized.formatting":
+          "Source formatting will be normalized.",
+        "stepEditor.conversion.lossy.comment":
+          "A source comment cannot be represented in the target mode.",
+        "stepEditor.conversion.unsupported.action":
+          "An action is unsupported by the target mode.",
+        "stepEditor.conversion.unsupported.dslAst":
+          "The DSL source has no convertible action model.",
+      },
+    },
     diagnostics: {
       malformedConfig:
         "The saved step configuration is malformed. Open JSON mode to repair it.",
