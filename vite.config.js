@@ -1,9 +1,17 @@
 import { fileURLToPath, URL } from "node:url";
 
-import { defineConfig } from "vite";
+import { defineConfig, loadEnv } from "vite";
 import vue from "@vitejs/plugin-vue";
 
+import { resolveDevApiProxyTarget } from "./config/devProxy";
+
 // https://vitejs.dev/config/
+
+const devEnv = {
+  ...loadEnv("development", process.cwd(), ""),
+  ...process.env,
+};
+const devApiProxyTarget = resolveDevApiProxyTarget(devEnv);
 
 export default defineConfig({
   plugins: [vue()],
@@ -24,18 +32,18 @@ export default defineConfig({
     __APP_VERSION__: JSON.stringify(process.env.npm_package_version),
   },
   server: {
-    host: "127.0.0.1",
+    host: "localhost",
     headers: {
       "Cache-Control": "no-store",
     },
     hmr: {
       clientPort: 5173,
-      host: "127.0.0.1",
+      host: "localhost",
       protocol: "ws",
     },
     proxy: {
       "^/api(?:/|$)": {
-        target: "https://localhost",
+        target: devApiProxyTarget,
         changeOrigin: true,
         secure: false,
       },

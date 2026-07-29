@@ -100,30 +100,44 @@ Start the Vite development server:
 npm run dev
 ```
 
-Open the URL printed by Vite. When the browser hostname is `localhost`, the
-current application configuration sends API requests to
-`https://localhost/api/`. Start the Idelium Docker stack first, or provide an
-equivalent local HTTPS API and allow the Vite origin in the API CORS settings.
+Open the URL printed by Vite. The development server listens on
+`http://localhost:5173` and proxies every `/api/*` request to the Docker API
+reverse proxy at `https://localhost` by default. Keep
+`VITE_IDELIUM_API_BASE_URL=/api/` when using this workflow, because the browser
+must call the Vite origin and let Vite forward the request to Docker.
 
 The easiest integrated workflow is:
 
 1. Start [`idelium-docker`](https://github.com/idelium/idelium-docker) in demo
    mode.
 2. Run this repository with `npm run dev` when working on frontend code.
-3. Accept or trust the local development certificate only in the isolated local
-   environment.
+3. Open `http://localhost:5173` and log in with the demo/admin user initialized
+   by the Docker stack.
+
+If the Docker API is exposed on a different local origin, set
+`VITE_IDELIUM_DEV_API_TARGET` in `.env` before running `npm run dev`:
+
+```bash
+VITE_IDELIUM_API_BASE_URL=/api/
+VITE_IDELIUM_DEV_API_TARGET=https://localhost
+npm run dev
+```
+
+Accept or trust the local development certificate only in an isolated local
+environment.
 
 ## Environment variables
 
 Copy `.env.example` to `.env`. Vite exposes variables prefixed with `VITE_` to
 browser code, so they must never contain secrets.
 
-| Variable | Purpose | Required |
-| --- | --- | --- |
-| `VITE_IDELIUM_API_BASE_URL` | Browser-facing API base URL. Use `/api/` when frontend and API share the same reverse proxy. | No |
-| `VITE_IDELIUM_PUBLIC_SITE_URL` | Public product or documentation URL shown by informational views. | No |
-| `VITE_GOOGLE_SITE_KEY` | Public reCAPTCHA v3 site key used during login | No |
-| `VITE_GOOGLE_TAG_ID` | Google tag identifier for analytics | No |
+| Variable                       | Purpose                                                                                               | Required |
+| ------------------------------ | ----------------------------------------------------------------------------------------------------- | -------- |
+| `VITE_IDELIUM_API_BASE_URL`    | Browser-facing API base URL. Use `/api/` when frontend and API share the same reverse proxy.          | No       |
+| `VITE_IDELIUM_DEV_API_TARGET`  | Vite-only development proxy target for `/api/*` requests, normally the Idelium Docker HTTPS endpoint. | No       |
+| `VITE_IDELIUM_PUBLIC_SITE_URL` | Public product or documentation URL shown by informational views.                                     | No       |
+| `VITE_GOOGLE_SITE_KEY`         | Public reCAPTCHA v3 site key used during login                                                        | No       |
+| `VITE_GOOGLE_TAG_ID`           | Google tag identifier for analytics                                                                   | No       |
 
 An empty reCAPTCHA site key disables token acquisition during login. Analytics
 and reCAPTCHA configuration must use public identifiers only; private keys,
