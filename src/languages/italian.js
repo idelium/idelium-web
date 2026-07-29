@@ -862,6 +862,29 @@ export default {
       },
     },
   },
+  StepEditor: {
+    runtimes: {
+      selenium: "Selenium",
+      appium: "Appium",
+      postman: "Postman",
+      webservice: "Servizio web",
+      plugin: "Plugin",
+    },
+    diagnostics: {
+      malformedConfig:
+        "La configurazione salvata dello step non è valida. Apri la modalità JSON per correggerla.",
+      unknownAction:
+        "Questo tipo di azione non è disponibile nel catalogo autorizzato.",
+      newerCatalogVersion:
+        "Lo step usa una versione del catalogo più recente. Aggiorna Idelium prima di modificarlo.",
+      unsupportedCatalogVersion:
+        "Lo step usa una versione del catalogo fuori dalla finestra di compatibilità supportata.",
+      legacyCatalogVersion:
+        "Questo step legacy non ha una versione del catalogo e sarà aggiornato quando verrà modificato.",
+      deprecatedAction:
+        "Questa azione è deprecata ma resta leggibile durante la finestra di compatibilità.",
+    },
+  },
   SequenceBuilder: {
     accessibleLabel: "Composizione sequenza",
     selectedTitle: "Sequenza selezionata",

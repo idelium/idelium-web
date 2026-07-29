@@ -856,6 +856,29 @@ export default {
       },
     },
   },
+  StepEditor: {
+    runtimes: {
+      selenium: "Selenium",
+      appium: "Appium",
+      postman: "Postman",
+      webservice: "Web service",
+      plugin: "Plugin",
+    },
+    diagnostics: {
+      malformedConfig:
+        "The saved step configuration is malformed. Open JSON mode to repair it.",
+      unknownAction:
+        "This action type is not available in the authorized catalogue.",
+      newerCatalogVersion:
+        "This step uses a newer catalogue version. Update Idelium before editing it.",
+      unsupportedCatalogVersion:
+        "This step uses a catalogue version outside the supported compatibility window.",
+      legacyCatalogVersion:
+        "This legacy step has no catalogue version and will be upgraded when it is changed.",
+      deprecatedAction:
+        "This action is deprecated but remains readable during the compatibility window.",
+    },
+  },
   SequenceBuilder: {
     accessibleLabel: "Sequence builder",
     selectedTitle: "Selected sequence",
