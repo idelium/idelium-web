@@ -863,6 +863,20 @@ export default {
     },
   },
   StepEditor: {
+    shell: {
+      accessibleLabel: "Editor degli step riutilizzabili",
+      title: "Editor step",
+      description:
+        "Scegli le azioni, configura la sequenza e verifica le proprietà.",
+      catalog: "Catalogo azioni",
+      sequence: "Canvas sequenza",
+      inspector: "Proprietà",
+      panelNavigation: "Aree dell'editor step",
+      resizeCatalog: "Ridimensiona catalogo azioni",
+      resizeInspector: "Ridimensiona proprietà",
+      fullScreen: "Apri editor di codice a schermo intero",
+      exitFullScreen: "Esci da schermo intero",
+    },
     runtimes: {
       selenium: "Selenium",
       appium: "Appium",

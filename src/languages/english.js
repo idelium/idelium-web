@@ -857,6 +857,20 @@ export default {
     },
   },
   StepEditor: {
+    shell: {
+      accessibleLabel: "Reusable step editor",
+      title: "Step editor",
+      description:
+        "Choose actions, configure their sequence, and inspect properties.",
+      catalog: "Action catalogue",
+      sequence: "Sequence canvas",
+      inspector: "Properties inspector",
+      panelNavigation: "Step editor areas",
+      resizeCatalog: "Resize action catalogue",
+      resizeInspector: "Resize properties inspector",
+      fullScreen: "Open code editor full screen",
+      exitFullScreen: "Exit full screen",
+    },
     runtimes: {
       selenium: "Selenium",
       appium: "Appium",

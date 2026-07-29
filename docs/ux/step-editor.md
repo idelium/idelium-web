@@ -51,6 +51,29 @@ mode. Postman and plugin actions default to no DSL support. Plugin actions also
 default to no automatic conversion unless their authorized manifest explicitly
 declares it.
 
+## Responsive editor shell
+
+`StepEditorShell` keeps the Action catalogue, Sequence canvas, and Properties
+inspector in that accessible DOM order. Desktop uses three internally scrolling
+panels and two visible separators. Separators support pointer dragging and
+Left/Right Arrow resizing, expose their percentage through separator ARIA values,
+and clamp catalogue and inspector widths between 18% and 35% so the sequence
+keeps usable space.
+
+The shell height is bounded to the dynamic viewport and owns internal scrolling;
+it does not increase the document height as catalogue or form content grows. At
+960 CSS pixels or less—including the effective layout at 200% zoom—the panels
+become a tabbed list/detail fallback. All slot components remain mounted under
+`v-show`, preserving parent-owned active action, form values, focus identity, and
+unsaved registration while the layout changes. Arrow keys cycle through the
+three tabs.
+
+Code modes provide an explicit full-screen button and Escape exit. Full screen
+uses the same mounted slots, so source text is not recreated. Resize observers,
+pointer listeners, and transient resize state are removed on unmount. Every
+control is permanently visible and keyboard reachable; no operation depends on
+hover.
+
 ## Rollout and rollback
 
 The contract is introduced before replacing the current wizard UI. Existing
