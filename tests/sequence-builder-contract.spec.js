@@ -6,7 +6,10 @@ import {
   hasBlockingSequenceDiagnostics,
   loadPersistedSequence,
   sequencePersistenceRequest,
+  sequenceSaveState,
   serializeLegacySequence,
+  summarizeSequenceImpact,
+  validateSequenceComposition,
 } from "@/domain/sequenceBuilder";
 import english from "@/languages/english";
 import italian from "@/languages/italian";
@@ -140,17 +143,127 @@ describe("sequence builder domain contract", () => {
 
   it("provides English and Italian copy for every domain diagnostic", () => {
     const keys = [
+      "archivedDependency",
       "invalid",
+      "incompatibleRuntime",
       "malformed",
       "duplicate",
       "limit",
+      "missingVersion",
       "referenceMissing",
       "referenceStale",
+      "required",
+      "serverRejected",
     ];
 
     for (const key of keys) {
       expect(english.SequenceBuilder.diagnostics[key]).toBeTruthy();
       expect(italian.SequenceBuilder.diagnostics[key]).toBeTruthy();
     }
+  });
+
+  it("validates composition policy and merges server diagnostics safely", () => {
+    const sequence = loadPersistedSequence(
+      [
+        {
+          id: 1,
+          name: "Selenium item",
+          status: "active",
+          metadata: { runtime: "selenium" },
+        },
+        {
+          id: 2,
+          name: "Archived Appium item",
+          status: "archived",
+          metadata: { runtime: "appium" },
+        },
+      ],
+      { entityType: "step" },
+    );
+    const validation = validateSequenceComposition(
+      sequence,
+      {
+        allowMixedRuntimes: false,
+        requireVersions: true,
+        warningAcknowledgementCodes: ["sequence.referenceStale"],
+      },
+      [
+        {
+          code: "sequence.referenceStale",
+          severity: "warning",
+          identity: "step:1",
+          message: "Authorization: Bearer must-not-render",
+          context: { customerName: "Other tenant" },
+        },
+        {
+          code: "internal.secret",
+          severity: "error",
+          identity: "step:999",
+          message: "password=must-not-render",
+        },
+      ],
+    );
+
+    expect(validation.canSave).toBe(false);
+    expect(validation.diagnostics).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: "sequence.archivedDependency",
+          identity: "step:2",
+          scope: "item",
+        }),
+        expect.objectContaining({
+          code: "sequence.incompatibleRuntime",
+          identity: "step:2",
+        }),
+        expect.objectContaining({
+          code: "sequence.serverRejected",
+          identity: null,
+          context: {},
+          source: "server",
+        }),
+      ]),
+    );
+    expect(JSON.stringify(validation)).not.toContain("must-not-render");
+    expect(JSON.stringify(validation)).not.toContain("Other tenant");
+  });
+
+  it("blocks only errors and policy-acknowledged warnings", () => {
+    const warning = {
+      code: "sequence.referenceStale",
+      severity: "warning",
+      requiresAcknowledgement: true,
+    };
+
+    expect(
+      sequenceSaveState({ diagnostics: [warning], canSave: true }, []),
+    ).toMatchObject({
+      canSave: false,
+      hasErrors: false,
+      hasUnacknowledgedWarnings: true,
+    });
+    expect(
+      sequenceSaveState({ diagnostics: [warning], canSave: true }, [
+        "sequence.referenceStale",
+      ]),
+    ).toMatchObject({
+      canSave: true,
+      hasErrors: false,
+      hasUnacknowledgedWarnings: false,
+    });
+  });
+
+  it("returns a bounded impact summary without entity metadata", () => {
+    expect(
+      summarizeSequenceImpact({
+        tests: 3,
+        cycles: 2,
+        schedules: 1,
+        names: ["Cross-tenant test"],
+      }),
+    ).toEqual({
+      references: { tests: 3, cycles: 2, schedules: 1 },
+      total: 6,
+    });
   });
 });

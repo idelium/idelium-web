@@ -876,6 +876,23 @@ export default {
     removed: "{count} elementi rimossi dalla sequenza.",
     restored: "{count} elementi ripristinati nella sequenza.",
     duplicate: "{count} elementi duplicati non sono stati aggiunti.",
+    validation: {
+      title: "Validazione sequenza",
+      description:
+        "Risolvi i problemi bloccanti e verifica l'impatto prima di salvare.",
+      ready: "Pronto per il salvataggio",
+      blocked: "Salvataggio bloccato",
+      error: "Errore",
+      warning: "Avviso",
+      acknowledge: "Ho verificato questo avviso",
+      noDiagnostics: "Nessun problema rilevato nella sequenza.",
+      impactTitle: "Impatto sulle dipendenze",
+      impactDescription:
+        "La modifica di questo contenuto riutilizzabile interessa questi riferimenti autorizzati.",
+      tests: "Test",
+      cycles: "Cicli",
+      schedules: "Pianificazioni",
+    },
     picker: {
       title: "Elementi disponibili",
       description: "Cerca e seleziona gli elementi idonei per questa sequenza.",
@@ -907,14 +924,50 @@ export default {
       status: "Stato",
     },
     diagnostics: {
+      archivedDependency:
+        "Una dipendenza archiviata non può essere utilizzata nella sequenza.",
       invalid: "Questo elemento non è valido e non può essere selezionato.",
+      incompatibleRuntime:
+        "Questo elemento usa un runtime incompatibile con la sequenza.",
       malformed: "La sequenza salvata non è valida.",
       duplicate: "Questo elemento è già presente nella sequenza.",
       limit: "La sequenza supera il limite di elementi supportato.",
+      missingVersion:
+        "Questo elemento riutilizzabile non ha una versione selezionata.",
       referenceMissing:
         "L'elemento referenziato è mancante o non è più disponibile.",
       referenceStale:
         "È disponibile una versione più recente. Verificala prima di salvare.",
+      required: "La sequenza non contiene tutti gli elementi obbligatori.",
+      serverRejected:
+        "Il server ha rifiutato la sequenza senza esporre dettagli protetti.",
+    },
+    remediation: {
+      addRequired: "Aggiungi l'elemento obbligatorio prima di salvare.",
+      archivedDependency:
+        "Sostituisci la dipendenza archiviata con un elemento attivo autorizzato.",
+      duplicate: "Rimuovi l'occorrenza duplicata.",
+      incompatibleRuntime:
+        "Usa elementi con runtime compatibili o modifica la policy.",
+      invalid: "Sostituisci l'elemento non valido.",
+      limit: "Riduci il numero di elementi selezionati.",
+      malformed: "Ricarica la sequenza e correggi la struttura salvata.",
+      missingVersion: "Seleziona una versione immutabile per l'elemento.",
+      reduceItems:
+        "Rimuovi gli elementi fino a rispettare il limite della policy.",
+      referenceMissing: "Sostituisci il riferimento mancante.",
+      referenceStale: "Verifica e seleziona la versione autorizzata corrente.",
+      removeDuplicate: "Rimuovi l'occorrenza duplicata.",
+      replaceArchived:
+        "Sostituisci la dipendenza archiviata con un elemento attivo autorizzato.",
+      replaceMissing: "Sostituisci il riferimento mancante.",
+      required: "Aggiungi l'elemento obbligatorio prima di salvare.",
+      reviewVersion: "Verifica e seleziona la versione autorizzata corrente.",
+      selectVersion: "Seleziona una versione immutabile per l'elemento.",
+      serverRejected:
+        "Verifica i campi e riprova. Contatta un amministratore se il problema persiste.",
+      useCompatibleRuntime:
+        "Usa elementi con runtime compatibili o modifica la policy.",
     },
     unavailableItem: "Elemento non disponibile",
   },

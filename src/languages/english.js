@@ -870,6 +870,23 @@ export default {
     removed: "{count} items removed from the sequence.",
     restored: "{count} items restored to the sequence.",
     duplicate: "{count} duplicate items were not added.",
+    validation: {
+      title: "Sequence validation",
+      description:
+        "Resolve blocking issues and review downstream impact before saving.",
+      ready: "Ready to save",
+      blocked: "Save blocked",
+      error: "Error",
+      warning: "Warning",
+      acknowledge: "I reviewed this warning",
+      noDiagnostics: "No sequence issues detected.",
+      impactTitle: "Downstream impact",
+      impactDescription:
+        "Updating this reusable content affects these authorized references.",
+      tests: "Tests",
+      cycles: "Cycles",
+      schedules: "Schedules",
+    },
     picker: {
       title: "Available items",
       description: "Find and select eligible items for this sequence.",
@@ -900,14 +917,48 @@ export default {
       status: "Status",
     },
     diagnostics: {
+      archivedDependency:
+        "An archived dependency cannot be used in this sequence.",
       invalid: "This item is invalid and cannot be selected.",
+      incompatibleRuntime:
+        "This item uses a runtime that is incompatible with the sequence.",
       malformed: "The saved sequence is malformed.",
       duplicate: "This item already exists in the sequence.",
       limit: "The sequence exceeds the supported item limit.",
+      missingVersion: "This reusable item does not have a selected version.",
       referenceMissing:
         "The referenced item is missing or is no longer available.",
       referenceStale:
         "A newer version of this item is available. Review it before saving.",
+      required: "The sequence does not contain all required items.",
+      serverRejected:
+        "The server rejected this sequence without exposing protected details.",
+    },
+    remediation: {
+      addRequired: "Add the required item before saving.",
+      archivedDependency:
+        "Replace the archived dependency with an active authorized item.",
+      duplicate: "Remove the duplicate occurrence.",
+      incompatibleRuntime:
+        "Use items with compatible runtimes or change the sequence policy.",
+      invalid: "Replace the invalid item.",
+      limit: "Reduce the number of selected items.",
+      malformed: "Reload the sequence and repair its saved structure.",
+      missingVersion: "Select an immutable version for this item.",
+      reduceItems: "Remove items until the policy limit is satisfied.",
+      referenceMissing: "Replace the missing reference.",
+      referenceStale: "Review and select the current authorized version.",
+      removeDuplicate: "Remove the duplicate occurrence.",
+      replaceArchived:
+        "Replace the archived dependency with an active authorized item.",
+      replaceMissing: "Replace the missing reference.",
+      required: "Add the required item before saving.",
+      reviewVersion: "Review and select the current authorized version.",
+      selectVersion: "Select an immutable version for this item.",
+      serverRejected:
+        "Review the fields and retry. Contact an administrator if it persists.",
+      useCompatibleRuntime:
+        "Use items with compatible runtimes or change the sequence policy.",
     },
     unavailableItem: "Unavailable item",
   },

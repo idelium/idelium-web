@@ -2,6 +2,18 @@ const MAX_SEQUENCE_ITEMS = 500;
 const SAFE_IDENTIFIER = /^[a-zA-Z0-9_.:-]+$/;
 const PROTECTED_METADATA_KEY =
   /(authorization|cookie|credential|password|secret|session|token)/i;
+const SUPPORTED_SERVER_DIAGNOSTICS = new Set([
+  "sequence.archivedDependency",
+  "sequence.duplicate",
+  "sequence.incompatibleRuntime",
+  "sequence.invalid",
+  "sequence.limit",
+  "sequence.malformed",
+  "sequence.missingVersion",
+  "sequence.referenceMissing",
+  "sequence.referenceStale",
+  "sequence.required",
+]);
 
 export const SEQUENCE_ITEM_STATUS = Object.freeze({
   ACTIVE: "active",
@@ -209,6 +221,186 @@ export function hasBlockingSequenceDiagnostics(sequence) {
   );
 }
 
+export function validateSequenceComposition(
+  sequence,
+  policy = {},
+  serverDiagnostics = [],
+) {
+  const items = Array.isArray(sequence?.items) ? sequence.items : [];
+  const minimum = boundedInteger(policy.minimumItems, 1, 0, MAX_SEQUENCE_ITEMS);
+  const maximum = boundedInteger(
+    policy.maximumItems,
+    MAX_SEQUENCE_ITEMS,
+    1,
+    MAX_SEQUENCE_ITEMS,
+  );
+  const warningAcknowledgementCodes = new Set(
+    Array.isArray(policy.warningAcknowledgementCodes)
+      ? policy.warningAcknowledgementCodes
+      : [],
+  );
+  const clientDiagnostics = [];
+
+  if (items.length < minimum) {
+    clientDiagnostics.push(
+      compositionDiagnostic(
+        "sequence.required",
+        SEQUENCE_DIAGNOSTIC_SEVERITY.ERROR,
+        null,
+        "sequence",
+        "sequence.remediation.addRequired",
+        { minimum },
+      ),
+    );
+  }
+  if (items.length > maximum) {
+    clientDiagnostics.push(
+      compositionDiagnostic(
+        "sequence.limit",
+        SEQUENCE_DIAGNOSTIC_SEVERITY.ERROR,
+        null,
+        "sequence",
+        "sequence.remediation.reduceItems",
+        { maximum },
+      ),
+    );
+  }
+
+  const identities = new Set();
+  const firstRuntime = items.find((item) => item.metadata?.runtime)?.metadata
+    ?.runtime;
+  for (const item of items) {
+    if (identities.has(item.identity)) {
+      clientDiagnostics.push(
+        compositionDiagnostic(
+          "sequence.duplicate",
+          policy.duplicatePolicy === "allow"
+            ? SEQUENCE_DIAGNOSTIC_SEVERITY.WARNING
+            : SEQUENCE_DIAGNOSTIC_SEVERITY.ERROR,
+          item.identity,
+          "item",
+          "sequence.remediation.removeDuplicate",
+        ),
+      );
+    }
+    identities.add(item.identity);
+
+    if (item.status === SEQUENCE_ITEM_STATUS.ARCHIVED) {
+      clientDiagnostics.push(
+        compositionDiagnostic(
+          "sequence.archivedDependency",
+          SEQUENCE_DIAGNOSTIC_SEVERITY.ERROR,
+          item.identity,
+          "item",
+          "sequence.remediation.replaceArchived",
+        ),
+      );
+    } else if (item.status === SEQUENCE_ITEM_STATUS.MISSING) {
+      clientDiagnostics.push(
+        compositionDiagnostic(
+          "sequence.referenceMissing",
+          SEQUENCE_DIAGNOSTIC_SEVERITY.ERROR,
+          item.identity,
+          "item",
+          "sequence.remediation.replaceMissing",
+        ),
+      );
+    } else if (item.status === SEQUENCE_ITEM_STATUS.STALE) {
+      clientDiagnostics.push(
+        compositionDiagnostic(
+          "sequence.referenceStale",
+          SEQUENCE_DIAGNOSTIC_SEVERITY.WARNING,
+          item.identity,
+          "item",
+          "sequence.remediation.reviewVersion",
+        ),
+      );
+    }
+
+    if (policy.requireVersions === true && item.version == null) {
+      clientDiagnostics.push(
+        compositionDiagnostic(
+          "sequence.missingVersion",
+          SEQUENCE_DIAGNOSTIC_SEVERITY.ERROR,
+          item.identity,
+          "field",
+          "sequence.remediation.selectVersion",
+        ),
+      );
+    }
+
+    const runtime = item.metadata?.runtime;
+    if (
+      policy.allowMixedRuntimes === false &&
+      firstRuntime != null &&
+      runtime != null &&
+      runtime !== firstRuntime
+    ) {
+      clientDiagnostics.push(
+        compositionDiagnostic(
+          "sequence.incompatibleRuntime",
+          SEQUENCE_DIAGNOSTIC_SEVERITY.ERROR,
+          item.identity,
+          "item",
+          "sequence.remediation.useCompatibleRuntime",
+        ),
+      );
+    }
+  }
+
+  const safeServerDiagnostics = normalizeServerSequenceDiagnostics(
+    serverDiagnostics,
+    identities,
+  );
+  const diagnostics = deduplicateDiagnostics([
+    ...clientDiagnostics,
+    ...safeServerDiagnostics,
+  ]).map((entry) => ({
+    ...entry,
+    requiresAcknowledgement:
+      entry.severity === SEQUENCE_DIAGNOSTIC_SEVERITY.WARNING &&
+      warningAcknowledgementCodes.has(entry.code),
+  }));
+
+  return {
+    diagnostics,
+    canSave: !diagnostics.some(
+      (entry) => entry.severity === SEQUENCE_DIAGNOSTIC_SEVERITY.ERROR,
+    ),
+  };
+}
+
+export function summarizeSequenceImpact(rawImpact = {}) {
+  const references = {
+    tests: boundedInteger(rawImpact.tests, 0, 0, 1_000_000),
+    cycles: boundedInteger(rawImpact.cycles, 0, 0, 1_000_000),
+    schedules: boundedInteger(rawImpact.schedules, 0, 0, 1_000_000),
+  };
+  return {
+    references,
+    total: Object.values(references).reduce((total, count) => total + count, 0),
+  };
+}
+
+export function sequenceSaveState(validation, acknowledgedCodes = []) {
+  const diagnostics = Array.isArray(validation?.diagnostics)
+    ? validation.diagnostics
+    : [];
+  const acknowledged = new Set(acknowledgedCodes);
+  const hasErrors = diagnostics.some(
+    (entry) => entry.severity === SEQUENCE_DIAGNOSTIC_SEVERITY.ERROR,
+  );
+  const hasUnacknowledgedWarnings = diagnostics.some(
+    (entry) =>
+      entry.requiresAcknowledgement === true && !acknowledged.has(entry.code),
+  );
+  return {
+    canSave: !hasErrors && !hasUnacknowledgedWarnings,
+    hasErrors,
+    hasUnacknowledgedWarnings,
+  };
+}
+
 function parseSequence(rawSequence, diagnostics) {
   if (Array.isArray(rawSequence)) return rawSequence;
   if (typeof rawSequence === "string") {
@@ -281,6 +473,83 @@ function sanitizeDisplayMetadata(metadata) {
 
 function diagnostic(code, severity, identity, context = {}) {
   return { code, severity, identity, context };
+}
+
+function compositionDiagnostic(
+  code,
+  severity,
+  identity,
+  scope,
+  remediationKey,
+  context = {},
+) {
+  return {
+    code,
+    severity,
+    identity,
+    scope,
+    remediationKey,
+    context,
+    source: "client",
+  };
+}
+
+function normalizeServerSequenceDiagnostics(rawDiagnostics, identities) {
+  if (!Array.isArray(rawDiagnostics)) return [];
+  return rawDiagnostics.slice(0, 100).map((entry) => {
+    const code = SUPPORTED_SERVER_DIAGNOSTICS.has(entry?.code)
+      ? entry.code
+      : "sequence.serverRejected";
+    const requestedIdentity = safeDiagnosticIdentity(entry?.identity);
+    return {
+      code,
+      severity:
+        entry?.severity === SEQUENCE_DIAGNOSTIC_SEVERITY.WARNING
+          ? SEQUENCE_DIAGNOSTIC_SEVERITY.WARNING
+          : SEQUENCE_DIAGNOSTIC_SEVERITY.ERROR,
+      identity:
+        requestedIdentity != null && identities.has(requestedIdentity)
+          ? requestedIdentity
+          : null,
+      scope: ["field", "item", "sequence"].includes(entry?.scope)
+        ? entry.scope
+        : "sequence",
+      remediationKey: `sequence.remediation.${code.replace("sequence.", "")}`,
+      context: {},
+      source: "server",
+    };
+  });
+}
+
+function deduplicateDiagnostics(entries) {
+  const seen = new Set();
+  return entries.filter((entry) => {
+    const key = [
+      entry.code,
+      entry.severity,
+      entry.identity,
+      entry.scope,
+      entry.source,
+    ].join("|");
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function safeDiagnosticIdentity(value) {
+  const normalized = String(value ?? "").trim();
+  return normalized !== "" &&
+    normalized.length <= 200 &&
+    SAFE_IDENTIFIER.test(normalized)
+    ? normalized
+    : null;
+}
+
+function boundedInteger(value, fallback, minimum, maximum) {
+  const number = Number(value);
+  if (!Number.isInteger(number)) return fallback;
+  return Math.min(Math.max(number, minimum), maximum);
 }
 
 function normalizeEntityId(value) {

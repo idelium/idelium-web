@@ -111,6 +111,28 @@ container bounds. The component does not use a drag library or global listener;
 its unmount hook clears drag, focus, and element references so route changes
 cannot leave library state behind.
 
+## Validation and downstream impact
+
+`validateSequenceComposition` evaluates required item counts, duplicates,
+incompatible runtimes, archived or missing dependencies, stale references,
+required immutable versions, and bounded policy limits. Every diagnostic has a
+stable code, `error` or `warning` severity, sequence/item/field scope, affected
+stable identity when authorized, and a localization remediation key. Errors
+block saving. Warnings block only when their code is explicitly listed in the
+policy and has not been acknowledged.
+
+Server validation remains authoritative and is merged after client validation.
+Only supported codes, severities, scopes, and identities already present in the
+authorized sequence are accepted. Server messages, arbitrary context, and
+unknown identities are discarded; an unknown rejection becomes the generic
+`sequence.serverRejected` error. This prevents backend diagnostics from
+accidentally rendering credentials or cross-tenant metadata.
+
+Reusable-content routes may provide an impact response to
+`summarizeSequenceImpact`. The UI renders bounded aggregate counts for authorized
+tests, cycles, and schedules only. Names and other response properties are never
+carried into the impact contract.
+
 ## Audit events
 
 Comparing the last persisted sequence with the next sequence produces ordered

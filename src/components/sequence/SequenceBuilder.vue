@@ -19,6 +19,17 @@
       v-on:retry="$emit('picker-retry')"
     />
 
+    <SequenceValidationPanel
+      v-if="validation != null"
+      v-model:acknowledged-codes="acknowledgedWarningCodes"
+      :copy="copy.validation"
+      :diagnostic-copy="copy.diagnostics"
+      :impact="impactSummary"
+      :remediation-copy="copy.remediation"
+      :validation="validation"
+      v-on:update:acknowledged-codes="acknowledgeWarnings"
+    />
+
     <section
       class="sequence-builder__selected"
       v-on:dragover="autoScroll"
@@ -179,13 +190,20 @@
 
 <script>
 import EntityPicker from "@/components/sequence/EntityPicker.vue";
+import SequenceValidationPanel from "@/components/sequence/SequenceValidationPanel.vue";
 import EnterpriseGridState from "@/components/shared/EnterpriseGridState.vue";
 import IdButton from "@/components/ui/IdButton.vue";
 
 export default {
   name: "SequenceBuilder",
-  components: { EnterpriseGridState, EntityPicker, IdButton },
+  components: {
+    EnterpriseGridState,
+    EntityPicker,
+    IdButton,
+    SequenceValidationPanel,
+  },
   emits: [
+    "acknowledge-warnings",
     "duplicate",
     "picker-query-change",
     "picker-retry",
@@ -195,6 +213,13 @@ export default {
     accessibleLabel: { type: String, required: true },
     availableItems: { type: Array, default: () => [] },
     copy: { type: Object, required: true },
+    impactSummary: {
+      type: Object,
+      default: () => ({
+        references: { tests: 0, cycles: 0, schedules: 0 },
+        total: 0,
+      }),
+    },
     pickerError: { type: [Error, Object, String], default: null },
     pickerFilters: { type: Array, default: () => [] },
     pickerLoading: { type: Boolean, default: false },
@@ -206,9 +231,11 @@ export default {
     },
     pickerStale: { type: Boolean, default: false },
     sequence: { type: Array, default: () => [] },
+    validation: { type: Object, default: null },
   },
   data() {
     return {
+      acknowledgedWarningCodes: [],
       announcement: "",
       draggedSequenceIdentity: null,
       itemElements: {},
@@ -249,6 +276,10 @@ export default {
     this.itemElements = {};
   },
   methods: {
+    acknowledgeWarnings(codes) {
+      this.acknowledgedWarningCodes = codes;
+      this.$emit("acknowledge-warnings", codes);
+    },
     addItem(item) {
       this.addItems([item]);
     },
