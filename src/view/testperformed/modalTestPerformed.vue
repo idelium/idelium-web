@@ -23,12 +23,64 @@
             ></button>
           </div>
           <div v-if="fullscreen == false">
-            <timeline
-              ref="timeline"
-              :steps="arrayStep"
-              :expand-label="language[config.currentLanguage].Actions.expand"
-              v-on:showImage="showImage"
-            />
+            <section class="execution-overview-panel">
+              <div class="execution-result-header">
+                <div>
+                  <h6>
+                    {{
+                      resultLabel(
+                        "stepOverview",
+                        "Step execution overview",
+                      )
+                    }}
+                  </h6>
+                  <p>
+                    {{
+                      resultLabel(
+                        "stepOverviewHelp",
+                        "Review passed and failed steps, step duration, and the elapsed time between adjacent steps.",
+                      )
+                    }}
+                  </p>
+                </div>
+                <span
+                  :class="[
+                    'execution-overview-state',
+                    executionSummary.failed > 0
+                      ? 'execution-overview-state--failed'
+                      : 'execution-overview-state--passed',
+                  ]"
+                >
+                  {{
+                    executionSummary.failed > 0
+                      ? resultLabel("failed", "failed")
+                      : resultLabel("success", "success")
+                  }}
+                </span>
+              </div>
+              <div class="execution-kpi-grid">
+                <article class="execution-kpi-card">
+                  <span>{{ resultLabel("totalSteps", "total steps") }}</span>
+                  <strong>{{ executionSummary.total }}</strong>
+                </article>
+                <article class="execution-kpi-card execution-kpi-card--passed">
+                  <span>{{ resultLabel("passedSteps", "passed steps") }}</span>
+                  <strong>{{ executionSummary.passed }}</strong>
+                </article>
+                <article class="execution-kpi-card execution-kpi-card--failed">
+                  <span>{{ resultLabel("failedSteps", "failed steps") }}</span>
+                  <strong>{{ executionSummary.failed }}</strong>
+                </article>
+                <article class="execution-kpi-card">
+                  <span>{{ resultLabel("totalDuration", "total duration") }}</span>
+                  <strong>{{ formatDuration(executionSummary.durationMs) }}</strong>
+                </article>
+                <article class="execution-kpi-card">
+                  <span>{{ resultLabel("totalGap", "between steps") }}</span>
+                  <strong>{{ formatDuration(executionSummary.gapMs) }}</strong>
+                </article>
+              </div>
+            </section>
             <section
               v-if="executionTimeline.length > 0"
               class="execution-timeline-panel"
@@ -50,6 +102,34 @@
                   {{ executionTimeline.length }}
                 </span>
               </div>
+              <div class="execution-step-chart">
+                <div
+                  v-for="item in executionTimeline"
+                  :key="'chart-' + item.id"
+                  class="execution-step-chart-row"
+                >
+                  <span class="execution-step-chart-label">
+                    {{ item.name }}
+                  </span>
+                  <div class="execution-step-chart-track">
+                    <span
+                      class="execution-step-chart-gap"
+                      :style="{ width: item.gapWidth }"
+                    />
+                    <span
+                      :class="[
+                        'execution-step-chart-duration',
+                        `execution-step-chart-duration--${item.variant}`,
+                      ]"
+                      :style="{ width: item.durationWidth }"
+                    />
+                  </div>
+                  <span class="execution-step-chart-value">
+                    {{ item.duration }}
+                    <small>+{{ item.gap }}</small>
+                  </span>
+                </div>
+              </div>
               <ol class="execution-timeline-list">
                 <li
                   v-for="item in executionTimeline"
@@ -69,6 +149,10 @@
                       <div>
                         <dt>{{ resultLabel("duration", "duration") }}</dt>
                         <dd>{{ item.duration }}</dd>
+                      </div>
+                      <div>
+                        <dt>{{ resultLabel("gap", "gap") }}</dt>
+                        <dd>{{ item.gap }}</dd>
                       </div>
                       <div>
                         <dt>{{ resultLabel("diagnostics", "diagnostics") }}</dt>
@@ -103,6 +187,8 @@
                           .stepStatus
                       }}
                     </th>
+                    <th scope="col">{{ resultLabel("duration", "duration") }}</th>
+                    <th scope="col">{{ resultLabel("gap", "gap") }}</th>
                     <th scope="col">
                       {{
                         language[config.currentLanguage].TestsPerformed
@@ -133,6 +219,8 @@
                           {{ getStepStatusText(step) }}
                         </button>
                       </td>
+                      <td>{{ formatDuration(stepDuration(step)) }}</td>
+                      <td>{{ formatDuration(stepGap(step, index)) }}</td>
                       <td>
                         <span
                           v-for="screen in safeScreenshots(step)"
@@ -162,7 +250,7 @@
                       v-if="step.type == 'postman'"
                       class="postman-result-row"
                     >
-                      <td colspan="6">
+                      <td colspan="8">
                         <section class="postman-result-panel">
                           <div class="postman-result-header">
                             <div>
@@ -233,7 +321,7 @@
                       "
                       class="bidi-result-row"
                     >
-                      <td colspan="6">
+                      <td colspan="8">
                         <section class="bidi-result-panel">
                           <div class="bidi-result-header">
                             <div>
@@ -333,7 +421,7 @@
                       v-if="hasExecutionResultDetails(step)"
                       class="execution-result-row"
                     >
-                      <td colspan="6">
+                      <td colspan="8">
                         <section
                           class="execution-result-panel"
                           :aria-label="
@@ -538,7 +626,7 @@
   max-width: 100%;
 }
 .buttonTest {
-  min-width: 80%;
+  min-width: 7rem;
 }
 .iconClass {
   font-size: 18px !important;
@@ -549,6 +637,66 @@
   overflow-y: auto;
   max-height: 50vh;
   min-width: 100%;
+}
+.execution-overview-panel {
+  background:
+    radial-gradient(circle at top right, rgba(255, 109, 31, 0.2), transparent 34%),
+    rgba(15, 18, 28, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 20px;
+  margin: 0.75rem;
+  padding: 1rem;
+}
+.execution-overview-state {
+  align-items: center;
+  border-radius: 999px;
+  display: inline-flex;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  padding: 0.45rem 0.85rem;
+  text-transform: uppercase;
+}
+.execution-overview-state--passed {
+  background: rgba(47, 191, 113, 0.18);
+  border: 1px solid rgba(47, 191, 113, 0.45);
+  color: #74e8a7;
+}
+.execution-overview-state--failed {
+  background: rgba(255, 93, 93, 0.18);
+  border: 1px solid rgba(255, 93, 93, 0.45);
+  color: #ff9c9c;
+}
+.execution-kpi-grid {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+}
+.execution-kpi-card {
+  background: rgba(255, 255, 255, 0.045);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 0.85rem;
+}
+.execution-kpi-card span {
+  color: rgba(246, 247, 251, 0.62);
+  display: block;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.execution-kpi-card strong {
+  color: #f6f7fb;
+  display: block;
+  font-size: 1.35rem;
+  margin-top: 0.35rem;
+}
+.execution-kpi-card--passed strong {
+  color: #74e8a7;
+}
+.execution-kpi-card--failed strong {
+  color: #ff9c9c;
 }
 .postman-result-row td {
   padding: 0;
@@ -695,8 +843,62 @@
 .execution-timeline-meta {
   display: grid;
   gap: 0.55rem;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   margin: 0.75rem 0 0;
+}
+.execution-step-chart {
+  display: grid;
+  gap: 0.65rem;
+  margin-bottom: 1rem;
+}
+.execution-step-chart-row {
+  align-items: center;
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: minmax(10rem, 1.2fr) minmax(12rem, 3fr) minmax(6rem, auto);
+}
+.execution-step-chart-label,
+.execution-step-chart-value {
+  color: #f6f7fb;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.execution-step-chart-value small {
+  color: rgba(246, 247, 251, 0.52);
+  margin-left: 0.3rem;
+}
+.execution-step-chart-track {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.07);
+  border-radius: 999px;
+  display: flex;
+  height: 0.75rem;
+  overflow: hidden;
+}
+.execution-step-chart-gap {
+  background: repeating-linear-gradient(
+    90deg,
+    rgba(148, 163, 184, 0.46),
+    rgba(148, 163, 184, 0.46) 4px,
+    rgba(148, 163, 184, 0.18) 4px,
+    rgba(148, 163, 184, 0.18) 8px
+  );
+  height: 100%;
+}
+.execution-step-chart-duration {
+  min-width: 0.35rem;
+  height: 100%;
+}
+.execution-step-chart-duration--success {
+  background: linear-gradient(90deg, #18b26b, #74e8a7);
+}
+.execution-step-chart-duration--danger {
+  background: linear-gradient(90deg, #ff3f3f, #ff9c9c);
 }
 .execution-timeline-meta dt {
   color: rgba(246, 247, 251, 0.58);
@@ -933,6 +1135,8 @@ export default {
       return this.resultLabel(status, status);
     },
     executionTimelineItem(step, index) {
+      const durationMs = this.stepDuration(step);
+      const gapMs = this.stepGap(step, index);
       const normalized = normalizeExecutionTimeline([
         {
           ...step,
@@ -940,19 +1144,23 @@ export default {
             step?.type === "postman" && this.isPostmanStepFailed(step)
               ? "failed"
               : undefined,
-          durationMs: this.stepDuration(step),
+          durationMs,
           diagnostics: this.stepDiagnostics(step).map(
             (diagnostic) => diagnostic.message,
           ),
           artifacts: this.stepArtifacts(step),
         },
       ])[0];
+      const totalMs = Math.max(this.executionSummary.longestSegmentMs, 1);
       return {
         id: normalized.id || step?.id || index,
         name: normalized.name || step?.name || `#${index + 1}`,
         variant: normalized.state === "passed" ? "success" : "danger",
         statusText: this.resultLabel(normalized.state, normalized.state),
-        duration: this.formatDuration(normalized.durationMs),
+        duration: this.formatDuration(durationMs),
+        gap: this.formatDuration(gapMs),
+        durationWidth: this.segmentWidth(durationMs, totalMs),
+        gapWidth: this.segmentWidth(gapMs, totalMs),
         diagnostics: normalized.diagnostics.length,
         artifacts: normalized.artifactCount,
       };
@@ -1125,15 +1333,77 @@ export default {
     },
     stepDuration(step) {
       const payload = this.safeStepData(step);
-      return (
+      const explicitDuration =
         payload.durationMilliseconds ||
         payload.trace?.timing?.durationMilliseconds ||
-        step?.durationMilliseconds ||
-        0
+        step?.durationMilliseconds;
+      if (Number(explicitDuration) > 0) {
+        return Number(explicitDuration);
+      }
+      const startedAt = this.timestampMs(
+        payload.startedAt ||
+          payload.trace?.timing?.startedAt ||
+          step?.startedAt ||
+          step?.created_at,
+      );
+      const finishedAt = this.timestampMs(
+        payload.finishedAt ||
+          payload.trace?.timing?.finishedAt ||
+          step?.finishedAt ||
+          step?.updated_at,
+      );
+      if (startedAt != null && finishedAt != null && finishedAt >= startedAt) {
+        return finishedAt - startedAt;
+      }
+      return 0;
+    },
+    stepGap(step, index) {
+      if (index <= 0) return 0;
+      const previousStep = this.arrayStep[index - 1];
+      const previousEnd = this.stepFinishedAt(previousStep);
+      const currentStart = this.stepStartedAt(step);
+      if (previousEnd == null || currentStart == null) return 0;
+      return Math.max(currentStart - previousEnd, 0);
+    },
+    stepStartedAt(step) {
+      const payload = this.safeStepData(step);
+      return this.timestampMs(
+        payload.startedAt ||
+          payload.trace?.timing?.startedAt ||
+          step?.startedAt ||
+          step?.created_at,
       );
     },
+    stepFinishedAt(step) {
+      const payload = this.safeStepData(step);
+      return this.timestampMs(
+        payload.finishedAt ||
+          payload.trace?.timing?.finishedAt ||
+          step?.finishedAt ||
+          step?.updated_at,
+      );
+    },
+    timestampMs(value) {
+      if (value == null || value === "") return null;
+      if (typeof value === "number" && Number.isFinite(value)) {
+        return value;
+      }
+      const parsed = Date.parse(String(value));
+      return Number.isNaN(parsed) ? null : parsed;
+    },
+    isStepPassed(step) {
+      return this.getStepVariant(step) === "success";
+    },
+    segmentWidth(value, total) {
+      if (Number(value) <= 0) return "0%";
+      return `${Math.max((Number(value) / Number(total || 1)) * 100, 3)}%`;
+    },
     formatDuration(milliseconds) {
-      return `${Number(milliseconds || 0)} ms`;
+      const value = Number(milliseconds || 0);
+      if (value >= 1000) {
+        return `${(value / 1000).toFixed(value >= 10000 ? 1 : 2)} s`;
+      }
+      return `${Math.round(value)} ms`;
     },
     formatBidiValue(value) {
       if (value === null || typeof value === "undefined" || value === "") {
@@ -1198,6 +1468,23 @@ export default {
     },
   },
   computed: {
+    executionSummary() {
+      const durations = this.arrayStep.map((step) => this.stepDuration(step));
+      const gaps = this.arrayStep.map((step, index) =>
+        this.stepGap(step, index),
+      );
+      const passed = this.arrayStep.filter((step) => this.isStepPassed(step))
+        .length;
+      const failed = this.arrayStep.length - passed;
+      return {
+        total: this.arrayStep.length,
+        passed,
+        failed,
+        durationMs: durations.reduce((total, value) => total + value, 0),
+        gapMs: gaps.reduce((total, value) => total + value, 0),
+        longestSegmentMs: Math.max(...durations, ...gaps, 1),
+      };
+    },
     executionTimeline() {
       return this.arrayStep.map((step, index) =>
         this.executionTimelineItem(step, index),

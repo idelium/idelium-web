@@ -87,6 +87,14 @@ function mountModal() {
               page: "page",
               timeline: "Execution timeline",
               timelineHelp: "Inspect each step state.",
+              stepOverview: "Step execution overview",
+              stepOverviewHelp: "Review step timings.",
+              totalSteps: "total steps",
+              passedSteps: "passed steps",
+              failedSteps: "failed steps",
+              totalDuration: "total duration",
+              totalGap: "between steps",
+              gap: "gap",
               artifactViewer: "Artifact viewer",
               closeArtifact: "Close",
               artifactPreviewUnavailable: "No inline preview.",
@@ -415,6 +423,49 @@ describe("performed test details modal", () => {
 
     expect(wrapper.text()).toContain("No inline preview.");
     expect(wrapper.text()).not.toContain("secret-token");
+  });
+
+  it("shows step pass/fail metrics, duration, and elapsed time between steps", async () => {
+    const wrapper = mountModal();
+
+    await wrapper.vm.showModal(
+      [
+        {
+          id: 1,
+          name: "open browser",
+          status: 1,
+          type: "selenium",
+          screenshots: "[]",
+          created_at: "2026-07-29T10:00:00.000Z",
+          updated_at: "2026-07-29T10:00:01.200Z",
+        },
+        {
+          id: 2,
+          name: "submit form",
+          status: 2,
+          type: "selenium",
+          screenshots: "[]",
+          created_at: "2026-07-29T10:00:02.000Z",
+          updated_at: "2026-07-29T10:00:02.300Z",
+        },
+      ],
+      "selenium",
+    );
+
+    expect(wrapper.find(".execution-overview-panel").exists()).toBe(true);
+    expect(wrapper.text()).toContain("total steps");
+    expect(wrapper.text()).toContain("passed steps");
+    expect(wrapper.text()).toContain("failed steps");
+    expect(wrapper.text()).toContain("1.20 s");
+    expect(wrapper.text()).toContain("800 ms");
+    expect(wrapper.findAll(".execution-step-chart-row")).toHaveLength(2);
+    expect(wrapper.vm.executionSummary).toMatchObject({
+      total: 2,
+      passed: 1,
+      failed: 1,
+      durationMs: 1500,
+      gapMs: 800,
+    });
   });
 
   it("ignores invalid screenshot payloads without breaking the modal", () => {

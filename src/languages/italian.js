@@ -91,6 +91,15 @@ export default {
     timeline: "Timeline esecuzione",
     timelineHelp:
       "Ispeziona stato, durata, diagnostics e artifact disponibili per ogni step senza uscire dal dettaglio esecuzione.",
+    stepOverview: "Panoramica esecuzione step",
+    stepOverviewHelp:
+      "Consulta step superati e falliti, durata degli step e tempo trascorso tra step adiacenti.",
+    totalSteps: "step totali",
+    passedSteps: "step superati",
+    failedSteps: "step falliti",
+    totalDuration: "durata totale",
+    totalGap: "tra gli step",
+    gap: "intervallo",
     artifactViewer: "Viewer artifact",
     closeArtifact: "Chiudi",
     artifactPreviewUnavailable:
@@ -852,6 +861,9 @@ export default {
     pageDescription:
       "Consulta le esecuzioni dei cicli di test, ispeziona i run effettuati e apri i dettagli di esecuzione di ogni test.",
     refresh: "Aggiorna",
+    showLatestResult: "Mostra ultimo risultato",
+    testRunningTab: "Test running",
+    testResultsTab: "Test results",
     columnTestCycle: "Cicli di test",
     columnTestCycleDate: "Cicli di test effettuati",
     columnTest: "Test effettuati",
@@ -872,6 +884,19 @@ export default {
     statusPending: "In attesa",
     statusPassed: "Superato",
     statusFailed: "Fallito",
+    statusSkipped: "Saltato",
+    executionSummary: "Riepilogo esecuzione",
+    executionSummaryHelp:
+      "Seleziona un run del ciclo, consulta tutti i test effettuati e poi ispeziona il test selezionato step by step.",
+    selectedRun: "Run selezionato",
+    cycleDuration: "Durata ciclo",
+    testsInRun: "Test nel run",
+    stepsInTest: "Step nel test",
+    showStepResults: "Mostra risultati step",
+    stepResults: "Risultati step by step",
+    selectTestFirst: "Seleziona un test per vedere i suoi step.",
+    emptySteps: "Non sono stati registrati step per questo test.",
+    stepDuration: "Durata step",
     parallelRuns: "Esecuzioni parallele",
     liveRuns: "Workspace run live",
     parallelRunsDescription:
@@ -949,7 +974,7 @@ export default {
     noResults: "Nessuna esecuzione corrisponde ai filtri selezionati.",
     resultCount: "{count} esecuzioni",
     runHistory: "Storico run",
-    runDetail: "Dettaglio esecuzione",
+    runDetail: "Strumenti avanzati esecuzione",
     saveView: "Salva vista",
     status: "Stato",
     tag: "Tag",
@@ -961,6 +986,8 @@ export default {
     artifactViewer: "Viewer artifact sicuro",
     fullArtifact: "Apri vista completa",
     noArtifacts: "Non sono disponibili artifact per questo run.",
+    noLogs: "Non sono ancora disponibili log per questo run.",
+    noAdvancedData: "Non sono disponibili dati avanzati per questo tab.",
     artifactStates: {
       available:
         "Il contenuto è disponibile tramite un descrittore autorizzato e temporaneo.",

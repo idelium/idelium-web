@@ -91,6 +91,15 @@ export default {
     timeline: "Execution timeline",
     timelineHelp:
       "Inspect each step state, duration, diagnostics, and available artifacts without leaving the execution detail.",
+    stepOverview: "Step execution overview",
+    stepOverviewHelp:
+      "Review passed and failed steps, step duration, and the elapsed time between adjacent steps.",
+    totalSteps: "total steps",
+    passedSteps: "passed steps",
+    failedSteps: "failed steps",
+    totalDuration: "total duration",
+    totalGap: "between steps",
+    gap: "gap",
     artifactViewer: "Artifact viewer",
     closeArtifact: "Close",
     artifactPreviewUnavailable:
@@ -846,6 +855,9 @@ export default {
     pageDescription:
       "Review test cycle executions, inspect performed runs, and open the execution details for each test.",
     refresh: "Refresh",
+    showLatestResult: "Show latest result",
+    testRunningTab: "Test running",
+    testResultsTab: "Test results",
     columnTestCycle: "Test cycles",
     columnTestCycleDate: "Test cycles performed",
     columnTest: "Tests carried out",
@@ -866,6 +878,19 @@ export default {
     statusPending: "Pending",
     statusPassed: "Passed",
     statusFailed: "Failed",
+    statusSkipped: "Skipped",
+    executionSummary: "Execution summary",
+    executionSummaryHelp:
+      "Select a cycle run, review every performed test, then inspect the selected test step by step.",
+    selectedRun: "Selected run",
+    cycleDuration: "Cycle duration",
+    testsInRun: "Tests in run",
+    stepsInTest: "Steps in test",
+    showStepResults: "Show step results",
+    stepResults: "Step-by-step results",
+    selectTestFirst: "Select a test to see its steps.",
+    emptySteps: "No steps were recorded for this test.",
+    stepDuration: "Step duration",
     parallelRuns: "Parallel executions",
     liveRuns: "Live runs workspace",
     parallelRunsDescription:
@@ -943,7 +968,7 @@ export default {
     noResults: "No executions match the selected filters.",
     resultCount: "{count} executions",
     runHistory: "Run history",
-    runDetail: "Execution detail",
+    runDetail: "Advanced execution tools",
     saveView: "Save view",
     status: "Status",
     tag: "Tag",
@@ -955,6 +980,8 @@ export default {
     artifactViewer: "Secure artifact viewer",
     fullArtifact: "Open full view",
     noArtifacts: "No artifacts are available for this run.",
+    noLogs: "No logs are available for this run yet.",
+    noAdvancedData: "No advanced data is available for this tab.",
     artifactStates: {
       available:
         "Content is available through an authorized expiring descriptor.",

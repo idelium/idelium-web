@@ -14,6 +14,10 @@ describe("tests performed component", () => {
     api.get.mockReset();
     api.post.mockReset();
     vi.useRealTimers();
+    Object.defineProperty(window, "scrollTo", {
+      configurable: true,
+      value: vi.fn(),
+    });
     useSessionStore(pinia).selectProject(9);
   });
 
@@ -52,6 +56,9 @@ describe("tests performed component", () => {
                 pageTitle: "Tests performed",
                 pageDescription: "Review test cycle executions.",
                 refresh: "Refresh",
+                showLatestResult: "Show latest result",
+                testRunningTab: "Test running",
+                testResultsTab: "Test results",
                 columnTestCycle: "Test cycles",
                 columnTestCycleDate: "Test cycles performed",
                 columnTest: "Tests carried out",
@@ -71,6 +78,18 @@ describe("tests performed component", () => {
                 statusPending: "Pending",
                 statusPassed: "Passed",
                 statusFailed: "Failed",
+                statusSkipped: "Skipped",
+                executionSummary: "Execution summary",
+                executionSummaryHelp: "Review the selected execution.",
+                selectedRun: "Selected run",
+                cycleDuration: "Cycle duration",
+                testsInRun: "Tests in run",
+                stepsInTest: "Steps in test",
+                showStepResults: "Show step results",
+                stepResults: "Step-by-step results",
+                selectTestFirst: "Select a test to see its steps.",
+                emptySteps: "No steps were recorded.",
+                stepDuration: "Step duration",
                 parallelRuns: "Parallel executions",
                 liveRuns: "Live runs workspace",
                 parallelRunsDescription: "Monitor distributed runs.",
@@ -138,7 +157,7 @@ describe("tests performed component", () => {
                 noResults: "No runs match filters.",
                 resultCount: "{count} executions",
                 runHistory: "Run history",
-                runDetail: "Execution detail",
+                runDetail: "Advanced execution tools",
                 saveView: "Save view",
                 status: "Status",
                 tag: "Tag",
@@ -149,6 +168,8 @@ describe("tests performed component", () => {
                 artifactViewer: "Secure artifact viewer",
                 fullArtifact: "Open full view",
                 noArtifacts: "No artifacts.",
+                noLogs: "No logs.",
+                noAdvancedData: "No advanced data.",
                 artifactStates: {
                   available: "Available.",
                   expired: "Expired.",
@@ -207,11 +228,40 @@ describe("tests performed component", () => {
     expect(wrapper.find(".testsperformed-hero").exists()).toBe(true);
     expect(wrapper.findAll(".testsperformed-metric")).toHaveLength(4);
     expect(wrapper.find(".testsperformed-workspace").exists()).toBe(true);
-    expect(wrapper.findAll(".testsperformed-panel")).toHaveLength(3);
+    expect(wrapper.findAll(".testsperformed-panel")).toHaveLength(4);
+    expect(wrapper.find(".testsperformed-step-panel").exists()).toBe(true);
     expect(wrapper.find(".testsperformed-parallel-panel").exists()).toBe(true);
     expect(wrapper.find(".testsperformed-analytics-panel").exists()).toBe(true);
+    expect(wrapper.findAll(".testsperformed-page-tab")).toHaveLength(2);
+    expect(wrapper.find(".testsperformed-page-tab.active").text()).toContain(
+      "Test results",
+    );
     expect(wrapper.findComponent({ name: "splitpanes" }).exists()).toBe(false);
     expect(wrapper.text()).toContain("Select a run first.");
+  });
+
+  it("separates live runs and historical results into top-level tabs", async () => {
+    api.get.mockResolvedValue({ data: [] });
+    const wrapper = mountTestsPerformed();
+
+    expect(wrapper.vm.activeExecutionTab).toBe("results");
+    expect(wrapper.find(".testsperformed-summary").attributes("style")).toBe(
+      undefined,
+    );
+    expect(
+      wrapper.find(".testsperformed-parallel-panel").attributes("style"),
+    ).toContain("display: none");
+
+    await wrapper.findAll(".testsperformed-page-tab")[0].trigger("click");
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.vm.activeExecutionTab).toBe("running");
+    expect(wrapper.find(".testsperformed-summary").attributes("style")).toContain(
+      "display: none",
+    );
+    expect(
+      wrapper.find(".testsperformed-parallel-panel").attributes("style"),
+    ).not.toContain("display: none");
   });
 
   it("loads test cycles through a bounded reload-safe page", async () => {
@@ -527,6 +577,158 @@ describe("tests performed component", () => {
     expect(wrapper.text()).toContain("Page 2 of 2");
   });
 
+  it("refreshes the selected test cycle and opens the newest execution automatically", async () => {
+    api.get.mockImplementation((url) => {
+      if (url.includes("testcycles/9")) {
+        return Promise.resolve({
+          data: [{ id: 7, name: "Postman cycle" }],
+        });
+      }
+      if (url.includes("testcycles-performed/7")) {
+        return Promise.resolve({
+          data: [
+            { id: 45, date: "2026-07-29 16:00:00", status: 2 },
+            { id: 44, date: "2026-07-29 15:00:00", status: 1 },
+          ],
+        });
+      }
+      if (url.includes("tests-performed/45")) {
+        return Promise.resolve({
+          data: [{ id: 5, name: "latest run test", status: 2 }],
+        });
+      }
+      return Promise.resolve({ data: [] });
+    });
+    const replace = vi.fn();
+    const wrapper = mountTestsPerformed({
+      $router: { replace },
+      $route: { name: "testsperformed", query: {} },
+    });
+
+    await wrapper.vm.refreshResults();
+
+    await vi.waitFor(() => expect(wrapper.vm.testCycleSelected).toBe(7));
+    expect(wrapper.vm.testCycleDateSelected).toBe(45);
+    expect(wrapper.vm.arrayTest).toEqual([
+      { id: 5, name: "latest run test", status: 2 },
+    ]);
+    expect(api.get).toHaveBeenCalledWith("/api/tests-performed/45", {
+      headers: {},
+      params: {
+        page: 1,
+        perPage: 25,
+        sort: "id",
+        direction: "asc",
+      },
+    });
+    expect(replace).toHaveBeenLastCalledWith({
+      query: {
+        testCycleId: "7",
+        runId: "45",
+        runPage: "1",
+        runPerPage: "25",
+        testPage: "1",
+        testPerPage: "25",
+      },
+    });
+  });
+
+  it("provides an explicit button to show the latest execution result", async () => {
+    api.get.mockImplementation((url) => {
+      if (url.includes("testcycles/9")) {
+        return Promise.resolve({ data: [{ id: 7, name: "Postman cycle" }] });
+      }
+      if (url.includes("testcycles-performed/7")) {
+        return Promise.resolve({
+          data: [{ id: 45, date: "2026-07-29 16:00:00", status: 2 }],
+        });
+      }
+      if (url.includes("tests-performed/45")) {
+        return Promise.resolve({
+          data: [{ id: 5, name: "latest run test", status: 2 }],
+        });
+      }
+      return Promise.resolve({ data: [] });
+    });
+    const wrapper = mountTestsPerformed({
+      $route: { name: "testsperformed", query: {} },
+    });
+
+    await wrapper.find(".testsperformed-latest-result").trigger("click");
+
+    await vi.waitFor(() => expect(wrapper.vm.testCycleDateSelected).toBe(45));
+    expect(wrapper.text()).toContain("latest run test");
+    expect(wrapper.find(".testsperformed-latest-result").text()).toContain(
+      "Show latest result",
+    );
+  });
+
+  it("shows all tests for a run and renders selected test steps inline", async () => {
+    api.get.mockImplementation((url) => {
+      if (url.includes("testcycles-performed/7")) {
+        return Promise.resolve({
+          data: [
+            {
+              id: 45,
+              date: "2026-07-29 16:00:00",
+              status: 2,
+              created_at: "2026-07-29T16:00:00.000Z",
+              updated_at: "2026-07-29T16:00:04.000Z",
+            },
+          ],
+        });
+      }
+      if (url.includes("tests-performed/45")) {
+        return Promise.resolve({
+          data: [
+            { id: 5, name: "login", status: 1 },
+            { id: 6, name: "checkout", status: 2 },
+            { id: 7, name: "logout", status: 5 },
+          ],
+        });
+      }
+      if (url.includes("steps-performed/5")) {
+        return Promise.resolve({
+          data: [
+            {
+              id: 11,
+              name: "open browser",
+              status: 1,
+              type: "selenium",
+              created_at: "2026-07-29T16:00:00.000Z",
+              updated_at: "2026-07-29T16:00:01.200Z",
+            },
+            {
+              id: 12,
+              name: "submit form",
+              status: 2,
+              type: "selenium",
+              created_at: "2026-07-29T16:00:02.000Z",
+              updated_at: "2026-07-29T16:00:02.500Z",
+            },
+          ],
+        });
+      }
+      return Promise.resolve({ data: [] });
+    });
+    const wrapper = mountTestsPerformed({
+      $route: { name: "testsperformed", query: {} },
+    });
+
+    await wrapper.vm.getTestCyclesDate(7);
+    await wrapper.vm.getTest(45);
+
+    await vi.waitFor(() => expect(wrapper.vm.selectedTestSteps).toHaveLength(2));
+    expect(wrapper.findAll(".testsperformed-test-card")).toHaveLength(3);
+    expect(wrapper.text()).toContain("login");
+    expect(wrapper.text()).toContain("checkout");
+    expect(wrapper.text()).toContain("logout");
+    expect(wrapper.text()).toContain("open browser");
+    expect(wrapper.text()).toContain("submit form");
+    expect(wrapper.text()).toContain("4.00 s");
+    expect(wrapper.text()).toContain("1.20 s");
+  });
+
   it("renders quality analytics and persists analytics filters in the route query", async () => {
     api.get.mockResolvedValue({ data: [] });
     const replace = vi.fn();
@@ -771,9 +973,21 @@ describe("tests performed component", () => {
 
     expect(wrapper.find(".testsperformed-run-detail").exists()).toBe(true);
     expect(wrapper.text()).toContain("#44");
-    expect(wrapper.text()).toContain("Execution detail");
+    expect(wrapper.text()).toContain("Advanced execution tools");
     expect(wrapper.text()).toContain("Partial snapshot.");
     expect(wrapper.vm.runDetailActiveTab).toBe("logs");
+    expect(wrapper.text()).toContain("No logs.");
+
+    await wrapper.setData({
+      arrayTest: [{ id: 5, name: "login", status: 1 }],
+    });
+
+    await wrapper
+      .findAll(".testsperformed-run-tabs .testsperformed-status-filter")
+      .find((button) => button.text() === "Tests")
+      .trigger("click");
+
+    expect(wrapper.text()).toContain("login");
 
     await wrapper
       .findAll(".testsperformed-run-tabs .testsperformed-status-filter")
@@ -783,6 +997,46 @@ describe("tests performed component", () => {
     expect(replace).toHaveBeenCalledWith({
       query: { tab: "artifacts" },
     });
+  });
+
+  it("preserves scroll position when changing run detail tabs", async () => {
+    const replace = vi.fn().mockResolvedValue();
+    const scrollTo = window.scrollTo;
+    const requestAnimationFrame = vi
+      .spyOn(window, "requestAnimationFrame")
+      .mockImplementation((callback) => {
+        callback();
+        return 1;
+      });
+    Object.defineProperty(window, "scrollX", {
+      configurable: true,
+      value: 12,
+    });
+    Object.defineProperty(window, "scrollY", {
+      configurable: true,
+      value: 480,
+    });
+    api.get.mockResolvedValue({ data: [] });
+
+    const wrapper = mountTestsPerformed({
+      $route: {
+        name: "execution-detail",
+        params: { projectId: "9", runId: "44" },
+        query: { tab: "overview" },
+      },
+      $router: { replace },
+    });
+
+    await wrapper.vm.$nextTick();
+    await wrapper
+      .findAll(".testsperformed-run-tabs .testsperformed-status-filter")
+      .find((button) => button.text() === "Reports")
+      .trigger("click");
+    await Promise.resolve();
+
+    expect(replace).toHaveBeenCalledWith({ query: { tab: "reports" } });
+    expect(scrollTo).toHaveBeenCalledWith(12, 480);
+    requestAnimationFrame.mockRestore();
   });
 
   it("renders route-backed drill-down nodes for the selected run", async () => {

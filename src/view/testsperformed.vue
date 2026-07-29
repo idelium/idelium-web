@@ -12,21 +12,66 @@
           {{ language[config.currentLanguage].TestsPerformed.pageDescription }}
         </p>
       </div>
-      <button
-        type="button"
-        class="btn btn-outline-light testsperformed-refresh"
-        v-on:click="getTestCycles()"
-        :title="language[config.currentLanguage].Actions.refresh"
-      >
-        <font-awesome-icon
-          icon="history"
-          class="iconClass idelium-action-icon--refresh"
-        />
-        {{ language[config.currentLanguage].TestsPerformed.refresh }}
-      </button>
+      <div class="testsperformed-hero-actions">
+        <button
+          type="button"
+          class="btn testsperformed-latest-result"
+          v-on:click="showLatestResult()"
+          :title="language[config.currentLanguage].TestsPerformed.showLatestResult"
+        >
+          <font-awesome-icon
+            icon="eye"
+            class="iconClass idelium-action-icon--view"
+          />
+          {{ language[config.currentLanguage].TestsPerformed.showLatestResult }}
+        </button>
+        <button
+          type="button"
+          class="btn btn-outline-light testsperformed-refresh"
+          v-on:click="refreshResults()"
+          :title="language[config.currentLanguage].Actions.refresh"
+        >
+          <font-awesome-icon
+            icon="history"
+            class="iconClass idelium-action-icon--refresh"
+          />
+          {{ language[config.currentLanguage].TestsPerformed.refresh }}
+        </button>
+      </div>
     </section>
 
-    <section class="testsperformed-summary">
+    <nav class="testsperformed-page-tabs" role="tablist">
+      <button
+        type="button"
+        :class="[
+          'testsperformed-page-tab',
+          { active: activeExecutionTab === 'running' },
+        ]"
+        role="tab"
+        :aria-selected="activeExecutionTab === 'running'"
+        v-on:click="activeExecutionTab = 'running'"
+      >
+        <font-awesome-icon icon="rocket" class="iconClass" />
+        {{ language[config.currentLanguage].TestsPerformed.testRunningTab }}
+        <span>{{ visibleLiveRuns.length }}</span>
+      </button>
+      <button
+        type="button"
+        :class="[
+          'testsperformed-page-tab',
+          { active: activeExecutionTab === 'results' },
+        ]"
+        role="tab"
+        :aria-selected="activeExecutionTab === 'results'"
+        v-on:click="activeExecutionTab = 'results'"
+      >
+        <font-awesome-icon icon="vial" class="iconClass" />
+        {{ language[config.currentLanguage].TestsPerformed.testResultsTab }}
+        <span>{{ arrayTestCyclesDate.length }}</span>
+      </button>
+    </nav>
+
+    <section v-show="activeExecutionTab === 'results'" class="testsperformed-summary">
       <article class="card testsperformed-metric">
         <span class="testsperformed-metric-label">
           {{ language[config.currentLanguage].TestsPerformed.columnTestCycle }}
@@ -57,6 +102,7 @@
 
     <section
       v-if="currentRunDetail"
+      v-show="activeExecutionTab === 'results'"
       class="card testsperformed-run-detail"
       aria-labelledby="run-detail-title"
     >
@@ -134,6 +180,139 @@
       <pre class="testsperformed-command">{{
         currentRunDetail.reproducibilityCommand
       }}</pre>
+      <div class="testsperformed-run-tab-content" aria-live="polite">
+        <div
+          v-if="runDetailActiveTab === 'overview'"
+          class="testsperformed-advanced-grid"
+        >
+          <article>
+            <span>{{ language[config.currentLanguage].TestsPerformed.status }}</span>
+            <strong>{{ parallelRunStatusLabel(currentRunDetail.status) }}</strong>
+          </article>
+          <article>
+            <span>{{ language[config.currentLanguage].TestsPerformed.testsInRun }}</span>
+            <strong>{{ arrayTest.length }}</strong>
+          </article>
+          <article>
+            <span>{{ language[config.currentLanguage].TestsPerformed.stepsInTest }}</span>
+            <strong>{{ selectedTestSteps.length }}</strong>
+          </article>
+        </div>
+        <div
+          v-else-if="runDetailActiveTab === 'tests'"
+          class="testsperformed-advanced-list"
+        >
+          <button
+            v-for="test in arrayTest"
+            v-bind:key="'advanced-test-' + test.id"
+            type="button"
+            class="testsperformed-advanced-row"
+            v-on:click="selectPerformedTest(test)"
+          >
+            <span :class="['testsperformed-status', getTestVariant(test)]">
+              {{ getTestStatusLabel(test) }}
+            </span>
+            <strong>{{ test.name }}</strong>
+          </button>
+          <div v-if="arrayTest.length === 0" class="testsperformed-empty testsperformed-empty-compact">
+            {{ language[config.currentLanguage].TestsPerformed.emptyTests }}
+          </div>
+        </div>
+        <div
+          v-else-if="runDetailActiveTab === 'workers'"
+          class="testsperformed-advanced-grid"
+        >
+          <article>
+            <span>{{ language[config.currentLanguage].TestsPerformed.workerConcurrency }}</span>
+            <strong>
+              {{ currentRunDetail.concurrency.active }}/{{
+                currentRunDetail.concurrency.requested
+              }}
+            </strong>
+          </article>
+          <article>
+            <span>{{ language[config.currentLanguage].TestsPerformed.progress }}</span>
+            <strong>
+              {{ currentRunDetail.progress.completed }}/{{
+                currentRunDetail.progress.total
+              }}
+            </strong>
+          </article>
+        </div>
+        <div
+          v-else-if="runDetailActiveTab === 'timeline'"
+          class="testsperformed-advanced-list"
+        >
+          <div
+            v-for="step in selectedTestSteps"
+            v-bind:key="'advanced-step-' + step.id"
+            class="testsperformed-advanced-row"
+          >
+            <span :class="['testsperformed-status', getStepVariant(step)]">
+              {{ getStepStatusLabel(step) }}
+            </span>
+            <strong>{{ step.name }}</strong>
+            <small>{{ stepDuration(step) }}</small>
+          </div>
+          <div
+            v-if="selectedTestSteps.length === 0"
+            class="testsperformed-empty testsperformed-empty-compact"
+          >
+            {{ language[config.currentLanguage].TestsPerformed.selectTestFirst }}
+          </div>
+        </div>
+        <div
+          v-else-if="runDetailActiveTab === 'logs'"
+          class="testsperformed-advanced-empty"
+        >
+          {{ language[config.currentLanguage].TestsPerformed.noLogs }}
+        </div>
+        <div
+          v-else-if="runDetailActiveTab === 'artifacts'"
+          class="testsperformed-advanced-list"
+        >
+          <article
+            v-for="artifact in secureArtifacts"
+            v-bind:key="'advanced-artifact-' + artifact.id"
+            class="testsperformed-advanced-row"
+          >
+            <span>{{ artifact.contentType }}</span>
+            <strong>{{ artifact.name }}</strong>
+            <button
+              type="button"
+              class="btn btn-sm btn-outline-light testsperformed-page-button"
+              v-on:click="openArtifactFullView(artifact)"
+            >
+              {{ language[config.currentLanguage].TestsPerformed.fullArtifact }}
+            </button>
+          </article>
+          <div
+            v-if="secureArtifacts.length === 0"
+            class="testsperformed-empty testsperformed-empty-compact"
+          >
+            {{ language[config.currentLanguage].TestsPerformed.noArtifacts }}
+          </div>
+        </div>
+        <div
+          v-else-if="runDetailActiveTab === 'reports'"
+          class="testsperformed-report-toolbar"
+        >
+          <button
+            v-for="format in reportFormats"
+            v-bind:key="'advanced-report-' + format"
+            type="button"
+            class="testsperformed-report-button"
+            :disabled="!selectedExecution || !isReportFormatAvailable(selectedExecution, format)"
+            :title="selectedExecution ? reportButtonLabel(selectedExecution, format) : format"
+            v-on:click="selectedExecution && downloadReport(selectedExecution, format)"
+          >
+            {{ format.toUpperCase() }}
+          </button>
+        </div>
+        <div class="testsperformed-advanced-empty">
+          {{ language[config.currentLanguage].TestsPerformed.noAdvancedData }}
+        </div>
+      </div>
       <div class="testsperformed-run-actions" aria-live="polite">
         <div>
           <span class="testsperformed-section-title">
@@ -248,7 +427,11 @@
       </p>
     </section>
 
-    <section class="card testsperformed-analytics-panel" aria-live="polite">
+    <section
+      v-show="activeExecutionTab === 'results'"
+      class="card testsperformed-analytics-panel"
+      aria-live="polite"
+    >
       <div class="testsperformed-panel-header">
         <div>
           <span class="testsperformed-section-title">
@@ -358,7 +541,10 @@
       </div>
     </section>
 
-    <section class="card testsperformed-history-panel">
+    <section
+      v-show="activeExecutionTab === 'results'"
+      class="card testsperformed-history-panel"
+    >
       <EnterpriseDataTable
         accessible-label="Run history"
         :actions="runHistoryActions"
@@ -438,7 +624,11 @@
       </div>
     </section>
 
-    <section class="card testsperformed-parallel-panel" aria-live="polite">
+    <section
+      v-show="activeExecutionTab === 'running'"
+      class="card testsperformed-parallel-panel"
+      aria-live="polite"
+    >
       <div class="testsperformed-panel-header">
         <div>
           <span class="testsperformed-section-title">
@@ -638,7 +828,63 @@
       </div>
     </section>
 
-    <section class="testsperformed-workspace">
+    <section
+      v-show="activeExecutionTab === 'results'"
+      class="testsperformed-workspace"
+    >
+      <article class="card testsperformed-execution-summary">
+        <div class="testsperformed-panel-header">
+          <div>
+            <span class="testsperformed-section-title">
+              {{
+                language[config.currentLanguage].TestsPerformed
+                  .executionSummary
+              }}
+            </span>
+            <p class="testsperformed-helper">
+              {{
+                language[config.currentLanguage].TestsPerformed
+                  .executionSummaryHelp
+              }}
+            </p>
+          </div>
+          <span
+            v-if="selectedExecution"
+            :class="['testsperformed-status', getVariant(selectedExecution.status)]"
+          >
+            {{ getStatusLabel(selectedExecution.status) }}
+          </span>
+        </div>
+        <div class="testsperformed-execution-metrics">
+          <article>
+            <span>{{
+              language[config.currentLanguage].TestsPerformed.selectedRun
+            }}</span>
+            <strong>{{
+              selectedExecution ? `#${selectedExecution.id}` : "—"
+            }}</strong>
+          </article>
+          <article>
+            <span>{{
+              language[config.currentLanguage].TestsPerformed.cycleDuration
+            }}</span>
+            <strong>{{ selectedExecutionDuration }}</strong>
+          </article>
+          <article>
+            <span>{{
+              language[config.currentLanguage].TestsPerformed.testsInRun
+            }}</span>
+            <strong>{{ arrayTest.length }}</strong>
+          </article>
+          <article>
+            <span>{{
+              language[config.currentLanguage].TestsPerformed.stepsInTest
+            }}</span>
+            <strong>{{ selectedTestSteps.length }}</strong>
+          </article>
+        </div>
+      </article>
+
       <article class="card testsperformed-panel">
         <div class="testsperformed-panel-header">
           <div>
@@ -762,6 +1008,12 @@
             </span>
             <span class="testsperformed-item-main">
               <strong>{{ testCycleDate.date }}</strong>
+              <small class="testsperformed-item-meta">
+                {{
+                  language[config.currentLanguage].TestsPerformed.cycleDuration
+                }}:
+                {{ runDuration(testCycleDate) }}
+              </small>
               <span class="testsperformed-report-toolbar">
                 <button
                   v-for="format in reportFormats"
@@ -836,15 +1088,22 @@
             v-for="test in arrayTest"
             v-bind:key="test.id"
             type="button"
-            v-on:click="getStep(test.id, test.name)"
+            :class="{ active: testSelected == test.id }"
+            v-on:click="selectPerformedTest(test)"
             :title="language[config.currentLanguage].TestsPerformed.viewDetails"
           >
             <span :class="['testsperformed-status', getTestVariant(test)]">
               {{ getTestStatusLabel(test) }}
             </span>
             <strong>{{ test.name }}</strong>
+            <small class="testsperformed-item-meta">
+              #{{ test.id }}
+            </small>
             <span class="testsperformed-detail-link">
-              {{ language[config.currentLanguage].TestsPerformed.viewDetails }}
+              {{
+                language[config.currentLanguage].TestsPerformed
+                  .showStepResults
+              }}
             </span>
           </button>
         </div>
@@ -882,6 +1141,66 @@
           }}
         </div>
       </article>
+
+      <article class="card testsperformed-panel testsperformed-step-panel">
+        <div class="testsperformed-panel-header">
+          <div>
+            <span class="testsperformed-section-title">
+              {{
+                language[config.currentLanguage].TestsPerformed.stepResults
+              }}
+            </span>
+            <p class="testsperformed-helper">
+              {{
+                selectedTestName ||
+                language[config.currentLanguage].TestsPerformed.selectTestFirst
+              }}
+            </p>
+          </div>
+          <button
+            type="button"
+            class="btn btn-sm btn-outline-light testsperformed-page-button"
+            :disabled="testSelected == null"
+            v-on:click="openSelectedTestDetails()"
+          >
+            {{ language[config.currentLanguage].TestsPerformed.viewDetails }}
+          </button>
+        </div>
+        <div
+          v-if="selectedTestSteps.length > 0"
+          class="testsperformed-step-list"
+        >
+          <article
+            v-for="(step, index) in selectedTestSteps"
+            v-bind:key="step.id || index"
+            class="testsperformed-step-row"
+          >
+            <span :class="['testsperformed-status', getStepVariant(step)]">
+              {{ getStepStatusLabel(step) }}
+            </span>
+            <div>
+              <strong>{{ step.name }}</strong>
+              <small>
+                {{
+                  language[config.currentLanguage].TestsPerformed.stepDuration
+                }}:
+                {{ stepDuration(step) }}
+              </small>
+            </div>
+            <span class="testsperformed-step-index">#{{ index + 1 }}</span>
+          </article>
+        </div>
+        <div
+          v-if="selectedTestSteps.length === 0"
+          class="testsperformed-empty testsperformed-empty-large"
+        >
+          {{
+            testSelected == null
+              ? language[config.currentLanguage].TestsPerformed.selectTestFirst
+              : language[config.currentLanguage].TestsPerformed.emptySteps
+          }}
+        </div>
+      </article>
     </section>
     <modalTestPerformed ref="modalTestPerformed" :test="arrayTest" />
   </div>
@@ -896,7 +1215,8 @@
   margin: 0 auto;
   max-width: 100%;
   min-height: 0;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
   width: 100%;
 }
 
@@ -942,12 +1262,102 @@
   margin: 0;
 }
 
-.testsperformed-refresh {
+.testsperformed-hero-actions {
   align-items: center;
-  border-color: rgba(255, 255, 255, 0.18);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
+
+.testsperformed-refresh,
+.testsperformed-latest-result {
+  align-items: center;
   display: inline-flex;
   gap: 0.45rem;
   white-space: nowrap;
+}
+
+.testsperformed-refresh {
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+.testsperformed-latest-result {
+  background: linear-gradient(135deg, #ff8a1f 0%, #ff5a2a 100%);
+  border: 0;
+  box-shadow: 0 16px 34px rgba(255, 106, 31, 0.26);
+  color: #111827;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.testsperformed-latest-result:hover,
+.testsperformed-latest-result:focus {
+  color: #111827;
+  filter: brightness(1.06);
+}
+
+.testsperformed-page-tabs {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.045);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 18px;
+  display: inline-flex;
+  flex: 0 0 auto;
+  gap: 0.5rem;
+  padding: 0.45rem;
+  width: fit-content;
+}
+
+.testsperformed-page-tab {
+  align-items: center;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 14px;
+  color: rgba(246, 247, 251, 0.72);
+  display: inline-flex;
+  font-size: 0.72rem;
+  font-weight: 900;
+  gap: 0.45rem;
+  letter-spacing: 0.14em;
+  padding: 0.75rem 1rem;
+  text-transform: uppercase;
+  transition:
+    background 0.16s ease,
+    border-color 0.16s ease,
+    color 0.16s ease,
+    box-shadow 0.16s ease;
+}
+
+.testsperformed-page-tab span {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  color: #ffffff;
+  display: inline-flex;
+  height: 1.35rem;
+  justify-content: center;
+  min-width: 1.35rem;
+  padding: 0 0.35rem;
+}
+
+.testsperformed-page-tab:hover,
+.testsperformed-page-tab:focus-visible {
+  border-color: rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+  outline: none;
+}
+
+.testsperformed-page-tab.active {
+  background: linear-gradient(135deg, #ff8a1f 0%, #ff5a2a 100%);
+  box-shadow: 0 16px 34px rgba(255, 106, 31, 0.22);
+  color: #111827;
+}
+
+.testsperformed-page-tab.active span {
+  background: rgba(17, 24, 39, 0.16);
+  color: #111827;
 }
 
 .testsperformed-summary {
@@ -955,6 +1365,7 @@
   flex: 0 0 auto;
   gap: 1rem;
   grid-template-columns: repeat(4, minmax(0, 1fr));
+  order: 3;
 }
 
 .testsperformed-metric {
@@ -974,6 +1385,7 @@
   flex: 0 0 auto;
   flex-direction: column;
   gap: 0.9rem;
+  order: 6;
   padding: 1rem;
 }
 
@@ -983,6 +1395,7 @@
   gap: 0.9rem;
   max-height: 24rem;
   min-height: 14rem;
+  order: 7;
   overflow: auto;
   padding: 1rem;
 }
@@ -991,6 +1404,7 @@
   display: grid;
   flex: 0 0 auto;
   gap: 1rem;
+  order: 5;
   padding: 1rem;
 }
 
@@ -1042,6 +1456,79 @@
   margin: 0;
   overflow: auto;
   padding: 0.85rem;
+}
+
+.testsperformed-run-tab-content {
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.85rem;
+  padding: 0.85rem;
+}
+
+.testsperformed-advanced-grid {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+}
+
+.testsperformed-advanced-grid article {
+  background: rgba(255, 255, 255, 0.045);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+}
+
+.testsperformed-advanced-grid span,
+.testsperformed-advanced-row small {
+  color: rgba(255, 255, 255, 0.58);
+  display: block;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.testsperformed-advanced-grid strong {
+  color: #ffffff;
+  display: block;
+  margin-top: 0.35rem;
+}
+
+.testsperformed-advanced-list {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.testsperformed-advanced-row {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.045);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.75rem;
+  color: rgba(255, 255, 255, 0.86);
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  padding: 0.75rem;
+  text-align: left;
+}
+
+button.testsperformed-advanced-row:hover,
+button.testsperformed-advanced-row:focus-visible {
+  border-color: rgba(255, 107, 30, 0.58);
+  color: #ffffff;
+  outline: none;
+}
+
+.testsperformed-advanced-row strong {
+  color: #ffffff;
+}
+
+.testsperformed-advanced-empty {
+  border: 1px dashed rgba(255, 255, 255, 0.18);
+  border-radius: 0.75rem;
+  color: rgba(255, 255, 255, 0.62);
+  padding: 1rem;
+  text-align: center;
 }
 
 .testsperformed-run-actions {
@@ -1252,8 +1739,45 @@
       24rem,
       1.6fr
     );
-  min-height: 0;
-  overflow: hidden;
+  min-height: auto;
+  order: 4;
+  overflow: visible;
+}
+
+.testsperformed-execution-summary,
+.testsperformed-step-panel {
+  grid-column: 1 / -1;
+}
+
+.testsperformed-execution-metrics {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.testsperformed-execution-metrics article {
+  background: rgba(255, 255, 255, 0.045);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.85rem;
+  padding: 0.85rem;
+}
+
+.testsperformed-execution-metrics span,
+.testsperformed-item-meta,
+.testsperformed-step-row small {
+  color: rgba(255, 255, 255, 0.58);
+  display: block;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.testsperformed-execution-metrics strong {
+  color: #ffffff;
+  display: block;
+  font-size: 1.35rem;
+  margin-top: 0.35rem;
 }
 
 .testsperformed-parallel-panel {
@@ -1262,6 +1786,7 @@
   flex-direction: column;
   max-height: 20rem;
   min-height: 12rem;
+  order: 3;
   overflow: hidden;
   padding: 1rem;
 }
@@ -1521,6 +2046,43 @@
   color: #ffffff !important;
 }
 
+.testsperformed-test-card.active {
+  border-color: rgba(255, 107, 30, 0.78);
+  box-shadow: 0 0 0 1px rgba(255, 107, 30, 0.22);
+}
+
+.testsperformed-step-list {
+  display: grid;
+  gap: 0.65rem;
+  max-height: 22rem;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 0.25rem;
+}
+
+.testsperformed-step-row {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 0.85rem;
+  display: grid;
+  gap: 0.85rem;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  padding: 0.85rem;
+}
+
+.testsperformed-step-row strong {
+  color: #ffffff;
+  display: block;
+}
+
+.testsperformed-step-index {
+  color: rgba(255, 255, 255, 0.48);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+}
+
 .testsperformed-item-icon {
   align-items: center;
   background: rgba(255, 255, 255, 0.07);
@@ -1775,6 +2337,8 @@ export default {
       testCycleDateSelected: null,
       arrayTest: [],
       testSelected: null,
+      selectedTestName: "",
+      selectedTestSteps: [],
       spinreverse: null,
       spinreverseDate: null,
       parallelRuns: [],
@@ -1801,6 +2365,7 @@ export default {
       retryAudit: {},
       reportDownloadErrors: {},
       reportFormats: ["junit", "json", "markdown", "html"],
+      activeExecutionTab: "results",
       analyticsWindow: "7d",
       analyticsTimezone: "UTC",
       analyticsStatuses: ["passed", "failed", "pending"],
@@ -2041,6 +2606,16 @@ export default {
         .replace("{status}", status)
         .replace("{updated}", updated);
     },
+    selectedExecution() {
+      return (
+        this.arrayTestCyclesDate.find(
+          (run) => String(run.id) === String(this.testCycleDateSelected),
+        ) || null
+      );
+    },
+    selectedExecutionDuration() {
+      return this.selectedExecution ? this.runDuration(this.selectedExecution) : "—";
+    },
   },
   watch: {
     $route() {
@@ -2054,7 +2629,7 @@ export default {
   },
   created() {
     this.restoreAnalyticsFiltersFromRoute();
-    this.getTestCycles({ restoreFromRoute: true });
+    this.getTestCycles({ autoSelectLatest: true, restoreFromRoute: true });
     this.loadParallelRuns();
     this.startParallelRunPolling();
     if (typeof document !== "undefined") {
@@ -2065,7 +2640,7 @@ export default {
     }
     this.emitter.on("refreshTestCyclePerformed", (msg) => {
       if (msg == true) {
-        this.getTestCycles({ restoreFromRoute: true });
+        this.refreshResults();
         this.loadParallelRuns();
       } else this.$forceUpdate();
     });
@@ -2086,6 +2661,8 @@ export default {
         variant = "secondary";
       } else if (status == 1) {
         variant = "success";
+      } else if (String(status) === "5") {
+        variant = "warning";
       } else {
         variant = "danger";
       }
@@ -2099,6 +2676,10 @@ export default {
       if (status == 1) {
         return this.language[this.config.currentLanguage].TestsPerformed
           .statusPassed;
+      }
+      if (String(status) === "5") {
+        return this.language[this.config.currentLanguage].TestsPerformed
+          .statusSkipped;
       }
       return this.language[this.config.currentLanguage].TestsPerformed
         .statusFailed;
@@ -2492,7 +3073,7 @@ export default {
       }
       return [];
     },
-    replaceExecutionQuery(patch) {
+    replaceExecutionQuery(patch, options = {}) {
       if (!this.$router?.replace) return;
       const nextQuery = {
         ...(this.$route?.query || {}),
@@ -2510,7 +3091,35 @@ export default {
       const current = JSON.stringify(this.$route?.query || {});
       const next = JSON.stringify(nextQuery);
       if (current === next) return;
-      this.$router.replace({ query: nextQuery });
+      const preserveScroll = options.preserveScroll !== false;
+      const scrollLeft =
+        typeof window !== "undefined" ? window.scrollX || window.pageXOffset || 0 : 0;
+      const scrollTop =
+        typeof window !== "undefined" ? window.scrollY || window.pageYOffset || 0 : 0;
+      const navigation = this.$router.replace({ query: nextQuery });
+      if (preserveScroll && typeof window !== "undefined") {
+        Promise.resolve(navigation)
+          .catch(() => {})
+          .then(() => {
+            const restore = () => {
+              const canScroll =
+                typeof window.scrollTo === "function" &&
+                !String(window.scrollTo).includes("notImplemented");
+              if (canScroll) {
+                try {
+                  window.scrollTo(scrollLeft, scrollTop);
+                } catch {
+                  // Test environments may expose scrollTo without implementing it.
+                }
+              }
+            };
+            if (typeof window.requestAnimationFrame === "function") {
+              window.requestAnimationFrame(restore);
+            } else {
+              restore();
+            }
+          });
+      }
     },
     restoreAnalyticsFiltersFromRoute() {
       this.analyticsWindow = this.routeQueryText("analyticsWindow", "7d");
@@ -2911,6 +3520,7 @@ export default {
         });
     },
     getTestCycles(options = {}) {
+      const selectedCycleId = this.testCycleSelected;
       this.spinreverse = "spin-reverse";
       this.arrayTestCyclesDate = [];
       this.arrayTest = [];
@@ -2975,7 +3585,28 @@ export default {
             cyclePerPage: String(this.cyclePagination.perPage),
           });
           if (options.restoreFromRoute === true) {
-            this.restoreSelectionFromRoute();
+            const hasRouteSelection =
+              this.routeQueryId("testCycleId") != null ||
+              this.routeQueryId("runId") != null;
+            if (hasRouteSelection) {
+              this.restoreSelectionFromRoute();
+              return;
+            }
+          }
+          if (
+            options.autoSelectLatest === true &&
+            (selectedCycleId != null || this.cyclePagination.page === 1)
+          ) {
+            const cycleToSelect =
+              this.arrayTestCycles.find(
+                (cycle) => String(cycle.id) === String(selectedCycleId),
+              ) || this.arrayTestCycles[0];
+            if (cycleToSelect) {
+              return this.getTestCyclesDate(cycleToSelect.id, {
+                autoSelectLatest: true,
+                page: 1,
+              });
+            }
           }
         })
         .catch((e) => {
@@ -2985,6 +3616,9 @@ export default {
     },
     getTestCyclesDate(id, options = {}) {
       this.arrayTest = [];
+      this.testSelected = null;
+      this.selectedTestName = "";
+      this.selectedTestSteps = [];
       this.emitter.emit("showLoader", true);
       this.spinreverseDate = "spin-reverse";
       this.runPagination = {
@@ -3019,6 +3653,12 @@ export default {
           this.testCycleSelected = id;
           this.testCycleDateSelected = null;
           this.spinreverseDate = null;
+          if (options.autoSelectLatest === true && this.arrayTestCyclesDate[0]) {
+            return this.getTest(this.arrayTestCyclesDate[0].id, {
+              page: 1,
+              syncRoute: options.syncRoute,
+            });
+          }
           if (options.syncRoute !== false) {
             this.replaceExecutionQuery({
               testCycleId: String(id),
@@ -3034,9 +3674,18 @@ export default {
           this.error = e;
         });
     },
+    refreshResults() {
+      return this.getTestCycles({ autoSelectLatest: true });
+    },
+    showLatestResult() {
+      return this.getTestCycles({ autoSelectLatest: true, page: 1 });
+    },
 
     getTest(id, options = {}) {
       this.emitter.emit("showLoader", true);
+      this.testSelected = null;
+      this.selectedTestName = "";
+      this.selectedTestSteps = [];
       this.testPagination = {
         ...this.testPagination,
         page:
@@ -3067,6 +3716,9 @@ export default {
           this.arrayTest = result.data;
           this.testPagination = result.pagination;
           this.testCycleDateSelected = id;
+          if (this.arrayTest[0]) {
+            this.selectPerformedTest(this.arrayTest[0], { syncRoute: false });
+          }
           if (options.syncRoute !== false) {
             this.replaceExecutionQuery({
               testCycleId:
@@ -3086,6 +3738,114 @@ export default {
           this.error = e;
         });
     },
+    selectPerformedTest(test, options = {}) {
+      this.testSelected = test?.id ?? null;
+      this.selectedTestName = test?.name ?? "";
+      this.selectedTestSteps = [];
+      if (test?.id == null) return Promise.resolve();
+      return this.loadStepResults(test.id, test.name, options);
+    },
+    openSelectedTestDetails() {
+      if (this.testSelected == null) return;
+      this.getStep(this.testSelected, this.selectedTestName);
+    },
+    getStepVariant(step) {
+      if (step?.type === "postman") {
+        const failed = parsePostmanResults(step.data ?? []).some(
+          (result) => result.passed === false,
+        );
+        if (failed) return "danger";
+      }
+      return this.getVariant(step?.status);
+    },
+    getStepStatusLabel(step) {
+      if (this.getStepVariant(step) === "danger") {
+        return this.language[this.config.currentLanguage].TestsPerformed
+          .statusFailed;
+      }
+      if (String(step?.status) === "5") {
+        return this.language[this.config.currentLanguage].TestsPerformed
+          .statusSkipped;
+      }
+      return this.getStatusLabel(step?.status);
+    },
+    stepDuration(step) {
+      const payload = this.safeJsonObject(step?.data);
+      const explicitDuration =
+        payload.durationMilliseconds ||
+        payload.trace?.timing?.durationMilliseconds ||
+        step?.durationMilliseconds ||
+        step?.durationMs;
+      if (Number(explicitDuration) > 0) {
+        return this.formatElapsed(Number(explicitDuration));
+      }
+      return this.formatElapsed(this.timestampDiff(step?.created_at, step?.updated_at));
+    },
+    runDuration(run) {
+      return this.formatElapsed(this.timestampDiff(run?.created_at, run?.updated_at));
+    },
+    timestampDiff(start, end) {
+      const startMs = Date.parse(String(start || ""));
+      const endMs = Date.parse(String(end || ""));
+      if (Number.isNaN(startMs) || Number.isNaN(endMs) || endMs < startMs) {
+        return 0;
+      }
+      return endMs - startMs;
+    },
+    formatElapsed(milliseconds) {
+      const value = Number(milliseconds || 0);
+      if (value <= 0) return "—";
+      if (value >= 1000) {
+        return `${(value / 1000).toFixed(value >= 10000 ? 1 : 2)} s`;
+      }
+      return `${Math.round(value)} ms`;
+    },
+    safeJsonObject(value) {
+      if (value && typeof value === "object" && !Array.isArray(value)) {
+        return value;
+      }
+      if (typeof value !== "string" || value.length === 0) {
+        return {};
+      }
+      try {
+        const parsed = JSON.parse(value);
+        return parsed && typeof parsed === "object" && !Array.isArray(parsed)
+          ? parsed
+          : {};
+      } catch {
+        return {};
+      }
+    },
+    loadStepResults(id, name, options = {}) {
+      if (options.showLoader !== false) {
+        this.emitter.emit("showLoader", true);
+      }
+      return apiClient
+        .get(
+          this.config.serviceBaseUrl +
+            this.config.url.getStepPerformed +
+            "/" +
+            id,
+          {
+            headers: this.setHeaders(),
+          },
+        )
+        .then((response) => {
+          this.emitter.emit("showLoader", false);
+          this.testSelected = id;
+          this.selectedTestName = name;
+          this.selectedTestSteps = Array.isArray(response.data)
+            ? response.data
+            : [];
+          return this.selectedTestSteps;
+        })
+        .catch((e) => {
+          this.emitter.emit("showLoader", false);
+          this.error = e;
+          this.Logout(this, e);
+          return [];
+        });
+    },
     getStep(id, name) {
       this.emitter.emit("showLoader", true);
       apiClient
@@ -3100,6 +3860,11 @@ export default {
         )
         .then((response) => {
           this.emitter.emit("showLoader", false);
+          this.testSelected = id;
+          this.selectedTestName = name;
+          this.selectedTestSteps = Array.isArray(response.data)
+            ? response.data
+            : [];
           this.$refs.modalTestPerformed.showModal(response.data, name);
         })
         .catch((e) => {
