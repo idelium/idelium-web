@@ -195,6 +195,22 @@ use optimistic environment versions. Existing environments still open through
 the legacy configuration adapter; route migration does not rewrite persisted
 data.
 
+## Verification matrix
+
+The environment workflow regression suite covers current and unversioned Appium
+fixtures, expired-schema remediation, template-specific fields, dirty/conflict
+state, cross-customer save/archive/variable/reference attempts, forged
+connection-test targets, nested and list redaction, clone/export protection,
+focus order, persistent labels, live progress, table captions, 200% zoom
+containment, and responsive horizontal overflow.
+
+Fixtures contain only `idelium.org`, localhost, or reserved demonstration
+targets and opaque reference metadata. They contain no credentials or protected
+customer payloads. Web verification requires all unit/component tests, ESLint,
+Prettier, design-token validation, route smoke tests, and a production build.
+API ownership and egress tests remain mandatory server-side gates before this
+feature can be enabled in production.
+
 ## Rollout and rollback
 
 The versioned loader can be introduced before route migration because unchanged

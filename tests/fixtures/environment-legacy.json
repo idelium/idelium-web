@@ -1,0 +1,9 @@
+{
+  "appiumServer": "http://localhost:4723",
+  "appiumDesiredCaps": {
+    "automationName": "UiAutomator2",
+    "deviceName": "Android Emulator",
+    "platformName": "android"
+  },
+  "isRealDevice": false
+}

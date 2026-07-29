@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "2026.07",
+  "type": "api",
+  "config": {
+    "base_url": "https://api.demo.idelium.org",
+    "followRedirects": true,
+    "strictTls": true,
+    "timeoutMs": 30000,
+    "secretReferences": [
+      {
+        "alias": "API_TOKEN",
+        "referenceId": "vault:environment/api"
+      }
+    ]
+  }
+}
