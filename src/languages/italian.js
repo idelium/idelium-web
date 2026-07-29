@@ -893,6 +893,25 @@ export default {
       cycles: "Cicli",
       schedules: "Pianificazioni",
     },
+    saveBar: {
+      title: "Persistenza sequenza",
+      saved: "Tutte le modifiche sono salvate",
+      unsaved: "Modifiche non salvate",
+      lastSaved: "Ultimo salvataggio",
+      serverVersion: "Versione server",
+      never: "Non ancora salvato",
+      legacy: "Endpoint legacy",
+      undo: "Annulla",
+      redo: "Ripristina",
+      discard: "Scarta modifiche",
+      save: "Salva sequenza",
+      conflictTitle: "È disponibile una versione server più recente",
+      conflictDescription:
+        "La sequenza locale è preservata. Ricarica, confronta o riprova se l'endpoint lo supporta.",
+      reload: "Ricarica versione server",
+      compare: "Confronta modifiche",
+      retry: "Riprova salvataggio",
+    },
     picker: {
       title: "Elementi disponibili",
       description: "Cerca e seleziona gli elementi idonei per questa sequenza.",
@@ -939,6 +958,9 @@ export default {
       referenceStale:
         "È disponibile una versione più recente. Verificala prima di salvare.",
       required: "La sequenza non contiene tutti gli elementi obbligatori.",
+      conflict: "La sequenza è cambiata sul server durante la modifica.",
+      saveFailed: "Non è stato possibile salvare la sequenza.",
+      validationFailed: "Il server ha rifiutato la validazione della sequenza.",
       serverRejected:
         "Il server ha rifiutato la sequenza senza esporre dettagli protetti.",
     },
@@ -962,6 +984,12 @@ export default {
         "Sostituisci la dipendenza archiviata con un elemento attivo autorizzato.",
       replaceMissing: "Sostituisci il riferimento mancante.",
       required: "Aggiungi l'elemento obbligatorio prima di salvare.",
+      conflict:
+        "Confronta o ricarica la versione server corrente prima di riprovare.",
+      saveFailed:
+        "Mantieni le modifiche locali e riprova l'operazione di salvataggio.",
+      validationFailed:
+        "Risolvi i problemi di validazione server prima di riprovare.",
       reviewVersion: "Verifica e seleziona la versione autorizzata corrente.",
       selectVersion: "Seleziona una versione immutabile per l'elemento.",
       serverRejected:

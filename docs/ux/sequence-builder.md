@@ -133,6 +133,35 @@ Reusable-content routes may provide an impact response to
 tests, cycles, and schedules only. Names and other response properties are never
 carried into the impact contract.
 
+## Editing history, dirty state, and conflicts
+
+`useSequenceEditor` owns a controlled local sequence, its last durable baseline,
+and a bounded undo/redo history. The default history stores 50 meaningful
+snapshots and the configurable bound is clamped between 1 and 100. Add, remove,
+reorder, and nested configuration changes all use the same structural comparison.
+No-op updates do not create history entries.
+
+The editor registers its source with the central navigation store as soon as the
+local value differs from the durable baseline. A successful save, explicit
+discard, remote reload, or project/tenant context reset clears the registration.
+A route transition therefore uses the existing enterprise unsaved-change modal.
+Component teardown unregisters only that editor; failed saves retain the local
+value and dirty registration.
+
+Save requests include the current server version and an idempotency key. Repeated
+save activation while a request is in flight reuses the active operation. A
+successful persistence boundary updates the baseline, last-saved timestamp, and
+server version, then clears undo and redo history. Validation and general
+failures retain the sequence and expose stable generic diagnostics without
+copying response messages.
+
+HTTP 409 conflicts preserve local work and expose only endpoint capabilities,
+the safe server version, and an optional already-authorized remote sequence.
+Routes may offer reload, compare, and retry according to those capabilities.
+Reload is an explicit discard boundary. Compare returns clones of the baseline,
+local, and authorized remote arrays. Retry retains the local sequence and may
+adopt a newly confirmed server version.
+
 ## Audit events
 
 Comparing the last persisted sequence with the next sequence produces ordered

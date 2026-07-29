@@ -887,6 +887,25 @@ export default {
       cycles: "Cycles",
       schedules: "Schedules",
     },
+    saveBar: {
+      title: "Sequence persistence",
+      saved: "All changes saved",
+      unsaved: "Unsaved changes",
+      lastSaved: "Last saved",
+      serverVersion: "Server version",
+      never: "Not saved yet",
+      legacy: "Legacy endpoint",
+      undo: "Undo",
+      redo: "Redo",
+      discard: "Discard changes",
+      save: "Save sequence",
+      conflictTitle: "A newer server version is available",
+      conflictDescription:
+        "Your local sequence is preserved. Reload, compare, or retry when the endpoint supports it.",
+      reload: "Reload server version",
+      compare: "Compare changes",
+      retry: "Retry save",
+    },
     picker: {
       title: "Available items",
       description: "Find and select eligible items for this sequence.",
@@ -931,6 +950,9 @@ export default {
       referenceStale:
         "A newer version of this item is available. Review it before saving.",
       required: "The sequence does not contain all required items.",
+      conflict: "The sequence changed on the server while you were editing it.",
+      saveFailed: "The sequence could not be saved.",
+      validationFailed: "The server rejected the sequence validation.",
       serverRejected:
         "The server rejected this sequence without exposing protected details.",
     },
@@ -953,6 +975,10 @@ export default {
         "Replace the archived dependency with an active authorized item.",
       replaceMissing: "Replace the missing reference.",
       required: "Add the required item before saving.",
+      conflict: "Compare or reload the current server version before retrying.",
+      saveFailed: "Keep the local changes and retry the save operation.",
+      validationFailed:
+        "Resolve the server validation diagnostics before retrying.",
       reviewVersion: "Review and select the current authorized version.",
       selectVersion: "Select an immutable version for this item.",
       serverRejected:

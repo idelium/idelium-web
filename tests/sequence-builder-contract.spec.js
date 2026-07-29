@@ -144,6 +144,7 @@ describe("sequence builder domain contract", () => {
   it("provides English and Italian copy for every domain diagnostic", () => {
     const keys = [
       "archivedDependency",
+      "conflict",
       "invalid",
       "incompatibleRuntime",
       "malformed",
@@ -153,7 +154,9 @@ describe("sequence builder domain contract", () => {
       "referenceMissing",
       "referenceStale",
       "required",
+      "saveFailed",
       "serverRejected",
+      "validationFailed",
     ];
 
     for (const key of keys) {
