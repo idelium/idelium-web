@@ -5,6 +5,7 @@ import {
   createRevealOnceSession,
   createCredentialLifecycleRequest,
   createCredentialCreationRequest,
+  createCredentialRevocationRequest,
   createCredentialRotationRequest,
   credentialAuthorization,
   buildCredentialInventoryQuery,
@@ -13,6 +14,7 @@ import {
   applyCredentialRotationResult,
   legacyCredentialMigrationPolicy,
   validateCredentialCreation,
+  validateCredentialRevocation,
   validateCredentialRotation,
   normalizeCredentialInventory,
   normalizeCredentialDescriptor,
@@ -411,5 +413,72 @@ describe("credential lifecycle API and migration contract", () => {
         .lineage,
     ).toBe("Rotated from cred-old");
     expect(JSON.stringify(rotated)).not.toContain("new_secret");
+  });
+
+  it("requires deliberate idempotent revocation confirmation", () => {
+    const credential = {
+      fingerprint: "safe-fingerprint",
+      id: "cred-old",
+      name: "CI",
+      scopes: ["run:execute"],
+      status: "active",
+      tenantId: "tenant-1",
+    };
+
+    expect(
+      validateCredentialRevocation(
+        {
+          confirmFingerprint: "safe-fingerprint",
+          confirmName: "CI",
+          elevated: true,
+          reason: "Compromised automation host",
+        },
+        credential,
+        { reasonRequired: true, requiresElevatedConfirmation: true },
+      ),
+    ).toMatchObject({ valid: true });
+    expect(
+      validateCredentialRevocation(
+        {
+          confirmFingerprint: "wrong",
+          confirmName: "Wrong",
+        },
+        { ...credential, status: "revoked" },
+        { reasonRequired: true, requiresElevatedConfirmation: true },
+      ).errors.map((error) => error.code),
+    ).toEqual([
+      "already-revoked",
+      "confirmation-mismatch",
+      "confirmation-mismatch",
+      "reason-required",
+      "elevated-confirmation-required",
+    ]);
+    expect(
+      createCredentialRevocationRequest(
+        {
+          confirmFingerprint: "safe-fingerprint",
+          confirmName: "CI",
+          reason: "Compromised automation host",
+        },
+        credential,
+        {
+          actor: "admin@idelium.org",
+          capabilities: ["credential.revoke"],
+          tenantId: "tenant-1",
+        },
+      ),
+    ).toMatchObject({
+      allowed: true,
+      body: {
+        actor: "admin@idelium.org",
+        credentialId: "cred-old",
+        reason: "Compromised automation host",
+        tenantId: "tenant-1",
+      },
+      headers: {
+        "Idempotency-Key":
+          "credential:revoke:tenant-1:cred-old:admin@idelium.org:Compromised-automation-host",
+      },
+    });
   });
 });

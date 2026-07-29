@@ -1076,6 +1076,19 @@ export default {
       "Rotazione credenziale non riuscita. La credenziale originale resta invariata salvo transizione durevole comunicata dall'API.",
     rotatedFrom: "Ruotata da",
     rotatedCredential: "Credenziale ruotata",
+    revocationTitle: "Revoca credenziale",
+    revocationHelp:
+      "Invalida questa credenziale solo dopo aver confermato nome, fingerprint, impatto sugli scope e conseguenza operativa.",
+    revocationImpact: "Conseguenza immediata",
+    revocationImpactHelp:
+      "Dopo la conferma durevole dell'API, questa credenziale non potrà più autenticare richieste Idelium CLI o automazioni.",
+    confirmCredentialName: "Conferma nome credenziale",
+    confirmCredentialFingerprint: "Conferma prefisso o fingerprint",
+    revocationReason: "Motivo audit",
+    revocationElevatedConfirm:
+      "Ho capito che questa operazione può revocare l'ultima credenziale utilizzabile o un'automazione protetta.",
+    revocationFailed:
+      "Revoca credenziale non riuscita. La credenziale resta invariata finché l'API non conferma una transizione durevole.",
     scopeRunExecute: "Esecuzione run",
     scopeRunExecuteHelp: "Consente di avviare esecuzioni di test approvate.",
     scopeArtifactRead: "Lettura artifact",
@@ -1087,9 +1100,15 @@ export default {
       duplicate: "Esiste già una credenziale con questo nome.",
       "dangerous-combination":
         "Questa combinazione di scope è rischiosa e richiede una credenziale più limitata.",
+      "already-revoked": "Questa credenziale è già revocata.",
+      "confirmation-mismatch":
+        "I valori di conferma devono corrispondere al nome e alla fingerprint della credenziale.",
+      "elevated-confirmation-required":
+        "Per questa revoca protetta è richiesta una conferma elevata.",
       "invalid-date": "Scegli una data di scadenza valida.",
       "maximum-lifetime": "La durata della credenziale non può superare 365 giorni.",
       "missing-capability": "Non sei autorizzato a creare credenziali.",
+      "reason-required": "La policy richiede un motivo audit.",
       required: "Completa i campi obbligatori della credenziale.",
       "terminal-state": "Questa credenziale non può essere ruotata dal suo stato corrente.",
       "unauthorized-scope": "Non puoi concedere uno o più scope selezionati.",

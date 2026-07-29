@@ -458,6 +458,107 @@ export function createCredentialRotationRequest(
   };
 }
 
+export function validateCredentialRevocation(
+  model = {},
+  credential = {},
+  options = {},
+) {
+  const descriptor = normalizeCredentialDescriptor(credential, options);
+  const confirmName = safeText(model.confirmName);
+  const confirmFingerprint = safeText(model.confirmFingerprint);
+  const reason = safeText(model.reason);
+  const errors = [];
+  if (!descriptor.id) errors.push({ field: "credentialId", code: "required" });
+  if ([CREDENTIAL_STATUSES.REVOKED].includes(descriptor.status)) {
+    errors.push({ field: "status", code: "already-revoked" });
+  }
+  if ([CREDENTIAL_STATUSES.EXPIRED].includes(descriptor.status)) {
+    errors.push({ field: "status", code: "terminal-state" });
+  }
+  if (confirmName !== descriptor.name) {
+    errors.push({ field: "confirmName", code: "confirmation-mismatch" });
+  }
+  const expectedFingerprint = descriptor.fingerprint || descriptor.prefix;
+  if (expectedFingerprint && confirmFingerprint !== expectedFingerprint) {
+    errors.push({
+      field: "confirmFingerprint",
+      code: "confirmation-mismatch",
+    });
+  }
+  if (options.reasonRequired && !reason) {
+    errors.push({ field: "reason", code: "reason-required" });
+  }
+  if (options.requiresElevatedConfirmation && model.elevated !== true) {
+    errors.push({
+      field: "elevated",
+      code: "elevated-confirmation-required",
+    });
+  }
+  return {
+    credential: descriptor,
+    errors,
+    model: {
+      confirmFingerprint,
+      confirmName,
+      elevated: model.elevated === true,
+      reason,
+    },
+    valid: errors.length === 0,
+  };
+}
+
+export function createCredentialRevocationRequest(
+  model = {},
+  credential = {},
+  options = {},
+) {
+  const validation = validateCredentialRevocation(model, credential, options);
+  const authorization = credentialAuthorization("revoke", credential, options);
+  if (!authorization.allowed) {
+    return {
+      allowed: false,
+      authorization,
+      errors: [{ field: "capability", code: authorization.reason }],
+      status: "rejected",
+      validation,
+    };
+  }
+  if (!validation.valid) {
+    return {
+      allowed: false,
+      errors: validation.errors,
+      status: "invalid",
+      validation,
+    };
+  }
+  const tenantId = safeIdentifier(options.tenantId);
+  const actor = safeIdentifier(options.actor ?? "actor");
+  return {
+    allowed: true,
+    body: {
+      actor,
+      credentialId: validation.credential.id,
+      elevated: validation.model.elevated,
+      reason: validation.model.reason,
+      tenantId,
+    },
+    headers: {
+      "Idempotency-Key":
+        options.idempotencyKey ??
+        [
+          "credential",
+          "revoke",
+          tenantId,
+          validation.credential.id,
+          actor,
+          stableReasonHash(validation.model.reason),
+        ].join(":"),
+    },
+    status: "ready",
+    validation,
+  };
+}
+
 export function applyCredentialRotationResult(
   credentials = [],
   rotatedCredential = {},
@@ -634,6 +735,10 @@ function stableCreationHash(model) {
   return safeIdentifier(
     `${model.name}:${model.expiresAt}:${model.scopes.join(".")}`,
   );
+}
+
+function stableReasonHash(reason) {
+  return safeIdentifier(reason || "no-reason").slice(0, 80);
 }
 
 function stableRevealSessionId(credential, now) {

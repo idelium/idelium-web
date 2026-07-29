@@ -131,6 +131,15 @@ describe("apikey component", () => {
                 rotationFailed: "Credential rotation failed.",
                 rotatedFrom: "Rotated from",
                 rotatedCredential: "Rotated credential",
+                revocationTitle: "Revoke credential",
+                revocationHelp: "Invalidate deliberately.",
+                revocationImpact: "Immediate consequence",
+                revocationImpactHelp: "Cannot authenticate after confirmation.",
+                confirmCredentialName: "Confirm credential name",
+                confirmCredentialFingerprint: "Confirm prefix or fingerprint",
+                revocationReason: "Audit reason",
+                revocationElevatedConfirm: "I understand the protected impact.",
+                revocationFailed: "Credential revocation failed.",
                 scopeRunExecute: "Run execution",
                 scopeRunExecuteHelp: "Allows launching approved tests.",
                 scopeArtifactRead: "Artifact read",
@@ -140,9 +149,14 @@ describe("apikey component", () => {
                 validation: {
                   duplicate: "Duplicate name.",
                   "dangerous-combination": "Dangerous combination.",
+                  "already-revoked": "Already revoked.",
+                  "confirmation-mismatch": "Confirmation mismatch.",
+                  "elevated-confirmation-required":
+                    "Elevated confirmation required.",
                   "invalid-date": "Invalid date.",
                   "maximum-lifetime": "Maximum lifetime.",
                   "missing-capability": "Missing capability.",
+                  "reason-required": "Reason required.",
                   required: "Required field.",
                   "terminal-state": "Terminal state.",
                   "unauthorized-scope": "Unauthorized scope.",
@@ -479,5 +493,117 @@ describe("apikey component", () => {
     expect(wrapper.vm.rotationErrors).toEqual(["Credential rotation failed."]);
     expect(wrapper.vm.credentials).toEqual([originalCredential]);
     expect(wrapper.vm.activeRevealSecret).toBe("");
+  });
+
+  it("revokes a credential only after durable API confirmation", async () => {
+    api.get.mockResolvedValue({
+      data: {
+        credentials: [
+          {
+            fingerprint: "safe-fingerprint",
+            id: "cred-old",
+            lastUsedAt: "2026-07-29T09:00:00Z",
+            name: "CI",
+            scopes: ["run:execute"],
+            status: "active",
+            tenantId: "current-tenant",
+          },
+          {
+            fingerprint: "backup-fingerprint",
+            id: "cred-backup",
+            name: "Backup",
+            scopes: ["run:execute"],
+            status: "active",
+            tenantId: "current-tenant",
+          },
+        ],
+      },
+    });
+    api.post.mockResolvedValue({
+      data: {
+        actor: "current-user",
+        revokedAt: "2026-07-29T10:00:00Z",
+        status: "revoked",
+      },
+    });
+
+    const wrapper = mountApikey();
+    await wrapper.vm.$nextTick();
+    await vi.waitFor(() => expect(wrapper.vm.credentialRows).toHaveLength(2));
+
+    wrapper.vm.confirmCredentialAction({
+      action: "revoke",
+      row: { id: "cred-old", name: "CI" },
+    });
+    await wrapper.vm.$nextTick();
+    expect(wrapper.find(".apikey-rotation-card").text()).toContain("CI");
+    await wrapper.setData({
+      revocationForm: {
+        confirmFingerprint: "safe-fingerprint",
+        confirmName: "CI",
+        elevated: false,
+        reason: "Compromised automation host",
+      },
+    });
+
+    await wrapper.vm.revokeCredential();
+    await vi.waitFor(() => expect(api.post).toHaveBeenCalled());
+
+    expect(api.post).toHaveBeenCalledWith(
+      "/api/apikey/credentials/cred-old/revoke",
+      {
+        actor: "current-user",
+        credentialId: "cred-old",
+        elevated: false,
+        reason: "Compromised automation host",
+        tenantId: "current-tenant",
+      },
+      {
+        headers: {
+          "Idempotency-Key":
+            "credential:revoke:current-tenant:cred-old:current-user:Compromised-automation-host",
+        },
+      },
+    );
+    expect(
+      wrapper.vm.credentials.find((credential) => credential.id === "cred-old")
+        .status,
+    ).toBe("revoked");
+  });
+
+  it("does not report revoked before the API confirms revocation", async () => {
+    const originalCredential = {
+      fingerprint: "safe-fingerprint",
+      id: "cred-old",
+      name: "CI",
+      scopes: ["run:execute"],
+      status: "active",
+      tenantId: "current-tenant",
+    };
+    api.get.mockResolvedValue({ data: { credentials: [originalCredential] } });
+    api.post.mockRejectedValue(new Error("network"));
+
+    const wrapper = mountApikey();
+    await wrapper.vm.$nextTick();
+    await vi.waitFor(() => expect(wrapper.vm.credentialRows).toHaveLength(1));
+
+    wrapper.vm.confirmCredentialAction({
+      action: "revoke",
+      row: { id: "cred-old", name: "CI" },
+    });
+    await wrapper.setData({
+      revocationForm: {
+        confirmFingerprint: "safe-fingerprint",
+        confirmName: "CI",
+        elevated: true,
+        reason: "Compromised automation host",
+      },
+    });
+    await wrapper.vm.revokeCredential();
+
+    expect(wrapper.vm.revocationErrors).toEqual([
+      "Credential revocation failed.",
+    ]);
+    expect(wrapper.vm.credentials).toEqual([originalCredential]);
   });
 });

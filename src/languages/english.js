@@ -1065,6 +1065,19 @@ export default {
       "Credential rotation failed. The original credential remains unchanged unless the API reports a durable transition.",
     rotatedFrom: "Rotated from",
     rotatedCredential: "Rotated credential",
+    revocationTitle: "Revoke credential",
+    revocationHelp:
+      "Invalidate this credential only after confirming the affected name, fingerprint, scope impact, and operational consequence.",
+    revocationImpact: "Immediate consequence",
+    revocationImpactHelp:
+      "After durable API confirmation, this credential can no longer authenticate Idelium CLI or automation requests.",
+    confirmCredentialName: "Confirm credential name",
+    confirmCredentialFingerprint: "Confirm prefix or fingerprint",
+    revocationReason: "Audit reason",
+    revocationElevatedConfirm:
+      "I understand this may revoke the last usable credential or a protected automation path.",
+    revocationFailed:
+      "Credential revocation failed. The credential remains unchanged until the API confirms a durable transition.",
     scopeRunExecute: "Run execution",
     scopeRunExecuteHelp: "Allows launching approved test executions.",
     scopeArtifactRead: "Artifact read",
@@ -1076,9 +1089,15 @@ export default {
       duplicate: "A credential with this name already exists.",
       "dangerous-combination":
         "This scope combination is dangerous and needs a narrower credential.",
+      "already-revoked": "This credential is already revoked.",
+      "confirmation-mismatch":
+        "The confirmation values must match the credential name and fingerprint.",
+      "elevated-confirmation-required":
+        "Elevated confirmation is required for this protected revocation.",
       "invalid-date": "Choose a valid expiration date.",
       "maximum-lifetime": "Credential lifetime cannot exceed 365 days.",
       "missing-capability": "You are not authorized to create credentials.",
+      "reason-required": "An audit reason is required by policy.",
       required: "Complete the required credential fields.",
       "terminal-state": "This credential cannot be rotated from its current state.",
       "unauthorized-scope": "You cannot grant one or more selected scopes.",

@@ -273,6 +273,101 @@
       </button>
     </section>
 
+    <section v-if="revocationTarget" class="apikey-card apikey-rotation-card">
+      <div class="apikey-card-header">
+        <div>
+          <p class="apikey-eyebrow">
+            {{ language[config.currentLanguage].Apikey.revocationTitle }}
+          </p>
+          <h2 class="apikey-card-title">
+            {{ revocationTarget.name }}
+          </h2>
+          <p class="apikey-cli-copy">
+            {{ language[config.currentLanguage].Apikey.revocationHelp }}
+          </p>
+        </div>
+        <button
+          type="button"
+          class="btn btn-outline-secondary apikey-secondary-action"
+          v-on:click="cancelCredentialRevocation()"
+        >
+          {{ language[config.currentLanguage].Apikey.actions.cancel }}
+        </button>
+      </div>
+      <dl class="apikey-rotation-metadata">
+        <div>
+          <dt>{{ language[config.currentLanguage].Apikey.colFingerprint }}</dt>
+          <dd>
+            {{ revocationTarget.fingerprint || revocationTarget.prefix || "—" }}
+          </dd>
+        </div>
+        <div>
+          <dt>{{ language[config.currentLanguage].Apikey.colScopes }}</dt>
+          <dd>{{ revocationTarget.scopes.join(", ") }}</dd>
+        </div>
+        <div>
+          <dt>{{ language[config.currentLanguage].Apikey.colLastUsed }}</dt>
+          <dd>{{ revocationTarget.lastUsedAt || "—" }}</dd>
+        </div>
+        <div>
+          <dt>{{ language[config.currentLanguage].Apikey.revocationImpact }}</dt>
+          <dd>
+            {{ language[config.currentLanguage].Apikey.revocationImpactHelp }}
+          </dd>
+        </div>
+      </dl>
+      <div class="apikey-revocation-form">
+        <label>
+          <span>{{
+            language[config.currentLanguage].Apikey.confirmCredentialName
+          }}</span>
+          <input
+            v-model="revocationForm.confirmName"
+            class="form-control apikey-filter"
+          />
+        </label>
+        <label>
+          <span>{{
+            language[config.currentLanguage].Apikey.confirmCredentialFingerprint
+          }}</span>
+          <input
+            v-model="revocationForm.confirmFingerprint"
+            class="form-control apikey-filter"
+          />
+        </label>
+        <label>
+          <span>{{ language[config.currentLanguage].Apikey.revocationReason }}</span>
+          <textarea
+            v-model="revocationForm.reason"
+            class="form-control apikey-filter"
+            rows="3"
+          ></textarea>
+        </label>
+        <label
+          v-if="revocationRequiresElevatedConfirmation"
+          class="apikey-reveal-acknowledgement"
+        >
+          <input v-model="revocationForm.elevated" type="checkbox" />
+          <span>{{
+            language[config.currentLanguage].Apikey.revocationElevatedConfirm
+          }}</span>
+        </label>
+      </div>
+      <p
+        v-if="revocationErrors.length > 0"
+        class="apikey-alert alert alert-danger"
+      >
+        {{ revocationErrors.join(", ") }}
+      </p>
+      <button
+        type="button"
+        class="btn btn-danger apikey-primary-action"
+        v-on:click="revokeCredential()"
+      >
+        {{ language[config.currentLanguage].Apikey.actions.revoke }}
+      </button>
+    </section>
+
     <section class="apikey-card apikey-create-card">
       <div class="apikey-card-header">
         <div>
@@ -687,6 +782,27 @@
   gap: 0.4rem;
 }
 
+.apikey-revocation-form {
+  display: grid;
+  gap: 0.85rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.apikey-revocation-form label {
+  color: rgba(244, 244, 245, 0.72);
+  display: grid;
+  font-size: 0.72rem;
+  font-weight: 850;
+  gap: 0.4rem;
+  letter-spacing: 0.1rem;
+  text-transform: uppercase;
+}
+
+.apikey-revocation-form label:nth-child(3),
+.apikey-revocation-form .apikey-reveal-acknowledgement {
+  grid-column: 1 / -1;
+}
+
 .apikey-create-form label {
   color: rgba(244, 244, 245, 0.72);
   display: grid;
@@ -775,6 +891,10 @@
   .apikey-rotation-metadata {
     grid-template-columns: 1fr 1fr;
   }
+
+  .apikey-revocation-form {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media only screen and (max-width: 600px) {
@@ -811,6 +931,7 @@ import {
   applyCredentialRotationResult,
   createRevealOnceSession,
   createCredentialCreationRequest,
+  createCredentialRevocationRequest,
   createCredentialRotationRequest,
   credentialInventoryActions,
   credentialInventoryRow,
@@ -849,6 +970,14 @@ export default {
       revealFeedback: "",
       revealTimeoutId: null,
       revealedCredential: null,
+      revocationErrors: [],
+      revocationForm: {
+        confirmFingerprint: "",
+        confirmName: "",
+        elevated: false,
+        reason: "",
+      },
+      revocationTarget: null,
       rotationErrors: [],
       rotationPolicy: "overlap-24h",
       rotationTarget: null,
@@ -966,6 +1095,12 @@ export default {
     },
     revealCanExport() {
       return Boolean(this.activeRevealSecret && this.revealAcknowledged);
+    },
+    revocationRequiresElevatedConfirmation() {
+      const activeCredentials = this.credentials.filter((credential) =>
+        ["active", "legacy"].includes(String(credential.status).toLowerCase()),
+      );
+      return activeCredentials.length <= 1;
     },
   },
   watch: {
@@ -1182,11 +1317,19 @@ export default {
         this.prepareCredentialRotation(event.row);
         return;
       }
+      if (event.action === "revoke") {
+        this.prepareCredentialRevocation(event.row);
+        return;
+      }
       this.makeToast(
         `${this.language[this.config.currentLanguage].Apikey.actions[event.action]}: ${event.row.name}`,
       );
     },
     confirmCredentialAction(event) {
+      if (event.action === "revoke") {
+        this.prepareCredentialRevocation(event.row);
+        return;
+      }
       this.handleCredentialAction(event);
     },
     generateKey() {
@@ -1225,6 +1368,92 @@ export default {
       this.rotationTarget = null;
       this.rotationErrors = [];
       this.rotationPolicy = "overlap-24h";
+    },
+    prepareCredentialRevocation(row) {
+      const target = this.normalizedCredentialTarget(row);
+      this.revocationTarget = target;
+      this.revocationForm = {
+        confirmFingerprint: "",
+        confirmName: "",
+        elevated: false,
+        reason: "",
+      };
+      this.revocationErrors = [];
+    },
+    cancelCredentialRevocation() {
+      this.revocationTarget = null;
+      this.revocationForm = {
+        confirmFingerprint: "",
+        confirmName: "",
+        elevated: false,
+        reason: "",
+      };
+      this.revocationErrors = [];
+    },
+    revokeCredential() {
+      const request = createCredentialRevocationRequest(
+        this.revocationForm,
+        this.revocationTarget,
+        {
+          actor: "current-user",
+          capabilities: this.credentialCapabilities,
+          reasonRequired: this.config.credentialAuditReasonRequired === true,
+          requiresElevatedConfirmation:
+            this.revocationRequiresElevatedConfirmation,
+          tenantId: "current-tenant",
+        },
+      );
+      if (!request.allowed) {
+        this.revocationErrors = request.errors.map((error) =>
+          this.credentialErrorLabel(error),
+        );
+        return;
+      }
+      this.revocationErrors = [];
+      return apiClient
+        .post(this.credentialRevocationEndpoint(this.revocationTarget.id), request.body, {
+          headers: { ...this.setHeaders(), ...request.headers },
+        })
+        .then((response) => {
+          const durableStatus = response.data?.status ?? "revoked";
+          this.credentials = this.credentials.map((credential) => {
+            const id = credential.id ?? credential.credentialId ?? credential.keyId;
+            if (id !== this.revocationTarget.id) return credential;
+            return {
+              ...credential,
+              revokedAt: response.data?.revokedAt ?? new Date().toISOString(),
+              revokedBy: response.data?.actor ?? "current-user",
+              status: durableStatus,
+            };
+          });
+          this.cancelCredentialRevocation();
+        })
+        .catch((e) => {
+          this.revocationErrors = [
+            this.language[this.config.currentLanguage].Apikey.revocationFailed,
+          ];
+          this.Logout(this, e);
+        });
+    },
+    normalizedCredentialTarget(row) {
+      const target = this.credentials.find((credential) => {
+        const id = credential.id ?? credential.credentialId ?? credential.keyId;
+        return id === row.id;
+      });
+      return target
+        ? {
+            ...target,
+            expiresAt: target.expiresAt || null,
+            fingerprint: target.fingerprint || target.keyPrefix || target.prefix,
+            id: target.id ?? target.credentialId ?? target.keyId,
+            lastUsedAt: target.lastUsedAt || null,
+            scopes: Array.isArray(target.scopes)
+              ? target.scopes
+              : String(target.scopes ?? "")
+                  .split(/[,\s]+/)
+                  .filter(Boolean),
+          }
+        : null;
     },
     rotateCredential() {
       const request = createCredentialRotationRequest(
@@ -1270,6 +1499,9 @@ export default {
     },
     credentialRotationEndpoint(id) {
       return `${this.credentialEndpoint()}/${encodeURIComponent(id)}/rotate`;
+    },
+    credentialRevocationEndpoint(id) {
+      return `${this.credentialEndpoint()}/${encodeURIComponent(id)}/revoke`;
     },
     generateAction() {
       apiClient

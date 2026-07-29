@@ -123,6 +123,26 @@ the old credential is marked as rotated and the replacement carries lineage to
 the previous credential ID. Neither the old nor replacement full value appears in
 inventory rows, route state, telemetry, logs, or documentation fixtures.
 
+## Revocation
+
+Credential revocation invalidates an existing credential through an idempotent,
+tenant-scoped request. The operator must confirm both the credential name and the
+safe prefix or fingerprint before the request can be submitted. The revocation
+panel displays last use, affected scopes, and the immediate consequence: after
+durable API confirmation, the credential can no longer authenticate CLI or
+automation requests.
+
+An audit reason can be required by policy. Revoking the last usable credential,
+or a protected automation path, requires elevated confirmation before the request
+is sent. Already revoked, expired, and other terminal credentials fail closed in
+the client validation layer.
+
+The UI must not mark a credential as revoked until the API confirms the durable
+state transition. If revocation fails, the original credential remains visible
+and usable in the client state. Audit records must contain actor, timestamp,
+target credential ID, selected outcome, and reason when provided, but never the
+complete credential value.
+
 ## Redaction and observability
 
 Credential diagnostics, audit records, screenshots, fixtures, and UI state must
