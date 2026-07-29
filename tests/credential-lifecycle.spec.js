@@ -4,7 +4,11 @@ import {
   CREDENTIAL_CONTRACT_VERSION,
   createCredentialLifecycleRequest,
   credentialAuthorization,
+  buildCredentialInventoryQuery,
+  credentialInventoryActions,
+  credentialInventoryRow,
   legacyCredentialMigrationPolicy,
+  normalizeCredentialInventory,
   normalizeCredentialDescriptor,
   normalizeCredentialList,
   normalizeRevealOnceResult,
@@ -150,5 +154,53 @@ describe("credential lifecycle API and migration contract", () => {
       migrationRequired: true,
       removalDate: "2026-12-31",
     });
+  });
+
+  it("builds bounded filtered inventory rows and capability-scoped actions", () => {
+    const inventory = normalizeCredentialInventory(
+      [
+        {
+          actor: "admin@idelium.org",
+          expiresAt: "2027-07-30T00:00:00Z",
+          fingerprint: "safe-fingerprint",
+          id: "cred-active",
+          name: "CI",
+          scopes: ["run:execute"],
+          status: "active",
+          tenantId: "tenant-1",
+        },
+        {
+          actor: "admin@idelium.org",
+          id: "cred-revoked",
+          name: "Old",
+          scopes: ["artifact:read"],
+          status: "revoked",
+          tenantId: "tenant-1",
+        },
+      ],
+      { filters: { scope: "run:execute", status: "active" }, limit: 50 },
+    );
+
+    expect(inventory).toHaveLength(1);
+    expect(
+      credentialInventoryRow(inventory[0], { neverUsed: "Never used" }),
+    ).toMatchObject({
+      fingerprint: "safe-fingerprint",
+      lastUsedAt: "Never used",
+      name: "CI",
+      scopes: "run:execute",
+    });
+    expect(
+      buildCredentialInventoryQuery(
+        { pageSize: 500, status: "active,revoked,invalid" },
+        { tenantId: "tenant-1" },
+      ).toString(),
+    ).toBe("tenantId=tenant-1&pageSize=100&status=active&status=revoked");
+    expect(
+      credentialInventoryActions(
+        { id: "cred-1", name: "CI", status: "active" },
+        { capabilities: ["credential.rotate", "credential.audit"] },
+      ).map((action) => action.id),
+    ).toEqual(["rotate", "audit"]);
   });
 });

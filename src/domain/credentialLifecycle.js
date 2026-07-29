@@ -26,6 +26,15 @@ const ACTION_CAPABILITIES = Object.freeze({
 });
 
 const DEFAULT_LEGACY_REMOVAL_DATE = "2026-10-31";
+const STATUS_FILTERS = new Set([
+  "active",
+  "expiring",
+  "expired",
+  "legacy",
+  "revoked",
+  "rotated",
+  "unknown",
+]);
 
 export function normalizeCredentialDescriptor(input = {}, context = {}) {
   const tenantId = safeIdentifier(input.tenantId ?? context.tenantId);
@@ -59,6 +68,90 @@ export function normalizeCredentialList(credentials = [], context = {}) {
   );
 }
 
+export function normalizeCredentialInventory(credentials = [], context = {}) {
+  const filters = normalizeCredentialInventoryFilters(context.filters);
+  return normalizeCredentialList(credentials, context)
+    .filter((credential) => credentialMatchesFilters(credential, filters))
+    .slice(0, positiveInteger(context.limit, 100));
+}
+
+export function credentialInventoryRow(credential = {}, copy = {}) {
+  const descriptor = normalizeCredentialDescriptor(credential);
+  return {
+    actor: descriptor.actor,
+    createdAt: formatDate(descriptor.createdAt),
+    expiresAt: formatDate(descriptor.expiresAt),
+    fingerprint: descriptor.fingerprint || descriptor.prefix || "—",
+    id: descriptor.id,
+    lastUsedAt: lastUsedLabel(descriptor.lastUsedAt, credential, copy),
+    name: descriptor.name,
+    rowLabel: `${descriptor.name} ${descriptor.fingerprint || descriptor.prefix}`,
+    scopes: descriptor.scopes.join(", "),
+    status: credentialInventoryStatus(descriptor),
+    tenantId: descriptor.tenantId,
+  };
+}
+
+export function normalizeCredentialInventoryFilters(filters = {}) {
+  const statusInput = filters.statuses ?? filters.status;
+  const statuses = (Array.isArray(statusInput) ? statusInput : [statusInput])
+    .flatMap((status) => String(status).split(","))
+    .map((status) => String(status).toLowerCase().trim())
+    .filter((status) => STATUS_FILTERS.has(status));
+  return {
+    expiry: safeExpiryFilter(filters.expiry),
+    owner: safeText(filters.owner),
+    scopes: normalizeScopes(filters.scopes ?? filters.scope),
+    statuses,
+  };
+}
+
+export function buildCredentialInventoryQuery(filters = {}, context = {}) {
+  const normalized = normalizeCredentialInventoryFilters(filters);
+  const params = new URLSearchParams();
+  params.set("tenantId", safeIdentifier(context.tenantId));
+  params.set(
+    "pageSize",
+    String(Math.min(positiveInteger(filters.pageSize, 50), 100)),
+  );
+  for (const status of normalized.statuses) params.append("status", status);
+  for (const scope of normalized.scopes) params.append("scope", scope);
+  if (normalized.owner) params.set("owner", normalized.owner);
+  if (normalized.expiry) params.set("expiry", normalized.expiry);
+  return params;
+}
+
+export function credentialInventoryActions(credential = {}, options = {}) {
+  const actions = [
+    { id: "create", label: "Create", requires: "credential.create" },
+    { id: "rotate", label: "Rotate", requires: "credential.rotate" },
+    {
+      id: "revoke",
+      label: "Revoke",
+      requires: "credential.revoke",
+      requiresConfirmation: true,
+      variant: "danger",
+    },
+    { id: "audit", label: "Audit", requires: "credential.audit" },
+  ];
+  const capabilities = new Set(safeArray(options.capabilities));
+  const status = normalizeCredentialDescriptor(credential).status;
+  return actions
+    .filter((action) => capabilities.has(action.requires))
+    .map((action) => ({
+      ...action,
+      disabled:
+        (action.id === "rotate" || action.id === "revoke") &&
+        [CREDENTIAL_STATUSES.REVOKED, CREDENTIAL_STATUSES.EXPIRED].includes(
+          status,
+        ),
+      tooltip: safeText(
+        options.copy?.[`${action.id}Tooltip`] ??
+          `${action.label} credential ${credential.name ?? credential.id ?? ""}`,
+      ),
+    }));
+}
+
 export function normalizeRevealOnceResult(response = {}, context = {}) {
   const descriptor = normalizeCredentialDescriptor(response, context);
   const secret = safeSecret(response.secret ?? response.apiKey ?? response.key);
@@ -67,6 +160,19 @@ export function normalizeRevealOnceResult(response = {}, context = {}) {
     revealOnce: true,
     secret: secret || null,
   };
+}
+
+export function credentialInventoryStatus(credential = {}) {
+  const descriptor = normalizeCredentialDescriptor(credential);
+  if (
+    descriptor.status === CREDENTIAL_STATUSES.ACTIVE &&
+    descriptor.expiresAt &&
+    new Date(descriptor.expiresAt).getTime() - Date.now() <=
+      14 * 24 * 60 * 60 * 1000
+  ) {
+    return "expiring";
+  }
+  return descriptor.status;
 }
 
 export function redactCredentialPayload(value) {
@@ -208,6 +314,40 @@ function normalizeCredentialStatus(value, expiresAt) {
   return CREDENTIAL_STATUSES.UNKNOWN;
 }
 
+function credentialMatchesFilters(credential, filters) {
+  const status = credentialInventoryStatus(credential);
+  if (filters.statuses.length > 0 && !filters.statuses.includes(status)) {
+    return false;
+  }
+  if (filters.owner && credential.actor !== filters.owner) return false;
+  if (
+    filters.scopes.length > 0 &&
+    !filters.scopes.every((scope) => credential.scopes.includes(scope))
+  ) {
+    return false;
+  }
+  if (filters.expiry === "expired" && credential.status !== "expired")
+    return false;
+  if (filters.expiry === "none" && credential.expiresAt) return false;
+  return true;
+}
+
+function lastUsedLabel(lastUsedAt, raw, copy) {
+  if (lastUsedAt) return formatDate(lastUsedAt);
+  if (raw.lastUsedUnavailable) return copy.lastUsedUnavailable ?? "Unavailable";
+  return copy.neverUsed ?? "Never used";
+}
+
+function formatDate(value) {
+  if (!value) return "—";
+  return value.slice(0, 10);
+}
+
+function safeExpiryFilter(value) {
+  const text = String(value ?? "").toLowerCase();
+  return ["expired", "none"].includes(text) ? text : "";
+}
+
 function credentialFingerprint(input) {
   const fingerprint = safeText(input.fingerprint ?? input.sha256 ?? input.hash);
   if (fingerprint) return fingerprint.slice(0, 64);
@@ -265,7 +405,13 @@ function safeArray(value) {
   return Array.isArray(value) ? value : [];
 }
 
+function positiveInteger(value, fallback) {
+  const number = Number.parseInt(value, 10);
+  return Number.isFinite(number) && number > 0 ? number : fallback;
+}
+
 function safeIsoTimestamp(value) {
+  if (value == null || value === "") return null;
   const date = new Date(value);
   return Number.isFinite(date.getTime()) ? date.toISOString() : null;
 }

@@ -36,6 +36,32 @@ Every lifecycle action is tenant-scoped and capability-enforced:
 Cross-tenant credential identifiers are rejected even when the operator has the
 right capability in another tenant. Unsupported actions fail closed.
 
+## Inventory listing
+
+The credential inventory uses the shared enterprise DataTable and renders only
+safe metadata:
+
+- name;
+- prefix or fingerprint;
+- scopes;
+- status;
+- owner;
+- created timestamp;
+- last-used timestamp;
+- expiry timestamp.
+
+Filters are bounded and tenant-scoped. The listing supports status, scope,
+owner, and expiry filters, with page size capped at 100 credentials per client
+query. Active, expiring, expired, rotated, revoked, legacy, and unknown states
+must be visually and textually distinguishable.
+
+Never-used credentials display a clear `Never used` state. When the API cannot
+provide last-used data, the UI displays `Unavailable` instead of guessing.
+
+Row actions are exposed only when the active operator has the matching
+capability. Rotate and revoke are disabled for terminal credential states such
+as revoked and expired. Revoke is a confirmation action.
+
 ## Redaction and observability
 
 Credential diagnostics, audit records, screenshots, fixtures, and UI state must
