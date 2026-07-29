@@ -571,6 +571,8 @@ export default {
       "L'avvio non è stato completato. La configurazione è stata preservata.",
     launching: "Avvio in corso...",
     launchtest: " Esegui il test",
+    correlationId: "Correlation ID",
+    retryLaunch: "Riprova dopo preflight",
     pageEyebrow: "Controllo avvio",
     pageTitle: "Test launcher",
     pageDescription:
@@ -754,6 +756,22 @@ export default {
       project: "Progetto",
       target: "Target",
     },
+  },
+  LaunchErrors: {
+    authorization:
+      "L'autorizzazione è cambiata. I dati protetti della bozza di avvio sono stati cancellati.",
+    capacity:
+      "La capacità del target è cambiata prima dell'avvio. Esegui il preflight e riprova quando la capacità è disponibile.",
+    conflict:
+      "La configurazione di avvio non è aggiornata. Esegui nuovamente il preflight prima di riprovare.",
+    field:
+      "Il payload di avvio contiene un campo non valido. Rivedi l'area evidenziata.",
+    server:
+      "Il servizio di avvio ha restituito un errore transitorio. Riprova dopo il preflight.",
+    timeout:
+      "L'esito di rete è sconosciuto. Riprova in modo sicuro con la stessa idempotency key dopo il preflight.",
+    unknown:
+      "Avvio fallito con esito sconosciuto. Rivedi le diagnostiche prima di riprovare.",
   },
   TestCycles: {
     compositionTitle: "Configura la sequenza dei test",

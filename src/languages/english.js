@@ -567,6 +567,8 @@ export default {
       "Launch submission did not complete. The configured launch was preserved.",
     launching: "Launching...",
     launchtest: " Launch Test",
+    correlationId: "Correlation ID",
+    retryLaunch: "Retry after preflight",
     pageEyebrow: "Launch control",
     pageTitle: "Test launcher",
     pageDescription:
@@ -748,6 +750,22 @@ export default {
       project: "Project",
       target: "Target",
     },
+  },
+  LaunchErrors: {
+    authorization:
+      "Your authorization changed. The protected launch draft data was cleared.",
+    capacity:
+      "Target capacity changed before launch. Run preflight and retry when capacity is available.",
+    conflict:
+      "The launch configuration is stale. Run preflight again before retrying.",
+    field:
+      "The launch payload contains an invalid field. Review the highlighted area.",
+    server:
+      "The launch service returned a transient error. Retry after preflight.",
+    timeout:
+      "The network outcome is unknown. Retry safely with the retained idempotency key after preflight.",
+    unknown:
+      "Launch failed with an unknown outcome. Review diagnostics before retrying.",
   },
   TestCycles: {
     compositionTitle: "Configure test sequence",

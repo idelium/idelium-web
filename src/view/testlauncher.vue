@@ -79,7 +79,18 @@
         }}
       </button>
       <p v-if="launchError" class="launch-page__error" aria-live="polite">
-        {{ launcherCopy.launchError }}
+        {{ launchErrorCopy }}
+        <span v-if="launchError.correlationId">
+          {{ launcherCopy.correlationId }}: {{ launchError.correlationId }}
+        </span>
+        <button
+          v-if="launchError.recoverable"
+          class="btn btn-link btn-sm"
+          type="button"
+          v-on:click="retryLaunch"
+        >
+          {{ launcherCopy.retryLaunch }}
+        </button>
       </p>
     </section>
 
@@ -93,6 +104,7 @@ import LaunchPreflightPanel from "@/components/launch/LaunchPreflightPanel.vue";
 import LaunchReviewSummary from "@/components/launch/LaunchReviewSummary.vue";
 import LaunchTargetConfigurator from "@/components/launch/LaunchTargetConfigurator.vue";
 import { createLaunchApiRequest } from "@/domain/launchContracts";
+import { normalizeLaunchError } from "@/domain/launchErrors";
 import {
   isPreflightStale,
   launchConfigurationHash,
@@ -240,6 +252,14 @@ export default {
         projectId: getSelectedProjectId(),
         target: this.selectedTarget,
       });
+    },
+    launchErrorCopy() {
+      if (!this.launchError) return "";
+      return (
+        this.language[this.config.currentLanguage].LaunchErrors?.[
+          this.launchError.type
+        ] ?? this.launcherCopy.launchError
+      );
     },
     canOpenTargetSelection() {
       return (
@@ -596,11 +616,21 @@ export default {
         .then((response) => this.handleLaunchSubmissionResponse(response))
         .catch((error) => {
           if (shouldReconcileLaunchOutcome(error)) {
-            this.launchStatus = "unknown";
-          } else {
-            this.launchStatus = "rejected";
+          this.launchStatus = "unknown";
+        } else {
+          this.launchStatus = "rejected";
+        }
+          this.launchError = normalizeLaunchError(error);
+          if (this.launchError.clearProtectedDraft) {
+            this.targetOverrides = { browser: null, device: null };
+            this.launchSubmissionKey = null;
           }
-          this.launchError = error;
+          if (this.launchError.requiresPreflight && this.preflightResult) {
+            this.preflightResult = {
+              ...this.preflightResult,
+              configurationHash: "stale",
+            };
+          }
         })
         .finally(() => {
           this.launchSubmitting = false;
@@ -614,6 +644,10 @@ export default {
           canonicalExecutionRoute(getSelectedProjectId(), result.runId),
         );
       }
+    },
+    retryLaunch() {
+      if (!this.launchError?.recoverable) return;
+      return this.runPreflight().then(() => this.launchSelectedCycle());
     },
   },
 };

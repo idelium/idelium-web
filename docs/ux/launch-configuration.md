@@ -117,6 +117,21 @@ revalidation remains consistent with existing execution history. Accepted
 asynchronous creation may return a status location; unknown network outcomes
 preserve the configured launch so the API can reconcile by idempotency key.
 
+## Error recovery
+
+Launch errors are normalized into field, preflight/conflict, capacity,
+authorization, timeout, server, and unknown classes. Each class has a localized
+message, a focus target, retry policy, preflight requirement, optional
+correlation ID, and redacted diagnostics. Retry is offered only for safe
+recoverable outcomes and always invalidates the previous preflight when the
+server reports stale capacity or configuration.
+
+Authorization failures clear protected draft data such as overrides and the
+retained idempotency key. They do not reveal which asset access was removed.
+Network loss before or after server acceptance preserves the visible launch
+configuration so reconciliation can use the idempotency key without submitting a
+different payload.
+
 The diagnostic model contains:
 
 - `severity`: `info`, `warning`, or `error`;

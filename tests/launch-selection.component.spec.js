@@ -9,6 +9,7 @@ import LaunchAssetSelector from "@/components/launch/LaunchAssetSelector.vue";
 import LaunchPreflightPanel from "@/components/launch/LaunchPreflightPanel.vue";
 import LaunchReviewSummary from "@/components/launch/LaunchReviewSummary.vue";
 import LaunchTargetConfigurator from "@/components/launch/LaunchTargetConfigurator.vue";
+import { normalizeLaunchError } from "@/domain/launchErrors";
 import {
   isPreflightStale,
   launchConfigurationHash,
@@ -346,6 +347,7 @@ describe("launch asset selection", () => {
           data: [
             {
               capacity: { available: 1, max: 1, queued: 0 },
+              capabilities: ["browserOverride", "deviceOverride"],
               health: "healthy",
               id: "platform-pool",
               runtime: "selenium",
@@ -420,6 +422,7 @@ describe("launch asset selection", () => {
           data: [
             {
               capacity: { available: 1, max: 1, queued: 0 },
+              capabilities: ["browserOverride", "deviceOverride"],
               health: "healthy",
               id: "platform-pool",
               lastHealthAt: new Date().toISOString(),
@@ -493,6 +496,7 @@ describe("launch asset selection", () => {
           data: [
             {
               capacity: { available: 1, max: 1, queued: 0 },
+              capabilities: ["browserOverride", "deviceOverride"],
               health: "healthy",
               id: "platform-pool",
               lastHealthAt: new Date().toISOString(),
@@ -563,6 +567,40 @@ describe("launch asset selection", () => {
         status: 202,
       }),
     ).toMatchObject({ status: "accepted" });
+  });
+
+  it("normalizes recoverable launch errors without leaking protected details", () => {
+    expect(
+      normalizeLaunchError({
+        response: {
+          data: {
+            code: "CAPACITY_UNAVAILABLE",
+            message: "token=complete-secret-token",
+          },
+          headers: { "x-correlation-id": "corr-1" },
+          status: 429,
+        },
+      }),
+    ).toMatchObject({
+      code: "launch.error.capacity",
+      correlationId: "corr-1",
+      recoverable: true,
+      requiresPreflight: true,
+      type: "capacity",
+    });
+    expect(
+      normalizeLaunchError({
+        response: {
+          data: { message: "Authorization: Bearer complete-secret-token" },
+          status: 422,
+        },
+      }).message,
+    ).not.toContain("complete-secret-token");
+    expect(normalizeLaunchError({ response: { status: 403 } })).toMatchObject({
+      clearProtectedDraft: true,
+      recoverable: false,
+      type: "authorization",
+    });
   });
 
   it("preserves route-backed selections and clears only incompatible cycles", async () => {
