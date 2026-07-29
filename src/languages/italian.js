@@ -568,6 +568,60 @@ export default {
     description: "descrizione",
     environment: "Ambiente:",
     launchtest: " Esegui il test",
+    pageEyebrow: "Controllo avvio",
+    pageTitle: "Test launcher",
+    pageDescription:
+      "Seleziona un ciclo e un ambiente autorizzati prima di scegliere il target di esecuzione.",
+    refresh: "Aggiorna asset",
+    notSelected: "Non selezionato",
+    reviewEyebrow: "Revisione avvio",
+    reviewTitle: "Pronto per la selezione target",
+    reviewDescription:
+      "Solo asset compatibili e autorizzati possono procedere alla selezione piattaforma.",
+    cycleSelector: {
+      accessibleLabel: "Selezione ciclo di test",
+      count: "{count} cicli",
+      description:
+        "Cerca risultati limitati e seleziona il contenuto da eseguire.",
+      empty: "Non ci sono cicli di test autorizzati.",
+      owner: "Proprietario",
+      runtime: "Runtime",
+      searchLabel: "Cerca ciclo",
+      searchPlaceholder: "Cerca per nome ciclo",
+      status: "Stato",
+      title: "Ciclo di test",
+      updatedAt: "Aggiornato",
+      version: "Versione",
+      disabledReasons: {
+        archived: "Questo ciclo è archiviato.",
+        crossProject: "Questo ciclo appartiene a un altro progetto.",
+        crossTenant: "Questo ciclo appartiene a un altro cliente.",
+        runtime: "Questo ciclo non è compatibile con l'ambiente selezionato.",
+        unavailable: "Questo ciclo non è disponibile.",
+      },
+    },
+    environmentSelector: {
+      accessibleLabel: "Selezione ambiente",
+      count: "{count} ambienti",
+      description:
+        "Cerca risultati limitati e seleziona la configurazione runtime.",
+      empty: "Non ci sono ambienti autorizzati.",
+      owner: "Proprietario",
+      runtime: "Runtime",
+      searchLabel: "Cerca ambiente",
+      searchPlaceholder: "Cerca per codice ambiente",
+      status: "Stato",
+      title: "Ambiente",
+      updatedAt: "Aggiornato",
+      version: "Versione",
+      disabledReasons: {
+        archived: "Questo ambiente è archiviato.",
+        crossProject: "Questo ambiente appartiene a un altro progetto.",
+        crossTenant: "Questo ambiente appartiene a un altro cliente.",
+        runtime: "Questo ambiente non è compatibile con il ciclo selezionato.",
+        unavailable: "Questo ambiente non è disponibile.",
+      },
+    },
     ModalListPlatform: {
       modalTitle: "Piattaforme",
       launchtest: " Esegui il test",
@@ -601,7 +655,8 @@ export default {
       crossTenantReference:
         "Seleziona entità appartenenti al cliente attivo prima dell'avvio.",
       required: "Completa il campo obbligatorio di avvio prima di continuare.",
-      review: "Rivedi la configurazione di avvio ed esegui di nuovo il preflight.",
+      review:
+        "Rivedi la configurazione di avvio ed esegui di nuovo il preflight.",
       unsupportedOption:
         "Rimuovi l'opzione non supportata o aggiorna il contratto API prima dell'avvio.",
       unsupportedTarget:
@@ -1149,7 +1204,8 @@ export default {
     validation: {
       unavailable:
         "Il riferimento segreto non è disponibile. Seleziona un riferimento autorizzato.",
-      revoked: "Il riferimento segreto è stato revocato e non può essere usato.",
+      revoked:
+        "Il riferimento segreto è stato revocato e non può essere usato.",
       expired: "Il riferimento segreto è scaduto e deve essere sostituito.",
     },
     confirmation: {
@@ -1214,8 +1270,7 @@ export default {
     downloaded: "Configurazione oscurata scaricata.",
     launchWarning:
       "Le sovrascritture all'avvio possono ancora modificare la configurazione effettiva.",
-    versions:
-      "Contratto {contract} · schema {schema} · catalogo {catalog}",
+    versions: "Contratto {contract} · schema {schema} · catalogo {catalog}",
     columns: {
       field: "Campo",
       source: "Origine",
@@ -1259,8 +1314,7 @@ export default {
       confirm: "Esci dalla pagina",
     },
     clone: {
-      identityRequired:
-        "Inserisci un nuovo nome ambiente e una destinazione.",
+      identityRequired: "Inserisci un nuovo nome ambiente e una destinazione.",
       referencesRequireValidation:
         "I riferimenti segreti sono stati rimossi e devono essere selezionati nuovamente.",
     },

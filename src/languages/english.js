@@ -564,6 +564,60 @@ export default {
     description: "description",
     environment: "Environment:",
     launchtest: " Launch Test",
+    pageEyebrow: "Launch control",
+    pageTitle: "Test launcher",
+    pageDescription:
+      "Select an authorized cycle and environment before choosing the execution target.",
+    refresh: "Refresh assets",
+    notSelected: "Not selected",
+    reviewEyebrow: "Launch review",
+    reviewTitle: "Ready for target selection",
+    reviewDescription:
+      "Only compatible and authorized assets can move forward to platform selection.",
+    cycleSelector: {
+      accessibleLabel: "Test cycle selection",
+      count: "{count} cycles",
+      description:
+        "Search bounded cycle results and select the run content to execute.",
+      empty: "No authorized test cycles are available.",
+      owner: "Owner",
+      runtime: "Runtime",
+      searchLabel: "Search cycle",
+      searchPlaceholder: "Search by cycle name",
+      status: "Status",
+      title: "Test cycle",
+      updatedAt: "Updated",
+      version: "Version",
+      disabledReasons: {
+        archived: "This cycle is archived.",
+        crossProject: "This cycle belongs to another project.",
+        crossTenant: "This cycle belongs to another customer.",
+        runtime: "This cycle is incompatible with the selected environment.",
+        unavailable: "This cycle is not available.",
+      },
+    },
+    environmentSelector: {
+      accessibleLabel: "Environment selection",
+      count: "{count} environments",
+      description:
+        "Search bounded environment results and select the runtime configuration.",
+      empty: "No authorized environments are available.",
+      owner: "Owner",
+      runtime: "Runtime",
+      searchLabel: "Search environment",
+      searchPlaceholder: "Search by environment code",
+      status: "Status",
+      title: "Environment",
+      updatedAt: "Updated",
+      version: "Version",
+      disabledReasons: {
+        archived: "This environment is archived.",
+        crossProject: "This environment belongs to another project.",
+        crossTenant: "This environment belongs to another customer.",
+        runtime: "This environment is incompatible with the selected cycle.",
+        unavailable: "This environment is not available.",
+      },
+    },
     ModalListPlatform: {
       modalTitle: "List platform",
       launchtest: " Launch Test",
@@ -1103,10 +1157,8 @@ export default {
       crossTenant:
         "Variable {name} was rejected because it belongs to another customer.",
       duplicate: "Variable {name} is duplicated in {source}.",
-      forbiddenOverride:
-        "Variable {name} cannot be overridden by {source}.",
-      unresolved:
-        "Variable {name} references missing variable {reference}.",
+      forbiddenOverride: "Variable {name} cannot be overridden by {source}.",
+      unresolved: "Variable {name} references missing variable {reference}.",
       cycle: "Variable dependency cycle detected: {members}.",
     },
   },
@@ -1198,8 +1250,7 @@ export default {
     downloaded: "Redacted configuration downloaded.",
     launchWarning:
       "Launch-time overrides can still change the effective configuration.",
-    versions:
-      "Contract {contract} · schema {schema} · catalogue {catalog}",
+    versions: "Contract {contract} · schema {schema} · catalogue {catalog}",
     columns: {
       field: "Field",
       source: "Source",

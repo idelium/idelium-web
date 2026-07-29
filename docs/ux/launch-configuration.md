@@ -24,6 +24,27 @@ and concurrency values. Browser, device, timeout, variables, tags, and optional
 schedule references are normalized as launch options. Unsupported options fail
 with stable validation diagnostics instead of being silently ignored.
 
+## Cycle and environment selection
+
+Cycle and environment selection uses bounded, searchable, project-scoped
+selectors. Each request uses an explicit page size of 50 and an allowlisted
+search query, so the Console never loads an unbounded set of customer assets.
+The API must keep filtering unauthorized entities; the browser additionally
+filters unauthorized status markers if legacy responses contain them.
+
+Each option exposes enough metadata to prevent operator mistakes: version,
+status, runtime compatibility, owner, and updated date. Archived, inactive,
+cross-project, cross-customer, and runtime-incompatible options remain
+non-selectable with a localized reason. Changing the environment clears only an
+already-selected cycle when its runtime becomes incompatible; other draft state
+is preserved.
+
+The safe draft state is stored in the route query as selected cycle and
+environment identifiers only. Secrets, variables, headers, payloads, and
+credentials are never copied into the URL. Refreshing the page reloads the
+authorized bounded lists and revalidates whether the referenced selections are
+still available.
+
 The diagnostic model contains:
 
 - `severity`: `info`, `warning`, or `error`;
