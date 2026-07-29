@@ -3,9 +3,17 @@ import { beforeEach, describe, expect, it } from "vitest";
 import router from "@/router";
 import { pinia } from "@/stores/pinia";
 import { useSessionStore } from "@/stores/session";
+import {
+  setUnsavedChangesConfirmationHandler,
+  useNavigationStore,
+} from "@/stores/navigation";
 
 describe("route smoke checks", () => {
-  beforeEach(() => useSessionStore(pinia).clear());
+  beforeEach(() => {
+    useSessionStore(pinia).clear();
+    useNavigationStore(pinia).clearAll();
+    setUnsavedChangesConfirmationHandler(null);
+  });
 
   it("opens the login route", async () => {
     await router.push("/login");
@@ -66,5 +74,33 @@ describe("route smoke checks", () => {
 
     expect(router.currentRoute.value.name).toBe("plugins");
     expect(router.currentRoute.value.path).toBe("/projects/7/plugins/import");
+  });
+
+  it("keeps the current route when unsaved changes are not discarded", async () => {
+    const session = useSessionStore(pinia);
+    session.establishSession();
+    session.selectProject(7);
+    await router.push("/projects/7/steps/new");
+    useNavigationStore(pinia).markDirty("step:new", "Reusable step");
+    setUnsavedChangesConfirmationHandler(() => Promise.resolve(false));
+
+    await router.push("/projects/7/environments/new");
+
+    expect(router.currentRoute.value.path).toBe("/projects/7/steps/new");
+  });
+
+  it("clears dirty state after a confirmed route transition", async () => {
+    const session = useSessionStore(pinia);
+    session.establishSession();
+    session.selectProject(7);
+    await router.push("/projects/7/steps/new");
+    const navigation = useNavigationStore(pinia);
+    navigation.markDirty("step:new", "Reusable step");
+    setUnsavedChangesConfirmationHandler(() => Promise.resolve(true));
+
+    await router.push("/projects/7/environments/new");
+
+    expect(router.currentRoute.value.path).toBe("/projects/7/environments/new");
+    expect(navigation.hasUnsavedChanges).toBe(false);
   });
 });

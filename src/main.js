@@ -5,6 +5,7 @@ import App from "./App.vue";
 import router from "./router";
 import { pinia } from "./stores/pinia";
 import { useSessionStore } from "./stores/session";
+import { setUnsavedChangesConfirmationHandler } from "./stores/navigation";
 import { setUnauthorizedHandler } from "./services/apiClient";
 import "bootstrap";
 import ElementPlus from "element-plus";
@@ -192,6 +193,26 @@ app.config.globalProperties.$showConfirm = function (options = {}) {
     });
   });
 };
+setUnsavedChangesConfirmationHandler((options = {}) => {
+  const labels =
+    app.config.globalProperties.language?.[
+      app.config.globalProperties.config?.currentLanguage
+    ]?.Navigation || {};
+  return new Promise((resolve) => {
+    emitter.emit("enterprise-dialog:show", {
+      cancelLabel: labels.stay || "Stay",
+      confirmLabel: labels.discard || "Discard changes",
+      message:
+        options.message ||
+        labels.unsavedMessage ||
+        "You have unsaved changes. Discard them and continue?",
+      resolver: resolve,
+      title: labels.unsavedTitle || "Unsaved changes",
+      type: "confirm",
+      variant: "warning",
+    });
+  });
+});
 app.config.globalProperties.Logout = (object, e = null) => {
   object.emitter.emit("showLoader", false);
   const status = e?.response?.status || 401;

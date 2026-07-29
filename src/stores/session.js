@@ -28,6 +28,9 @@ export const useSessionStore = defineStore("session", {
       selectedCustomerId: persisted.selectedCustomerId || null,
       selectedProjectId: persisted.selectedProjectId || null,
       hasNoProjects: persisted.hasNoProjects === true,
+      availableCustomers: [],
+      availableProjects: [],
+      capabilities: [],
     };
   },
   getters: {
@@ -58,7 +61,16 @@ export const useSessionStore = defineStore("session", {
       this.selectedProjectId = projectId || null;
       this.persist();
     },
+    setAvailableContexts({ customers = [], projects = [], capabilities = [] }) {
+      this.availableCustomers = customers;
+      this.availableProjects = projects;
+      this.capabilities = capabilities;
+    },
+    hasCapability(capability) {
+      return !capability || this.capabilities.includes(capability);
+    },
     setProjectAvailability(projects) {
+      this.availableProjects = projects;
       this.hasNoProjects = projects.length === 0;
       if (this.hasNoProjects) this.selectedProjectId = null;
       this.persist();

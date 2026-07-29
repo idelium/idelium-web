@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from "vue-router";
 import { pinia } from "@/stores/pinia";
 import { useSessionStore } from "@/stores/session";
+import { useNavigationStore } from "@/stores/navigation";
 import {
   isProjectScopedRouteName,
   legacyProjectRouteRedirect,
@@ -218,14 +219,28 @@ const router = createRouter({
   ],
 });
 
-router.beforeEach((to) => {
+router.beforeEach(async (to, from) => {
   const session = useSessionStore(pinia);
+  const navigation = useNavigationStore(pinia);
   if (
     to.name !== "Login" &&
     to.meta.requiresAuth === true &&
     !session.isAuthenticated
   ) {
     return { name: "Login", query: { back: to.fullPath } };
+  }
+  if (
+    from.name &&
+    to.name !== "Login" &&
+    to.fullPath !== from.fullPath &&
+    navigation.hasUnsavedChanges
+  ) {
+    const shouldDiscard = await navigation.confirmDiscard({
+      from: from.fullPath,
+      to: to.fullPath,
+    });
+    if (!shouldDiscard) return false;
+    navigation.clearAll();
   }
   if (to.name !== "projects" && to.name !== "Login" && session.hasNoProjects) {
     return { name: "projects" };

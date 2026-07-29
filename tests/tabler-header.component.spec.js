@@ -6,8 +6,10 @@ const api = vi.hoisted(() => ({ get: vi.fn(), post: vi.fn(), put: vi.fn() }));
 vi.mock("@/services/apiClient", () => ({ default: api }));
 vi.mock("@/stores/session", () => ({
   useSessionStore: () => ({
+    capabilities: [],
     selectCustomer: vi.fn(),
     selectProject: vi.fn(),
+    setAvailableContexts: vi.fn(),
     setProjectAvailability: vi.fn(),
   }),
 }));

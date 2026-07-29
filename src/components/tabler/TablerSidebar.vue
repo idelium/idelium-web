@@ -9,27 +9,37 @@
     </div>
 
     <nav class="idelium-sidebar-nav" aria-label="Main navigation">
-      <button
-        v-for="(item, index) in menu"
-        v-bind:key="index"
-        type="button"
-        :class="
-          'idelium-sidebar-link ' +
-          (isActiveMenuItem(item.link) ? 'active' : '')
-        "
-        v-on:click="go(item.link, item.isActiveEmptyDb)"
-        :title="language[config.currentLanguage].Sidebar[item.name]"
+      <section
+        v-for="group in menuGroups"
+        :key="group.key"
+        class="idelium-sidebar-group"
       >
-        <span class="idelium-sidebar-icon">
-          <font-awesome-icon
-            :icon="item.icon"
-            :class="'idelium-action-icon--navigation ' + item.class"
-          />
-        </span>
-        <span class="idelium-sidebar-text">
-          {{ language[config.currentLanguage].Sidebar[item.name] }}
-        </span>
-      </button>
+        <h2 v-if="group.items.length" class="idelium-sidebar-group__title">
+          {{ group.label }}
+        </h2>
+        <button
+          v-for="item in group.items"
+          :key="item.link"
+          type="button"
+          :aria-current="isActiveMenuItem(item.link) ? 'page' : undefined"
+          :class="[
+            'idelium-sidebar-link',
+            { active: isActiveMenuItem(item.link) },
+          ]"
+          v-on:click="go(item.link, item.isActiveEmptyDb)"
+          :title="language[config.currentLanguage].Sidebar[item.name]"
+        >
+          <span class="idelium-sidebar-icon">
+            <font-awesome-icon
+              :icon="item.icon"
+              :class="'idelium-action-icon--navigation ' + item.class"
+            />
+          </span>
+          <span class="idelium-sidebar-text">
+            {{ language[config.currentLanguage].Sidebar[item.name] }}
+          </span>
+        </button>
+      </section>
     </nav>
   </aside>
 </template>
@@ -37,11 +47,28 @@
 <script>
 import apiClient from "@/services/apiClient";
 import { getSelectedProjectId } from "@/stores/session";
-import {
-  isProjectScopedRouteName,
-  selectedProjectPath,
-  selectedProjectRoute,
-} from "@/router/projectRoutes";
+import { selectedProjectRoute } from "@/router/projectRoutes";
+import { pinia } from "@/stores/pinia";
+import { useSessionStore } from "@/stores/session";
+
+const MENU_GROUPS = [
+  {
+    key: "execution",
+    links: ["testsperformed", "testlauncher"],
+  },
+  {
+    key: "authoring",
+    links: ["testcycles", "tests", "steps"],
+  },
+  {
+    key: "resources",
+    links: ["plugins", "environments", "platforms"],
+  },
+  {
+    key: "administration",
+    links: ["projects", "costumers", "accounts", "account", "apikey"],
+  },
+];
 
 export default {
   name: "TablerSidebar",
@@ -49,6 +76,43 @@ export default {
     collapsed: {
       type: Boolean,
       default: false,
+    },
+  },
+  setup() {
+    return {
+      session: useSessionStore(pinia),
+    };
+  },
+  computed: {
+    menuGroups() {
+      const availableMenu = this.menu.filter((item) =>
+        this.session.hasCapability(item.capability),
+      );
+      const groupedLinks = new Set(MENU_GROUPS.flatMap((group) => group.links));
+      const copy = this.language[this.config.currentLanguage].Navigation
+        ?.groups || {
+        administration: "Administration",
+        authoring: "Authoring",
+        execution: "Execution",
+        other: "Other",
+        resources: "Resources",
+      };
+      const groups = MENU_GROUPS.map((group) => ({
+        key: group.key,
+        label: copy[group.key],
+        items: availableMenu.filter((item) => group.links.includes(item.link)),
+      }));
+      const remaining = availableMenu.filter(
+        (item) => !groupedLinks.has(item.link),
+      );
+      if (remaining.length) {
+        groups.push({
+          key: "other",
+          label: copy.other,
+          items: remaining,
+        });
+      }
+      return groups;
     },
   },
   watch: {
@@ -65,19 +129,8 @@ export default {
   methods: {
     isActiveMenuItem(link) {
       const currentRoute = this.$router.currentRoute.value;
-      if (!isProjectScopedRouteName(link)) {
-        return currentRoute.name === link;
-      }
-
-      const projectId = getSelectedProjectId();
-      const itemPath = selectedProjectPath(link, projectId);
-      const currentPath = currentRoute.path;
-
-      if (currentPath === itemPath || currentPath.startsWith(itemPath + "/")) {
-        return true;
-      }
-
-      return currentRoute.name === link;
+      const routeName = link === "account" ? "accounts" : link;
+      return currentRoute.name === routeName;
     },
     go(link, active) {
       const projectId = getSelectedProjectId();
@@ -197,6 +250,25 @@ export default {
   padding: 0.8rem;
 }
 
+.idelium-sidebar-group {
+  display: grid;
+  gap: var(--id-space-1);
+}
+
+.idelium-sidebar-group + .idelium-sidebar-group {
+  margin-top: var(--id-space-3);
+}
+
+.idelium-sidebar-group__title {
+  color: var(--id-color-text-subtle);
+  font-size: var(--id-font-size-caption);
+  font-weight: var(--id-font-weight-bold);
+  letter-spacing: 0.08em;
+  margin: 0;
+  padding: var(--id-space-2) var(--id-space-3);
+  text-transform: uppercase;
+}
+
 .idelium-sidebar-link {
   align-items: center;
   background: transparent;
@@ -258,6 +330,7 @@ export default {
 
 .is-collapsed .idelium-sidebar-brand-copy,
 .is-collapsed .idelium-sidebar-subtitle,
+.is-collapsed .idelium-sidebar-group__title,
 .is-collapsed .idelium-sidebar-text {
   display: none;
 }
@@ -268,22 +341,20 @@ export default {
   padding-right: 0;
 }
 
-@media only screen and (max-width: 760px) {
+@media only screen and (max-width: 900px) {
   .idelium-tabler-sidebar {
-    flex-basis: 86px;
-    width: 86px;
+    height: 100vh;
+    left: 0;
+    position: fixed;
+    top: 0;
+    transform: translateX(0);
+    transition: transform var(--id-motion-normal) ease;
+    width: min(86vw, 280px);
   }
 
-  .idelium-sidebar-brand {
-    justify-content: center;
-    padding-left: 0.5rem;
-    padding-right: 0.5rem;
-  }
-
-  .idelium-sidebar-brand-copy,
-  .idelium-sidebar-subtitle,
-  .idelium-sidebar-text {
-    display: none;
+  .idelium-tabler-sidebar.is-collapsed {
+    transform: translateX(-100%);
+    width: min(86vw, 280px);
   }
 }
 </style>

@@ -42,7 +42,26 @@ export default {
     testlauncher: "Test Launcher",
     platforms: "Platforms",
   },
+  Navigation: {
+    breadcrumbsLabel: "Breadcrumb",
+    closeNavigation: "Close navigation",
+    discard: "Discard changes",
+    project: "Project",
+    skipToContent: "Skip to main content",
+    stay: "Stay on this page",
+    unsavedMessage:
+      "You have unsaved changes. Discard them and continue to the selected destination?",
+    unsavedTitle: "Unsaved changes",
+    groups: {
+      administration: "Administration",
+      authoring: "Authoring",
+      execution: "Execution",
+      other: "Other",
+      resources: "Resources",
+    },
+  },
   Header: {
+    activeContext: "Active customer and project",
     costumer: "Customer",
     project: "Project",
     logOut: "Log Out",

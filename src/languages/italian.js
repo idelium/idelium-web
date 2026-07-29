@@ -42,7 +42,26 @@ export default {
     testlauncher: "Test Launcher",
     platforms: "Piattaforme",
   },
+  Navigation: {
+    breadcrumbsLabel: "Percorso di navigazione",
+    closeNavigation: "Chiudi navigazione",
+    discard: "Scarta modifiche",
+    project: "Progetto",
+    skipToContent: "Vai al contenuto principale",
+    stay: "Resta in questa pagina",
+    unsavedMessage:
+      "Sono presenti modifiche non salvate. Vuoi scartarle e continuare verso la destinazione selezionata?",
+    unsavedTitle: "Modifiche non salvate",
+    groups: {
+      administration: "Amministrazione",
+      authoring: "Creazione",
+      execution: "Esecuzione",
+      other: "Altro",
+      resources: "Risorse",
+    },
+  },
   Header: {
+    activeContext: "Cliente e progetto attivi",
     costumer: "Cliente",
     project: "Progetto",
     logOut: "Esci",

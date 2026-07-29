@@ -20,42 +20,18 @@
       />
     </div>
 
-    <div class="idelium-header-context">
-      <label class="idelium-context-field" v-if="arrayProjects.length != 0">
-        <span>{{ language[config.currentLanguage].Header.project }}</span>
-        <select v-model="projectSelected">
-          <option
-            v-for="(project, index) in arrayProjects"
-            v-bind:key="index"
-            :value="project.id"
-          >
-            {{ project.name }}
-          </option>
-        </select>
-      </label>
-
-      <label class="idelium-context-field" v-if="arrayCostumers.length != 0">
-        <span>{{ language[config.currentLanguage].Header.costumer }}</span>
-        <select v-model="costumerSelected">
-          <option
-            v-for="(costumer, index) in arrayCostumers"
-            v-bind:key="index"
-            :value="costumer.id"
-          >
-            {{ costumer.costumer }}
-          </option>
-        </select>
-      </label>
-
-      <button
-        v-if="arrayCostumers.length != 0"
-        type="button"
-        v-on:click="changeCostumer(costumerSelected)"
-        class="idelium-context-action"
-      >
-        {{ language[config.currentLanguage].Header.btnChangeCostumer }}
-      </button>
-    </div>
+    <ContextSwitcher
+      class="idelium-header-context"
+      :customer-id="costumerSelected"
+      :customers="arrayCostumers"
+      :disabled="contextChangePending"
+      :labels="contextLabels"
+      :project-id="projectSelected"
+      :projects="arrayProjects"
+      v-on:apply-customer="changeCostumer"
+      v-on:update:customer-id="costumerSelected = $event"
+      v-on:update:project-id="projectSelected = $event"
+    />
 
     <div class="idelium-header-actions">
       <div class="dropdown">
@@ -143,18 +119,25 @@
 <script>
 import apiClient from "@/services/apiClient";
 import { useSessionStore } from "@/stores/session";
+import { pinia } from "@/stores/pinia";
+import { useNavigationStore } from "@/stores/navigation";
 import { isProjectScopedRouteName } from "@/router/projectRoutes";
 import CountryFlag from "vue-country-flag-next";
 import LogoutConfirmModal from "@/components/shared/LogoutConfirmModal.vue";
+import ContextSwitcher from "@/components/navigation/ContextSwitcher.vue";
 
 export default {
   name: "TablerHeader",
   components: {
     CountryFlag,
+    ContextSwitcher,
     LogoutConfirmModal,
   },
   setup() {
-    return { session: useSessionStore() };
+    return {
+      navigation: useNavigationStore(pinia),
+      session: useSessionStore(),
+    };
   },
   data() {
     return {
@@ -162,7 +145,9 @@ export default {
       arrayCostumers: [],
       projectSelected: null,
       costumerSelected: null,
+      contextChangePending: false,
       logoutModalVisible: false,
+      restoringProjectSelection: false,
     };
   },
   created() {
@@ -174,13 +159,40 @@ export default {
     });
   },
   watch: {
-    projectSelected() {
-      this.session.selectProject(this.projectSelected);
-      this.syncProjectRouteFromSelection();
+    async projectSelected(projectId, previousProjectId) {
+      if (this.restoringProjectSelection || projectId == null) return;
+      if (
+        previousProjectId != null &&
+        String(projectId) !== String(previousProjectId) &&
+        this.navigation.hasUnsavedChanges
+      ) {
+        const shouldDiscard = await this.navigation.confirmDiscard();
+        if (!shouldDiscard) {
+          this.restoringProjectSelection = true;
+          this.projectSelected = previousProjectId;
+          await this.$nextTick();
+          this.restoringProjectSelection = false;
+          return;
+        }
+        this.navigation.clearAll();
+      }
+      this.session.selectProject(projectId);
+      await this.syncProjectRouteFromSelection();
       this.refreshComponents(true);
     },
     "$route.params.projectId"() {
       this.syncProjectSelectionFromRoute();
+    },
+  },
+  computed: {
+    contextLabels() {
+      const copy = this.language[this.config.currentLanguage].Header;
+      return {
+        activeContext: copy.activeContext,
+        customer: copy.costumer,
+        project: copy.project,
+        switchCustomer: copy.btnChangeCostumer,
+      };
     },
   },
   methods: {
@@ -199,7 +211,7 @@ export default {
 
       this.projectSelected = routeProject.id;
     },
-    syncProjectRouteFromSelection() {
+    async syncProjectRouteFromSelection() {
       if (!isProjectScopedRouteName(this.$route.name) || !this.projectSelected)
         return;
       if (
@@ -207,7 +219,7 @@ export default {
       )
         return;
 
-      this.$router.replace({
+      await this.$router.replace({
         name: this.$route.name,
         params: {
           ...(this.$route.params || {}),
@@ -270,7 +282,13 @@ export default {
       if (this.$route.name == "testlauncher")
         this.emitter.emit("refreshTestLauncher", true);
     },
-    changeCostumer(id) {
+    async changeCostumer(id) {
+      if (this.navigation.hasUnsavedChanges) {
+        const shouldDiscard = await this.navigation.confirmDiscard();
+        if (!shouldDiscard) return;
+        this.navigation.clearAll();
+      }
+      this.contextChangePending = true;
       apiClient
         .put(
           this.config.serviceBaseUrl + this.config.url.header + "/" + id,
@@ -289,6 +307,9 @@ export default {
         })
         .catch((e) => {
           this.error = e;
+        })
+        .finally(() => {
+          this.contextChangePending = false;
         });
     },
     getProjects() {
@@ -300,6 +321,11 @@ export default {
           this.emitter.emit("showLoader", false);
           this.arrayProjects = response.data;
           this.session.setProjectAvailability(this.arrayProjects);
+          this.session.setAvailableContexts({
+            capabilities: this.session.capabilities,
+            customers: this.arrayCostumers,
+            projects: this.arrayProjects,
+          });
           this.syncProjectSelectionFromRoute();
           if (this.projectSelected == null && this.arrayProjects.length > 0)
             this.projectSelected = this.arrayProjects[0].id;
@@ -324,6 +350,11 @@ export default {
             this.projectSelected = this.arrayProjects[0].id;
           if (response.data.costumers)
             this.arrayCostumers = response.data.costumers;
+          this.session.setAvailableContexts({
+            capabilities: response.data.capabilities || [],
+            customers: this.arrayCostumers,
+            projects: this.arrayProjects,
+          });
           if (this.costumerSelected == null && this.arrayCostumers.length > 0)
             this.costumerSelected = this.arrayCostumers[0].id;
         })

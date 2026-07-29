@@ -45,4 +45,21 @@ describe("session store", () => {
     expect(restored.isAuthenticated).toBe(true);
     expect(restored.selectedProjectId).toBe(5);
   });
+
+  it("keeps context catalogs and capabilities out of browser storage", () => {
+    const session = useSessionStore();
+    session.setAvailableContexts({
+      capabilities: ["tests:read"],
+      customers: [{ id: 1, name: "Example" }],
+      projects: [{ id: 5, name: "Automation" }],
+    });
+    session.selectProject(5);
+
+    const persisted = JSON.parse(sessionStorage.getItem(STORAGE_KEY));
+    expect(persisted).not.toHaveProperty("availableCustomers");
+    expect(persisted).not.toHaveProperty("availableProjects");
+    expect(persisted).not.toHaveProperty("capabilities");
+    expect(session.hasCapability("tests:read")).toBe(true);
+    expect(session.hasCapability("admin:write")).toBe(false);
+  });
 });
