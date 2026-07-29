@@ -10,6 +10,7 @@
     "preview": "vite preview",
     "test:unit": "vitest",
     "test:coverage": "vitest run --coverage",
+    "check:design-tokens": "node scripts/check-design-tokens.mjs",
     "audit:dependencies": "npm audit --audit-level=high",
     "lint": "eslint . --fix",
     "lint:check": "eslint . --max-warnings=0",

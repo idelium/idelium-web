@@ -1,0 +1,66 @@
+:root {
+  color-scheme: dark;
+
+  /* Surfaces */
+  --id-color-canvas: #171922;
+  --id-color-canvas-subtle: #1d202a;
+  --id-color-surface: #242732;
+  --id-color-surface-raised: #2d303b;
+  --id-color-surface-muted: #383b47;
+  --id-color-overlay: rgba(4, 6, 12, 0.84);
+
+  /* Text and borders */
+  --id-color-text: #f8fafc;
+  --id-color-text-muted: #c4c8d2;
+  --id-color-text-subtle: #a7adba;
+  --id-color-border: rgba(255, 255, 255, 0.14);
+  --id-color-border-strong: rgba(255, 255, 255, 0.26);
+
+  /* Semantic actions and states */
+  --id-color-primary: #ff7a18;
+  --id-color-primary-strong: #ff5a2e;
+  --id-color-on-primary: #111318;
+  --id-color-info: #38bdf8;
+  --id-color-success: #34d399;
+  --id-color-warning: #fbbf24;
+  --id-color-danger: #fb7185;
+  --id-color-disabled: #737989;
+  --id-color-focus: #60a5fa;
+
+  /* Typography */
+  --id-font-sans:
+    "Open Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  --id-font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  --id-font-size-caption: 0.75rem;
+  --id-font-size-small: 0.875rem;
+  --id-font-size-body: 1rem;
+  --id-font-size-title: clamp(1.35rem, 1.1rem + 0.8vw, 2rem);
+  --id-line-height-compact: 1.35;
+  --id-line-height-body: 1.55;
+  --id-font-weight-normal: 400;
+  --id-font-weight-medium: 600;
+  --id-font-weight-bold: 700;
+
+  /* Spacing and shape */
+  --id-space-1: 0.25rem;
+  --id-space-2: 0.5rem;
+  --id-space-3: 0.75rem;
+  --id-space-4: 1rem;
+  --id-space-5: 1.25rem;
+  --id-space-6: 1.5rem;
+  --id-space-8: 2rem;
+  --id-radius-small: 0.5rem;
+  --id-radius-medium: 0.75rem;
+  --id-radius-large: 1rem;
+  --id-radius-pill: 999px;
+  --id-control-min-size: 2.5rem;
+  --id-control-icon-size: 2.75rem;
+
+  /* Elevation and motion */
+  --id-shadow-raised: 0 1.25rem 3rem rgba(0, 0, 0, 0.28);
+  --id-shadow-dialog: 0 2rem 5rem rgba(0, 0, 0, 0.45);
+  --id-focus-ring: 0 0 0 0.2rem rgba(96, 165, 250, 0.38);
+  --id-motion-fast: 120ms;
+  --id-motion-normal: 200ms;
+}

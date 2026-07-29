@@ -1,24 +1,26 @@
 @import url(https://fonts.googleapis.com/css?family=Concert+One|Roboto+Slab|Open+Sans:400italic,700italic,400,700);
 //@import '~vue-context/dist/css/vue-context.css';
 //@import '~vue-cool-select/dist/themes/bootstrap.css';
+@import "../styles/design-tokens";
 @import "../styles/app.scss";
+@import "../styles/design-system";
 @import "../../node_modules/vue-select/dist/vue-select.css";
 
 :root {
-  --idelium-bg: #171922;
-  --idelium-bg-soft: #242732;
-  --idelium-surface: rgba(35, 38, 49, 0.92);
-  --idelium-surface-solid: #2d303b;
-  --idelium-surface-muted: #383b47;
-  --idelium-border: rgba(255, 255, 255, 0.1);
-  --idelium-border-strong: rgba(255, 255, 255, 0.18);
-  --idelium-text: #f4f4f5;
-  --idelium-text-muted: #b8bcc8;
-  --idelium-primary: #ff7a18;
-  --idelium-primary-strong: #ff5a2e;
-  --idelium-danger: #dc3545;
-  --idelium-success: #20c997;
-  --idelium-shadow: 0 22px 48px rgba(0, 0, 0, 0.26);
+  --idelium-bg: var(--id-color-canvas);
+  --idelium-bg-soft: var(--id-color-surface);
+  --idelium-surface: var(--id-color-surface);
+  --idelium-surface-solid: var(--id-color-surface-raised);
+  --idelium-surface-muted: var(--id-color-surface-muted);
+  --idelium-border: var(--id-color-border);
+  --idelium-border-strong: var(--id-color-border-strong);
+  --idelium-text: var(--id-color-text);
+  --idelium-text-muted: var(--id-color-text-muted);
+  --idelium-primary: var(--id-color-primary);
+  --idelium-primary-strong: var(--id-color-primary-strong);
+  --idelium-danger: var(--id-color-danger);
+  --idelium-success: var(--id-color-success);
+  --idelium-shadow: var(--id-shadow-raised);
 }
 
 body {

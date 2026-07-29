@@ -6,16 +6,21 @@
       role="presentation"
       tabindex="-1"
       v-on:click.self="cancel"
-      v-on:keydown.esc="cancel"
+      v-on:keydown="handleKeydown"
     >
       <section
+        ref="dialogElement"
         class="enterprise-dialog"
         role="dialog"
         aria-modal="true"
         aria-labelledby="enterprise-dialog-title"
         aria-describedby="enterprise-dialog-message"
+        tabindex="-1"
       >
-        <div :class="['enterprise-dialog-icon', dialog.variant]" aria-hidden="true">
+        <div
+          :class="['enterprise-dialog-icon', dialog.variant]"
+          aria-hidden="true"
+        >
           <font-awesome-icon :icon="iconName" />
         </div>
         <div class="enterprise-dialog-content">
@@ -26,15 +31,23 @@
         <div class="enterprise-dialog-actions">
           <button
             v-if="dialog.type === 'confirm'"
+            ref="cancelButton"
             type="button"
-            class="btn btn-outline-light enterprise-dialog-button"
+            class="id-button id-button--secondary enterprise-dialog-button"
             v-on:click="cancel"
           >
             {{ dialog.cancelLabel }}
           </button>
           <button
+            ref="confirmButton"
             type="button"
-            class="btn enterprise-dialog-confirm"
+            :class="[
+              'id-button',
+              dialog.variant === 'danger'
+                ? 'id-button--danger'
+                : 'id-button--primary',
+              'enterprise-dialog-confirm',
+            ]"
             v-on:click="confirm"
           >
             {{ dialog.confirmLabel }}
@@ -62,6 +75,7 @@ export default {
   data() {
     return {
       dialog: { ...DEFAULT_DIALOG },
+      previouslyFocusedElement: null,
     };
   },
   computed: {
@@ -79,15 +93,32 @@ export default {
   },
   methods: {
     showDialog(payload) {
+      this.previouslyFocusedElement = document.activeElement;
       this.dialog = {
         ...DEFAULT_DIALOG,
         ...payload,
         visible: true,
       };
+      this.$nextTick(() => {
+        const initialFocus =
+          this.dialog.type === "confirm"
+            ? this.$refs.cancelButton
+            : this.$refs.confirmButton;
+        initialFocus?.focus();
+      });
     },
     close(value) {
       const resolver = this.dialog.resolver;
       this.dialog = { ...DEFAULT_DIALOG };
+      this.$nextTick(() => {
+        if (
+          this.previouslyFocusedElement instanceof HTMLElement &&
+          document.contains(this.previouslyFocusedElement)
+        ) {
+          this.previouslyFocusedElement.focus();
+        }
+        this.previouslyFocusedElement = null;
+      });
       resolver?.(value);
     },
     cancel() {
@@ -96,126 +127,35 @@ export default {
     confirm() {
       this.close(true);
     },
+    handleKeydown(event) {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        this.cancel();
+        return;
+      }
+      if (event.key !== "Tab") return;
+
+      const focusable = Array.from(
+        this.$refs.dialogElement?.querySelectorAll(
+          'button:not(:disabled), [href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex="-1"])',
+        ) || [],
+      );
+      if (!focusable.length) {
+        event.preventDefault();
+        this.$refs.dialogElement?.focus();
+        return;
+      }
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    },
   },
 };
 </script>
-
-<style scoped>
-.enterprise-dialog-backdrop {
-  align-items: center;
-  background:
-    radial-gradient(circle at top, rgba(255, 122, 24, 0.16), transparent 34rem),
-    rgba(4, 6, 12, 0.84);
-  backdrop-filter: blur(8px);
-  display: flex;
-  inset: 0;
-  justify-content: center;
-  padding: 1.5rem;
-  position: fixed;
-  z-index: 2100;
-}
-
-.enterprise-dialog {
-  background:
-    linear-gradient(145deg, rgba(255, 255, 255, 0.08), transparent),
-    #242631;
-  border: 1px solid rgba(255, 255, 255, 0.13);
-  border-radius: 1.2rem;
-  box-shadow: 0 2rem 5rem rgba(0, 0, 0, 0.45);
-  color: #f8fafc;
-  display: grid;
-  gap: 1rem;
-  grid-template-columns: auto 1fr;
-  max-width: 34rem;
-  padding: 1.35rem;
-  width: min(100%, 34rem);
-}
-
-.enterprise-dialog-icon {
-  align-items: center;
-  background: linear-gradient(135deg, #38bdf8, #2563eb);
-  border-radius: 1rem;
-  box-shadow: 0 1rem 2rem rgba(56, 189, 248, 0.18);
-  color: #0f172a;
-  display: inline-flex;
-  height: 3rem;
-  justify-content: center;
-  width: 3rem;
-}
-
-.enterprise-dialog-icon.warning {
-  background: linear-gradient(135deg, #ff7a18, #ff4b2b);
-  box-shadow: 0 1rem 2rem rgba(255, 107, 30, 0.24);
-  color: #11131a;
-}
-
-.enterprise-dialog-icon.danger {
-  background: linear-gradient(135deg, #fb7185, #dc2626);
-  box-shadow: 0 1rem 2rem rgba(220, 38, 38, 0.24);
-  color: #11131a;
-}
-
-.enterprise-dialog-content {
-  min-width: 0;
-}
-
-.enterprise-dialog-eyebrow {
-  color: rgba(255, 255, 255, 0.58);
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.18em;
-  margin: 0 0 0.35rem;
-  text-transform: uppercase;
-}
-
-.enterprise-dialog h2 {
-  color: #ffffff;
-  font-size: 1.35rem;
-  font-weight: 800;
-  margin: 0;
-}
-
-.enterprise-dialog p {
-  color: rgba(255, 255, 255, 0.72);
-  line-height: 1.55;
-  margin: 0.55rem 0 0;
-}
-
-.enterprise-dialog-actions {
-  display: flex;
-  gap: 0.75rem;
-  grid-column: 1 / -1;
-  justify-content: flex-end;
-  margin-top: 0.4rem;
-}
-
-.enterprise-dialog-button,
-.enterprise-dialog-confirm {
-  border-radius: 0.8rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  padding: 0.75rem 1rem;
-  text-transform: uppercase;
-}
-
-.enterprise-dialog-confirm {
-  background: linear-gradient(135deg, #ff7a18, #ff4b2b);
-  border: 0;
-  color: #11131a;
-}
-
-.enterprise-dialog-confirm:hover {
-  color: #11131a;
-  filter: brightness(1.04);
-}
-
-@media (max-width: 520px) {
-  .enterprise-dialog {
-    grid-template-columns: 1fr;
-  }
-
-  .enterprise-dialog-actions {
-    flex-direction: column-reverse;
-  }
-}
-</style>
