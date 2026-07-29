@@ -917,6 +917,33 @@ export default {
           "Questa azione supporta {runtime} fino alla versione {maximum}. Scegli un'azione compatibile.",
       },
     },
+    form: {
+      optional: "(facoltativo)",
+      selectPlaceholder: "Seleziona un valore",
+      locatorStrategy: "Strategia del selettore",
+      locatorValue: "Valore del selettore",
+      locatorStrategies: ["css", "xpath", "id", "accessibility-id"],
+      listItem: "{field}, elemento {position}",
+      addListItem: "Aggiungi elemento",
+      removeListItem: "Rimuovi elemento {position}",
+      remove: "Rimuovi",
+      validationReady: "Tutti i campi visibili sono validi.",
+      validationErrors: "{count} campi richiedono attenzione.",
+      validation: {
+        required: "Inserisci un valore.",
+        number: "Inserisci un numero valido.",
+        minimum: "Inserisci un valore uguale o superiore al minimo.",
+        maximum: "Inserisci un valore uguale o inferiore al massimo.",
+        enum: "Seleziona uno dei valori supportati.",
+        json: "Inserisci un JSON valido.",
+        list: "Inserisci un elenco valido.",
+        minLength: "Inserisci un valore più lungo.",
+        maxLength: "Inserisci un valore più corto.",
+        pattern: "Usa il formato richiesto.",
+        secretReference:
+          "Seleziona un riferimento segreto valido. I valori segreti non possono essere inseriti qui.",
+      },
+    },
     diagnostics: {
       malformedConfig:
         "La configurazione salvata dello step non è valida. Apri la modalità JSON per correggerla.",

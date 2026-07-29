@@ -89,6 +89,23 @@ The catalogue accepts a bounded action collection and query, never loads tenant
 data by itself, and emits only the selected catalog contract. The containing
 route remains responsible for authorization and tenant-scoped persistence.
 
+## Schema-driven property forms
+
+`SchemaActionForm` maps the selected action schema to shared form-field, enum,
+boolean, number, text, secret-reference, locator, JSON, and list controls.
+Required fields, defaults, patterns, ranges, conditional visibility, and
+contextual help use the same contract for every runtime. Conditional controls
+stay mounted in the model so switching a controlling value does not discard a
+previously valid value.
+
+Validation diagnostics contain only a stable code, field name, action position,
+and localization key. They never contain the submitted value, which is
+particularly important for secret-reference fields. Secret values cannot be
+entered into these fields: authors select only a bounded secret identifier.
+Unknown legacy properties are retained separately and merged back during
+serialization, providing a non-destructive rollback path for compatible schema
+extensions.
+
 ## Rollout and rollback
 
 The contract is introduced before replacing the current wizard UI. Existing

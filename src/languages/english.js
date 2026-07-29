@@ -910,6 +910,33 @@ export default {
           "This action supports {runtime} up to version {maximum}. Choose a compatible action.",
       },
     },
+    form: {
+      optional: "(optional)",
+      selectPlaceholder: "Select a value",
+      locatorStrategy: "Locator strategy",
+      locatorValue: "Locator value",
+      locatorStrategies: ["css", "xpath", "id", "accessibility-id"],
+      listItem: "{field}, item {position}",
+      addListItem: "Add item",
+      removeListItem: "Remove item {position}",
+      remove: "Remove",
+      validationReady: "All visible fields are valid.",
+      validationErrors: "{count} fields require attention.",
+      validation: {
+        required: "Enter a value.",
+        number: "Enter a valid number.",
+        minimum: "Enter a value at or above the minimum.",
+        maximum: "Enter a value at or below the maximum.",
+        enum: "Select one of the supported values.",
+        json: "Enter valid JSON.",
+        list: "Enter a valid list.",
+        minLength: "Enter a longer value.",
+        maxLength: "Enter a shorter value.",
+        pattern: "Use the required format.",
+        secretReference:
+          "Select a valid secret reference. Secret values cannot be entered here.",
+      },
+    },
     diagnostics: {
       malformedConfig:
         "The saved step configuration is malformed. Open JSON mode to repair it.",
