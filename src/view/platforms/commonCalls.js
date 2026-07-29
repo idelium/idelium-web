@@ -1,260 +1,298 @@
-import apiClient from '@/services/apiClient'
+import apiClient from "@/services/apiClient";
+
+function listRequestConfig(obj, useGrid = true) {
+  return {
+    headers: obj.setHeaders(),
+    ...(useGrid && typeof obj.platformGridRequestOptions === "function"
+      ? obj.platformGridRequestOptions()
+      : {}),
+  };
+}
+
 export default {
   getPlatforms(obj, type) {
     return apiClient.get(
-      obj.config.serviceBaseUrl + obj.config.url.platforms + '/manageplatforms/' + type,
-      {
-        headers: obj.setHeaders()
-      }
-    )
+      obj.config.serviceBaseUrl +
+        obj.config.url.platforms +
+        "/manageplatforms/" +
+        type,
+      listRequestConfig(obj),
+    );
   },
   savePlatform(obj, payload) {
     return apiClient.post(
-      obj.config.serviceBaseUrl + obj.config.url.platforms + '/manageplatforms',
+      obj.config.serviceBaseUrl + obj.config.url.platforms + "/manageplatforms",
       payload,
       {
-        headers: obj.setHeaders()
-      }
-    )
+        headers: obj.setHeaders(),
+      },
+    );
   },
   updateStatusPlatform(obj, id, type, status) {
     return apiClient.put(
-      obj.config.serviceBaseUrl + obj.config.url.platforms + '/manageplatforms',
+      obj.config.serviceBaseUrl + obj.config.url.platforms + "/manageplatforms",
       {
         id: id,
         type: type,
-        status: status
+        status: status,
       },
       {
-        headers: obj.setHeaders()
-      }
-    )
+        headers: obj.setHeaders(),
+      },
+    );
   },
   deletePlatform(obj, id, type) {
     return apiClient.delete(
-      obj.config.serviceBaseUrl + obj.config.url.platforms + '/manageplatforms/' + type + '/' + id,
+      obj.config.serviceBaseUrl +
+        obj.config.url.platforms +
+        "/manageplatforms/" +
+        type +
+        "/" +
+        id,
       {
-        headers: obj.setHeaders()
-      }
-    )
+        headers: obj.setHeaders(),
+      },
+    );
   },
   getTypes(obj) {
-    return apiClient.get(obj.config.serviceBaseUrl + obj.config.url.platforms + '/types', {
-      headers: obj.setHeaders()
-    })
+    return apiClient.get(
+      obj.config.serviceBaseUrl + obj.config.url.platforms + "/types",
+      {
+        headers: obj.setHeaders(),
+      },
+    );
   },
   getStatus(obj) {
-    return apiClient.get(obj.config.serviceBaseUrl + obj.config.url.platforms + '/status', {
-      headers: obj.setHeaders()
-    })
+    return apiClient.get(
+      obj.config.serviceBaseUrl + obj.config.url.platforms + "/status",
+      {
+        headers: obj.setHeaders(),
+      },
+    );
   },
-  getOs(obj, type) {
-    return apiClient.get(obj.config.serviceBaseUrl + obj.config.url.platforms + '/os/' + type, {
-      headers: obj.setHeaders()
-    })
+  getOs(obj, type, useGrid = true) {
+    return apiClient.get(
+      obj.config.serviceBaseUrl + obj.config.url.platforms + "/os/" + type,
+      listRequestConfig(obj, useGrid),
+    );
   },
   saveOs(obj, name, type) {
     return apiClient.post(
-      obj.config.serviceBaseUrl + obj.config.url.platforms + '/os',
+      obj.config.serviceBaseUrl + obj.config.url.platforms + "/os",
       {
         name: name,
-        type: type
+        type: type,
       },
       {
-        headers: obj.setHeaders()
-      }
-    )
+        headers: obj.setHeaders(),
+      },
+    );
   },
   modifyOs(obj, name, id, type) {
     return apiClient.put(
-      obj.config.serviceBaseUrl + obj.config.url.platforms + '/os',
+      obj.config.serviceBaseUrl + obj.config.url.platforms + "/os",
       {
         name: name,
         id: id,
-        type: type
+        type: type,
       },
       {
-        headers: obj.setHeaders()
-      }
-    )
+        headers: obj.setHeaders(),
+      },
+    );
   },
   getOsVersion(obj, idOs) {
-    return apiClient.get(obj.config.serviceBaseUrl + obj.config.url.platforms + '/osversion/' + idOs, {
-      headers: obj.setHeaders()
-    })
+    return apiClient.get(
+      obj.config.serviceBaseUrl +
+        obj.config.url.platforms +
+        "/osversion/" +
+        idOs,
+      listRequestConfig(obj),
+    );
   },
   saveOsVersion(obj, version, idOs) {
     return apiClient.post(
-      obj.config.serviceBaseUrl + obj.config.url.platforms + '/osversion',
+      obj.config.serviceBaseUrl + obj.config.url.platforms + "/osversion",
       {
         version: version,
-        idOs: idOs
+        idOs: idOs,
       },
       {
-        headers: obj.setHeaders()
-      }
-    )
+        headers: obj.setHeaders(),
+      },
+    );
   },
   modifyOsVersion(obj, version, id, idOs) {
     return apiClient.put(
-      obj.config.serviceBaseUrl + obj.config.url.platforms + '/osversion',
+      obj.config.serviceBaseUrl + obj.config.url.platforms + "/osversion",
       {
         version: version,
         id: id,
-        idOs: idOs
+        idOs: idOs,
       },
       {
-        headers: obj.setHeaders()
-      }
-    )
+        headers: obj.setHeaders(),
+      },
+    );
   },
-  getBrowser(obj, idOs) {
-    return apiClient.get(obj.config.serviceBaseUrl + obj.config.url.platforms + '/browsers/' + idOs, {
-      headers: obj.setHeaders()
-    })
+  getBrowser(obj, idOs, useGrid = true) {
+    return apiClient.get(
+      obj.config.serviceBaseUrl +
+        obj.config.url.platforms +
+        "/browsers/" +
+        idOs,
+      listRequestConfig(obj, useGrid),
+    );
   },
   saveBrowser(obj, name, idOs) {
     return apiClient.post(
-      obj.config.serviceBaseUrl + obj.config.url.platforms + '/browsers',
+      obj.config.serviceBaseUrl + obj.config.url.platforms + "/browsers",
       {
         name: name,
-        idOs: idOs
+        idOs: idOs,
       },
-      {
-        headers: obj.setHeaders()
-      }
-    )
+      listRequestConfig(obj),
+    );
   },
   modifyBrowser(obj, name, id, idOs) {
     return apiClient.put(
-      obj.config.serviceBaseUrl + obj.config.url.platforms + '/browsers',
+      obj.config.serviceBaseUrl + obj.config.url.platforms + "/browsers",
       {
         name: name,
         id: id,
-        idOs: idOs
+        idOs: idOs,
       },
       {
-        headers: obj.setHeaders()
-      }
-    )
+        headers: obj.setHeaders(),
+      },
+    );
   },
   getBrowserVersion(obj, idBrowser) {
     return apiClient.get(
-      obj.config.serviceBaseUrl + obj.config.url.platforms + '/browserversions/' + idBrowser,
+      obj.config.serviceBaseUrl +
+        obj.config.url.platforms +
+        "/browserversions/" +
+        idBrowser,
       {
-        headers: obj.setHeaders()
-      }
-    )
+        headers: obj.setHeaders(),
+      },
+    );
   },
   saveBrowserVersion(obj, version, idBrowser) {
     return apiClient.post(
-      obj.config.serviceBaseUrl + obj.config.url.platforms + '/browserversions',
+      obj.config.serviceBaseUrl + obj.config.url.platforms + "/browserversions",
       {
         version: version,
-        idBrowser: idBrowser
+        idBrowser: idBrowser,
       },
       {
-        headers: obj.setHeaders()
-      }
-    )
+        headers: obj.setHeaders(),
+      },
+    );
   },
   modifyBrowserVersion(obj, version, id, idBrowser) {
     return apiClient.put(
-      obj.config.serviceBaseUrl + obj.config.url.platforms + '/browserversions',
+      obj.config.serviceBaseUrl + obj.config.url.platforms + "/browserversions",
       {
         version: version,
         id: id,
-        idBrowser: idBrowser
+        idBrowser: idBrowser,
       },
       {
-        headers: obj.setHeaders()
-      }
-    )
+        headers: obj.setHeaders(),
+      },
+    );
   },
-  getBrand(obj) {
-    return apiClient.get(obj.config.serviceBaseUrl + obj.config.url.platforms + '/brands', {
-      headers: obj.setHeaders()
-    })
+  getBrand(obj, useGrid = true) {
+    return apiClient.get(
+      obj.config.serviceBaseUrl + obj.config.url.platforms + "/brands",
+      listRequestConfig(obj, useGrid),
+    );
   },
   saveBrand(obj, brand) {
     return apiClient.post(
-      obj.config.serviceBaseUrl + obj.config.url.platforms + '/brands',
+      obj.config.serviceBaseUrl + obj.config.url.platforms + "/brands",
       {
-        brand: brand
+        brand: brand,
       },
       {
-        headers: obj.setHeaders()
-      }
-    )
+        headers: obj.setHeaders(),
+      },
+    );
   },
   modifyBrand(obj, brand, id) {
     return apiClient.put(
-      obj.config.serviceBaseUrl + obj.config.url.platforms + '/brands',
+      obj.config.serviceBaseUrl + obj.config.url.platforms + "/brands",
       {
         brand: brand,
-        id: id
+        id: id,
       },
       {
-        headers: obj.setHeaders()
-      }
-    )
+        headers: obj.setHeaders(),
+      },
+    );
   },
   getModelDevice(obj, idBrand) {
-    return apiClient.get(obj.config.serviceBaseUrl + obj.config.url.platforms + '/models/' + idBrand, {
-      headers: obj.setHeaders()
-    })
+    return apiClient.get(
+      obj.config.serviceBaseUrl +
+        obj.config.url.platforms +
+        "/models/" +
+        idBrand,
+      listRequestConfig(obj),
+    );
   },
   saveModelDevice(obj, model, idBrand) {
     return apiClient.post(
-      obj.config.serviceBaseUrl + obj.config.url.platforms + '/models',
+      obj.config.serviceBaseUrl + obj.config.url.platforms + "/models",
       {
         model: model,
-        idBrand: idBrand
+        idBrand: idBrand,
       },
       {
-        headers: obj.setHeaders()
-      }
-    )
+        headers: obj.setHeaders(),
+      },
+    );
   },
   modifyModelDevice(obj, model, id, idBrand) {
     return apiClient.put(
-      obj.config.serviceBaseUrl + obj.config.url.platforms + '/models',
+      obj.config.serviceBaseUrl + obj.config.url.platforms + "/models",
       {
         model: model,
         id: id,
-        idBrand: idBrand
+        idBrand: idBrand,
       },
       {
-        headers: obj.setHeaders()
-      }
-    )
+        headers: obj.setHeaders(),
+      },
+    );
   },
   getLocation(obj) {
-    return apiClient.get(obj.config.serviceBaseUrl + obj.config.url.platforms + '/locations', {
-      headers: obj.setHeaders()
-    })
+    return apiClient.get(
+      obj.config.serviceBaseUrl + obj.config.url.platforms + "/locations",
+      listRequestConfig(obj),
+    );
   },
   saveLocation(obj, name) {
     return apiClient.post(
-      obj.config.serviceBaseUrl + obj.config.url.platforms + '/locations',
+      obj.config.serviceBaseUrl + obj.config.url.platforms + "/locations",
       {
-        name: name
+        name: name,
       },
       {
-        headers: obj.setHeaders()
-      }
-    )
+        headers: obj.setHeaders(),
+      },
+    );
   },
   modifyLocation(obj, name, id) {
     return apiClient.put(
-      obj.config.serviceBaseUrl + obj.config.url.platforms + '/locations',
+      obj.config.serviceBaseUrl + obj.config.url.platforms + "/locations",
       {
         name: name,
-        id: id
+        id: id,
       },
       {
-        headers: obj.setHeaders()
-      }
-    )
-  }
-}
+        headers: obj.setHeaders(),
+      },
+    );
+  },
+};

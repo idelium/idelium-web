@@ -860,6 +860,16 @@ export default {
     models: "Modelli",
     location: "Località",
     btnSave: "salva",
+    btnModify: "Aggiorna",
+    btnCancel: "Annulla",
+    Grid: {
+      searchLabel: "Cerca piattaforme",
+      searchPlaceholder: "Cerca nel catalogo delle piattaforme",
+      paginationLabel: "Pagine del catalogo piattaforme",
+      previousPage: "Precedente",
+      nextPage: "Successiva",
+      pageStatus: "Pagina {page} di {pages}",
+    },
     ManagePlatform: {
       btnAddPlatform: "Aggiungi piattaforma",
       colId: "id",

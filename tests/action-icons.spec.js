@@ -17,7 +17,7 @@ describe("enterprise action icons", () => {
     expect(styles).toContain(".idelium-action-icon--remove");
   });
 
-  it("keeps CRUD table action icons color-coded and titled", () => {
+  it("keeps shared CRUD table actions semantic and localized", () => {
     const source = [
       "src/view/projects.vue",
       "src/view/plugins.vue",
@@ -28,11 +28,16 @@ describe("enterprise action icons", () => {
       .join("\n");
 
     expect(source).toContain("Actions.delete");
-    expect(source).toContain("Actions.download");
-    expect(source).toContain("Actions.duplicate");
-    expect(source).toContain("idelium-action-icon--delete");
-    expect(source).toContain("idelium-action-icon--download");
-    expect(source).toContain("idelium-action-icon--duplicate");
+    expect(source).toContain("actions.download");
+    expect(source).toContain("actions.duplicate");
+    expect(source).toContain('id: "delete"');
+    expect(source).toContain('variant: "danger"');
+
+    const table = readSource("src/components/grid/EnterpriseDataTable.vue");
+    expect(table).toContain(":variant=\"action.variant || 'ghost'\"");
+    expect(table).toContain(
+      ':accessible-label="`${action.label}: ${rowLabel(row)}`"',
+    );
   });
 
   it("uses buttons rather than hash links for removable draggable items", () => {

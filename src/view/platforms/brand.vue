@@ -8,10 +8,23 @@
             <div class="row" style="margin-top: 10px">
               <div class="col">
                 <input
+                  v-if="elementIdToEdit == null"
                   class="form-control"
                   id="input-none"
-                  :placeholder="language[config.currentLanguage].Platforms.Brand.name"
+                  :placeholder="
+                    language[config.currentLanguage].Platforms.Brand.name
+                  "
                   v-model="name"
+                />
+                <input
+                  v-else
+                  v-model="elementNameToEdit"
+                  class="form-control"
+                  :placeholder="
+                    language[config.currentLanguage].Platforms.Brand.name
+                  "
+                  v-on:keyup.enter="modify()"
+                  v-on:keyup.escape="cancelEdit"
                 />
               </div>
               <div class="col">
@@ -19,10 +32,26 @@
                   type="button"
                   class="btn btn-success"
                   size="sm"
-                  v-on:click="save()"
-                  :disabled="name.length == 0"
+                  v-on:click="elementIdToEdit == null ? save() : modify()"
+                  :disabled="
+                    elementIdToEdit == null
+                      ? name.length == 0
+                      : elementNameToEdit.length == 0
+                  "
                 >
-                  {{ language[config.currentLanguage].Platforms.btnSave }}
+                  {{
+                    elementIdToEdit == null
+                      ? language[config.currentLanguage].Platforms.btnSave
+                      : language[config.currentLanguage].Platforms.btnModify
+                  }}
+                </button>
+                <button
+                  v-if="elementIdToEdit != null"
+                  type="button"
+                  class="btn btn-secondary"
+                  v-on:click="cancelEdit"
+                >
+                  {{ language[config.currentLanguage].Platforms.btnCancel }}
                 </button>
               </div>
             </div>
@@ -31,102 +60,120 @@
         </div>
       </div>
     </div>
-    <div class="row">
-      <div class="col-sm-1" />
-      <div class="col">
-        <table width="50%" class="table table-striped costum">
-          <thead>
-            <tr>
-              <th scope="col">{{ language[config.currentLanguage].Platforms.Brand.id }}</th>
-              <th scope="col">{{ language[config.currentLanguage].Platforms.Brand.colBrand }}</th>
-              <th scope="col"></th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="(element, index) in arrayElements" v-bind:key="index">
-              <td>
-                {{ element.id }}
-              </td>
-              <td>
-                <span
-                  v-on:dblclick="editThisElement(element)"
-                  v-if="elementIdToEdit != element.id"
-                  style="cursor: pointer"
-                  >{{ element.brand }}</span
-                >
-                <input
-                  class="form-control"
-                  id="input-none"
-                  :placeholder="language[config.currentLanguage].Platforms.Brand.name"
-                  v-model="elementNameToEdit"
-                  v-if="elementIdToEdit == element.id"
-                  v-on:keyup.enter="modify()"
-                  v-on:keyup.escape="elementIdToEdit = null"
-                />
-              </td>
-              <td></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="col-sm-1" />
-    </div>
+    <PlatformReferenceGrid
+      v-model:search="platformGridSearch"
+      :accessible-label="
+        language[config.currentLanguage].Platforms.Brand.colBrand
+      "
+      :actions="platformActions"
+      :columns="platformColumns"
+      :copy="platformGridCopy"
+      :error="platformGridError"
+      :loading="platformGridLoading"
+      :meta="platformGridMeta"
+      :query="platformGridQuery"
+      :rows="arrayElements"
+      :sort="platformGridSort"
+      :table-copy="platformGridTableCopy"
+      v-on:action="handlePlatformAction"
+      v-on:clear-filters="clearPlatformGridSearch"
+      v-on:page-change="changePlatformGridPage"
+      v-on:retry="getBrand"
+      v-on:row-activate="editThisElement"
+      v-on:search="schedulePlatformGridSearch"
+      v-on:sort="sortPlatformGrid"
+    />
   </div>
 </template>
 <script>
-import commonCalls from './commonCalls'
+import PlatformReferenceGrid from "@/components/grid/PlatformReferenceGrid.vue";
+import { platformGrid } from "@/mixins/platformGrid";
+import commonCalls from "./commonCalls";
 export default {
-  name: 'BrandComponent',
+  name: "BrandComponent",
+  mixins: [platformGrid],
+  components: { PlatformReferenceGrid },
   data() {
     return {
       typeSelected: null,
-      name: '',
+      name: "",
       arrayElements: [],
       elementIdToEdit: null,
-      elementNameToEdit: ''
-    }
+      elementNameToEdit: "",
+    };
+  },
+  computed: {
+    platformColumns() {
+      const copy = this.language[this.config.currentLanguage].Platforms.Brand;
+      return [
+        { key: "id", label: copy.id, required: true, sortable: true },
+        { key: "brand", label: copy.colBrand, required: true, sortable: true },
+      ];
+    },
+    platformActions() {
+      return [
+        {
+          id: "edit",
+          label: this.language[this.config.currentLanguage].Actions.edit,
+        },
+      ];
+    },
   },
   created() {
-    this.getBrand()
+    this.getBrand();
   },
   watch: {},
   methods: {
     tabStart() {
-      this.getBrand()
+      this.getBrand();
+    },
+    reloadPlatformGrid() {
+      return this.getBrand();
+    },
+    handlePlatformAction({ action, row }) {
+      if (action === "edit") this.editThisElement(row);
+    },
+    cancelEdit() {
+      this.elementIdToEdit = null;
+      this.elementNameToEdit = "";
     },
     editThisElement(element) {
-      this.elementIdToEdit = element.id
-      this.elementNameToEdit = element.brand
+      this.elementIdToEdit = element.id;
+      this.elementNameToEdit = element.brand;
     },
     async modify() {
-      this.emitter.emit('showLoader', true)
+      this.emitter.emit("showLoader", true);
       let response = await commonCalls
         .modifyBrand(this, this.elementNameToEdit, this.elementIdToEdit)
         .catch((e) => {
-          this.Logout(this, e)
-        })
-      this.arrayElements = response.data
-      this.emitter.emit('showLoader', false)
-      this.elementIdToEdit = null
-      this.elementNameToEdit = ''
+          this.Logout(this, e);
+        });
+      if (response) await this.getBrand();
+      this.emitter.emit("showLoader", false);
+      this.elementIdToEdit = null;
+      this.elementNameToEdit = "";
     },
     async getBrand() {
-      this.emitter.emit('showLoader', true)
+      this.emitter.emit("showLoader", true);
+      this.platformGridLoading = true;
       let response = await commonCalls.getBrand(this).catch((e) => {
-        this.Logout(this, e)
-      })
-      this.arrayElements = response.data
-      this.emitter.emit('showLoader', false)
+        this.platformGridError = e;
+        this.Logout(this, e);
+      });
+      if (response)
+        this.arrayElements = this.applyPlatformGridResponse(response);
+      this.platformGridLoading = false;
+      this.emitter.emit("showLoader", false);
     },
     async save() {
-      this.emitter.emit('showLoader', true)
+      this.emitter.emit("showLoader", true);
       let response = await commonCalls.saveBrand(this, this.name).catch((e) => {
-        this.Logout(this, e)
-      })
-      this.arrayElements = response.data
-      this.name = ''
-      this.emitter.emit('showLoader', false)
-    }
-  }
-}
+        this.Logout(this, e);
+      });
+      if (response) await this.getBrand();
+      this.name = "";
+      this.emitter.emit("showLoader", false);
+    },
+  },
+};
 </script>

@@ -140,6 +140,48 @@ describe("tests performed component", () => {
     expect(wrapper.text()).toContain("Select a run first.");
   });
 
+  it("loads test cycles through a bounded reload-safe page", async () => {
+    api.get.mockResolvedValue({
+      data: {
+        data: [{ id: 7, name: "Regression" }],
+        meta: {
+          page: 2,
+          pageSize: 25,
+          total: 31,
+          lastPage: 2,
+          sort: "id",
+          direction: "asc",
+        },
+      },
+    });
+    const replace = vi.fn();
+    const wrapper = mountTestsPerformed({
+      $route: {
+        name: "testsperformed",
+        query: { cyclePage: "2", cyclePerPage: "25" },
+      },
+      $router: { replace },
+    });
+
+    await vi.waitFor(() => expect(wrapper.vm.arrayTestCycles).toHaveLength(1));
+
+    expect(api.get).toHaveBeenCalledWith("/api/testcycles/9", {
+      headers: {},
+      params: {
+        page: 2,
+        pageSize: 25,
+        sort: "id",
+        direction: "asc",
+      },
+    });
+    expect(wrapper.vm.cyclePagination).toMatchObject({
+      page: 2,
+      total: 31,
+      lastPage: 2,
+    });
+    expect(replace).not.toHaveBeenCalled();
+  });
+
   it("shows status labels on test cards", async () => {
     api.get.mockResolvedValue({ data: [] });
     const wrapper = mountTestsPerformed();

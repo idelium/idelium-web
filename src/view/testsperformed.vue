@@ -337,6 +337,28 @@
           </button>
         </div>
         <div
+          v-if="cyclePagination.total != null"
+          class="testsperformed-pagination"
+        >
+          <button
+            type="button"
+            class="btn btn-sm btn-outline-light testsperformed-page-button"
+            :disabled="cyclePagination.page <= 1"
+            v-on:click="changeCyclePage(-1)"
+          >
+            {{ language[config.currentLanguage].TestsPerformed.previousPage }}
+          </button>
+          <span>{{ paginationLabel(cyclePagination) }}</span>
+          <button
+            type="button"
+            class="btn btn-sm btn-outline-light testsperformed-page-button"
+            :disabled="cyclePagination.page >= cyclePagination.lastPage"
+            v-on:click="changeCyclePage(1)"
+          >
+            {{ language[config.currentLanguage].TestsPerformed.nextPage }}
+          </button>
+        </div>
+        <div
           v-if="arrayTestCyclesDate.length === 0"
           class="testsperformed-empty"
         >
@@ -1160,6 +1182,14 @@ export default {
       analyticsTimezone: "UTC",
       analyticsStatuses: ["passed", "failed", "pending"],
       analyticsStatusOptions: ["passed", "failed", "pending", "cancelled"],
+      cyclePagination: {
+        page: 1,
+        perPage: 25,
+        total: null,
+        lastPage: 1,
+        sort: "id",
+        direction: "asc",
+      },
       runPagination: {
         page: 1,
         perPage: 25,
@@ -1589,6 +1619,14 @@ export default {
       if (nextPage === this.runPagination.page) return;
       this.getTestCyclesDate(this.testCycleSelected, { page: nextPage });
     },
+    changeCyclePage(delta) {
+      const nextPage = Math.min(
+        Math.max(this.cyclePagination.page + delta, 1),
+        this.cyclePagination.lastPage,
+      );
+      if (nextPage === this.cyclePagination.page) return;
+      this.getTestCycles({ page: nextPage });
+    },
     changeTestPage(delta) {
       if (this.testCycleDateSelected == null) return;
       const nextPage = Math.min(
@@ -1720,6 +1758,16 @@ export default {
       this.testCycleSelected = null;
       this.testCycleDateSelected = null;
       this.emitter.emit("showLoader", true);
+      this.cyclePagination = {
+        ...this.cyclePagination,
+        page:
+          options.page ||
+          this.routeQueryInteger("cyclePage", this.cyclePagination.page || 1),
+        perPage: this.routeQueryInteger(
+          "cyclePerPage",
+          this.cyclePagination.perPage || 25,
+        ),
+      };
       return apiClient
         .get(
           this.config.serviceBaseUrl +
@@ -1728,12 +1776,45 @@ export default {
             getSelectedProjectId(),
           {
             headers: this.setHeaders(),
+            params: {
+              page: this.cyclePagination.page,
+              pageSize: this.cyclePagination.perPage,
+              sort: this.cyclePagination.sort,
+              direction: this.cyclePagination.direction,
+            },
           },
         )
         .then((response) => {
           this.spinreverse = null;
           this.emitter.emit("showLoader", false);
-          this.arrayTestCycles = response.data;
+          if (Array.isArray(response.data)) {
+            this.arrayTestCycles = response.data;
+            this.cyclePagination = {
+              ...this.cyclePagination,
+              total: null,
+              lastPage: 1,
+            };
+          } else {
+            const meta = response.data?.meta || {};
+            this.arrayTestCycles = Array.isArray(response.data?.data)
+              ? response.data.data
+              : [];
+            this.cyclePagination = {
+              ...this.cyclePagination,
+              page: Number(meta.page) || this.cyclePagination.page,
+              perPage: Number(meta.pageSize) || this.cyclePagination.perPage,
+              total: Number.isFinite(Number(meta.total))
+                ? Number(meta.total)
+                : 0,
+              lastPage: Math.max(Number(meta.lastPage) || 1, 1),
+              sort: meta.sort || this.cyclePagination.sort,
+              direction: meta.direction || this.cyclePagination.direction,
+            };
+          }
+          this.replaceExecutionQuery({
+            cyclePage: String(this.cyclePagination.page),
+            cyclePerPage: String(this.cyclePagination.perPage),
+          });
           if (options.restoreFromRoute === true) {
             this.restoreSelectionFromRoute();
           }

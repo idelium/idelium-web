@@ -854,6 +854,16 @@ export default {
     models: "Models",
     locations: "Locations",
     btnSave: "save",
+    btnModify: "Update",
+    btnCancel: "Cancel",
+    Grid: {
+      searchLabel: "Search platforms",
+      searchPlaceholder: "Search the current platform catalogue",
+      paginationLabel: "Platform catalogue pages",
+      previousPage: "Previous",
+      nextPage: "Next",
+      pageStatus: "Page {page} of {pages}",
+    },
     ManagePlatform: {
       btnAddPlatform: "Add platform",
       colId: "id",
@@ -914,7 +924,7 @@ export default {
       colBrand: "Brand",
     },
     ModelDevice: {
-      name: "Inserisci nuovo modello",
+      name: "Insert a new model",
       id: "id",
       colBrand: "Brand",
       colModel: "Model",

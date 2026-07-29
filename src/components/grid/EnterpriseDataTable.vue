@@ -198,7 +198,14 @@
               :data-label="column.label"
               :class="`enterprise-data-table__cell--${column.type}`"
             >
-              {{ cellValue(row, column) }}
+              <slot
+                name="cell"
+                :column="column"
+                :row="row"
+                :value="cellValue(row, column)"
+              >
+                {{ cellValue(row, column) }}
+              </slot>
             </td>
             <td
               v-if="visibleActions.length > 0"

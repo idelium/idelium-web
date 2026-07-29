@@ -104,6 +104,8 @@ authorization, snapshot expiry, and every target immediately before mutation.
 
 Performance and accessibility thresholds are defined in
 [`data-table-performance.md`](data-table-performance.md).
+The route-by-route rollout and the documented execution-explorer exception are
+recorded in [`data-table-migration.md`](data-table-migration.md).
 
 ## Migration and rollback
 

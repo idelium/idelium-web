@@ -1,165 +1,131 @@
 <template>
-  <div>
-    <div class="row" style="margin-top: 10px">
-      <div class="col-sm-1" />
-      <div class="col-sm-2"></div>
-      <div class="col labelFilter" v-if="showBrandCol == true">
-        <span>{{ language[config.currentLanguage].Platforms.ManagePlatform.colBrand }}</span>
+  <div class="platform-manager">
+    <section class="card platform-manager__toolbar">
+      <div class="platform-manager__filters">
+        <label>
+          <span>{{ copy.modalAddPlatform.lblType }}</span>
+          <select
+            v-model="typeSelected"
+            class="form-control"
+            v-on:change="changeType"
+          >
+            <option
+              v-for="type in arrayTypes"
+              v-bind:key="type.id"
+              :value="type.id"
+            >
+              {{ type.name }}
+            </option>
+          </select>
+        </label>
+        <label v-if="showBrandCol">
+          <span>{{ copy.colBrand }}</span>
+          <select
+            v-model="brandSelected"
+            class="form-control"
+            v-on:change="applyReferenceFilters"
+          >
+            <option value="all">{{ copy.all }}</option>
+            <option
+              v-for="brand in arrayBrands"
+              v-bind:key="brand.id"
+              :value="brand.id"
+            >
+              {{ brand.brand }}
+            </option>
+          </select>
+        </label>
+        <label>
+          <span>{{ copy.colOs }}</span>
+          <select
+            v-model="osSelected"
+            class="form-control"
+            v-on:change="changeOs"
+          >
+            <option value="all">{{ copy.all }}</option>
+            <option v-for="os in arrayOs" v-bind:key="os.id" :value="os.id">
+              {{ os.name }}
+            </option>
+          </select>
+        </label>
+        <label v-if="arrayBrowser.length > 0">
+          <span>{{ copy.colBrowser }}</span>
+          <select
+            v-model="browserSelected"
+            class="form-control"
+            v-on:change="applyReferenceFilters"
+          >
+            <option value="all">{{ copy.all }}</option>
+            <option
+              v-for="browser in arrayBrowser"
+              v-bind:key="browser.id"
+              :value="browser.id"
+            >
+              {{ browser.name }}
+            </option>
+          </select>
+        </label>
       </div>
-      <div class="col-sm-2 labelFilter">
-        <span>{{ language[config.currentLanguage].Platforms.ManagePlatform.colOs }}</span>
-      </div>
-      <div class="col-sm-2 labelFilter">
-        <span v-if="arrayBrowser.length > 0">{{
-          language[config.currentLanguage].Platforms.ManagePlatform.colBrowser
-        }}</span>
-      </div>
-      <div class="col"></div>
-      <div class="col-sm-1" />
-    </div>
-    <div class="row" style="margin-top: 10px">
-      <div class="col-sm-1" />
-      <div class="col-sm-2">
-        <select class="form-control" v-model="typeSelected" v-on:change="getPlatforms()">
-          <option v-for="(type, index) in arrayTypes" v-bind:key="index" :value="type.id">
-            {{ type.name }}
+      <button
+        type="button"
+        class="btn btn-primary"
+        v-on:click="$refs.modalAddPlatformForm.showModal()"
+      >
+        {{ copy.btnAddPlatform }}
+      </button>
+    </section>
+
+    <section
+      v-if="elementIdToEdit != null"
+      class="card platform-manager__editor"
+      aria-live="polite"
+    >
+      <label>
+        <span>{{ copy.colStatus }}</span>
+        <select v-model="elementToEdit" class="form-control">
+          <option
+            v-for="status in arrayStatus"
+            v-bind:key="status.id"
+            :value="status.id"
+          >
+            {{ status.name }}
           </option>
         </select>
-      </div>
-      <div class="col-sm-2" v-if="showBrandCol == true">
-        <select class="form-control" v-model="brandSelected" v-on:change="getBrand()">
-          <option :value="'all'">
-            {{ language[config.currentLanguage].Platforms.ManagePlatform.all }}
-          </option>
-          <option v-for="(type, index) in arrayBrands" v-bind:key="index" :value="type.id">
-            {{ type.brand }}
-          </option>
-        </select>
-      </div>
-      <div class="col-sm-2">
-        <select class="form-control" v-model="osSelected" v-on:change="getOs()">
-          <option :value="'all'">
-            {{ language[config.currentLanguage].Platforms.ManagePlatform.all }}
-          </option>
-          <option v-for="(type, index) in arrayOs" v-bind:key="index" :value="type.id">
-            {{ type.name }}
-          </option>
-        </select>
-      </div>
-      <div class="col-sm-2">
-        <select
-          class="form-control"
-          v-model="browserSelected"
-          v-if="arrayBrowser.length > 0"
-          v-on:change="filterPlatform()"
-        >
-          <option :value="'all'">
-            {{ language[config.currentLanguage].Platforms.ManagePlatform.all }}
-          </option>
-          <option v-for="(type, index) in arrayBrowser" v-bind:key="index" :value="type.id">
-            {{ type.name }}
-          </option>
-        </select>
-      </div>
-      <div class="col">
-        <button
-          type="button"
-          class="btn btn-primary"
-          size="sm"
-          style="float: right"
-          v-on:click="$refs.modalAddPlatformForm.showModal()"
-        >
-          {{ language[config.currentLanguage].Platforms.ManagePlatform.btnAddPlatform }}
-        </button>
-      </div>
-      <div class="col-sm-1" />
-    </div>
-    <div class="row">
-      <div class="col-sm-1" />
-      <div class="col">
-        <table
-          class="table table-striped costum"
-          style="margin-left: 10px; margin-right: 10px; margin-top: 10px"
-        >
-          <thead>
-            <tr>
-              <th scope="col">
-                {{ language[config.currentLanguage].Platforms.ManagePlatform.colId }}
-              </th>
-              <th scope="col">
-                {{ language[config.currentLanguage].Platforms.ManagePlatform.colHost }}
-              </th>
-              <th scope="col">
-                {{ language[config.currentLanguage].Platforms.ManagePlatform.colLocation }}
-              </th>
-              <th scope="col" v-if="showBrandCol == true">
-                {{ language[config.currentLanguage].Platforms.ManagePlatform.colBrand }}
-              </th>
-              <th scope="col">
-                {{ language[config.currentLanguage].Platforms.ManagePlatform.colOs }}
-              </th>
-              <th scope="col">
-                {{ language[config.currentLanguage].Platforms.ManagePlatform.colBrowser }}
-              </th>
-              <th scope="col">
-                {{ language[config.currentLanguage].Platforms.ManagePlatform.colStatus }}
-              </th>
-              <th scope="col"></th>
-            </tr>
-          </thead>
-          <tr v-for="(item, index) in arrayPlatformsToShow" v-bind:key="index">
-            <td>
-              {{ item.id }}
-            </td>
-            <td>
-              {{ item.hostname }}
-            </td>
-            <td>
-              {{ getLocationName(item.location) }}
-            </td>
-            <td v-if="showBrandCol == true">
-              {{ item.brandDescription }}
-            </td>
-            <td>
-              {{ item.osDescription }}
-            </td>
-            <td>
-              {{ item.browserDescription }}
-            </td>
-            <td width="150px">
-              <span
-                v-on:dblclick="editThisElement(item)"
-                v-if="elementIdToEdit != item.id"
-                style="cursor: pointer"
-                >{{ getStatusName(item.status) }}</span
-              >
-              <select
-                v-if="elementIdToEdit == item.id"
-                class="form-control"
-                size="sm"
-                v-model="elementToEdit"
-                v-on:change="setStatusPlatform(item.id)"
-              >
-                <option v-for="(type, index) in arrayStatus" v-bind:key="index" :value="type.id">
-                  {{ type.name }}
-                </option>
-              </select>
-            </td>
-            <td>
-              <span
-                class="idelium-action-icon--delete"
-                v-on:click="deletePlatform(item.id)"
-                :title="language[config.currentLanguage].Actions.delete"
-                role="button"
-                style="cursor: pointer"
-                ><font-awesome-icon icon="trash" class="idelium-action-icon"
-              /></span>
-            </td>
-          </tr>
-        </table>
-      </div>
-      <div class="col-sm-1" />
-    </div>
+      </label>
+      <button
+        type="button"
+        class="btn btn-success"
+        v-on:click="setStatusPlatform"
+      >
+        {{ platformCopy.btnModify }}
+      </button>
+      <button type="button" class="btn btn-secondary" v-on:click="cancelEdit">
+        {{ platformCopy.btnCancel }}
+      </button>
+    </section>
+
+    <PlatformReferenceGrid
+      v-model:search="platformGridSearch"
+      :accessible-label="platformCopy.platforms"
+      :actions="platformActions"
+      :columns="platformColumns"
+      :copy="platformGridCopy"
+      :error="platformGridError"
+      :loading="platformGridLoading"
+      :meta="platformGridMeta"
+      :query="platformGridQuery"
+      :rows="arrayPlatforms"
+      :sort="platformGridSort"
+      :table-copy="platformGridTableCopy"
+      v-on:action="handlePlatformAction"
+      v-on:clear-filters="clearPlatformGridSearch"
+      v-on:page-change="changePlatformGridPage"
+      v-on:retry="getPlatforms"
+      v-on:row-activate="editThisElement"
+      v-on:search="schedulePlatformGridSearch"
+      v-on:sort="sortPlatformGrid"
+    />
+
     <modalAddPlatformForm
       ref="modalAddPlatformForm"
       :arrayTypes="arrayTypes"
@@ -168,183 +134,264 @@
     />
   </div>
 </template>
-<style scoped>
-.labelFilter {
-  font-size: 10px;
-  text-align: center !important;
-  text-transform: uppercase;
-}
-</style>
 
 <script>
-import modalAddPlatformForm from './addPlatformForm/modalAddPlatformForm.vue'
-import commonCalls from './commonCalls'
+import PlatformReferenceGrid from "@/components/grid/PlatformReferenceGrid.vue";
+import { platformGrid } from "@/mixins/platformGrid";
+import modalAddPlatformForm from "./addPlatformForm/modalAddPlatformForm.vue";
+import commonCalls from "./commonCalls";
 
 export default {
-  props: {
-    arrayTypes: Array,
-    arrayLocations: Array,
-    arrayStatus: Array
-  },
+  name: "ManagePlatform",
   components: {
-    modalAddPlatformForm
+    PlatformReferenceGrid,
+    modalAddPlatformForm,
+  },
+  mixins: [platformGrid],
+  props: {
+    arrayTypes: { type: Array, default: () => [] },
+    arrayLocations: { type: Array, default: () => [] },
+    arrayStatus: { type: Array, default: () => [] },
   },
   data() {
     return {
       typeSelected: null,
-      brandSelected: 'all',
-      browserSelected: 'all',
-      osSelected: 'all',
+      brandSelected: "all",
+      browserSelected: "all",
+      osSelected: "all",
       arrayPlatforms: [],
-      arrayPlatformsToShow: [],
       arrayBrowser: [],
       arrayOs: [],
       arrayBrands: [],
       elementIdToEdit: null,
       elementToEdit: null,
-      showBrandCol: true
-    }
+      showBrandCol: true,
+    };
   },
-  created() {},
-  watch: {
-    arrayPlatforms() {
-      this.arrayPlatformsToShow = this.arrayPlatforms
-    }
+  computed: {
+    platformCopy() {
+      return this.language[this.config.currentLanguage].Platforms;
+    },
+    copy() {
+      return this.platformCopy.ManagePlatform;
+    },
+    platformColumns() {
+      const columns = [
+        { key: "id", label: this.copy.colId, required: true, sortable: true },
+        {
+          key: "hostname",
+          label: this.copy.colHost,
+          required: true,
+          sortable: true,
+        },
+        { key: "locationLabel", label: this.copy.colLocation },
+      ];
+      if (this.showBrandCol) {
+        columns.push({
+          key: "brandDescription",
+          label: this.copy.colBrand,
+          sortable: true,
+        });
+      }
+      columns.push(
+        {
+          key: "osDescription",
+          label: this.copy.colOs,
+          sortable: true,
+        },
+        {
+          key: "browserDescription",
+          label: this.copy.colBrowser,
+          sortable: true,
+        },
+        { key: "statusLabel", label: this.copy.colStatus },
+      );
+      return columns;
+    },
+    platformActions() {
+      const actions = this.language[this.config.currentLanguage].Actions;
+      return [
+        { id: "edit", label: actions.edit },
+        {
+          id: "delete",
+          label: actions.delete,
+          variant: "danger",
+        },
+      ];
+    },
   },
   methods: {
     start() {
-      if (this.arrayTypes.length > 0) this.typeSelected = this.arrayTypes[0].id
-      this.getPlatforms()
-      this.getBrand()
+      this.typeSelected = this.arrayTypes[0]?.id ?? null;
+      return this.changeType();
     },
-    async getBrand() {
-      this.arrayBrands = []
-      if (this.typeSelected == null) return false
-      this.emitter.emit('showLoader', true)
-      if (this.getTypeName(this.typeSelected) == 'mobile devices') {
-        let response = await commonCalls.getBrand(this).catch((e) => {
-          this.Logout(this, e)
-        })
-        this.arrayBrands = response.data
+    reloadPlatformGrid() {
+      return this.getPlatforms();
+    },
+    async changeType() {
+      this.brandSelected = "all";
+      this.osSelected = "all";
+      this.browserSelected = "all";
+      this.showBrandCol =
+        this.getTypeName(this.typeSelected) === "mobile devices";
+      await this.loadReferenceFilters();
+      return this.filterPlatformGrid({});
+    },
+    async loadReferenceFilters() {
+      const [brandsResponse, osResponse] = await Promise.all([
+        this.showBrandCol
+          ? commonCalls.getBrand(this, false)
+          : Promise.resolve({ data: [] }),
+        this.typeSelected == null
+          ? Promise.resolve({ data: [] })
+          : commonCalls.getOs(this, this.typeSelected, false),
+      ]);
+      this.arrayBrands = brandsResponse.data;
+      this.arrayOs = osResponse.data;
+      this.arrayBrowser = [];
+    },
+    async changeOs() {
+      this.browserSelected = "all";
+      if (this.osSelected === "all") {
+        this.arrayBrowser = [];
+      } else {
+        const response = await commonCalls.getBrowser(
+          this,
+          this.osSelected,
+          false,
+        );
+        this.arrayBrowser = response.data;
       }
-      this.getOs()
+      return this.applyReferenceFilters();
     },
-    async getOs() {
-      let response = await commonCalls.getOs(this, this.typeSelected).catch((e) => {
-        this.Logout(this, e)
-      })
-      this.arrayOs = response.data
-      this.browserSelected = 'all'
-      this.getBrowser()
-      this.filterPlatform()
-    },
-    async getBrowser() {
-      let response = await commonCalls.getBrowser(this, this.osSelected).catch((e) => {
-        this.Logout(this, e)
-      })
-      this.arrayBrowser = response.data
-      this.emitter.emit('showLoader', false)
-      this.filterPlatform()
-    },
-    editThisElement(element) {
-      this.elementIdToEdit = element.id
-      this.elementToEdit = element.status
-    },
-    getLocationName(idLocation) {
-      let objLocation = this.arrayLocations.find(({ id }) => id === idLocation)
-      return objLocation.name
-    },
-    getStatusName(idStatus) {
-      let objStatus = this.arrayStatus.find(({ id }) => id === idStatus)
-      return objStatus.name
+    applyReferenceFilters() {
+      const filters = {};
+      if (this.brandSelected !== "all") filters.brand = this.brandSelected;
+      if (this.osSelected !== "all") filters.os = this.osSelected;
+      if (this.browserSelected !== "all") {
+        filters.browser = this.browserSelected;
+      }
+      return this.filterPlatformGrid(filters);
     },
     getTypeName(idType) {
-      let objType = this.arrayTypes.find(({ id }) => id === idType)
-      return objType.name
+      return this.arrayTypes.find(({ id }) => id === idType)?.name ?? "";
     },
-    filterPlatform() {
-      this.arrayPlatformsToShow = this.arrayPlatforms
-      if (this.brandSelected != 'all') {
-        let dummyArray = []
-        for (let i = 0; i < this.arrayPlatformsToShow.length > 0; i++) {
-          if (this.arrayPlatformsToShow[i].brand == this.brandSelected)
-            dummyArray.push(this.arrayPlatformsToShow[i])
-        }
-        this.arrayPlatformsToShow = dummyArray
-      }
-      if (this.osSelected != 'all') {
-        let dummyArray = []
-        for (let i = 0; i < this.arrayPlatformsToShow.length > 0; i++) {
-          if (this.arrayPlatformsToShow[i].os == this.osSelected)
-            dummyArray.push(this.arrayPlatformsToShow[i])
-        }
-        this.arrayPlatformsToShow = dummyArray
-      }
-      if (this.browserSelected != 'all') {
-        let dummyArray = []
-        for (let i = 0; i < this.arrayPlatformsToShow.length > 0; i++) {
-          if (this.arrayPlatformsToShow[i].browser == this.browserSelected)
-            dummyArray.push(this.arrayPlatformsToShow[i])
-        }
-        this.arrayPlatformsToShow = dummyArray
-      }
+    getLocationName(idLocation) {
+      return (
+        this.arrayLocations.find(({ id }) => id === idLocation)?.name ?? "—"
+      );
+    },
+    getStatusName(idStatus) {
+      return this.arrayStatus.find(({ id }) => id === idStatus)?.name ?? "—";
+    },
+    decoratePlatform(platform) {
+      return {
+        ...platform,
+        locationLabel: this.getLocationName(platform.location),
+        statusLabel: this.getStatusName(platform.status),
+      };
     },
     async getPlatforms() {
-      let response = {
-        data: []
+      if (this.typeSelected == null) {
+        this.arrayPlatforms = [];
+        return;
       }
-      if (this.typeSelected != null) {
-        response = await commonCalls.getPlatforms(this, this.typeSelected).catch((e) => {
-          this.Logout(this, e)
-        })
-        if (this.getTypeName(this.typeSelected) == 'mobile devices') this.showBrandCol = true
-        else this.showBrandCol = false
-        this.arrayPlatforms = response.data
-        this.osSelected = 'all'
-        this.browserSelected = 'all'
-        this.brandSelected = 'all'
-        this.arrayBrowser = []
-        this.getBrand()
+      this.platformGridLoading = true;
+      this.platformGridError = null;
+      try {
+        const response = await commonCalls.getPlatforms(
+          this,
+          this.typeSelected,
+        );
+        this.arrayPlatforms = this.applyPlatformGridResponse(response).map(
+          this.decoratePlatform,
+        );
+      } catch (error) {
+        this.platformGridError = error;
+        this.Logout(this, error);
+      } finally {
+        this.platformGridLoading = false;
       }
-      this.emitter.emit('showLoader', false)
     },
-    async savePlatform(json) {
-      this.emitter.emit('showLoader', true)
-      let response = await commonCalls.savePlatform(this, json).catch((e) => {
-        this.Logout(this, e)
-      })
-      this.arrayPlatforms = response.data
-      this.emitter.emit('showLoader', false)
+    handlePlatformAction({ action, row }) {
+      if (action === "edit") this.editThisElement(row);
+      if (action === "delete") this.deletePlatform(row.id);
     },
-    async setStatusPlatform(id) {
-      this.emitter.emit('showLoader', true)
-      let response = await commonCalls
-        .updateStatusPlatform(this, id, this.typeSelected, this.elementToEdit)
-        .catch((e) => {
-          this.Logout(this, e)
-        })
-      this.arrayPlatforms = response.data
-      this.elementIdToEdit = null
-      this.emitter.emit('showLoader', false)
+    editThisElement(element) {
+      this.elementIdToEdit = element.id;
+      this.elementToEdit = element.status;
+    },
+    cancelEdit() {
+      this.elementIdToEdit = null;
+      this.elementToEdit = null;
+    },
+    async savePlatform(payload) {
+      await commonCalls.savePlatform(this, payload);
+      await this.getPlatforms();
+    },
+    async setStatusPlatform() {
+      await commonCalls.updateStatusPlatform(
+        this,
+        this.elementIdToEdit,
+        this.typeSelected,
+        this.elementToEdit,
+      );
+      this.cancelEdit();
+      await this.getPlatforms();
     },
     deletePlatform(id) {
       return this.$showConfirm({
-        message:
-          this.language[this.config.currentLanguage].Platforms.ManagePlatform
-            .confirmationPlatform,
-        variant: 'warning'
-      }).then((confirmed) => {
-        if (confirmed) this.actionDeletPlatform(id)
-      })
+        message: this.copy.confirmationPlatform,
+        variant: "warning",
+      }).then(async (confirmed) => {
+        if (!confirmed) return;
+        await commonCalls.deletePlatform(
+          this,
+          id,
+          this.typeSelected,
+          this.elementToEdit,
+        );
+        await this.getPlatforms();
+      });
     },
-    async actionDeletPlatform(id) {
-      let response = commonCalls
-        .deletePlatform(this, id, this.typeSelected, this.elementToEdit)
-        .catch((e) => {
-          this.Logout(this, e)
-        })
-      this.arrayPlatforms = response.data
-    }
+  },
+};
+</script>
+
+<style scoped>
+.platform-manager {
+  display: grid;
+  gap: var(--id-space-4);
+}
+
+.platform-manager__toolbar,
+.platform-manager__editor {
+  align-items: end;
+  display: flex;
+  gap: var(--id-space-3);
+  justify-content: space-between;
+  padding: var(--id-space-4);
+}
+
+.platform-manager__filters {
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  gap: var(--id-space-3);
+}
+
+.platform-manager__filters label,
+.platform-manager__editor label {
+  display: grid;
+  gap: var(--id-space-2);
+  min-width: 12rem;
+}
+
+@media (max-width: 48rem) {
+  .platform-manager__toolbar,
+  .platform-manager__editor {
+    align-items: stretch;
+    flex-direction: column;
   }
 }
-</script>
+</style>
