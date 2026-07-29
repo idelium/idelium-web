@@ -856,6 +856,64 @@ export default {
       },
     },
   },
+  EnvironmentSchema: {
+    types: {
+      web: "Web and Selenium",
+      mobile: "Mobile and Appium",
+      api: "API and Postman",
+    },
+    sections: {
+      connection: "Connection",
+      browser: "Browser",
+      device: "Device",
+      postman: "API behavior",
+    },
+    templates: {
+      localBrowser: {
+        label: "Local browser",
+        description: "Run Selenium in a locally managed browser.",
+      },
+      seleniumGrid: {
+        label: "Selenium Grid",
+        description: "Connect Selenium to a remote Grid.",
+      },
+      android: {
+        label: "Android",
+        description: "Run Appium on Android with UiAutomator2.",
+      },
+      ios: {
+        label: "iOS",
+        description: "Run Appium on iOS with XCUITest.",
+      },
+      externalAppium: {
+        label: "External Appium",
+        description: "Connect to an externally managed Appium server.",
+      },
+      apiPostman: {
+        label: "API and Postman",
+        description: "Run API and Postman collections with safe defaults.",
+      },
+    },
+    diagnostics: {
+      malformed: "The environment configuration is malformed.",
+      unknownType: "The environment type is unsupported.",
+      newerSchemaVersion:
+        "The environment uses a newer schema version than this Console.",
+      expiredSchemaVersion:
+        "The environment schema version is outside the compatibility window.",
+      legacySchema:
+        "This legacy environment will receive a schema version when changed.",
+    },
+    remediation: {
+      malformed: "Repair the saved JSON source before editing.",
+      unknownType: "Choose a supported Web, Mobile, or API environment type.",
+      newerSchemaVersion: "Update Idelium before editing this environment.",
+      expiredSchemaVersion:
+        "Migrate the environment through a supported intermediate version.",
+      legacySchema:
+        "Review the generated sections before saving the migrated environment.",
+    },
+  },
   StepEditor: {
     shell: {
       accessibleLabel: "Reusable step editor",

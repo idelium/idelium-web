@@ -862,6 +862,64 @@ export default {
       },
     },
   },
+  EnvironmentSchema: {
+    types: {
+      web: "Web e Selenium",
+      mobile: "Mobile e Appium",
+      api: "API e Postman",
+    },
+    sections: {
+      connection: "Connessione",
+      browser: "Browser",
+      device: "Dispositivo",
+      postman: "Comportamento API",
+    },
+    templates: {
+      localBrowser: {
+        label: "Browser locale",
+        description: "Esegui Selenium in un browser gestito localmente.",
+      },
+      seleniumGrid: {
+        label: "Selenium Grid",
+        description: "Connetti Selenium a un Grid remoto.",
+      },
+      android: {
+        label: "Android",
+        description: "Esegui Appium su Android con UiAutomator2.",
+      },
+      ios: {
+        label: "iOS",
+        description: "Esegui Appium su iOS con XCUITest.",
+      },
+      externalAppium: {
+        label: "Appium esterno",
+        description: "Connetti un server Appium gestito esternamente.",
+      },
+      apiPostman: {
+        label: "API e Postman",
+        description: "Esegui collezioni API e Postman con valori sicuri.",
+      },
+    },
+    diagnostics: {
+      malformed: "La configurazione dell'ambiente non è valida.",
+      unknownType: "Il tipo di ambiente non è supportato.",
+      newerSchemaVersion:
+        "L'ambiente usa una versione dello schema più recente della Console.",
+      expiredSchemaVersion:
+        "La versione dello schema è fuori dalla finestra di compatibilità.",
+      legacySchema:
+        "Questo ambiente legacy riceverà una versione dello schema alla modifica.",
+    },
+    remediation: {
+      malformed: "Correggi il sorgente JSON salvato prima della modifica.",
+      unknownType: "Scegli un ambiente Web, Mobile o API supportato.",
+      newerSchemaVersion: "Aggiorna Idelium prima di modificare l'ambiente.",
+      expiredSchemaVersion:
+        "Migra l'ambiente tramite una versione intermedia supportata.",
+      legacySchema:
+        "Verifica le sezioni generate prima di salvare l'ambiente migrato.",
+    },
+  },
   StepEditor: {
     shell: {
       accessibleLabel: "Editor degli step riutilizzabili",
