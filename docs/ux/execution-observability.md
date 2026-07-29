@@ -43,6 +43,28 @@ sequence larger than the expected next sequence, the client treats the stream as
 gapped and must replay the run detail from the server snapshot before applying
 new events.
 
+## Live runs workspace
+
+The live runs workspace presents an operational window of queued, running,
+cancelling, recently passed, failed, and cancelled executions. The view uses the
+same normalized execution status semantics as run detail and applies a bounded
+window before rendering high-frequency telemetry.
+
+Each live run card exposes:
+
+- project-scoped run identity and cycle name;
+- status text, non-color visual treatment, and an accessible progress label;
+- target or update channel, requested concurrency, active concurrency, worker
+  completion, failed workers, cancelled workers, queue time, elapsed time, and
+  last update metadata when available;
+- explicit stale telemetry and degraded channel messages;
+- detail and cancel actions only when the normalized capability flags allow them.
+
+Progress is monotonic. If out-of-order events arrive after a more advanced
+progress value, the UI keeps the greater completed count and updates only fields
+that do not make progress regress. Status filters are local and project-scoped;
+they do not request or render runs for another selected project.
+
 ## Legacy compatibility
 
 Legacy status values are still accepted:

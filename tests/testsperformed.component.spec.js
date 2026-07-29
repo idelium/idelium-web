@@ -72,7 +72,9 @@ describe("tests performed component", () => {
                 statusPassed: "Passed",
                 statusFailed: "Failed",
                 parallelRuns: "Parallel executions",
+                liveRuns: "Live runs workspace",
                 parallelRunsDescription: "Monitor distributed runs.",
+                liveRunsDescription: "Track live execution telemetry.",
                 parallelRunLabel: "Run",
                 emptyParallelRuns: "No parallel runs.",
                 cancelRun: "Cancel run",
@@ -81,6 +83,7 @@ describe("tests performed component", () => {
                 confirmCancelRun: "Cancel execution",
                 keepRunning: "Keep running",
                 workerConcurrency: "Active",
+                progress: "Progress",
                 workerCompleted: "Completed",
                 workerFailed: "Failed",
                 workerCancelled: "Cancelled",
@@ -102,9 +105,12 @@ describe("tests performed component", () => {
                   running: "Running",
                   cancelled: "Cancelled",
                   completed: "Completed",
+                  passed: "Passed",
                   failed: "Failed",
                   unknown: "Unknown",
                 },
+                staleTelemetry: "Telemetry is stale.",
+                degradedChannel: "Live updates are degraded.",
                 failureClasses: {
                   workerFailure: "Classified failure: worker error.",
                   cancelled: "Classified cancellation.",
@@ -580,6 +586,52 @@ describe("tests performed component", () => {
     expect(wrapper.text()).toContain("worker-b");
     expect(wrapper.text()).toContain("Classified failure: worker error.");
     expect(wrapper.find(".testsperformed-cancel-button").exists()).toBe(false);
+  });
+
+  it("renders live run progress, stale telemetry, filters, and detail action", async () => {
+    const replace = vi.fn();
+    api.get.mockImplementation((url) => {
+      if (url.includes("/parallel-runs")) {
+        return Promise.resolve({
+          data: [
+            {
+              id: 93,
+              activeWorkers: 1,
+              canOpenDetails: true,
+              cycleName: "release smoke",
+              lastUpdateAt: "2026-07-29T10:00:00Z",
+              progress: { completed: 1, total: 4 },
+              projectId: 9,
+              requestedConcurrency: 4,
+              status: "running",
+              target: "selenium-grid",
+            },
+          ],
+        });
+      }
+      return Promise.resolve({ data: [] });
+    });
+
+    const wrapper = mountTestsPerformed({
+      $route: { name: "testsperformed", query: {} },
+      $router: { replace },
+    });
+
+    await vi.waitFor(() =>
+      expect(wrapper.find(".testsperformed-live-progress").exists()).toBe(true),
+    );
+
+    expect(wrapper.text()).toContain("Live runs workspace");
+    expect(wrapper.text()).toContain("release smoke");
+    expect(wrapper.text()).toContain("Telemetry is stale.");
+    expect(wrapper.get("[role='progressbar']").attributes("aria-label")).toBe(
+      "release smoke: Progress 1/4",
+    );
+
+    await wrapper
+      .get(".testsperformed-live-actions .testsperformed-page-button")
+      .trigger("click");
+    expect(replace).toHaveBeenCalledWith({ query: { runId: "93" } });
   });
 
   it("confirms cancellation and reflects the server response", async () => {

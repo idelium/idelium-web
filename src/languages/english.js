@@ -824,8 +824,11 @@ export default {
     statusPassed: "Passed",
     statusFailed: "Failed",
     parallelRuns: "Parallel executions",
+    liveRuns: "Live runs workspace",
     parallelRunsDescription:
       "Monitor queued, active, completed, failed, and cancelled distributed runs from the server state.",
+    liveRunsDescription:
+      "Track queued, running, cancelling, and recently completed executions with bounded live telemetry.",
     parallelRunLabel: "Run",
     emptyParallelRuns:
       "No parallel executions are currently tracked for this project.",
@@ -836,6 +839,7 @@ export default {
     confirmCancelRun: "Cancel execution",
     keepRunning: "Keep running",
     workerConcurrency: "Active",
+    progress: "Progress",
     workerCompleted: "Completed",
     workerFailed: "Failed",
     workerCancelled: "Cancelled",
@@ -856,11 +860,15 @@ export default {
       queued: "Queued",
       running: "Running",
       cancelling: "Cancelling",
+      passed: "Passed",
       cancelled: "Cancelled",
       completed: "Completed",
       failed: "Failed",
       unknown: "Unknown",
     },
+    staleTelemetry: "Telemetry is stale. Refresh or wait for the next update.",
+    degradedChannel:
+      "Live updates are degraded. The page is using bounded polling fallback.",
     failureClasses: {
       workerFailure: "Classified failure: one or more workers reported errors.",
       cancelled:

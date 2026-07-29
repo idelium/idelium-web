@@ -831,8 +831,11 @@ export default {
     statusPassed: "Superato",
     statusFailed: "Fallito",
     parallelRuns: "Esecuzioni parallele",
+    liveRuns: "Workspace run live",
     parallelRunsDescription:
       "Monitora run distribuiti in coda, attivi, completati, falliti e cancellati usando lo stato restituito dal server.",
+    liveRunsDescription:
+      "Traccia esecuzioni in coda, attive, in annullamento e recenti con telemetria live limitata.",
     parallelRunLabel: "Run",
     emptyParallelRuns:
       "Non ci sono esecuzioni parallele tracciate per questo progetto.",
@@ -843,6 +846,7 @@ export default {
     confirmCancelRun: "Annulla esecuzione",
     keepRunning: "Mantieni attiva",
     workerConcurrency: "Attivi",
+    progress: "Avanzamento",
     workerCompleted: "Completati",
     workerFailed: "Falliti",
     workerCancelled: "Annullati",
@@ -863,11 +867,15 @@ export default {
       queued: "In coda",
       running: "In esecuzione",
       cancelling: "Annullamento",
+      passed: "Superata",
       cancelled: "Annullata",
       completed: "Completata",
       failed: "Fallita",
       unknown: "Sconosciuta",
     },
+    staleTelemetry: "La telemetria non è aggiornata. Aggiorna o attendi.",
+    degradedChannel:
+      "Gli aggiornamenti live sono degradati. La pagina usa polling limitato.",
     failureClasses: {
       workerFailure:
         "Errore classificato: uno o più worker hanno segnalato errori.",

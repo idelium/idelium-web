@@ -169,32 +169,55 @@
       <div class="testsperformed-panel-header">
         <div>
           <span class="testsperformed-section-title">
-            {{ language[config.currentLanguage].TestsPerformed.parallelRuns }}
+            {{ language[config.currentLanguage].TestsPerformed.liveRuns }}
           </span>
           <p class="testsperformed-helper">
             {{
               language[config.currentLanguage].TestsPerformed
-                .parallelRunsDescription
+                .liveRunsDescription
             }}
           </p>
         </div>
-        <button
-          type="button"
-          class="btn btn-sm btn-outline-light testsperformed-icon-button"
-          v-on:click="loadParallelRuns()"
-          :title="language[config.currentLanguage].Actions.refresh"
-        >
-          <font-awesome-icon
-            icon="history"
-            class="idelium-action-icon--refresh"
-          />
-        </button>
+        <div class="testsperformed-live-toolbar">
+          <button
+            v-for="status in liveRunStatusOptions"
+            v-bind:key="status"
+            type="button"
+            :class="[
+              'testsperformed-status-filter',
+              { active: liveRunStatuses.includes(status) },
+            ]"
+            v-on:click="toggleLiveRunStatus(status)"
+          >
+            {{ parallelRunStatusLabel(status) }}
+          </button>
+          <button
+            type="button"
+            class="btn btn-sm btn-outline-light testsperformed-icon-button"
+            v-on:click="loadParallelRuns()"
+            :title="language[config.currentLanguage].Actions.refresh"
+          >
+            <font-awesome-icon
+              icon="history"
+              class="idelium-action-icon--refresh"
+            />
+          </button>
+        </div>
       </div>
-      <div v-if="parallelRuns.length > 0" class="testsperformed-parallel-grid">
+      <p class="sr-only" aria-live="polite">
+        {{ liveRunAnnouncement }}
+      </p>
+      <div
+        v-if="visibleLiveRuns.length > 0"
+        class="testsperformed-parallel-grid"
+      >
         <article
-          v-for="run in parallelRuns"
+          v-for="run in visibleLiveRuns"
           v-bind:key="run.id"
-          class="testsperformed-parallel-card"
+          :class="[
+            'testsperformed-parallel-card',
+            { 'testsperformed-parallel-card--stale': run.stale },
+          ]"
         >
           <div class="testsperformed-parallel-card-header">
             <div>
@@ -211,17 +234,42 @@
                   language[config.currentLanguage].TestsPerformed
                     .parallelRunLabel
                 }}
-                #{{ run.id }}
+                #{{ run.id }} · {{ run.cycle.name }}
               </strong>
+              <span class="testsperformed-helper">
+                {{ run.target || run.updateChannel }}
+              </span>
             </div>
-            <button
-              v-if="canCancelParallelRun(run)"
-              type="button"
-              class="btn btn-sm btn-outline-light testsperformed-cancel-button"
-              v-on:click="confirmCancelParallelRun(run)"
-            >
-              {{ language[config.currentLanguage].TestsPerformed.cancelRun }}
-            </button>
+            <div class="testsperformed-live-actions">
+              <button
+                v-if="run.canOpenDetails"
+                type="button"
+                class="btn btn-sm btn-outline-light testsperformed-page-button"
+                v-on:click="openParallelRunDetails(run)"
+              >
+                {{
+                  language[config.currentLanguage].TestsPerformed.viewDetails
+                }}
+              </button>
+              <button
+                v-if="canCancelParallelRun(run)"
+                type="button"
+                class="btn btn-sm btn-outline-light testsperformed-cancel-button"
+                v-on:click="confirmCancelParallelRun(run)"
+              >
+                {{ language[config.currentLanguage].TestsPerformed.cancelRun }}
+              </button>
+            </div>
+          </div>
+          <div
+            class="testsperformed-live-progress"
+            role="progressbar"
+            :aria-valuenow="run.progress.percent"
+            aria-valuemin="0"
+            aria-valuemax="100"
+            :aria-label="liveRunProgressLabel(run)"
+          >
+            <span :style="{ width: run.progress.percent + '%' }"></span>
           </div>
           <dl class="testsperformed-worker-metrics">
             <div>
@@ -231,7 +279,15 @@
                     .workerConcurrency
                 }}
               </dt>
-              <dd>{{ run.activeWorkers }}/{{ run.requestedConcurrency }}</dd>
+              <dd>
+                {{ run.activeConcurrency }}/{{ run.requestedConcurrency }}
+              </dd>
+            </div>
+            <div>
+              <dt>
+                {{ language[config.currentLanguage].TestsPerformed.progress }}
+              </dt>
+              <dd>{{ run.progress.completed }}/{{ run.progress.total }}</dd>
             </div>
             <div>
               <dt>
@@ -265,6 +321,14 @@
             class="testsperformed-failure-classification"
           >
             {{ classifyParallelRunFailure(run) }}
+          </p>
+          <p v-if="run.stale || run.degraded" class="testsperformed-live-alert">
+            {{
+              run.stale
+                ? language[config.currentLanguage].TestsPerformed.staleTelemetry
+                : language[config.currentLanguage].TestsPerformed
+                    .degradedChannel
+            }}
           </p>
           <ul
             v-if="parallelResultSummary(run).length > 0"
@@ -632,7 +696,9 @@
 }
 
 .testsperformed-analytics-filters,
-.testsperformed-analytics-statuses {
+.testsperformed-analytics-statuses,
+.testsperformed-live-toolbar,
+.testsperformed-live-actions {
   align-items: center;
   display: flex;
   flex-wrap: wrap;
@@ -779,6 +845,10 @@
   padding: 1rem;
 }
 
+.testsperformed-parallel-card--stale {
+  border-color: rgba(255, 193, 7, 0.42);
+}
+
 .testsperformed-parallel-card-header {
   align-items: flex-start;
   display: flex;
@@ -790,6 +860,30 @@
   color: #ffffff;
   display: block;
   margin-top: 0.55rem;
+}
+
+.testsperformed-live-progress {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  height: 0.5rem;
+  margin: 1rem 0 0;
+  overflow: hidden;
+}
+
+.testsperformed-live-progress span {
+  background: linear-gradient(90deg, #1ec997, #ff8a1d);
+  display: block;
+  height: 100%;
+  transition: width 160ms ease;
+}
+
+.testsperformed-live-alert {
+  background: rgba(255, 193, 7, 0.12);
+  border: 1px solid rgba(255, 193, 7, 0.24);
+  border-radius: 0.75rem;
+  color: #ffe0a3;
+  margin: 0 0 0.85rem;
+  padding: 0.7rem;
 }
 
 .testsperformed-cancel-button {
@@ -864,6 +958,12 @@
 .testsperformed-worker-state.running {
   background: rgba(13, 110, 253, 0.18);
   color: #8ec5ff;
+}
+
+.testsperformed-status.warning,
+.testsperformed-worker-state.warning {
+  background: rgba(255, 193, 7, 0.18);
+  color: #ffe0a3;
 }
 
 .testsperformed-worker-state.secondary {
@@ -1156,6 +1256,13 @@ import {
   normalizeExportDescriptor,
   summarizeExecutionTrends,
 } from "@/domain/resultAnalytics";
+import {
+  boundedLiveRunAnnouncements,
+  filterLiveRuns,
+  liveRunStatusVariant,
+  mergeLiveRunWindow,
+  normalizeLiveRun,
+} from "@/domain/liveRuns";
 import { getSelectedProjectId } from "@/stores/session";
 
 export default {
@@ -1174,6 +1281,22 @@ export default {
       spinreverse: null,
       spinreverseDate: null,
       parallelRuns: [],
+      liveRunStatuses: [
+        "queued",
+        "running",
+        "cancelling",
+        "passed",
+        "failed",
+        "cancelled",
+      ],
+      liveRunStatusOptions: [
+        "queued",
+        "running",
+        "cancelling",
+        "passed",
+        "failed",
+        "cancelled",
+      ],
       parallelRunPoller: null,
       parallelRunAbortController: null,
       reportDownloadErrors: {},
@@ -1228,6 +1351,20 @@ export default {
         timezone: this.analyticsTimezone,
         statuses: this.analyticsStatuses,
       }).toString();
+    },
+    visibleLiveRuns() {
+      return filterLiveRuns(this.parallelRuns, {
+        projectId: getSelectedProjectId(),
+        statuses: this.liveRunStatuses,
+      });
+    },
+    liveRunAnnouncement() {
+      return boundedLiveRunAnnouncements(
+        this.visibleLiveRuns,
+        this.language[this.config.currentLanguage].TestsPerformed
+          .parallelStatuses,
+        3,
+      ).join(". ");
     },
   },
   watch: {
@@ -1365,7 +1502,11 @@ export default {
           signal: this.parallelRunAbortController?.signal,
         })
         .then((response) => {
-          this.parallelRuns = Array.isArray(response.data) ? response.data : [];
+          this.parallelRuns = mergeLiveRunWindow(
+            this.parallelRuns,
+            Array.isArray(response.data) ? response.data : [],
+            { projectId: getSelectedProjectId() },
+          );
         })
         .catch((e) => {
           if (e?.code === "ERR_CANCELED") return;
@@ -1391,10 +1532,7 @@ export default {
       this.parallelRunAbortController = null;
     },
     parallelRunVariant(status) {
-      if (status === "completed") return "success";
-      if (status === "failed" || status === "cancelled") return "danger";
-      if (status === "running") return "running";
-      return "secondary";
+      return liveRunStatusVariant(status);
     },
     parallelRunStatusLabel(status) {
       const labels =
@@ -1403,10 +1541,10 @@ export default {
       return labels?.[status] || status || labels?.unknown || "Unknown";
     },
     canCancelParallelRun(run) {
-      return ["queued", "running", "cancelling"].includes(run?.status);
+      return normalizeLiveRun(run).canCancel;
     },
     parallelResultSummary(run) {
-      return Array.isArray(run?.resultSummary) ? run.resultSummary : [];
+      return normalizeLiveRun(run).workerSummary;
     },
     classifyParallelRunFailure(run) {
       const labels =
@@ -1418,6 +1556,27 @@ export default {
       }
       if (run?.status === "failed") return labels.executionFailure;
       return null;
+    },
+    toggleLiveRunStatus(status) {
+      if (this.liveRunStatuses.includes(status)) {
+        this.liveRunStatuses = this.liveRunStatuses.filter(
+          (entry) => entry !== status,
+        );
+      } else {
+        this.liveRunStatuses = [...this.liveRunStatuses, status];
+      }
+      if (this.liveRunStatuses.length === 0) {
+        this.liveRunStatuses = ["queued", "running", "cancelling"];
+      }
+    },
+    liveRunProgressLabel(run) {
+      const labels = this.language[this.config.currentLanguage].TestsPerformed;
+      return `${run.cycle.name}: ${labels.progress} ${run.progress.completed}/${run.progress.total}`;
+    },
+    openParallelRunDetails(run) {
+      this.replaceExecutionQuery({
+        runId: String(run.id),
+      });
     },
     advertisedReports(run) {
       const source =
