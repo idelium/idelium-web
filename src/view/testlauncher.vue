@@ -58,31 +58,10 @@
     />
 
     <section class="launch-page__review" aria-live="polite">
-      <div>
-        <p>{{ launcherCopy.reviewEyebrow }}</p>
-        <h2>{{ launcherCopy.reviewTitle }}</h2>
-        <span>{{ launcherCopy.reviewDescription }}</span>
-      </div>
-      <dl>
-        <div>
-          <dt>{{ launcherCopy.testcycle }}</dt>
-          <dd>{{ selectedCycle?.name || launcherCopy.notSelected }}</dd>
-        </div>
-        <div>
-          <dt>{{ launcherCopy.environment }}</dt>
-          <dd>{{ selectedEnvironment?.name || launcherCopy.notSelected }}</dd>
-        </div>
-        <div>
-          <dt>{{ language[config.currentLanguage].LaunchTarget.target }}</dt>
-          <dd>{{ selectedTarget?.name || launcherCopy.notSelected }}</dd>
-        </div>
-        <div>
-          <dt>
-            {{ language[config.currentLanguage].LaunchTarget.concurrency }}
-          </dt>
-          <dd>{{ concurrency }}</dd>
-        </div>
-      </dl>
+      <LaunchReviewSummary
+        :copy="language[config.currentLanguage].LaunchReview"
+        :summary="launchReviewSummary"
+      />
       <button
         class="btn btn-success"
         type="button"
@@ -106,6 +85,7 @@
 <script>
 import LaunchAssetSelector from "@/components/launch/LaunchAssetSelector.vue";
 import LaunchPreflightPanel from "@/components/launch/LaunchPreflightPanel.vue";
+import LaunchReviewSummary from "@/components/launch/LaunchReviewSummary.vue";
 import LaunchTargetConfigurator from "@/components/launch/LaunchTargetConfigurator.vue";
 import { createLaunchApiRequest } from "@/domain/launchContracts";
 import {
@@ -114,6 +94,7 @@ import {
   localPreflightResult,
   normalizePreflightResult,
 } from "@/domain/launchPreflight";
+import { buildLaunchReviewSummary } from "@/domain/launchReview";
 import {
   buildLaunchAssetQuery,
   buildLaunchSelectionQuery,
@@ -136,6 +117,7 @@ export default {
   components: {
     LaunchAssetSelector,
     LaunchPreflightPanel,
+    LaunchReviewSummary,
     LaunchTargetConfigurator,
     platformLauncher,
   },
@@ -230,6 +212,19 @@ export default {
     },
     preflightStale() {
       return isPreflightStale(this.preflightResult, this.currentPreflightHash);
+    },
+    launchReviewSummary() {
+      return buildLaunchReviewSummary({
+        baseUrl: this.config.serviceBaseUrl || "https://localhost",
+        concurrency: this.concurrency,
+        cycle: this.selectedCycle,
+        environment: this.selectedEnvironment,
+        launchRequest: this.launchRequest,
+        overrides: this.targetOverrides,
+        preflightResult: this.preflightResult,
+        projectId: getSelectedProjectId(),
+        target: this.selectedTarget,
+      });
     },
     canOpenTargetSelection() {
       return (

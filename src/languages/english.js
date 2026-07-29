@@ -724,6 +724,28 @@ export default {
       warning: "Warning",
     },
   },
+  LaunchReview: {
+    accessibleLabel: "Launch reproducibility review",
+    cliCommand: "CLI command",
+    copied: "Copied",
+    copiedFeedback: "CLI command copied to clipboard.",
+    copyCommand: "Copy command",
+    description:
+      "Review the exact redacted payload and the command needed to reproduce this launch.",
+    download: "Download summary",
+    eyebrow: "Launch review",
+    title: "Reproducibility summary",
+    warnings: "Unresolved advisory warnings",
+    labels: {
+      artifactPolicy: "Artifact policy",
+      concurrency: "Concurrency",
+      cycle: "Cycle",
+      environment: "Environment",
+      overrides: "Overrides",
+      project: "Project",
+      target: "Target",
+    },
+  },
   TestCycles: {
     compositionTitle: "Configure test sequence",
     compositionDescription:

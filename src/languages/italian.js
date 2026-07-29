@@ -730,6 +730,28 @@ export default {
       warning: "Warning",
     },
   },
+  LaunchReview: {
+    accessibleLabel: "Revisione riproducibilità avvio",
+    cliCommand: "Comando CLI",
+    copied: "Copiato",
+    copiedFeedback: "Comando CLI copiato negli appunti.",
+    copyCommand: "Copia comando",
+    description:
+      "Verifica il payload redatto e il comando necessario a riprodurre questo avvio.",
+    download: "Scarica riepilogo",
+    eyebrow: "Revisione avvio",
+    title: "Riepilogo riproducibilità",
+    warnings: "Warning advisory non risolti",
+    labels: {
+      artifactPolicy: "Policy artifact",
+      concurrency: "Concorrenza",
+      cycle: "Ciclo",
+      environment: "Ambiente",
+      overrides: "Override",
+      project: "Progetto",
+      target: "Target",
+    },
+  },
   TestCycles: {
     compositionTitle: "Configura la sequenza dei test",
     compositionDescription:

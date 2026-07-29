@@ -84,6 +84,25 @@ headers, API keys, sessions, cookies, and similar protected payload markers are
 replaced with `[REDACTED]`. Unauthorized entity metadata must not be returned by
 the API, and legacy client responses are still filtered before display.
 
+## Review and reproducibility
+
+The final review summarizes the project, selected cycle and version, selected
+environment and version, execution target, concurrency, overrides, advisory
+warnings, and artifact retention policy. Values are generated from the same
+redacted versioned launch payload used by preflight and submission, so the
+operator reviews exactly what the Console is preparing to send.
+
+The review also generates a CLI command using supported current options:
+`--idCycle`, `--idProject`, `--environment`, `--ideliumwsBaseurl`, target,
+browser, device, and concurrency when applicable. The command never includes
+passwords, tokens, session identifiers, authorization headers, secret values, or
+protected variable payloads.
+
+Copy feedback is announced through an accessible live region. Download exports
+the redacted review summary only; it is a diagnostic artifact and not a source
+of secret material. Links to affected asset details must preserve the route
+query that stores the authorized launch draft.
+
 The diagnostic model contains:
 
 - `severity`: `info`, `warning`, or `error`;

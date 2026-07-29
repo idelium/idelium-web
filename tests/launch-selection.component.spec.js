@@ -3,15 +3,18 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const api = vi.hoisted(() => ({ get: vi.fn(), post: vi.fn() }));
 vi.mock("@/services/apiClient", () => ({ default: api }));
+vi.mock("copy-to-clipboard", () => ({ default: vi.fn(() => true) }));
 
 import LaunchAssetSelector from "@/components/launch/LaunchAssetSelector.vue";
 import LaunchPreflightPanel from "@/components/launch/LaunchPreflightPanel.vue";
+import LaunchReviewSummary from "@/components/launch/LaunchReviewSummary.vue";
 import LaunchTargetConfigurator from "@/components/launch/LaunchTargetConfigurator.vue";
 import {
   isPreflightStale,
   launchConfigurationHash,
   normalizePreflightResult,
 } from "@/domain/launchPreflight";
+import { buildLaunchReviewSummary } from "@/domain/launchReview";
 import {
   buildLaunchAssetQuery,
   normalizeLaunchAssetRows,
@@ -261,6 +264,61 @@ describe("launch asset selection", () => {
     expect(wrapper.text()).toContain("Environment");
     expect(wrapper.text()).toContain("[REDACTED]");
     expect(wrapper.text()).toContain("Warning");
+  });
+
+  it("builds a redacted reproducibility summary with accessible copy feedback", async () => {
+    const summary = buildLaunchReviewSummary({
+      baseUrl: "https://localhost",
+      concurrency: 2,
+      cycle: {
+        id: "2",
+        metadata: { version: "v1" },
+        name: "Smoke",
+      },
+      environment: {
+        code: "demo",
+        id: "9",
+        metadata: { version: "v2" },
+        name: "Demo",
+      },
+      launchRequest: {
+        body: {
+          options: {
+            authorization: "Bearer complete-secret-token",
+            browser: "chrome",
+          },
+        },
+      },
+      overrides: { browser: "chrome" },
+      preflightResult: {
+        diagnostics: [
+          {
+            blocking: false,
+            code: "launchTarget.healthStale",
+            message: "Health data is stale",
+          },
+        ],
+      },
+      projectId: "3",
+      target: { name: "Platform pool", type: "platform-pool" },
+    });
+    const wrapper = mount(LaunchReviewSummary, {
+      props: {
+        copy: english.LaunchReview,
+        summary,
+      },
+    });
+
+    expect(summary.cliCommand).toContain("--idCycle=2");
+    expect(summary.cliCommand).toContain("--environment=demo");
+    expect(summary.cliCommand).not.toContain("complete-secret-token");
+    expect(JSON.stringify(summary.payload)).not.toContain(
+      "complete-secret-token",
+    );
+    expect(wrapper.text()).toContain("Health data is stale");
+
+    await wrapper.get("button").trigger("click");
+    expect(wrapper.text()).toContain("CLI command copied to clipboard.");
   });
 
   it("loads cycle and environment selectors with bounded API queries", async () => {
