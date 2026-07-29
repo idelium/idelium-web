@@ -1182,6 +1182,34 @@ export default {
     redacted: "[REDACTED: {descriptor}]",
     redactedReference: "[REDACTED: {descriptor} · {reference}]",
   },
+  EnvironmentEditing: {
+    title: "Environment changes",
+    saved: "No unsaved changes.",
+    unsaved: "You have unsaved environment changes.",
+    failed: "Save failed. Your local changes are still available.",
+    lastSaved: "Last saved at {timestamp}.",
+    save: "Save changes",
+    saving: "Saving changes",
+    discard: "Discard changes",
+    archive: "Archive environment",
+    conflict: {
+      title: "A newer environment version exists",
+      description:
+        "Your changes were preserved. Review the newer version before retrying.",
+    },
+    leave: {
+      title: "Leave with unsaved changes?",
+      description:
+        "Your unsaved environment changes will remain only in this editor.",
+      stay: "Continue editing",
+      confirm: "Leave page",
+    },
+    clone: {
+      identityRequired: "Enter a new environment name and destination.",
+      referencesRequireValidation:
+        "Secret references were removed and must be selected again.",
+    },
+  },
   StepEditor: {
     shell: {
       accessibleLabel: "Reusable step editor",

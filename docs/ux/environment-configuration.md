@@ -153,6 +153,26 @@ final launch-time resolution remain API and runner responsibilities, and
 unredacted configuration must never be copied, downloaded, logged, or added to
 telemetry.
 
+## Clone, save, and archive lifecycle
+
+Cloning requires a new environment name and an authorized destination customer.
+Only non-sensitive configuration is copied. Source IDs, customer ownership
+fields, secret values, and secret-reference identifiers are removed; the clone
+reports that authorized references must be selected and validated again.
+
+Editing tracks a durable snapshot, local draft, dirty state, last-saved
+timestamp, and optimistic version. Save requests include the expected durable
+version. A conflict never replaces the draft or silently overwrites the remote
+version. Validation and server failures also preserve the local draft. Discard
+is explicit and restores the complete durable snapshot.
+
+The route guard requests confirmation only for dirty drafts, using an accessible
+localized dialog. Environment removal is an archive operation with tenant,
+environment, and expected-version identifiers; immediate destructive deletion
+is not exposed. These additive contracts do not change legacy environment
+payloads. The API remains responsible for destination authorization, optimistic
+locking, audit events, retention, archive recovery, and final ownership checks.
+
 ## Rollout and rollback
 
 The versioned loader can be introduced before route migration because unchanged

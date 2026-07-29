@@ -1198,6 +1198,35 @@ export default {
     redacted: "[OSCURATO: {descriptor}]",
     redactedReference: "[OSCURATO: {descriptor} · {reference}]",
   },
+  EnvironmentEditing: {
+    title: "Modifiche ambiente",
+    saved: "Nessuna modifica non salvata.",
+    unsaved: "Sono presenti modifiche ambiente non salvate.",
+    failed: "Salvataggio fallito. Le modifiche locali sono ancora disponibili.",
+    lastSaved: "Ultimo salvataggio alle {timestamp}.",
+    save: "Salva modifiche",
+    saving: "Salvataggio modifiche",
+    discard: "Annulla modifiche",
+    archive: "Archivia ambiente",
+    conflict: {
+      title: "Esiste una versione più recente dell'ambiente",
+      description:
+        "Le modifiche sono state conservate. Verifica la versione più recente prima di riprovare.",
+    },
+    leave: {
+      title: "Uscire con modifiche non salvate?",
+      description:
+        "Le modifiche ambiente non salvate rimarranno solo in questo editor.",
+      stay: "Continua modifica",
+      confirm: "Esci dalla pagina",
+    },
+    clone: {
+      identityRequired:
+        "Inserisci un nuovo nome ambiente e una destinazione.",
+      referencesRequireValidation:
+        "I riferimenti segreti sono stati rimossi e devono essere selezionati nuovamente.",
+    },
+  },
   StepEditor: {
     shell: {
       accessibleLabel: "Editor degli step riutilizzabili",
