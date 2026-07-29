@@ -88,6 +88,27 @@ The API must revalidate customer ownership and variable policy before execution;
 the Console resolver is a deterministic preview and not an authorization
 boundary.
 
+## Secret-reference boundary
+
+The Console consumes a capability-filtered metadata endpoint. Its response is
+limited to reference ID, display name, provider, scope, lifecycle status, last
+validation time, supported capabilities, and usage count. The endpoint must
+never return secret values, credentials, authorization headers, provider tokens,
+or material that can reconstruct a secret. The client strips every field outside
+that allowlist before rendering.
+
+Missing, forged, cross-customer, and unauthorized identifiers produce the same
+`secretReference.unavailable` client result. Revoked and expired references are
+visible only when already authorized and cannot be selected for new
+configuration. Removing a reference used by one or more configurations requires
+explicit confirmation.
+
+Persistence and export retain only an optional alias and the opaque reference
+identifier. Malformed legacy bindings are exported as `[REDACTED]`; secret
+values are excluded from URLs, browser storage, diagnostics, logs, validation
+output, and export payloads. API authorization, capability enforcement,
+rotation, and audit logging remain server-side responsibilities.
+
 ## Rollout and rollback
 
 The versioned loader can be introduced before route migration because unchanged

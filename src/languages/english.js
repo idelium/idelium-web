@@ -1072,6 +1072,41 @@ export default {
       cycle: "Variable dependency cycle detected: {members}.",
     },
   },
+  EnvironmentSecrets: {
+    title: "Secret reference",
+    description:
+      "Select authorized metadata. Secret values are never sent to the Console.",
+    label: "Authorized secret reference",
+    placeholder: "Select a secret reference",
+    neverValidated: "Not yet validated",
+    remove: "Remove reference",
+    metadata: {
+      name: "Reference name",
+      provider: "Provider",
+      scope: "Scope",
+      status: "Status",
+      lastValidated: "Last validation",
+    },
+    status: {
+      active: "Active",
+      revoked: "Revoked",
+      expired: "Expired",
+      unavailable: "Unavailable",
+    },
+    validation: {
+      unavailable:
+        "The secret reference is unavailable. Select an authorized reference.",
+      revoked: "The secret reference was revoked and cannot be used.",
+      expired: "The secret reference expired and must be replaced.",
+    },
+    confirmation: {
+      title: "Remove a used secret reference?",
+      description:
+        "This reference is used by {count} configurations. Removing it can block future executions.",
+      cancel: "Keep reference",
+      confirm: "Remove reference",
+    },
+  },
   StepEditor: {
     shell: {
       accessibleLabel: "Reusable step editor",

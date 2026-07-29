@@ -1087,6 +1087,41 @@ export default {
       cycle: "Rilevato ciclo tra le dipendenze delle variabili: {members}.",
     },
   },
+  EnvironmentSecrets: {
+    title: "Riferimento segreto",
+    description:
+      "Seleziona metadati autorizzati. I valori segreti non vengono mai inviati alla Console.",
+    label: "Riferimento segreto autorizzato",
+    placeholder: "Seleziona un riferimento segreto",
+    neverValidated: "Non ancora validato",
+    remove: "Rimuovi riferimento",
+    metadata: {
+      name: "Nome riferimento",
+      provider: "Provider",
+      scope: "Ambito",
+      status: "Stato",
+      lastValidated: "Ultima validazione",
+    },
+    status: {
+      active: "Attivo",
+      revoked: "Revocato",
+      expired: "Scaduto",
+      unavailable: "Non disponibile",
+    },
+    validation: {
+      unavailable:
+        "Il riferimento segreto non è disponibile. Seleziona un riferimento autorizzato.",
+      revoked: "Il riferimento segreto è stato revocato e non può essere usato.",
+      expired: "Il riferimento segreto è scaduto e deve essere sostituito.",
+    },
+    confirmation: {
+      title: "Rimuovere un riferimento segreto in uso?",
+      description:
+        "Il riferimento è usato da {count} configurazioni. La rimozione può bloccare le esecuzioni future.",
+      cancel: "Mantieni riferimento",
+      confirm: "Rimuovi riferimento",
+    },
+  },
   StepEditor: {
     shell: {
       accessibleLabel: "Editor degli step riutilizzabili",
