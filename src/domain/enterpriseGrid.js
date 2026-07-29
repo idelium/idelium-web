@@ -2,6 +2,8 @@ const DEFAULT_PAGE_SIZE = 25;
 const MAX_PAGE_SIZE = 100;
 const MAX_LOCAL_ROWS = 1000;
 const REDACTED_VALUE = "••••••••";
+const SENSITIVE_QUERY_KEY =
+  /(authorization|cookie|credential|password|secret|session|token)/i;
 
 /**
  * @typedef {Object} EnterpriseGridColumn
@@ -206,6 +208,95 @@ export function boundedLocalRows(rows, limit = MAX_LOCAL_ROWS) {
     Math.max(1, positiveInteger(limit, MAX_LOCAL_ROWS)),
   );
   return Array.isArray(rows) ? rows.slice(0, safeLimit) : [];
+}
+
+export function parseGridRouteQuery(query = {}, options = {}) {
+  const allowedSorts = new Set(options.allowedSorts ?? []);
+  const allowedFilters = new Set(options.allowedFilters ?? []);
+  const filters = {};
+
+  for (const filterKey of allowedFilters) {
+    if (SENSITIVE_QUERY_KEY.test(filterKey)) continue;
+    const canonicalValue = query[`f.${filterKey}`];
+    const legacyValue = query[`filter[${filterKey}]`];
+    const normalized = safeFilterValue(canonicalValue ?? legacyValue);
+    if (normalized !== null) filters[filterKey] = normalized;
+  }
+
+  const requestedSort = safeText(query.sort);
+  const sort = allowedSorts.has(requestedSort)
+    ? {
+        field: requestedSort,
+        direction: query.direction === "desc" ? "desc" : "asc",
+      }
+    : null;
+
+  return {
+    page: positiveInteger(query.page, 1),
+    pageSize: boundedPageSize(query.pageSize),
+    search: safeText(query.q ?? query.search),
+    sort,
+    filters,
+  };
+}
+
+export function serializeGridRouteQuery(state = {}, options = {}) {
+  const normalized = parseGridRouteQuery(
+    {
+      page: state.page,
+      pageSize: state.pageSize,
+      q: state.search,
+      sort: state.sort?.field,
+      direction: state.sort?.direction,
+      ...Object.fromEntries(
+        Object.entries(state.filters ?? {}).map(([key, value]) => [
+          `f.${key}`,
+          value,
+        ]),
+      ),
+    },
+    options,
+  );
+  const query = {};
+
+  if (normalized.page > 1) query.page = String(normalized.page);
+  if (normalized.pageSize !== DEFAULT_PAGE_SIZE) {
+    query.pageSize = String(normalized.pageSize);
+  }
+  if (normalized.search !== "") query.q = normalized.search;
+  if (normalized.sort) {
+    query.sort = normalized.sort.field;
+    query.direction = normalized.sort.direction;
+  }
+  for (const [key, value] of Object.entries(normalized.filters)) {
+    query[`f.${key}`] = value;
+  }
+  return query;
+}
+
+export function mergeGridRouteState(current, changes, options = {}) {
+  const previous = parseGridRouteQuery(current, options);
+  const next = {
+    ...previous,
+    ...changes,
+    filters: changes.filters ?? previous.filters,
+  };
+  const criteriaChanged =
+    next.search !== previous.search ||
+    next.sort?.field !== previous.sort?.field ||
+    next.sort?.direction !== previous.sort?.direction ||
+    JSON.stringify(next.filters) !== JSON.stringify(previous.filters);
+
+  if (criteriaChanged && changes.page === undefined) next.page = 1;
+  return serializeGridRouteQuery(next, options);
+}
+
+export function isGridRouteQueryKey(key) {
+  return (
+    ["direction", "page", "pageSize", "q", "search", "sort"].includes(key) ||
+    key.startsWith("f.") ||
+    /^filter\[[a-zA-Z0-9_.-]+\]$/.test(key)
+  );
 }
 
 function normalizeSort(sort, allowedSorts) {

@@ -33,6 +33,19 @@ sortable columns expose `aria-sort`, rows activate with Enter or Space, and
 selection controls have entity-specific accessible labels. Compact density keeps
 native selection controls at a readable size.
 
+## Canonical query URLs
+
+Table URLs use `q`, `page`, `pageSize`, `sort`, `direction`, and `f.<name>`.
+Only fields declared by the route are accepted. Page sizes are capped at 100,
+search and filter values are capped at 200 characters, and sensitive filter names
+are rejected. Legacy `search` and `filter[name]` parameters are read during
+migration but are rewritten to the canonical representation.
+
+Search updates use router replacement after a short debounce. Filter or sort
+changes reset the page to one. Unrelated route parameters remain intact, which
+keeps deep links compatible with route-backed drawers. URLs must never contain
+tokens, credentials, sessions, authorization values, or protected payloads.
+
 ## Migration and rollback
 
 Existing routes and API endpoints remain compatible. Listings move to the shared
