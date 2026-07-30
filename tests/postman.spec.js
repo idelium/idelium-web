@@ -4,6 +4,9 @@ import { mount } from "@vue/test-utils";
 import PostmanResultTable from "@/view/testperformed/PostmanResultTable.vue";
 import {
   classifyPostmanDocument,
+  extractPostmanRequestPayload,
+  extractPostmanResponsePayload,
+  formatPostmanRequestPayload,
   formatPostmanResponse,
   parsePostmanResults,
   statusVariant,
@@ -87,6 +90,7 @@ describe("Postman web integration", () => {
           assertions: [{ name: "status", passed: true }],
           method: "POST",
           name: "Create payload",
+          requestPayload: '{"product":"idelium"}',
           response: '{"ok":true}',
           status: 200,
           time: 140,
@@ -100,11 +104,33 @@ describe("Postman web integration", () => {
       assertions: [{ name: "status", passed: true }],
       method: "POST",
       name: "Create payload",
+      requestPayload: '{"product":"idelium"}',
       response: '{"ok":true}',
       status: 200,
       time: 140,
       url: "https://postman-echo.com/post",
     });
+  });
+
+  it("normalizes and formats request payloads separately from responses", () => {
+    const [result] = parsePostmanResults([
+      {
+        name: "Echo POST",
+        method: "POST",
+        requestPayload: '{"product":"idelium"}',
+        response: '{"json":{"product":"idelium"}}',
+        status: 200,
+      },
+    ]);
+
+    expect(extractPostmanRequestPayload(result)).toBe('{"product":"idelium"}');
+    expect(result.hasRequestPayload).toBe(true);
+    expect(formatPostmanRequestPayload(result.requestPayload, result)).toContain(
+      '"product": "idelium"',
+    );
+    expect(formatPostmanResponse(result.response, result)).toContain(
+      '"json"',
+    );
   });
 
   it("distinguishes collections and environments", () => {
@@ -138,6 +164,48 @@ describe("Postman web integration", () => {
     expect(wrapper.emitted("show-response")[0][0]).toEqual(results[0]);
     expect(formatPostmanResponse(results[0].response)).toContain(
       '"error": true',
+    );
+  });
+
+  it("extracts Newman response streams and formats them as readable JSON", () => {
+    const [result] = parsePostmanResults([
+      {
+        name: "Echo GET",
+        status: 200,
+        method: "GET",
+        url: "https://postman-echo.com/get",
+        response: {
+          code: 200,
+          stream: '{"args":{"source":"idelium"}}',
+        },
+      },
+    ]);
+
+    expect(extractPostmanResponsePayload(result)).toBe(
+      '{"args":{"source":"idelium"}}',
+    );
+    expect(formatPostmanResponse(result.response, result)).toContain(
+      '"source": "idelium"',
+    );
+  });
+
+  it("shows request metadata when no response body was captured", () => {
+    const [result] = parsePostmanResults([
+      {
+        name: "DigestAuth Request",
+        status: 401,
+        method: "GET",
+        url: "https://postman-echo.com/digest-auth",
+        response: "",
+      },
+    ]);
+
+    expect(result.hasResponseBody).toBe(false);
+    expect(formatPostmanResponse(result.response, result)).toContain(
+      "No response body was captured",
+    );
+    expect(formatPostmanResponse(result.response, result)).toContain(
+      "DigestAuth Request",
     );
   });
 });

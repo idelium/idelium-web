@@ -2,6 +2,7 @@ import { shallowMount } from "@vue/test-utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const api = vi.hoisted(() => ({ get: vi.fn(), post: vi.fn() }));
+const postmanResponseModalShow = vi.hoisted(() => vi.fn());
 
 vi.mock("@/services/apiClient", () => ({ default: api }));
 
@@ -13,6 +14,7 @@ describe("tests performed component", () => {
   beforeEach(() => {
     api.get.mockReset();
     api.post.mockReset();
+    postmanResponseModalShow.mockReset();
     vi.useRealTimers();
     Object.defineProperty(window, "scrollTo", {
       configurable: true,
@@ -30,6 +32,10 @@ describe("tests performed component", () => {
       global: {
         plugins: [pinia],
         stubs: {
+          modalPostmanResponse: {
+            template: "<div />",
+            methods: { showModal: postmanResponseModalShow },
+          },
           modalTestPerformed: { template: "<div />" },
         },
         mocks: {
@@ -421,8 +427,13 @@ describe("tests performed component", () => {
     await table.vm.$emit("show-response", table.props("results")[0]);
     await wrapper.vm.$nextTick();
 
-    expect(wrapper.text()).toContain("Response preview");
-    expect(wrapper.text()).toContain('"ok": true');
+    expect(postmanResponseModalShow).toHaveBeenCalledWith(
+      expect.objectContaining({
+        method: "GET",
+        name: "Get health",
+        response: { ok: true },
+      }),
+    );
   });
 
   it("shows Postman details when step results only identify the Postman step", async () => {

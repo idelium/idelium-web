@@ -287,31 +287,6 @@
                               )
                             }}
                           </div>
-                          <div
-                            v-if="postmanResponse != null"
-                            class="postman-response-panel"
-                          >
-                            <div class="postman-response-title">
-                              <span>
-                                {{
-                                  postmanLabel(
-                                    "responsePreview",
-                                    "Response preview",
-                                  )
-                                }}
-                              </span>
-                              <button
-                                type="button"
-                                class="btn btn-outline-secondary buttonTest"
-                                @click="postmanResponse = null"
-                              >
-                                {{
-                                  postmanLabel("hideResponse", "Hide response")
-                                }}
-                              </button>
-                            </div>
-                            <pre>{{ postmanResponse }}</pre>
-                          </div>
                         </section>
                       </td>
                     </tr>
@@ -617,6 +592,7 @@
         </div>
       </div>
     </div>
+    <modalPostmanResponse ref="modalPostmanResponseShow" />
   </div>
 </template>
 <style scoped>
@@ -988,9 +964,10 @@
 }
 .postman-response-panel {
   margin-top: 1rem;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 108, 32, 0.5);
   border-radius: 16px;
   background: rgba(0, 0, 0, 0.24);
+  box-shadow: 0 1rem 2rem rgba(255, 108, 32, 0.12);
   overflow: hidden;
 }
 .postman-response-title {
@@ -999,6 +976,12 @@
   justify-content: space-between;
   padding: 0.75rem 1rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+.postman-response-title small {
+  color: rgba(255, 255, 255, 0.62);
+  display: block;
+  font-size: 0.72rem;
+  margin-top: 0.2rem;
 }
 .postman-response-panel pre {
   margin: 0;
@@ -1012,12 +995,10 @@
 
 <script>
 import timeline from "./timeLine.vue";
+import modalPostmanResponse from "./modalPostmanResponse.vue";
 import PostmanResultTable from "./PostmanResultTable.vue";
 import { Modal } from "bootstrap";
-import {
-  formatPostmanResponse,
-  parsePostmanResults,
-} from "@/domain/postmanResults";
+import { parsePostmanResults } from "@/domain/postmanResults";
 import {
   assertRedactedArtifact,
   executionDetailRoute,
@@ -1027,6 +1008,7 @@ import {
 export default {
   components: {
     timeline,
+    modalPostmanResponse,
     PostmanResultTable,
   },
   created() {},
@@ -1037,7 +1019,6 @@ export default {
       fullscreen: false,
       screenFull: null,
       postmanCollection: null,
-      postmanResponse: null,
       selectedArtifact: null,
       showCollectionWindow: false,
       showMe: true,
@@ -1430,7 +1411,7 @@ export default {
       return this.formatBidiValue(value).includes("[REDACTED]");
     },
     showPostmanResponse(result) {
-      this.postmanResponse = formatPostmanResponse(result?.response ?? null);
+      this.$refs.modalPostmanResponseShow?.showModal?.(result);
     },
     safeScreenshots(step) {
       const screenshots = step?.screenshots;
@@ -1451,7 +1432,6 @@ export default {
       this.arrayStep = arrayStep;
       this.testName = name;
       this.fullscreen = false;
-      this.postmanResponse = null;
       this.selectedArtifact = null;
       this.modalElem.show();
       this.showCollectionWindow = false;

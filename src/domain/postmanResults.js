@@ -17,20 +17,74 @@ export function parsePostmanResults(value) {
             ? [parsed]
             : [];
 
-  return entries.map((entry, index) => ({
-    id: entry.id || `${entry.method || "request"}-${index}`,
-    name: entry.name || entry.requestName || "",
-    status: Number(entry.status ?? entry.status_code ?? 0),
-    method: String(entry.method || entry.request?.method || "").toUpperCase(),
-    url: normalizePostmanUrl(entry.url || entry.request?.url || ""),
-    time: entry.time ?? entry.elapsed ?? null,
-    passed:
-      entry.passed !== false &&
-      Number(entry.status ?? entry.status_code ?? 0) < 400,
-    assertions: Array.isArray(entry.assertions) ? entry.assertions : [],
-    diagnostic: firstFailedAssertionMessage(entry.assertions),
-    response: entry.response ?? entry.body ?? null,
-  }));
+  return entries.map((entry, index) => {
+    const response = extractPostmanResponsePayload(entry);
+    const requestPayload = extractPostmanRequestPayload(entry);
+    return {
+      id: entry.id || `${entry.method || "request"}-${index}`,
+      name: entry.name || entry.requestName || "",
+      status: Number(entry.status ?? entry.status_code ?? 0),
+      method: String(entry.method || entry.request?.method || "").toUpperCase(),
+      url: normalizePostmanUrl(entry.url || entry.request?.url || ""),
+      time: entry.time ?? entry.elapsed ?? null,
+      passed:
+        entry.passed !== false &&
+        Number(entry.status ?? entry.status_code ?? 0) < 400,
+      assertions: Array.isArray(entry.assertions) ? entry.assertions : [],
+      diagnostic: firstFailedAssertionMessage(entry.assertions),
+      response,
+      requestPayload,
+      hasRequestPayload: hasPostmanResponseBody(requestPayload),
+      hasResponseBody: hasPostmanResponseBody(response),
+    };
+  });
+}
+
+export function extractPostmanRequestPayload(entry = {}) {
+  const direct =
+    entry.requestPayload ??
+    entry.requestBody ??
+    entry.request?.body?.raw ??
+    entry.request?.body?.body ??
+    entry.request?.body?.data ??
+    entry.request?.body?.formdata ??
+    entry.request?.body?.urlencoded;
+  if (hasPostmanResponseBody(direct)) {
+    return direct;
+  }
+  return null;
+}
+
+export function extractPostmanResponsePayload(entry = {}) {
+  const nested =
+    entry.response?.body ??
+    entry.response?.stream ??
+    entry.response?.data ??
+    entry.response?.payload;
+  if (hasPostmanResponseBody(nested)) {
+    return nested;
+  }
+
+  const direct =
+    entry.response ??
+    entry.responseBody ??
+    entry.body ??
+    entry.stream ??
+    entry.payload ??
+    entry.data;
+  if (hasPostmanResponseBody(direct)) {
+    return direct;
+  }
+
+  return null;
+}
+
+export function hasPostmanResponseBody(value) {
+  if (value == null) return false;
+  if (typeof value === "string") return value.trim().length > 0;
+  if (Array.isArray(value)) return value.length > 0;
+  if (typeof value === "object") return Object.keys(value).length > 0;
+  return true;
 }
 
 export function normalizePostmanUrl(value) {
@@ -71,8 +125,45 @@ export function statusVariant(result) {
   return "secondary";
 }
 
-export function formatPostmanResponse(value) {
-  return typeof value === "string" ? value : JSON.stringify(value, null, 2);
+export function formatPostmanResponse(value, result = null) {
+  return formatPostmanPayload(value, result, "response");
+}
+
+export function formatPostmanRequestPayload(value, result = null) {
+  return formatPostmanPayload(value, result, "request");
+}
+
+export function formatPostmanPayload(value, result = null, kind = "response") {
+  if (hasPostmanResponseBody(value)) {
+    if (typeof value === "string") {
+      const trimmed = value.trim();
+      try {
+        return JSON.stringify(JSON.parse(trimmed), null, 2);
+      } catch {
+        return value;
+      }
+    }
+    return JSON.stringify(value, null, 2);
+  }
+
+  if (result != null) {
+    const label = kind === "request" ? "request payload" : "response body";
+    return JSON.stringify(
+      {
+        message: `No ${label} was captured for this Postman request.`,
+        request: result.name || "Unnamed request",
+        method: result.method || "",
+        url: result.url || "",
+        status: result.status ?? "",
+        time: result.time ?? null,
+        assertions: result.assertions || [],
+      },
+      null,
+      2,
+    );
+  }
+
+  return `No ${kind === "request" ? "request payload" : "response body"} was captured for this Postman request.`;
 }
 
 export function classifyPostmanDocument(value) {

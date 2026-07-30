@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 const modalShow = vi.fn();
 const modalHide = vi.fn();
 const modalDispose = vi.fn();
+const postmanResponseModalShow = vi.fn();
 
 vi.mock("bootstrap", () => ({
   Modal: vi.fn(function Modal() {
@@ -18,6 +19,7 @@ vi.mock("bootstrap", () => ({
 import ModalTestPerformed from "@/view/testperformed/modalTestPerformed.vue";
 
 function mountModal() {
+  postmanResponseModalShow.mockReset();
   const router = { push: vi.fn() };
   return shallowMount(ModalTestPerformed, {
     attachTo: document.body,
@@ -33,6 +35,10 @@ function mountModal() {
           emits: ["show-response"],
           template:
             '<button class="postman-response" @click="$emit(\'show-response\', results[0])">response</button>',
+        },
+        modalPostmanResponse: {
+          template: "<div />",
+          methods: { showModal: postmanResponseModalShow },
         },
       },
       mocks: {
@@ -144,7 +150,13 @@ describe("performed test details modal", () => {
     ]);
 
     await wrapper.get(".postman-response").trigger("click");
-    expect(wrapper.text()).toContain('"ok": true');
+    expect(postmanResponseModalShow).toHaveBeenCalledWith(
+      expect.objectContaining({
+        method: "GET",
+        response: { ok: true },
+        url: "https://example.test/health",
+      }),
+    );
   });
 
   it("marks a Postman step as failed when the CLI result payload failed", async () => {

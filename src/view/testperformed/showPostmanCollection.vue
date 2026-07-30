@@ -298,7 +298,7 @@ export default {
       this.keyCollections = Object.keys(this.postmanCollection);
     },
     showModal(result) {
-      this.$refs.modalPostmanResponseShow.showModal(result.response);
+      this.$refs.modalPostmanResponseShow.showModal(result);
     },
     goBackToTestsPerformed() {
       const projectId = this.$route.params.projectId;

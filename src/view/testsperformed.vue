@@ -1256,24 +1256,6 @@
               >
                 {{ language[config.currentLanguage].Postman.emptyResults }}
               </div>
-              <div
-                v-if="postmanResponse != null"
-                class="testsperformed-postman-response-panel"
-              >
-                <div class="testsperformed-postman-response-title">
-                  <strong>
-                    {{ language[config.currentLanguage].Postman.responsePreview }}
-                  </strong>
-                  <button
-                    type="button"
-                    class="btn btn-sm btn-outline-light"
-                    @click="postmanResponse = null"
-                  >
-                    {{ language[config.currentLanguage].Postman.hideResponse }}
-                  </button>
-                </div>
-                <pre>{{ postmanResponse }}</pre>
-              </div>
             </section>
           </article>
         </div>
@@ -1290,6 +1272,7 @@
       </article>
     </section>
     <modalTestPerformed ref="modalTestPerformed" :test="arrayTest" />
+    <modalPostmanResponse ref="modalPostmanResponseShow" />
   </div>
 </template>
 <style scoped>
@@ -2264,9 +2247,17 @@ button.testsperformed-advanced-row:focus-visible {
 
 .testsperformed-postman-response-panel {
   background: rgba(0, 0, 0, 0.24);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 108, 32, 0.5);
   border-radius: 0.75rem;
+  box-shadow: 0 1rem 2rem rgba(255, 108, 32, 0.12);
   padding: 0.85rem;
+}
+
+.testsperformed-postman-response-title span {
+  color: rgba(255, 255, 255, 0.62);
+  display: block;
+  font-size: 0.72rem;
+  margin-top: 0.2rem;
 }
 
 .testsperformed-postman-response-panel pre {
@@ -2471,14 +2462,12 @@ button.testsperformed-advanced-row:focus-visible {
 
 <script>
 import EnterpriseDataTable from "@/components/grid/EnterpriseDataTable.vue";
+import modalPostmanResponse from "./testperformed/modalPostmanResponse.vue";
 import modalTestPerformed from "./testperformed/modalTestPerformed.vue";
 import PostmanResultTable from "./testperformed/PostmanResultTable.vue";
 
 import apiClient from "@/services/apiClient";
-import {
-  formatPostmanResponse,
-  parsePostmanResults,
-} from "@/domain/postmanResults";
+import { parsePostmanResults } from "@/domain/postmanResults";
 import {
   buildAnalyticsQuery,
   canDownloadExport,
@@ -2532,6 +2521,7 @@ export default {
   name: "TestsPerformedComponent",
   components: {
     EnterpriseDataTable,
+    modalPostmanResponse,
     modalTestPerformed,
     PostmanResultTable,
   },
@@ -2546,7 +2536,6 @@ export default {
       selectedPerformedTest: null,
       selectedTestName: "",
       selectedTestSteps: [],
-      postmanResponse: null,
       spinreverse: null,
       spinreverseDate: null,
       parallelRuns: [],
@@ -2983,7 +2972,7 @@ export default {
       );
     },
     showPostmanResponse(result) {
-      this.postmanResponse = formatPostmanResponse(result?.response ?? null);
+      this.$refs.modalPostmanResponseShow?.showModal?.(result);
     },
     isPostmanTestFailed(test) {
       return this.postmanResults(test).some(
@@ -4077,7 +4066,6 @@ export default {
       this.selectedPerformedTest = test ?? null;
       this.selectedTestName = test?.name ?? "";
       this.selectedTestSteps = [];
-      this.postmanResponse = null;
       if (test?.id == null) return Promise.resolve();
       return this.loadStepResults(test.id, test.name, options);
     },
