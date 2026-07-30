@@ -70,6 +70,18 @@ describe("canonical run detail overview", () => {
     expect(overview.partial).toBe(true);
   });
 
+  it("maps legacy pending status zero to queued instead of unknown", () => {
+    const overview = normalizeRunDetailOverview(
+      {
+        id: 45,
+        status: 0,
+      },
+      { projectId: 9 },
+    );
+
+    expect(overview.status).toBe("queued");
+  });
+
   it("persists active tab and selected detail on a reload-safe route", () => {
     expect(normalizeRunDetailTab("logs")).toBe("logs");
     expect(normalizeRunDetailTab("unsafe")).toBe("overview");

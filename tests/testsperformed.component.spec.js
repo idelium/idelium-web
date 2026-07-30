@@ -82,6 +82,7 @@ describe("tests performed component", () => {
                 executionSummary: "Execution summary",
                 executionSummaryHelp: "Review the selected execution.",
                 selectedRun: "Selected run",
+                selectedItem: "Selected",
                 cycleDuration: "Cycle duration",
                 testsInRun: "Tests in run",
                 stepsInTest: "Steps in test",
@@ -101,6 +102,7 @@ describe("tests performed component", () => {
                 liveTransportDegraded: "retrying",
                 liveTransportPending: "pending",
                 parallelRunLabel: "Run",
+                classicRunSource: "Classic CLI result stream",
                 emptyParallelRuns: "No parallel runs.",
                 cancelRun: "Cancel run",
                 cancelRunTitle: "Cancel parallel execution?",
@@ -164,6 +166,7 @@ describe("tests performed component", () => {
                 initiator: "Initiator",
                 correlationId: "Correlation ID",
                 partialRunDetail: "Partial snapshot.",
+                partialRunStatus: "Partial snapshot",
                 drilldownTitle: "Execution drill-down",
                 artifactViewer: "Secure artifact viewer",
                 fullArtifact: "Open full view",
@@ -192,6 +195,8 @@ describe("tests performed component", () => {
                 parallelStatuses: {
                   queued: "Queued",
                   running: "Running",
+                  cancelling: "Cancelling",
+                  pending: "Pending",
                   cancelled: "Cancelled",
                   completed: "Completed",
                   passed: "Passed",
@@ -205,6 +210,24 @@ describe("tests performed component", () => {
                   cancelled: "Classified cancellation.",
                   executionFailure: "Classified failure: aggregate state.",
                 },
+              },
+              Postman: {
+                id: "#",
+                status: "status",
+                request: "request",
+                method: "method",
+                url: "url",
+                assertions: "assertions",
+                diagnostic: "diagnostic",
+                response: "response",
+                showResponse: "show response",
+                time: "time",
+                executionResults: "Postman execution results",
+                executionResultsHelp: "Review captured Postman calls.",
+                emptyResults: "No Postman execution data is available.",
+                responsePreview: "Response preview",
+                hideResponse: "Hide response",
+                requests: "requests",
               },
             },
           },
@@ -355,6 +378,158 @@ describe("tests performed component", () => {
     const statusBadge = wrapper.get(".testsperformed-status");
     expect(statusBadge.text()).toBe("Failed");
     expect(statusBadge.classes()).toContain("danger");
+  });
+
+  it("shows Postman request details inside step results", async () => {
+    api.get.mockResolvedValue({ data: [] });
+    const wrapper = mountTestsPerformed();
+
+    await wrapper.setData({
+      selectedTestName: "API regression",
+      selectedTestSteps: [
+        {
+          data: JSON.stringify([
+            {
+              assertions: [{ name: "status is 200", passed: true }],
+              method: "GET",
+              name: "Get health",
+              response: { ok: true },
+              status: 200,
+              time: 123,
+              url: "https://postman-echo.com/get",
+            },
+          ]),
+          id: 12,
+          name: "postman",
+          status: 1,
+          type: "postman",
+        },
+      ],
+    });
+
+    const table = wrapper.findComponent({ name: "PostmanResultTable" });
+    expect(table.exists()).toBe(true);
+    expect(table.props("results")).toMatchObject([
+      {
+        method: "GET",
+        name: "Get health",
+        status: 200,
+        url: "https://postman-echo.com/get",
+      },
+    ]);
+
+    await table.vm.$emit("show-response", table.props("results")[0]);
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.text()).toContain("Response preview");
+    expect(wrapper.text()).toContain('"ok": true');
+  });
+
+  it("shows Postman details when step results only identify the Postman step", async () => {
+    api.get.mockResolvedValue({ data: [] });
+    const wrapper = mountTestsPerformed();
+
+    await wrapper.setData({
+      selectedPerformedTest: {
+        data: JSON.stringify([
+          {
+            assertions: [{ name: "status is 200", passed: true }],
+            method: "POST",
+            name: "Create payload",
+            status: 200,
+            url: "https://postman-echo.com/post",
+          },
+        ]),
+        id: 17,
+        name: "Postman",
+        type: "postman",
+      },
+      selectedTestName: "API regression",
+      selectedTestSteps: [
+        {
+          data: null,
+          id: 12,
+          name: "postman",
+          status: 1,
+          type: "postman_collection",
+        },
+      ],
+    });
+
+    const table = wrapper.findComponent({ name: "PostmanResultTable" });
+
+    expect(table.exists()).toBe(true);
+    expect(table.props("results")).toMatchObject([
+      {
+        method: "POST",
+        name: "Create payload",
+        status: 200,
+        url: "https://postman-echo.com/post",
+      },
+    ]);
+  });
+
+  it("uses performed test Postman data when the step record has no request payload", async () => {
+    api.get.mockResolvedValue({ data: [] });
+    const wrapper = mountTestsPerformed();
+
+    await wrapper.setData({
+      selectedPerformedTest: {
+        id: 17,
+        name: "Postman",
+        postmanData: JSON.stringify([
+          {
+            method: "GET",
+            name: "Read cookies",
+            status: 200,
+            url: "https://postman-echo.com/cookies",
+          },
+        ]),
+        type: "postman",
+      },
+      selectedTestName: "API regression",
+      selectedTestSteps: [
+        {
+          data: null,
+          id: 12,
+          name: "postman2",
+          status: 1,
+          type: "postman",
+        },
+      ],
+    });
+
+    const table = wrapper.findComponent({ name: "PostmanResultTable" });
+
+    expect(table.exists()).toBe(true);
+    expect(table.props("results")).toMatchObject([
+      {
+        method: "GET",
+        name: "Read cookies",
+        status: 200,
+        url: "https://postman-echo.com/cookies",
+      },
+    ]);
+  });
+
+  it("shows an empty Postman details panel when the backend only sends a Postman-like step name", async () => {
+    api.get.mockResolvedValue({ data: [] });
+    const wrapper = mountTestsPerformed();
+
+    await wrapper.setData({
+      selectedTestName: "API regression",
+      selectedTestSteps: [
+        {
+          data: null,
+          id: 12,
+          name: "postman2",
+          status: 1,
+        },
+      ],
+    });
+
+    expect(wrapper.text()).toContain("Postman execution results");
+    expect(wrapper.text()).toContain("No Postman execution data is available.");
   });
 
   it("enables only API-advertised report formats and downloads with project context", async () => {
@@ -663,6 +838,31 @@ describe("tests performed component", () => {
     );
   });
 
+  it("highlights the selected performed cycle immediately on click", async () => {
+    api.get.mockReturnValue(new Promise(() => {}));
+    const wrapper = mountTestsPerformed({
+      $route: { name: "testsperformed", query: {} },
+    });
+    await wrapper.setData({
+      arrayTestCyclesDate: [
+        { id: 45, date: "2026-07-29 16:00:00", status: 2 },
+        { id: 44, date: "2026-07-29 15:00:00", status: 1 },
+      ],
+      testCycleDateSelected: null,
+    });
+
+    const runButtons = wrapper
+      .findAll(".testsperformed-item")
+      .filter((button) => button.text().includes("2026-07-29"));
+
+    await runButtons[1].trigger("click");
+
+    expect(wrapper.vm.testCycleDateSelected).toBe(44);
+    expect(runButtons[1].classes()).toContain("active");
+    expect(runButtons[1].attributes("aria-pressed")).toBe("true");
+    expect(runButtons[1].text()).toContain("Selected");
+  });
+
   it("shows all tests for a run and renders selected test steps inline", async () => {
     api.get.mockImplementation((url) => {
       if (url.includes("testcycles-performed/7")) {
@@ -906,6 +1106,51 @@ describe("tests performed component", () => {
     expect(replace).toHaveBeenCalledWith({ query: { runId: "93" } });
   });
 
+  it("shows recent classic CLI activity when no parallel run telemetry exists", async () => {
+    api.get.mockImplementation((url) => {
+      if (url.includes("/parallel-runs")) {
+        return Promise.resolve({ data: [] });
+      }
+      if (url.includes("testcycles-performed/7")) {
+        return Promise.resolve({
+          data: [
+            {
+              id: 51,
+              cycleName: "CLI demo cycle",
+              date: "2026-07-30 12:35:00",
+              status: 0,
+              target: "local browser",
+            },
+          ],
+        });
+      }
+      return Promise.resolve({ data: [] });
+    });
+
+    const wrapper = mountTestsPerformed({
+      $route: { name: "testsperformed", query: {} },
+    });
+    await wrapper.setData({
+      activeExecutionTab: "running",
+      arrayTestCycles: [{ id: 7, name: "CLI demo cycle" }],
+      testCycleSelected: 7,
+    });
+
+    await wrapper.vm.loadParallelRuns();
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.vm.visibleExecutionActivity).toMatchObject([
+      {
+        classic: true,
+        cycle: { name: "CLI demo cycle" },
+        status: "pending",
+        target: "local browser",
+      },
+    ]);
+    expect(wrapper.text()).toContain("CLI demo cycle");
+    expect(wrapper.text()).toContain("Classic CLI result stream");
+  });
+
   it("renders run history in the shared data table with safe saved views", async () => {
     const replace = vi.fn();
     api.get.mockImplementation((url) => {
@@ -977,6 +1222,9 @@ describe("tests performed component", () => {
     expect(wrapper.text()).toContain("#44");
     expect(wrapper.text()).toContain("Advanced execution tools");
     expect(wrapper.text()).toContain("Partial snapshot.");
+    expect(wrapper.vm.runDetailStatusLabel(wrapper.vm.currentRunDetail)).toBe(
+      "Partial snapshot",
+    );
     expect(wrapper.vm.runDetailActiveTab).toBe("logs");
     expect(wrapper.text()).toContain("No logs.");
 

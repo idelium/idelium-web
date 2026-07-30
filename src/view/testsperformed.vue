@@ -53,7 +53,7 @@
       >
         <font-awesome-icon icon="rocket" class="iconClass" />
         {{ language[config.currentLanguage].TestsPerformed.testRunningTab }}
-        <span>{{ visibleLiveRuns.length }}</span>
+        <span>{{ visibleExecutionActivity.length }}</span>
       </button>
       <button
         type="button"
@@ -124,7 +124,7 @@
             parallelRunVariant(currentRunDetail.status),
           ]"
         >
-          {{ parallelRunStatusLabel(currentRunDetail.status) }}
+          {{ runDetailStatusLabel(currentRunDetail) }}
         </span>
       </div>
       <dl class="testsperformed-run-detail-grid">
@@ -187,7 +187,7 @@
         >
           <article>
             <span>{{ language[config.currentLanguage].TestsPerformed.status }}</span>
-            <strong>{{ parallelRunStatusLabel(currentRunDetail.status) }}</strong>
+            <strong>{{ runDetailStatusLabel(currentRunDetail) }}</strong>
           </article>
           <article>
             <span>{{ language[config.currentLanguage].TestsPerformed.testsInRun }}</span>
@@ -674,11 +674,11 @@
         {{ liveTransportLabel }}
       </p>
       <div
-        v-if="visibleLiveRuns.length > 0"
+        v-if="visibleExecutionActivity.length > 0"
         class="testsperformed-parallel-grid"
       >
         <article
-          v-for="run in visibleLiveRuns"
+          v-for="run in visibleExecutionActivity"
           v-bind:key="run.id"
           :class="[
             'testsperformed-parallel-card',
@@ -704,6 +704,15 @@
               </strong>
               <span class="testsperformed-helper">
                 {{ run.target || run.updateChannel }}
+              </span>
+              <span
+                v-if="run.classic"
+                class="testsperformed-helper testsperformed-classic-source"
+              >
+                {{
+                  language[config.currentLanguage].TestsPerformed
+                    .classicRunSource
+                }}
               </span>
             </div>
             <div class="testsperformed-live-actions">
@@ -923,6 +932,12 @@
                 class="idelium-action-icon--refresh"
               />
             </span>
+            <span
+              v-if="testCycleSelected == testCycle.id"
+              class="testsperformed-selected-badge"
+            >
+              {{ language[config.currentLanguage].TestsPerformed.selectedItem }}
+            </span>
             <span class="testsperformed-item-main">
               <strong>{{ testCycle.name }}</strong>
             </span>
@@ -997,6 +1012,7 @@
             v-for="testCycleDate in arrayTestCyclesDate"
             v-bind:key="testCycleDate.id"
             type="button"
+            :aria-pressed="testCycleDateSelected == testCycleDate.id"
             v-on:click="getTest(testCycleDate.id)"
             :title="language[config.currentLanguage].TestsPerformed.openDetails"
           >
@@ -1005,6 +1021,12 @@
                 icon="clock"
                 class="idelium-action-icon--refresh"
               />
+            </span>
+            <span
+              v-if="testCycleDateSelected == testCycleDate.id"
+              class="testsperformed-selected-badge"
+            >
+              {{ language[config.currentLanguage].TestsPerformed.selectedItem }}
             </span>
             <span class="testsperformed-item-main">
               <strong>{{ testCycleDate.date }}</strong>
@@ -1095,6 +1117,12 @@
             <span :class="['testsperformed-status', getTestVariant(test)]">
               {{ getTestStatusLabel(test) }}
             </span>
+            <span
+              v-if="testSelected == test.id"
+              class="testsperformed-selected-badge"
+            >
+              {{ language[config.currentLanguage].TestsPerformed.selectedItem }}
+            </span>
             <strong>{{ test.name }}</strong>
             <small class="testsperformed-item-meta">
               #{{ test.id }}
@@ -1173,7 +1201,13 @@
           <article
             v-for="(step, index) in selectedTestSteps"
             v-bind:key="step.id || index"
-            class="testsperformed-step-row"
+            :class="[
+              'testsperformed-step-row',
+              {
+                'testsperformed-step-row--postman':
+                  isPostmanExecution(step),
+              },
+            ]"
           >
             <span :class="['testsperformed-status', getStepVariant(step)]">
               {{ getStepStatusLabel(step) }}
@@ -1188,6 +1222,59 @@
               </small>
             </div>
             <span class="testsperformed-step-index">#{{ index + 1 }}</span>
+            <section
+              v-if="isPostmanExecution(step)"
+              class="testsperformed-postman-step-details"
+              :aria-label="language[config.currentLanguage].Postman.executionResults"
+            >
+              <div class="testsperformed-postman-step-header">
+                <div>
+                  <strong>
+                    {{ language[config.currentLanguage].Postman.executionResults }}
+                  </strong>
+                  <p>
+                    {{
+                      language[config.currentLanguage].Postman
+                        .executionResultsHelp
+                    }}
+                  </p>
+                </div>
+                <span class="testsperformed-postman-step-count">
+                  {{ stepPostmanResults(step).length }}
+                  {{ language[config.currentLanguage].Postman.requests }}
+                </span>
+              </div>
+              <PostmanResultTable
+                v-if="stepPostmanResults(step).length > 0"
+                :results="stepPostmanResults(step)"
+                :labels="language[config.currentLanguage].Postman"
+                @show-response="showPostmanResponse"
+              />
+              <div
+                v-else
+                class="testsperformed-empty testsperformed-empty-compact"
+              >
+                {{ language[config.currentLanguage].Postman.emptyResults }}
+              </div>
+              <div
+                v-if="postmanResponse != null"
+                class="testsperformed-postman-response-panel"
+              >
+                <div class="testsperformed-postman-response-title">
+                  <strong>
+                    {{ language[config.currentLanguage].Postman.responsePreview }}
+                  </strong>
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-outline-light"
+                    @click="postmanResponse = null"
+                  >
+                    {{ language[config.currentLanguage].Postman.hideResponse }}
+                  </button>
+                </div>
+                <pre>{{ postmanResponse }}</pre>
+              </div>
+            </section>
           </article>
         </div>
         <div
@@ -2013,8 +2100,10 @@ button.testsperformed-advanced-row:focus-visible {
   border: 1px solid rgba(255, 255, 255, 0.09);
   border-radius: 0.75rem;
   color: rgba(255, 255, 255, 0.88);
+  position: relative;
   text-align: left;
   transition:
+    background 160ms ease,
     border-color 160ms ease,
     box-shadow 160ms ease,
     transform 160ms ease;
@@ -2038,17 +2127,66 @@ button.testsperformed-advanced-row:focus-visible {
 .testsperformed-item.active {
   background: linear-gradient(
     135deg,
-    rgba(255, 107, 30, 0.26),
-    rgba(255, 139, 35, 0.1)
+    rgba(255, 107, 30, 0.42),
+    rgba(255, 139, 35, 0.16) 48%,
+    rgba(255, 255, 255, 0.055)
   );
-  border-color: rgba(255, 107, 30, 0.7);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 107, 30, 0.92);
+  box-shadow:
+    0 0 0 1px rgba(255, 107, 30, 0.28),
+    0 1.15rem 2.8rem rgba(255, 107, 30, 0.22),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08);
   color: #ffffff !important;
+  transform: translateY(-1px);
+}
+
+.testsperformed-item.active::before,
+.testsperformed-test-card.active::before {
+  background: linear-gradient(180deg, #ff8a1d, #ff5f2d);
+  border-radius: 999px;
+  bottom: 0.75rem;
+  box-shadow: 0 0.65rem 1.3rem rgba(255, 107, 30, 0.36);
+  content: "";
+  left: 0.45rem;
+  position: absolute;
+  top: 0.75rem;
+  width: 0.24rem;
+}
+
+.testsperformed-item.active .testsperformed-item-icon {
+  background: rgba(255, 107, 30, 0.28);
+  color: #ffb86b;
 }
 
 .testsperformed-test-card.active {
-  border-color: rgba(255, 107, 30, 0.78);
-  box-shadow: 0 0 0 1px rgba(255, 107, 30, 0.22);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 107, 30, 0.28),
+    rgba(255, 139, 35, 0.09) 50%,
+    rgba(255, 255, 255, 0.045)
+  );
+  border-color: rgba(255, 107, 30, 0.95);
+  box-shadow:
+    0 0 0 1px rgba(255, 107, 30, 0.28),
+    0 1.15rem 2.8rem rgba(255, 107, 30, 0.18);
+  transform: translateY(-1px);
+}
+
+.testsperformed-selected-badge {
+  background: rgba(255, 107, 30, 0.95);
+  border: 1px solid rgba(255, 186, 115, 0.88);
+  border-radius: 999px;
+  box-shadow: 0 0.75rem 1.5rem rgba(255, 107, 30, 0.28);
+  color: #131722;
+  font-size: 0.55rem;
+  font-weight: 900;
+  letter-spacing: 0.11em;
+  line-height: 1;
+  padding: 0.28rem 0.42rem;
+  position: absolute;
+  right: 0.6rem;
+  text-transform: uppercase;
+  top: 0.55rem;
 }
 
 .testsperformed-step-list {
@@ -2074,6 +2212,69 @@ button.testsperformed-advanced-row:focus-visible {
 .testsperformed-step-row strong {
   color: #ffffff;
   display: block;
+}
+
+.testsperformed-step-row--postman {
+  align-items: start;
+}
+
+.testsperformed-postman-step-details {
+  background: rgba(10, 13, 24, 0.6);
+  border: 1px solid rgba(255, 108, 32, 0.28);
+  border-radius: 0.85rem;
+  display: grid;
+  gap: 0.85rem;
+  grid-column: 1 / -1;
+  min-width: 0;
+  overflow-x: auto;
+  padding: 0.85rem;
+}
+
+.testsperformed-postman-step-header,
+.testsperformed-postman-response-title {
+  align-items: center;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
+.testsperformed-postman-step-header p {
+  color: rgba(255, 255, 255, 0.64);
+  font-size: 0.78rem;
+  margin: 0.25rem 0 0;
+}
+
+.testsperformed-postman-step-count {
+  background: rgba(255, 108, 32, 0.14);
+  border: 1px solid rgba(255, 108, 32, 0.42);
+  border-radius: 999px;
+  color: #ffb48a;
+  flex: 0 0 auto;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  padding: 0.35rem 0.65rem;
+  text-transform: uppercase;
+}
+
+.testsperformed-postman-step-details :deep(table) {
+  margin-bottom: 0;
+  min-width: 64rem;
+}
+
+.testsperformed-postman-response-panel {
+  background: rgba(0, 0, 0, 0.24);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.75rem;
+  padding: 0.85rem;
+}
+
+.testsperformed-postman-response-panel pre {
+  color: rgba(255, 255, 255, 0.82);
+  margin: 0.75rem 0 0;
+  max-height: 18rem;
+  overflow: auto;
+  white-space: pre-wrap;
 }
 
 .testsperformed-step-index {
@@ -2271,9 +2472,13 @@ button.testsperformed-advanced-row:focus-visible {
 <script>
 import EnterpriseDataTable from "@/components/grid/EnterpriseDataTable.vue";
 import modalTestPerformed from "./testperformed/modalTestPerformed.vue";
+import PostmanResultTable from "./testperformed/PostmanResultTable.vue";
 
 import apiClient from "@/services/apiClient";
-import { parsePostmanResults } from "@/domain/postmanResults";
+import {
+  formatPostmanResponse,
+  parsePostmanResults,
+} from "@/domain/postmanResults";
 import {
   buildAnalyticsQuery,
   canDownloadExport,
@@ -2328,6 +2533,7 @@ export default {
   components: {
     EnterpriseDataTable,
     modalTestPerformed,
+    PostmanResultTable,
   },
   data() {
     return {
@@ -2337,8 +2543,10 @@ export default {
       testCycleDateSelected: null,
       arrayTest: [],
       testSelected: null,
+      selectedPerformedTest: null,
       selectedTestName: "",
       selectedTestSteps: [],
+      postmanResponse: null,
       spinreverse: null,
       spinreverseDate: null,
       parallelRuns: [],
@@ -2346,6 +2554,7 @@ export default {
         "queued",
         "running",
         "cancelling",
+        "pending",
         "passed",
         "failed",
         "cancelled",
@@ -2354,6 +2563,7 @@ export default {
         "queued",
         "running",
         "cancelling",
+        "pending",
         "passed",
         "failed",
         "cancelled",
@@ -2584,9 +2794,54 @@ export default {
         statuses: this.liveRunStatuses,
       });
     },
+    visibleExecutionActivity() {
+      if (this.visibleLiveRuns.length > 0) return this.visibleLiveRuns;
+      return this.classicRunActivity.filter((run) =>
+        this.liveRunStatuses.includes(run.status),
+      );
+    },
+    classicRunActivity() {
+      return this.arrayTestCyclesDate.slice(0, 10).map((run) => {
+        const status = this.analyticsStatusFromLegacy(
+          run.status ?? run.outcome ?? run.state,
+        );
+        const completed = status === "passed" || status === "failed" ? 1 : 0;
+        return {
+          id: String(run.id),
+          activeConcurrency: completed ? 0 : 1,
+          canCancel: false,
+          canOpenDetails: true,
+          cancelledWorkers: status === "cancelled" ? 1 : 0,
+          classic: true,
+          completedWorkers: status === "passed" ? 1 : 0,
+          cycle: {
+            id: String(this.testCycleSelected ?? run.testCycleId ?? ""),
+            name:
+              run.cycleName ??
+              run.testCycleName ??
+              run.name ??
+              this.arrayTestCycles.find(
+                (cycle) => String(cycle.id) === String(this.testCycleSelected),
+              )?.name ??
+              "Run",
+          },
+          degraded: false,
+          failedWorkers: status === "failed" ? 1 : 0,
+          lastUpdateAt: run.updatedAt ?? run.updated_at ?? run.date,
+          progress: { completed, total: 1, percent: completed * 100 },
+          requestedConcurrency: 1,
+          stale: false,
+          status,
+          target: run.target ?? run.targetName ?? "",
+          terminal: completed === 1,
+          updateChannel: "classic-cli",
+          workerSummary: [],
+        };
+      });
+    },
     liveRunAnnouncement() {
       return boundedLiveRunAnnouncements(
-        this.visibleLiveRuns,
+        this.visibleExecutionActivity,
         this.language[this.config.currentLanguage].TestsPerformed
           .parallelStatuses,
         3,
@@ -2693,10 +2948,42 @@ export default {
       return `${Math.round(value * 100)}%`;
     },
     postmanResults(test) {
-      if (test?.type !== "postman") {
+      if (!this.isPostmanExecution(test)) {
         return [];
       }
-      return parsePostmanResults(test.postmanData ?? test.data ?? []);
+      return parsePostmanResults(this.postmanPayload(test));
+    },
+    stepPostmanResults(step) {
+      const stepResults = this.postmanResults(step);
+      if (stepResults.length > 0) return stepResults;
+      if (!this.isPostmanExecution(step)) return [];
+      return this.postmanResults(this.selectedPerformedTest);
+    },
+    isPostmanExecution(value) {
+      return [
+        value?.type,
+        value?.runtime,
+        value?.stepType,
+        value?.step_type,
+        value?.actionType,
+        value?.name,
+      ]
+        .filter(Boolean)
+        .map((entry) => String(entry).toLowerCase())
+        .some((entry) => entry === "postman" || entry.includes("postman"));
+    },
+    postmanPayload(value) {
+      return (
+        value?.postmanData ??
+        value?.postmanResults ??
+        value?.postman_data ??
+        value?.results ??
+        value?.data ??
+        []
+      );
+    },
+    showPostmanResponse(result) {
+      this.postmanResponse = formatPostmanResponse(result?.response ?? null);
     },
     isPostmanTestFailed(test) {
       return this.postmanResults(test).some(
@@ -2770,11 +3057,15 @@ export default {
           signal: this.parallelRunAbortController?.signal,
         })
         .then((response) => {
+          const liveRuns = Array.isArray(response.data) ? response.data : [];
           this.parallelRuns = mergeLiveRunWindow(
             this.parallelRuns,
-            Array.isArray(response.data) ? response.data : [],
+            liveRuns,
             { projectId: getSelectedProjectId() },
           );
+          if (liveRuns.length === 0) {
+            this.loadClassicRunActivity();
+          }
           this.livePollingState = nextLivePollingState(
             this.livePollingState,
             {
@@ -2797,6 +3088,40 @@ export default {
           this.scheduleNextParallelRunPoll();
           this.Logout(this, e);
           this.error = e;
+        });
+    },
+    loadClassicRunActivity() {
+      const cycleId =
+        this.testCycleSelected ?? this.arrayTestCycles[0]?.id ?? null;
+      if (cycleId == null) return Promise.resolve([]);
+      return apiClient
+        .get(
+          this.config.serviceBaseUrl +
+            this.config.url.getTestCyclePerformed +
+            "/" +
+            cycleId,
+          {
+            headers: this.setHeaders(),
+            params: this.paginatedParams({
+              ...this.runPagination,
+              page: 1,
+              perPage: Math.max(this.runPagination.perPage || 25, 10),
+            }),
+          },
+        )
+        .then((response) => {
+          const result = this.normalizePaginatedResponse(
+            response.data,
+            this.runPagination,
+          );
+          this.arrayTestCyclesDate = result.data;
+          this.testCycleSelected = cycleId;
+          return this.arrayTestCyclesDate;
+        })
+        .catch((e) => {
+          this.Logout(this, e);
+          this.error = e;
+          return [];
         });
     },
     startParallelRunPolling() {
@@ -2854,6 +3179,13 @@ export default {
         this.language[this.config.currentLanguage].TestsPerformed
           .parallelStatuses;
       return labels?.[status] || status || labels?.unknown || "Unknown";
+    },
+    runDetailStatusLabel(runDetail) {
+      if (runDetail?.status === "unknown" && runDetail?.partial) {
+        return this.language[this.config.currentLanguage].TestsPerformed
+          .partialRunStatus;
+      }
+      return this.parallelRunStatusLabel(runDetail?.status);
     },
     canCancelParallelRun(run) {
       return cancellationEligibility(normalizeLiveRun(run), ["run.cancel"])
@@ -3683,7 +4015,9 @@ export default {
 
     getTest(id, options = {}) {
       this.emitter.emit("showLoader", true);
+      this.testCycleDateSelected = id;
       this.testSelected = null;
+      this.selectedPerformedTest = null;
       this.selectedTestName = "";
       this.selectedTestSteps = [];
       this.testPagination = {
@@ -3740,8 +4074,10 @@ export default {
     },
     selectPerformedTest(test, options = {}) {
       this.testSelected = test?.id ?? null;
+      this.selectedPerformedTest = test ?? null;
       this.selectedTestName = test?.name ?? "";
       this.selectedTestSteps = [];
+      this.postmanResponse = null;
       if (test?.id == null) return Promise.resolve();
       return this.loadStepResults(test.id, test.name, options);
     },
@@ -3750,8 +4086,8 @@ export default {
       this.getStep(this.testSelected, this.selectedTestName);
     },
     getStepVariant(step) {
-      if (step?.type === "postman") {
-        const failed = parsePostmanResults(step.data ?? []).some(
+      if (this.isPostmanExecution(step)) {
+        const failed = this.stepPostmanResults(step).some(
           (result) => result.passed === false,
         );
         if (failed) return "danger";

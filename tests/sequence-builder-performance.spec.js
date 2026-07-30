@@ -96,6 +96,28 @@ describe("sequence builder performance budgets", () => {
     expect(new Set(next.map((entry) => entry.identity)).size).toBe(100);
   });
 
+  it("does not emit equivalent picker queries again", async () => {
+    const wrapper = mount(EntityPicker, {
+      props: pickerProps([item(1)], {
+        query: { page: 1, search: "", filters: {} },
+      }),
+      global: { stubs: { fontAwesomeIcon: true } },
+    });
+
+    wrapper.vm.emitQuery({ page: 1, search: "", filters: {} });
+    wrapper.vm.emitQuery({ page: 1, filters: { runtime: "" } });
+
+    expect(wrapper.emitted("query-change")).toBeUndefined();
+
+    wrapper.vm.emitQuery({ page: 2 });
+
+    expect(wrapper.emitted("query-change")[0][0]).toEqual({
+      page: 2,
+      search: "",
+      filters: {},
+    });
+  });
+
   it("aborts obsolete validation and ignores its late response", async () => {
     const requests = [];
     const validate = vi.fn(

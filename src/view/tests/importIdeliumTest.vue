@@ -202,6 +202,125 @@ export default {
     },
   },
   methods: {
+    isPostmanCollection(value) {
+      return (
+        value != null &&
+        typeof value === "object" &&
+        !Array.isArray(value) &&
+        Array.isArray(value.item) &&
+        value.info != null &&
+        typeof value.info === "object"
+      );
+    },
+    isPostmanStep(step) {
+      const markers = [
+        step?.editorType,
+        step?.runtime,
+        step?.stepType,
+        step?.type,
+        step?.actionType,
+      ];
+      return markers.some((marker) =>
+        String(marker ?? "")
+          .toLowerCase()
+          .includes("postman"),
+      );
+    },
+    normalizePostmanAction(step) {
+      if (this.isPostmanCollection(step?.collection)) {
+        return {
+          stepType: "postman_collection",
+          runtime: step.runtime ?? "postman_auto",
+          collection: {
+            collection: step.collection,
+            environment: step.environment ?? null,
+          },
+          note: step.note ?? step.collection.info?.name ?? step.name,
+        };
+      }
+
+      if (this.isPostmanCollection(step?.collection?.collection)) {
+        return {
+          stepType: "postman_collection",
+          runtime: step.runtime ?? step.collection.runtime ?? "postman_auto",
+          collection: {
+            ...step.collection,
+            collection: step.collection.collection,
+            environment: step.collection.environment ?? step.environment ?? null,
+          },
+          note: step.note ?? step.collection.collection.info?.name ?? step.name,
+        };
+      }
+
+      return null;
+    },
+    normalizeImportedStep(step) {
+      const normalizedStep = JSON.parse(JSON.stringify(step));
+      if (!this.isPostmanStep(normalizedStep)) {
+        return normalizedStep;
+      }
+
+      const existingActions = Array.isArray(normalizedStep.steps)
+        ? normalizedStep.steps
+        : [];
+      const hasExecutablePostmanAction = existingActions.some(
+        (action) =>
+          this.isPostmanStep(action) &&
+          this.normalizePostmanAction(action) != null,
+      );
+      if (hasExecutablePostmanAction) {
+        normalizedStep.steps = existingActions.map((action) =>
+          this.isPostmanStep(action)
+            ? this.normalizePostmanAction(action) ?? action
+            : action,
+        );
+        return normalizedStep;
+      }
+
+      const action = this.normalizePostmanAction(normalizedStep);
+      if (action != null) {
+        normalizedStep.editorType = normalizedStep.editorType ?? "postman";
+        normalizedStep.steps = [action];
+      }
+      return normalizedStep;
+    },
+    normalizeImportDefinition(importDefinition) {
+      if (this.isPostmanCollection(importDefinition)) {
+        return {
+          schema: "idelium.test-import.v1",
+          name: importDefinition.info?.name ?? "Imported Postman collection",
+          description:
+            importDefinition.info?.description ?? "Imported Postman collection",
+          steps: [
+            {
+              name: importDefinition.info?.name ?? "Postman collection",
+              editorType: "postman",
+              failedExit: true,
+              attachScreenshot: false,
+              collection: importDefinition,
+              steps: [],
+            },
+          ],
+        };
+      }
+      return importDefinition;
+    },
+    isValidImportedStep(step) {
+      if (typeof step?.name !== "string" || step.name.trim() === "") {
+        return false;
+      }
+      if (!Array.isArray(step.steps) || step.steps.length === 0) {
+        return false;
+      }
+      if (!this.isPostmanStep(step)) {
+        return true;
+      }
+      return step.steps.some(
+        (action) =>
+          this.isPostmanStep(action) &&
+          this.normalizePostmanAction(action) != null,
+      );
+    },
     inputFilter(newFile) {
       this.errortext = "";
       const fileExt = newFile?.name?.split(".").pop()?.toLowerCase();
@@ -225,21 +344,22 @@ export default {
       return true;
     },
     loadJson(importDefinition) {
+      const normalizedImportDefinition =
+        this.normalizeImportDefinition(importDefinition);
       if (
-        importDefinition == null ||
-        !Array.isArray(importDefinition.steps) ||
-        importDefinition.steps.length === 0
+        normalizedImportDefinition == null ||
+        !Array.isArray(normalizedImportDefinition.steps) ||
+        normalizedImportDefinition.steps.length === 0
       ) {
         this.errortext = this.copy.isNotAnIdeliumFile;
         return;
       }
 
-      const invalidStep = importDefinition.steps.find(
-        (step) =>
-          typeof step?.name !== "string" ||
-          step.name.trim() === "" ||
-          !Array.isArray(step.steps) ||
-          step.steps.length === 0,
+      const normalizedSteps = normalizedImportDefinition.steps.map((step) =>
+        this.normalizeImportedStep(step),
+      );
+      const invalidStep = normalizedSteps.find(
+        (step) => !this.isValidImportedStep(step),
       );
       if (invalidStep) {
         this.errortext = this.copy.invalidStep;
@@ -247,13 +367,13 @@ export default {
       }
 
       this.showUpload = false;
-      this.testName = String(importDefinition.name ?? "Imported Idelium test");
+      this.testName = String(
+        normalizedImportDefinition.name ?? "Imported Idelium test",
+      );
       this.testDescription = String(
-        importDefinition.description ?? "Imported Idelium test",
+        normalizedImportDefinition.description ?? "Imported Idelium test",
       );
-      this.testSteps = importDefinition.steps.map((step) =>
-        JSON.parse(JSON.stringify(step)),
-      );
+      this.testSteps = normalizedSteps;
       this.notifyChange();
     },
     notifyChange() {

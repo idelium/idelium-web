@@ -78,6 +78,35 @@ describe("Postman web integration", () => {
     expect(parsePostmanResults("{not-json")).toEqual([]);
   });
 
+  it("normalizes versioned Newman execution contracts", () => {
+    const [result] = parsePostmanResults({
+      runtime: "postman",
+      schemaVersion: "postman.newman.v1",
+      executions: [
+        {
+          assertions: [{ name: "status", passed: true }],
+          method: "POST",
+          name: "Create payload",
+          response: '{"ok":true}',
+          status: 200,
+          time: 140,
+          url: "https://postman-echo.com/post",
+        },
+      ],
+      scriptFailures: [],
+    });
+
+    expect(result).toMatchObject({
+      assertions: [{ name: "status", passed: true }],
+      method: "POST",
+      name: "Create payload",
+      response: '{"ok":true}',
+      status: 200,
+      time: 140,
+      url: "https://postman-echo.com/post",
+    });
+  });
+
   it("distinguishes collections and environments", () => {
     expect(
       classifyPostmanDocument({ info: { name: "API" }, item: [] }).type,

@@ -1133,7 +1133,11 @@ export default {
       );
     },
     postmanResults(step) {
-      return step?.type === "postman" ? parsePostmanResults(step.data) : [];
+      return step?.type === "postman"
+        ? parsePostmanResults(
+            step.postmanData ?? step.postmanResults ?? step.data,
+          )
+        : [];
     },
     executionStatusText(step) {
       if (step?.type === "postman" && this.isPostmanStepFailed(step)) {

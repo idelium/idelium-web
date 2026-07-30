@@ -37,6 +37,9 @@ const SENSITIVE_MARKERS = [
 ];
 
 export function normalizeExecutionStatus(value) {
+  if (value === 0) {
+    return EXECUTION_STATUSES.QUEUED;
+  }
   if (value === 1 || String(value).toLowerCase() === "success") {
     return EXECUTION_STATUSES.PASSED;
   }

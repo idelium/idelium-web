@@ -65,4 +65,64 @@ describe("Idelium test import component", () => {
     expect(wrapper.vm.errortext).toBe(english.Tests.ideliumImport.invalidStep);
     expect(wrapper.emitted("importTest")).toBeUndefined();
   });
+
+  it("converts a native Postman collection into an executable Idelium step", async () => {
+    const wrapper = mountImport();
+    const collection = {
+      info: {
+        name: "Postman Echo",
+        description: "Echo service smoke collection",
+      },
+      item: [
+        {
+          name: "GET Request",
+          request: {
+            method: "GET",
+            url: "https://postman-echo.com/get",
+          },
+        },
+      ],
+    };
+
+    wrapper.vm.loadJson(collection);
+    await wrapper.vm.$nextTick();
+
+    const emitted = wrapper.emitted("importTest").at(-1)[0];
+    expect(emitted.name).toBe("Postman Echo");
+    expect(emitted.tests).toHaveLength(1);
+    expect(emitted.tests[0]).toMatchObject({
+      name: "Postman Echo",
+      editorType: "postman",
+      steps: [
+        {
+          stepType: "postman_collection",
+          runtime: "postman_auto",
+          collection: {
+            collection,
+            environment: null,
+          },
+        },
+      ],
+    });
+  });
+
+  it("rejects Postman steps without a collection action", () => {
+    const wrapper = mountImport();
+
+    wrapper.vm.loadJson({
+      name: "Invalid Postman import",
+      description: "The Postman step does not contain a collection.",
+      steps: [
+        {
+          name: "Postman",
+          editorType: "postman",
+          steps: [],
+        },
+      ],
+    });
+
+    expect(wrapper.vm.showUpload).toBe(true);
+    expect(wrapper.vm.errortext).toBe(english.Tests.ideliumImport.invalidStep);
+    expect(wrapper.emitted("importTest")).toBeUndefined();
+  });
 });

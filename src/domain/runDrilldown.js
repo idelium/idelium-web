@@ -62,7 +62,9 @@ function normalizeTestNode(test, index) {
 }
 
 function postmanRequestNodes(test, testId) {
-  return parsePostmanResults(test.postmanData ?? test.data ?? [])
+  return parsePostmanResults(
+    test.postmanData ?? test.postmanResults ?? test.data ?? [],
+  )
     .map((request, index) => {
       const requestId = `postman:${testId}:${index + 1}`;
       const assertions = safeArray(request.assertions).map(

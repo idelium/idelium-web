@@ -9,9 +9,13 @@ export function parsePostmanResults(value) {
     ? parsed
     : Array.isArray(parsed?.results)
       ? parsed.results
-      : parsed && typeof parsed === "object"
-        ? [parsed]
-        : [];
+      : Array.isArray(parsed?.postmanResults)
+        ? parsed.postmanResults
+        : Array.isArray(parsed?.executions)
+          ? parsed.executions
+          : parsed && typeof parsed === "object"
+            ? [parsed]
+            : [];
 
   return entries.map((entry, index) => ({
     id: entry.id || `${entry.method || "request"}-${index}`,

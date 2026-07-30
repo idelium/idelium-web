@@ -883,6 +883,7 @@ export default {
     executionSummaryHelp:
       "Select a cycle run, review every performed test, then inspect the selected test step by step.",
     selectedRun: "Selected run",
+    selectedItem: "Selected",
     cycleDuration: "Cycle duration",
     testsInRun: "Tests in run",
     stepsInTest: "Steps in test",
@@ -904,6 +905,7 @@ export default {
     liveTransportDegraded: "retrying",
     liveTransportPending: "pending",
     parallelRunLabel: "Run",
+    classicRunSource: "Classic CLI result stream",
     emptyParallelRuns:
       "No parallel executions are currently tracked for this project.",
     cancelRun: "Cancel run",
@@ -976,6 +978,7 @@ export default {
     correlationId: "Correlation ID",
     partialRunDetail:
       "Some related assets are deleted, expired, or not available in the current API payload. Snapshot values are shown when available.",
+    partialRunStatus: "Partial snapshot",
     drilldownTitle: "Execution drill-down",
     artifactViewer: "Secure artifact viewer",
     fullArtifact: "Open full view",
@@ -1008,6 +1011,7 @@ export default {
       queued: "Queued",
       running: "Running",
       cancelling: "Cancelling",
+      pending: "Pending",
       passed: "Passed",
       cancelled: "Cancelled",
       completed: "Completed",

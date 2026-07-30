@@ -27,6 +27,7 @@ describe("versioned execution observability contracts", () => {
     expect(normalizeExecutionStatus("completed")).toBe(
       EXECUTION_STATUSES.PASSED,
     );
+    expect(normalizeExecutionStatus(0)).toBe(EXECUTION_STATUSES.QUEUED);
     expect(isTerminalExecutionStatus("passed")).toBe(true);
     expect(isTransitionalExecutionStatus("running")).toBe(true);
   });

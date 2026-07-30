@@ -341,11 +341,30 @@ export default {
       this.emitQuery({ page: 1, search: "", filters: {} });
     },
     emitQuery(changes) {
-      this.$emit("query-change", {
+      const currentQuery = this.normalizedQuery(this.query);
+      const nextQuery = this.normalizedQuery({
         ...this.query,
         ...changes,
         filters: changes.filters ?? this.query.filters ?? {},
       });
+      if (this.sameQuery(currentQuery, nextQuery)) return;
+      this.$emit("query-change", nextQuery);
+    },
+    normalizedQuery(query) {
+      const filters = Object.fromEntries(
+        Object.entries(query?.filters ?? {}).filter(
+          ([, value]) => value != null && value !== "",
+        ),
+      );
+      return {
+        ...query,
+        page: Math.max(Number(query?.page) || 1, 1),
+        search: query?.search ?? "",
+        filters,
+      };
+    },
+    sameQuery(left, right) {
+      return JSON.stringify(left) === JSON.stringify(right);
     },
     metadataEntries(item) {
       const cached = this.metadataCache.get(item.identity);
