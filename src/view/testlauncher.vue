@@ -744,12 +744,21 @@ export default {
 
 <style scoped>
 .launch-page {
+  --launch-compact-font: 0.68rem;
+  --launch-compact-label: 0.62rem;
+  --launch-compact-radius: 0.9rem;
   display: grid;
-  gap: var(--id-space-4);
+  gap: 0.9rem;
   margin: 0 auto;
-  max-width: 1400px;
+  max-width: 1280px;
   min-width: 0;
   width: 100%;
+}
+
+.launch-page,
+.launch-page :deep(*) {
+  font-size: var(--launch-compact-font);
+  letter-spacing: 0.12em;
 }
 
 .launch-page__hero,
@@ -759,12 +768,12 @@ export default {
     linear-gradient(135deg, rgb(255 255 255 / 6%), transparent 48%),
     var(--id-color-surface-raised);
   border: 1px solid var(--id-color-border);
-  border-radius: var(--id-radius-large);
+  border-radius: var(--launch-compact-radius);
   display: flex;
-  gap: var(--id-space-4);
+  gap: 0.85rem;
   justify-content: space-between;
-  padding: clamp(1rem, 2vw, 1.5rem);
-  box-shadow: 0 1.5rem 4rem rgb(0 0 0 / 24%);
+  padding: 0.9rem 1rem;
+  box-shadow: 0 0.9rem 2.4rem rgb(0 0 0 / 20%);
 }
 
 .launch-page__hero {
@@ -785,30 +794,31 @@ export default {
 .launch-page__review dt,
 .launch-page__path-step strong {
   color: var(--id-color-text-muted);
-  font-size: 0.75rem;
+  font-size: var(--launch-compact-label);
   font-weight: 800;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.15em;
   text-transform: uppercase;
 }
 
 .launch-page__hero h1 {
   color: var(--id-color-text);
-  font-size: clamp(1.7rem, 3vw, 2.6rem);
+  font-size: 1.35rem;
   line-height: 1;
-  margin-top: var(--id-space-1);
+  margin-top: 0.2rem;
 }
 
 .launch-page__hero span {
   color: var(--id-color-text-muted);
   display: block;
-  margin-top: var(--id-space-2);
+  line-height: 1.5;
+  margin-top: 0.35rem;
   max-width: 52rem;
 }
 
 .launch-page__hero-actions {
   align-items: flex-end;
   display: grid;
-  gap: var(--id-space-3);
+  gap: 0.55rem;
   justify-items: end;
 }
 
@@ -817,12 +827,12 @@ export default {
   border: 1px solid var(--id-color-border);
   border-radius: var(--id-radius-pill);
   display: inline-flex;
-  font-size: 0.72rem;
+  font-size: var(--launch-compact-label);
   font-weight: 900;
-  gap: var(--id-space-2);
+  gap: 0.4rem;
   letter-spacing: 0.14em;
-  min-height: 2.1rem;
-  padding: 0 var(--id-space-3);
+  min-height: 1.85rem;
+  padding: 0 0.75rem;
   text-transform: uppercase;
   white-space: nowrap;
 }
@@ -847,7 +857,7 @@ export default {
 
 .launch-page__path {
   display: grid;
-  gap: var(--id-space-3);
+  gap: 0.75rem;
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
@@ -856,11 +866,11 @@ export default {
   background: linear-gradient(180deg, rgb(255 255 255 / 5%), transparent),
     var(--id-color-surface-raised);
   border: 1px solid var(--id-color-border);
-  border-radius: var(--id-radius-large);
+  border-radius: var(--launch-compact-radius);
   display: flex;
-  gap: var(--id-space-3);
+  gap: 0.65rem;
   min-width: 0;
-  padding: var(--id-space-3);
+  padding: 0.7rem;
 }
 
 .launch-page__path-step--complete {
@@ -872,12 +882,12 @@ export default {
   align-items: center;
   background: rgb(255 108 27 / 14%);
   border: 1px solid rgb(255 108 27 / 32%);
-  border-radius: var(--id-radius-medium);
+  border-radius: 0.7rem;
   color: #ffd1b5;
   display: inline-flex;
-  flex: 0 0 2.4rem;
+  flex: 0 0 2rem;
   font-weight: 900;
-  height: 2.4rem;
+  height: 2rem;
   justify-content: center;
 }
 
@@ -889,6 +899,7 @@ export default {
 
 .launch-page__path-step small {
   color: var(--id-color-text);
+  font-size: 0.66rem;
   font-weight: 700;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -897,7 +908,7 @@ export default {
 
 .launch-page__workspace {
   display: grid;
-  gap: var(--id-space-4);
+  gap: 0.9rem;
   grid-template-columns: minmax(0, 1.35fr) minmax(22rem, 0.65fr);
   min-width: 0;
 }
@@ -905,11 +916,12 @@ export default {
 .launch-page__selectors,
 .launch-page__side-panel {
   display: grid;
-  gap: var(--id-space-4);
+  gap: 0.9rem;
   min-width: 0;
 }
 
 .launch-page__selectors {
+  gap: 0.9rem;
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
@@ -919,11 +931,74 @@ export default {
   background:
     linear-gradient(180deg, rgb(255 255 255 / 4%), transparent),
     var(--id-color-surface-raised);
-  box-shadow: 0 1.1rem 2.6rem rgb(0 0 0 / 18%);
+  border-radius: var(--launch-compact-radius);
+  gap: 0.75rem;
+  padding: 0.85rem;
+  box-shadow: 0 0.75rem 1.8rem rgb(0 0 0 / 16%);
 }
 
 .launch-page :deep(.launch-asset-selector__items) {
-  max-height: min(24rem, 42vh);
+  gap: 0.45rem;
+  max-height: min(18rem, 34vh);
+}
+
+.launch-page :deep(.launch-asset-selector__item),
+.launch-page :deep(.launch-target__item),
+.launch-page :deep(.launch-preflight__diagnostic) {
+  border-radius: 0.75rem;
+  gap: 0.35rem;
+  padding: 0.65rem;
+}
+
+.launch-page :deep(.launch-asset-selector__header),
+.launch-page :deep(.launch-target__header),
+.launch-page :deep(.launch-preflight__header),
+.launch-page :deep(.launch-review__header) {
+  gap: 0.75rem;
+}
+
+.launch-page :deep(.launch-asset-selector__header h2),
+.launch-page :deep(.launch-target__header h2),
+.launch-page :deep(.launch-preflight__header h2),
+.launch-page :deep(.launch-review__header h2) {
+  font-size: 0.78rem;
+  line-height: 1.2;
+}
+
+.launch-page :deep(.launch-asset-selector__header p),
+.launch-page :deep(.launch-target__header p),
+.launch-page :deep(.launch-preflight__header p),
+.launch-page :deep(.launch-review__header span) {
+  line-height: 1.45;
+}
+
+.launch-page :deep(.launch-asset-selector__search),
+.launch-page :deep(.launch-target__concurrency),
+.launch-page :deep(.launch-target__overrides label),
+.launch-page :deep(.launch-review__command) {
+  gap: 0.35rem;
+}
+
+.launch-page :deep(.launch-asset-selector__search input),
+.launch-page :deep(.launch-target__concurrency input),
+.launch-page :deep(.launch-target__overrides input),
+.launch-page :deep(.launch-review__command textarea) {
+  border-radius: 0.7rem;
+  min-height: 2rem;
+  padding: 0 0.7rem;
+}
+
+.launch-page :deep(.launch-review__command textarea) {
+  min-height: 3.6rem;
+  padding-block: 0.55rem;
+}
+
+.launch-page :deep(.launch-target__items),
+.launch-page :deep(.launch-target__diagnostics),
+.launch-page :deep(.launch-preflight__groups),
+.launch-page :deep(.launch-review),
+.launch-page :deep(.launch-review__grid) {
+  gap: 0.55rem;
 }
 
 .launch-page :deep(.launch-asset-selector__item--active),
@@ -950,7 +1025,7 @@ export default {
 
 .launch-page__review dl {
   display: grid;
-  gap: var(--id-space-3);
+  gap: 0.65rem;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   margin: 0;
   min-width: min(100%, 32rem);
@@ -964,11 +1039,12 @@ export default {
 
 .launch-page__review > button {
   border-radius: var(--id-radius-pill);
-  box-shadow: 0 1rem 2.5rem rgb(25 135 84 / 18%);
+  box-shadow: 0 0.7rem 1.8rem rgb(25 135 84 / 16%);
+  font-size: var(--launch-compact-label);
   font-weight: 900;
   letter-spacing: 0.12em;
-  min-height: 2.75rem;
-  padding-inline: var(--id-space-5);
+  min-height: 2.25rem;
+  padding-inline: 1rem;
   text-transform: uppercase;
   white-space: nowrap;
 }
@@ -978,7 +1054,7 @@ export default {
   border: 1px solid rgb(220 53 69 / 34%);
   border-radius: var(--id-radius-medium);
   color: #ffb8c1 !important;
-  padding: var(--id-space-3);
+  padding: 0.7rem;
 }
 
 @media (max-width: 64rem) {
