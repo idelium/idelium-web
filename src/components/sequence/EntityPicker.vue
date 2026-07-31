@@ -99,7 +99,9 @@
         ]"
         :draggable="isEligible(item)"
         v-on:dblclick="addItem(item)"
+        v-on:dragend="$emit('drag-end')"
         v-on:dragstart="startDrag(item, $event)"
+        v-on:pointerdown="prepareDrag(item)"
       >
         <label>
           <input
@@ -126,11 +128,17 @@
           </span>
         </label>
         <IdButton
+          icon-only
+          class="entity-picker__add-action"
           variant="secondary"
           :disabled="!isEligible(item)"
+          :accessible-label="copy.addItem.replace('{name}', item.name)"
+          :tooltip="copy.addItem.replace('{name}', item.name)"
           v-on:click="addItem(item)"
         >
-          {{ copy.addItem.replace("{name}", item.name) }}
+          <template #icon>
+            <font-awesome-icon icon="plus" aria-hidden="true" />
+          </template>
         </IdButton>
         <p
           v-if="!isEligible(item)"
@@ -186,6 +194,8 @@ export default {
   emits: [
     "add-item",
     "add-selected",
+    "drag-end",
+    "prepare-drag",
     "drag-start",
     "query-change",
     "retry",
@@ -308,13 +318,22 @@ export default {
     addItem(item) {
       if (this.isEligible(item)) this.$emit("add-item", item);
     },
+    prepareDrag(item) {
+      if (this.isEligible(item)) this.$emit("prepare-drag", item);
+    },
     startDrag(item, event) {
       if (!this.isEligible(item)) {
         event.preventDefault();
         return;
       }
-      event.dataTransfer?.setData("text/plain", String(item.identity));
-      if (event.dataTransfer) event.dataTransfer.effectAllowed = "copy";
+      if (event.dataTransfer) {
+        event.dataTransfer.setData(
+          "application/x-idelium-sequence-item",
+          String(item.identity),
+        );
+        event.dataTransfer.setData("text/plain", String(item.identity));
+        event.dataTransfer.effectAllowed = "copyMove";
+      }
       this.$emit("drag-start", item);
     },
     scheduleSearch() {
@@ -511,10 +530,15 @@ export default {
   background: var(--id-color-surface);
   border: 1px solid var(--id-color-border);
   border-radius: var(--id-radius-medium);
+  cursor: grab;
   display: flex;
   gap: var(--id-space-3);
   justify-content: space-between;
   padding: var(--id-space-3);
+}
+
+.entity-picker__item:active {
+  cursor: grabbing;
 }
 
 .entity-picker__item label {
@@ -531,6 +555,13 @@ export default {
 
 .entity-picker__item--disabled {
   opacity: 0.72;
+}
+
+.entity-picker__add-action {
+  flex: 0 0 auto;
+  min-height: 2rem;
+  min-width: 2rem;
+  padding: 0;
 }
 
 .entity-picker__item-content {

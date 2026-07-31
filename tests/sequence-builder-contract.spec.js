@@ -91,6 +91,34 @@ describe("sequence builder domain contract", () => {
     });
   });
 
+  it("keeps duplicate step occurrences distinct while referencing the same step", () => {
+    const sequence = loadPersistedSequence(
+      [
+        { id: 1, name: "Login" },
+        {
+          id: 1,
+          name: "Login again",
+          sequenceIdentity: "step:1:occurrence:2",
+        },
+      ],
+      {
+        duplicatePolicy: "allow",
+        entityType: "step",
+        availableItems: [{ id: 1, name: "Login", status: "active" }],
+      },
+    );
+
+    expect(sequence.items.map((item) => item.identity)).toEqual([
+      "step:1",
+      "step:1:occurrence:2",
+    ]);
+    expect(sequence.items.map((item) => item.referenceIdentity)).toEqual([
+      "step:1",
+      "step:1",
+    ]);
+    expect(hasBlockingSequenceDiagnostics(sequence)).toBe(false);
+  });
+
   it("keeps protected metadata out of the display contract", () => {
     const sequence = loadPersistedSequence(
       [

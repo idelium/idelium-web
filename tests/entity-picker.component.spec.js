@@ -68,6 +68,21 @@ describe("EntityPicker", () => {
     ).toBe("");
   });
 
+  it("renders the add action as an accessible plus icon", async () => {
+    const wrapper = mountPicker();
+    const addButton = wrapper.get(".entity-picker__add-action");
+
+    expect(addButton.attributes("aria-label")).toBe("Add Open browser");
+    expect(addButton.attributes("title")).toBe("Add Open browser");
+    expect(addButton.text()).not.toContain("Add Open browser");
+
+    await addButton.trigger("click");
+
+    expect(wrapper.emitted("add-item")[0][0]).toMatchObject({
+      identity: "step:1",
+    });
+  });
+
   it("keeps selection stable by identity across page refreshes", async () => {
     const wrapper = mountPicker({ selectedIds: ["step:1"] });
     expect(wrapper.findAll('input[type="checkbox"]')[0].element.checked).toBe(

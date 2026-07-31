@@ -134,7 +134,7 @@
           </div>
         </div>
         <section
-          v-if="tabOpen != 2"
+          v-if="shouldShowStepComposition"
           class="tests-composition"
           aria-labelledby="test-composition-title"
         >
@@ -150,8 +150,10 @@
           </header>
           <SequenceBuilder
             :accessible-label="sequenceBuilderCopy.accessibleLabel"
+            :allow-duplicates="true"
             :available-items="builderAvailableSteps"
             :copy="sequenceBuilderCopy"
+            layout="split"
             :picker-filters="testStepPickerFilters"
             :picker-meta="testStepPickerMeta"
             :picker-query="testStepPickerQuery"
@@ -160,6 +162,26 @@
             v-on:picker-query-change="handleStepPickerQuery"
             v-on:update:sequence="updateTestStepSequence"
           />
+        </section>
+        <section
+          v-else-if="tabOpen == 0"
+          class="tests-composition tests-composition--empty"
+          aria-labelledby="test-composition-empty-title"
+        >
+          <header>
+            <h2 id="test-composition-empty-title">
+              {{
+                language[config.currentLanguage].Tests
+                  .selectTestToManageStepsTitle
+              }}
+            </h2>
+            <p>
+              {{
+                language[config.currentLanguage].Tests
+                  .selectTestToManageStepsDescription
+              }}
+            </p>
+          </header>
         </section>
         <section
           class="tests-import-workspace"
@@ -810,6 +832,9 @@ export default {
     isModifyTabDisabled() {
       return this.testsLoaded && this.arrayTests.length === 0;
     },
+    shouldShowStepComposition() {
+      return this.tabOpen === 1 || (this.tabOpen === 0 && this.testSelected != null);
+    },
     sequenceBuilderCopy() {
       const dictionary = this.language[this.config.currentLanguage] ?? english;
       const sequenceCopy =
@@ -830,6 +855,7 @@ export default {
         availableItems: this.listOriginalSteps.map((step) =>
           this.toBuilderStep(step),
         ),
+        duplicatePolicy: "allow",
         entityType: "step",
       });
     },
@@ -847,6 +873,7 @@ export default {
     },
     testStepValidation() {
       return validateSequenceComposition(this.testStepSequenceState, {
+        duplicatePolicy: "allow",
         minimumItems: 1,
       });
     },

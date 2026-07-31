@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="idelium-steps-page">
     <div class="nav nav-tabs" id="nav-tab" role="tablist">
       <button
         :class="tabButtonClass('order')"
@@ -37,44 +37,42 @@
         aria-labelledby="tabOrderSteps-tab"
       >
         <!-- start tabOrderSteps tab -->
-        <div class="row">
-          <div class="col-sm-1" />
-          <div class="col">
-            <EnterpriseListingGrid
-              v-model:search="stepSearch"
-              :accessible-label="stepCopy.listTitle"
-              :actions="stepActions"
-              :columns="stepColumns"
-              :error="error"
-              :has-active-filters="gridQuery.search !== ''"
-              :listing-copy="stepCopy"
-              :loading="stepGridLoading"
-              :meta="gridMeta"
-              :rows="listSteps"
-              :sort="stepSort"
-              :table-copy="stepTableCopy"
-              v-on:action="handleStepAction"
-              v-on:clear-filters="clearStepSearch"
-              v-on:page-change="changeStepPage"
-              v-on:retry="getSteps"
-              v-on:row-activate="openStep"
-              v-on:search="scheduleStepSearch"
-              v-on:sort="sortSteps"
-            >
-              <template #toolbar>
-                <button
-                  type="button"
-                  class="btn btn-success"
-                  v-on:click="saveOrderSteps()"
-                  :disabled="btnSaveOrderDisabled"
-                >
-                  {{ stepCopy.btnSaveOrder }}
-                </button>
-              </template>
-            </EnterpriseListingGrid>
-          </div>
-          <div class="col-sm-1" />
-        </div>
+        <section class="idelium-steps-order-panel">
+          <EnterpriseListingGrid
+            class="idelium-steps-order-grid"
+            v-model:search="stepSearch"
+            :accessible-label="stepCopy.listTitle"
+            :actions="stepActions"
+            :columns="stepColumns"
+            density="compact"
+            :error="error"
+            :has-active-filters="gridQuery.search !== ''"
+            :listing-copy="stepCopy"
+            :loading="stepGridLoading"
+            :meta="gridMeta"
+            :rows="listSteps"
+            :sort="stepSort"
+            :table-copy="stepTableCopy"
+            v-on:action="handleStepAction"
+            v-on:clear-filters="clearStepSearch"
+            v-on:page-change="changeStepPage"
+            v-on:retry="getSteps"
+            v-on:row-activate="openStep"
+            v-on:search="scheduleStepSearch"
+            v-on:sort="sortSteps"
+          >
+            <template #toolbar>
+              <button
+                type="button"
+                class="btn btn-success"
+                v-on:click="saveOrderSteps()"
+                :disabled="btnSaveOrderDisabled"
+              >
+                {{ stepCopy.btnSaveOrder }}
+              </button>
+            </template>
+          </EnterpriseListingGrid>
+        </section>
         <!-- end tabOrderSteps tab -->
       </div>
       <div
@@ -422,6 +420,119 @@
 .buttons {
   margin-top: 35px;
 }
+.idelium-steps-page {
+  min-width: 0;
+}
+
+.idelium-steps-order-panel {
+  margin: 0 auto;
+  max-width: min(92rem, calc(100vw - 4rem));
+  padding: 1rem 0 0;
+}
+
+.idelium-steps-order-grid {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 108, 32, 0.08),
+      rgba(34, 40, 56, 0.82) 22rem
+    ),
+    rgba(30, 34, 46, 0.78);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 1.15rem;
+  box-shadow: 0 1.25rem 3rem rgba(0, 0, 0, 0.24);
+  padding: 0.85rem;
+}
+
+.idelium-steps-order-grid .enterprise-data-table {
+  gap: 0.65rem;
+}
+
+.idelium-steps-order-grid .enterprise-data-table__toolbar {
+  align-items: end;
+  gap: 0.75rem;
+}
+
+.idelium-steps-order-grid .enterprise-listing-grid__search {
+  max-width: min(34rem, 100%);
+}
+
+.idelium-steps-order-grid .enterprise-listing-grid__search span {
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.idelium-steps-order-grid .enterprise-listing-grid__search input {
+  min-height: 2.35rem;
+}
+
+.idelium-steps-order-grid .enterprise-data-table__viewport {
+  border-color: rgba(255, 255, 255, 0.1);
+  border-radius: 0.95rem;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.idelium-steps-order-grid table {
+  min-width: 52rem;
+}
+
+.idelium-steps-order-grid th {
+  background:
+    linear-gradient(180deg, rgba(255, 108, 32, 0.1), transparent),
+    rgba(43, 48, 63, 0.96);
+  font-size: 0.66rem;
+  letter-spacing: 0.16em;
+}
+
+.idelium-steps-order-grid td {
+  font-size: 0.78rem;
+  line-height: 1.25;
+}
+
+.idelium-steps-order-grid th:nth-child(1),
+.idelium-steps-order-grid td:nth-child(1),
+.idelium-steps-order-grid th:nth-child(4),
+.idelium-steps-order-grid td:nth-child(4) {
+  width: 5.5rem;
+}
+
+.idelium-steps-order-grid th:nth-child(2),
+.idelium-steps-order-grid td:nth-child(2) {
+  width: 18rem;
+}
+
+.idelium-steps-order-grid td:nth-child(2),
+.idelium-steps-order-grid td:nth-child(3) {
+  max-width: 1px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.idelium-steps-order-grid .enterprise-data-table__actions {
+  flex-wrap: nowrap;
+  gap: 0.35rem;
+}
+
+.idelium-steps-order-grid .enterprise-data-table__actions .id-button {
+  min-height: 1.9rem;
+  padding: 0.25rem 0.55rem;
+}
+
+.idelium-steps-order-grid .enterprise-listing-grid__pagination {
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.idelium-steps-order-grid .btn-success {
+  border-radius: 999px;
+  min-height: 2.25rem;
+  padding: 0.35rem 0.9rem;
+}
 .ghost {
   opacity: 0.5;
   background: #c8ebfb;
@@ -461,6 +572,12 @@
 }
 .idelium-dsl-editor__construct-card p {
   margin: 0 0 0.5rem;
+}
+
+@media (max-width: 62rem) {
+  .idelium-steps-order-panel {
+    max-width: calc(100vw - 1.5rem);
+  }
 }
 </style>
 

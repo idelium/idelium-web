@@ -216,6 +216,16 @@ describe("steps component", () => {
     expect(wrapper.vm.gridMeta.total).toBe(1);
   });
 
+  it("renders the steps order grid with compact enterprise density", () => {
+    useSessionStore(pinia).selectProject(9);
+
+    const wrapper = mountSteps();
+    const grid = wrapper.findComponent({ name: "EnterpriseListingGrid" });
+
+    expect(grid.props("density")).toBe("compact");
+    expect(grid.classes()).toContain("idelium-steps-order-grid");
+  });
+
   it("reorders the current bounded page with an absolute server offset", async () => {
     api.post.mockResolvedValue({ data: [] });
     useSessionStore(pinia).selectProject(9);

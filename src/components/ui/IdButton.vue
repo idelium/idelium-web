@@ -4,6 +4,7 @@
     :aria-label="iconOnly ? accessibleLabel : undefined"
     :class="buttonClasses"
     :disabled="disabled || loading"
+    :title="tooltip || undefined"
     :type="type"
     v-on:click="handleClick"
   >
@@ -45,6 +46,10 @@ export default {
     type: {
       type: String,
       default: "button",
+    },
+    tooltip: {
+      type: String,
+      default: "",
     },
     variant: {
       type: String,

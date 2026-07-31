@@ -1,23 +1,154 @@
 <template>
-  <section class="sequence-builder" :aria-label="accessibleLabel">
-    <EntityPicker
-      v-model:selected-ids="pickerSelectedIds"
-      :accessible-label="copy.picker.title"
-      :copy="copy.picker"
-      :error="pickerError"
-      :filters="pickerFilters"
-      :items="availableItems"
-      :loading="pickerLoading"
-      :meta="pickerMeta"
-      :metadata-labels="copy.metadata"
-      :permission-denied="pickerPermissionDenied"
-      :query="pickerQuery"
-      :stale="pickerStale"
-      v-on:add-item="addItem"
-      v-on:add-selected="addSelected"
-      v-on:query-change="$emit('picker-query-change', $event)"
-      v-on:retry="$emit('picker-retry')"
-    />
+  <section
+    :class="['sequence-builder', `sequence-builder--${layout}`]"
+    :aria-label="accessibleLabel"
+  >
+    <div class="sequence-builder__workspace">
+      <EntityPicker
+        v-model:selected-ids="pickerSelectedIds"
+        :accessible-label="copy.picker.title"
+        :copy="copy.picker"
+        :error="pickerError"
+        :filters="pickerFilters"
+        :items="availableItems"
+        :loading="pickerLoading"
+        :meta="pickerMeta"
+        :metadata-labels="copy.metadata"
+        :permission-denied="pickerPermissionDenied"
+        :query="pickerQuery"
+        :stale="pickerStale"
+        v-on:add-item="addItem"
+        v-on:add-selected="addSelected"
+        v-on:drag-end="endAvailableDrag"
+        v-on:drag-start="startAvailableDrag"
+        v-on:prepare-drag="startAvailableDrag"
+        v-on:query-change="$emit('picker-query-change', $event)"
+        v-on:retry="$emit('picker-retry')"
+      />
+
+      <section
+        class="sequence-builder__selected"
+        v-on:dragenter="prepareDrop"
+        v-on:dragover="prepareDrop"
+        v-on:drop="dropItem"
+      >
+        <header class="sequence-builder__selected-header">
+          <div>
+            <h2>{{ copy.selectedTitle }}</h2>
+            <p>{{ copy.selectedDescription }}</p>
+          </div>
+          <div class="sequence-builder__actions">
+            <IdButton
+              variant="danger"
+              :disabled="selectedSequenceIds.length === 0"
+              v-on:click="removeSelected"
+            >
+              {{ copy.removeSelected }}
+            </IdButton>
+            <IdButton
+              variant="secondary"
+              :disabled="undoEntry == null"
+              v-on:click="undo"
+            >
+              {{ copy.undo }}
+            </IdButton>
+          </div>
+        </header>
+
+        <EnterpriseGridState
+          v-if="sequenceItems.length === 0"
+          variant="empty"
+          :title="copy.emptyTitle"
+          :description="copy.emptyDescription"
+        />
+
+        <ol
+          v-else
+          class="sequence-builder__items"
+          v-on:dragenter="prepareDrop"
+          v-on:dragover="prepareDrop"
+        >
+          <li
+            v-for="item in sequenceItems"
+            v-bind:key="item.identity"
+            :ref="(element) => setItemElement(item.identity, element)"
+            class="sequence-builder__item"
+            draggable="true"
+            tabindex="-1"
+            :title="copy.dragHandle.replace('{name}', item.name)"
+            v-on:dragstart="startSequenceDrag(item.identity, $event)"
+            v-on:dragend="endSequenceDrag"
+            v-on:dragover="dragOverItem(item.identity, $event)"
+            v-on:drop="dropReorderedItem(item.identity, $event)"
+          >
+            <label>
+              <input
+                type="checkbox"
+                :checked="selectedSequenceSet.has(item.identity)"
+                :aria-label="copy.selectItem.replace('{name}', item.name)"
+                v-on:change="toggleSequenceSelection(item.identity)"
+              />
+              <span>
+                <strong>{{ item.name }}</strong>
+                <span class="sequence-builder__position">
+                  {{ copy.position.replace("{position}", item.position) }}
+                </span>
+              </span>
+            </label>
+            <div class="sequence-builder__item-actions">
+              <IdButton
+                v-if="showConfigure"
+                variant="primary"
+                v-on:click="$emit('activate', item)"
+              >
+                {{ copy.configureItem.replace("{name}", item.name) }}
+              </IdButton>
+              <IdButton
+                v-if="allowDuplicates"
+                icon-only
+                class="sequence-builder__duplicate-action"
+                variant="secondary"
+                :accessible-label="
+                  copy.duplicateItem.replace('{name}', item.name)
+                "
+                :tooltip="copy.duplicateItem.replace('{name}', item.name)"
+                v-on:click="duplicateItem(item.identity)"
+              >
+                <template #icon>
+                  <font-awesome-icon icon="clone" aria-hidden="true" />
+                </template>
+              </IdButton>
+              <IdButton
+                icon-only
+                class="sequence-builder__remove-action"
+                variant="danger"
+                :accessible-label="copy.removeItem.replace('{name}', item.name)"
+                :tooltip="copy.removeItem.replace('{name}', item.name)"
+                v-on:click="removeItem(item.identity)"
+              >
+                <template #icon>
+                  <font-awesome-icon icon="trash" aria-hidden="true" />
+                </template>
+              </IdButton>
+            </div>
+            <p
+              v-if="item.position === 1"
+              :id="`sequence-start-reason-${safeDomId(item.identity)}`"
+              class="visually-hidden"
+            >
+              {{ copy.alreadyFirst }}
+            </p>
+            <p
+              v-if="item.position === sequenceItems.length"
+              :id="`sequence-end-reason-${safeDomId(item.identity)}`"
+              class="visually-hidden"
+            >
+              {{ copy.alreadyLast }}
+            </p>
+          </li>
+        </ol>
+      </section>
+    </div>
 
     <SequenceValidationPanel
       v-if="validation != null"
@@ -29,174 +160,6 @@
       :validation="validation"
       v-on:update:acknowledged-codes="acknowledgeWarnings"
     />
-
-    <section
-      class="sequence-builder__selected"
-      v-on:dragover="autoScroll"
-      v-on:drop="dropItem"
-    >
-      <header class="sequence-builder__selected-header">
-        <div>
-          <h2>{{ copy.selectedTitle }}</h2>
-          <p>{{ copy.selectedDescription }}</p>
-        </div>
-        <div class="sequence-builder__actions">
-          <IdButton
-            variant="danger"
-            :disabled="selectedSequenceIds.length === 0"
-            v-on:click="removeSelected"
-          >
-            {{ copy.removeSelected }}
-          </IdButton>
-          <IdButton
-            variant="secondary"
-            :disabled="undoEntry == null"
-            v-on:click="undo"
-          >
-            {{ copy.undo }}
-          </IdButton>
-        </div>
-      </header>
-
-      <EnterpriseGridState
-        v-if="sequenceItems.length === 0"
-        variant="empty"
-        :title="copy.emptyTitle"
-        :description="copy.emptyDescription"
-      />
-
-      <ol v-else class="sequence-builder__items">
-        <li
-          v-for="item in sequenceItems"
-          v-bind:key="item.identity"
-          :ref="(element) => setItemElement(item.identity, element)"
-          class="sequence-builder__item"
-          tabindex="-1"
-          v-on:dragover="dragOverItem(item.identity, $event)"
-          v-on:drop="dropReorderedItem(item.identity, $event)"
-        >
-          <label>
-            <input
-              type="checkbox"
-              :checked="selectedSequenceSet.has(item.identity)"
-              :aria-label="copy.selectItem.replace('{name}', item.name)"
-              v-on:change="toggleSequenceSelection(item.identity)"
-            />
-            <span>
-              <strong>{{ item.name }}</strong>
-              <span class="sequence-builder__position">
-                {{ copy.position.replace("{position}", item.position) }}
-              </span>
-            </span>
-          </label>
-          <div class="sequence-builder__item-actions">
-            <IdButton
-              v-if="showConfigure"
-              variant="primary"
-              v-on:click="$emit('activate', item)"
-            >
-              {{ copy.configureItem.replace("{name}", item.name) }}
-            </IdButton>
-            <IdButton
-              v-if="allowDuplicates"
-              variant="secondary"
-              v-on:click="duplicateItem(item.identity)"
-            >
-              {{ copy.duplicateItem.replace("{name}", item.name) }}
-            </IdButton>
-            <IdButton
-              class="sequence-builder__drag-handle"
-              variant="ghost"
-              draggable="true"
-              :aria-label="copy.dragHandle.replace('{name}', item.name)"
-              v-on:dragstart="startSequenceDrag(item.identity, $event)"
-              v-on:dragend="endSequenceDrag"
-            >
-              {{ copy.drag }}
-            </IdButton>
-            <IdButton
-              variant="secondary"
-              :disabled="item.position === 1"
-              :aria-describedby="
-                item.position === 1
-                  ? `sequence-start-reason-${safeDomId(item.identity)}`
-                  : undefined
-              "
-              :title="
-                item.position === 1 ? copy.alreadyFirst : copy.moveToStart
-              "
-              v-on:click="moveItem(item.identity, 0)"
-            >
-              {{ copy.moveToStart }}
-            </IdButton>
-            <IdButton
-              variant="secondary"
-              :disabled="item.position === 1"
-              :aria-describedby="
-                item.position === 1
-                  ? `sequence-start-reason-${safeDomId(item.identity)}`
-                  : undefined
-              "
-              :title="item.position === 1 ? copy.alreadyFirst : copy.moveUp"
-              v-on:click="moveItem(item.identity, item.position - 2)"
-            >
-              {{ copy.moveUp }}
-            </IdButton>
-            <IdButton
-              variant="secondary"
-              :disabled="item.position === sequenceItems.length"
-              :aria-describedby="
-                item.position === sequenceItems.length
-                  ? `sequence-end-reason-${safeDomId(item.identity)}`
-                  : undefined
-              "
-              :title="
-                item.position === sequenceItems.length
-                  ? copy.alreadyLast
-                  : copy.moveDown
-              "
-              v-on:click="moveItem(item.identity, item.position)"
-            >
-              {{ copy.moveDown }}
-            </IdButton>
-            <IdButton
-              variant="secondary"
-              :disabled="item.position === sequenceItems.length"
-              :aria-describedby="
-                item.position === sequenceItems.length
-                  ? `sequence-end-reason-${safeDomId(item.identity)}`
-                  : undefined
-              "
-              :title="
-                item.position === sequenceItems.length
-                  ? copy.alreadyLast
-                  : copy.moveToEnd
-              "
-              v-on:click="moveItem(item.identity, sequenceItems.length - 1)"
-            >
-              {{ copy.moveToEnd }}
-            </IdButton>
-            <IdButton variant="danger" v-on:click="removeItem(item.identity)">
-              {{ copy.removeItem.replace("{name}", item.name) }}
-            </IdButton>
-          </div>
-          <p
-            v-if="item.position === 1"
-            :id="`sequence-start-reason-${safeDomId(item.identity)}`"
-            class="visually-hidden"
-          >
-            {{ copy.alreadyFirst }}
-          </p>
-          <p
-            v-if="item.position === sequenceItems.length"
-            :id="`sequence-end-reason-${safeDomId(item.identity)}`"
-            class="visually-hidden"
-          >
-            {{ copy.alreadyLast }}
-          </p>
-        </li>
-      </ol>
-    </section>
 
     <p class="visually-hidden" aria-live="polite">{{ announcement }}</p>
   </section>
@@ -236,6 +199,11 @@ export default {
         total: 0,
       }),
     },
+    layout: {
+      type: String,
+      default: "stacked",
+      validator: (value) => ["stacked", "split"].includes(value),
+    },
     pickerError: { type: [Error, Object, String], default: null },
     pickerFilters: { type: Array, default: () => [] },
     pickerLoading: { type: Boolean, default: false },
@@ -254,6 +222,7 @@ export default {
     return {
       acknowledgedWarningCodes: [],
       announcement: "",
+      draggedAvailableIdentity: null,
       draggedSequenceIdentity: null,
       itemElements: {},
       pendingFocusIdentity: null,
@@ -288,6 +257,7 @@ export default {
     this.itemElements = {};
   },
   beforeUnmount() {
+    this.draggedAvailableIdentity = null;
     this.draggedSequenceIdentity = null;
     this.pendingFocusIdentity = null;
     this.itemElements = {};
@@ -308,15 +278,19 @@ export default {
       this.addItems(items);
     },
     addItems(items) {
+      this.insertItems(items, this.sequenceItems.length);
+    },
+    insertItems(items, requestedIndex) {
       const additions = [];
       const duplicates = [];
       for (const item of items) {
-        if (this.sequenceIdentitySet.has(item.identity)) {
+        if (!this.allowDuplicates && this.sequenceIdentitySet.has(item.identity)) {
           duplicates.push(item);
         } else if (
+          this.allowDuplicates ||
           !additions.some((addition) => addition.identity === item.identity)
         ) {
-          additions.push(item);
+          additions.push(this.prepareAddition(item, additions));
         }
       }
       if (duplicates.length > 0) {
@@ -327,25 +301,50 @@ export default {
         this.$emit("duplicate", duplicates);
       }
       if (additions.length === 0) return;
-      const next = [...this.sequenceItems, ...additions].map(
-        this.withoutPosition,
+      const destinationIndex = Math.max(
+        0,
+        Math.min(Number(requestedIndex), this.sequenceItems.length),
       );
+      const next = this.sequenceItems.map(this.withoutPosition);
+      next.splice(destinationIndex, 0, ...additions);
       this.undoEntry = null;
       this.pickerSelectedIds = [];
       this.announcement = this.copy.added.replace("{count}", additions.length);
       this.$emit("update:sequence", next);
     },
+    prepareAddition(item, pendingAdditions = []) {
+      const addition = this.withoutPosition(item);
+      if (!this.allowDuplicates) return addition;
+      if (!this.sequenceIdentitySet.has(addition.identity)) return addition;
+      const identity = this.nextOccurrenceIdentity(item, pendingAdditions);
+      return {
+        ...addition,
+        identity,
+        persisted: this.withSequenceIdentity(
+          addition.persisted ?? addition,
+          identity,
+        ),
+      };
+    },
     dropItem(event) {
       event.preventDefault();
       if (this.draggedSequenceIdentity != null) return;
-      const identity = event.dataTransfer?.getData("text/plain");
+      const identity = this.readDraggedIdentity(event);
       const item = this.availableItems.find(
         (entry) => String(entry.identity) === String(identity),
       );
+      this.draggedAvailableIdentity = null;
       if (item) this.addItem(item);
+    },
+    startAvailableDrag(item) {
+      this.draggedAvailableIdentity = item.identity;
+    },
+    endAvailableDrag() {
+      this.draggedAvailableIdentity = null;
     },
     startSequenceDrag(identity, event) {
       this.draggedSequenceIdentity = identity;
+      this.draggedAvailableIdentity = null;
       event.dataTransfer?.setData("text/plain", String(identity));
       if (event.dataTransfer) event.dataTransfer.effectAllowed = "move";
     },
@@ -354,7 +353,9 @@ export default {
     },
     dragOverItem(identity, event) {
       event.preventDefault();
-      if (event.dataTransfer) event.dataTransfer.dropEffect = "move";
+      if (event.dataTransfer) {
+        event.dataTransfer.dropEffect = this.dropEffectForDrag(event);
+      }
       this.autoScroll(event);
     },
     dropReorderedItem(targetIdentity, event) {
@@ -362,14 +363,54 @@ export default {
       event.stopPropagation();
       const sourceIdentity =
         this.draggedSequenceIdentity ??
-        event.dataTransfer?.getData("text/plain") ??
+        this.readDraggedIdentity(event) ??
         null;
       this.draggedSequenceIdentity = null;
+      this.draggedAvailableIdentity = null;
       if (sourceIdentity == null || sourceIdentity === targetIdentity) return;
       const targetIndex = this.sequenceItems.findIndex(
         (item) => item.identity === targetIdentity,
       );
+      const sourceIndex = this.sequenceItems.findIndex(
+        (item) => item.identity === sourceIdentity,
+      );
+      if (sourceIndex < 0) {
+        const item = this.availableItems.find(
+          (entry) => String(entry.identity) === String(sourceIdentity),
+        );
+        if (item) this.insertItems([item], targetIndex);
+        return;
+      }
       this.moveItem(sourceIdentity, targetIndex);
+    },
+    readDraggedIdentity(event) {
+      return (
+        this.draggedAvailableIdentity ??
+        event.dataTransfer?.getData("application/x-idelium-sequence-item") ??
+        event.dataTransfer?.getData("text/plain") ??
+        null
+      );
+    },
+    readTransferIdentity(event) {
+      return (
+        event.dataTransfer?.getData("application/x-idelium-sequence-item") ??
+        event.dataTransfer?.getData("text/plain") ??
+        null
+      );
+    },
+    dropEffectForDrag(event) {
+      if (this.draggedAvailableIdentity != null) return "copy";
+      const transferredIdentity = this.readTransferIdentity(event);
+      return this.sequenceIdentitySet.has(transferredIdentity)
+        ? "move"
+        : "copy";
+    },
+    prepareDrop(event) {
+      event.preventDefault();
+      if (event.dataTransfer) {
+        event.dataTransfer.dropEffect = this.dropEffectForDrag(event);
+      }
+      this.autoScroll(event);
     },
     duplicateItem(identity) {
       const sourceIndex = this.sequenceItems.findIndex(
@@ -377,19 +418,14 @@ export default {
       );
       if (sourceIndex < 0) return;
       const source = this.withoutPosition(this.sequenceItems[sourceIndex]);
-      let copyIndex = 1;
-      let copyIdentity = `${source.identity}:copy:${copyIndex}`;
-      while (this.sequenceIdentitySet.has(copyIdentity)) {
-        copyIndex += 1;
-        copyIdentity = `${source.identity}:copy:${copyIndex}`;
-      }
+      const copyIdentity = this.nextOccurrenceIdentity(source);
       const duplicate = {
         ...source,
         identity: copyIdentity,
-        persisted: {
-          ...(source.persisted ?? {}),
-          identity: copyIdentity,
-        },
+        persisted: this.withSequenceIdentity(
+          source.persisted ?? source,
+          copyIdentity,
+        ),
       };
       const next = this.sequenceItems.map(this.withoutPosition);
       next.splice(sourceIndex + 1, 0, duplicate);
@@ -397,6 +433,32 @@ export default {
       this.undoEntry = null;
       this.announcement = this.copy.duplicated.replace("{name}", source.name);
       this.$emit("update:sequence", next);
+    },
+    baseIdentity(item) {
+      return (
+        item.referenceIdentity ??
+        `${item.entityType ?? "entity"}:${item.entityId ?? item.id ?? "unknown"}`
+      );
+    },
+    nextOccurrenceIdentity(item, pendingAdditions = []) {
+      const baseIdentity = this.baseIdentity(item);
+      const usedIdentities = new Set([
+        ...this.sequenceItems.map((entry) => entry.identity),
+        ...pendingAdditions.map((entry) => entry.identity),
+      ]);
+      let occurrence = 2;
+      let identity = `${baseIdentity}:occurrence:${occurrence}`;
+      while (usedIdentities.has(identity)) {
+        occurrence += 1;
+        identity = `${baseIdentity}:occurrence:${occurrence}`;
+      }
+      return identity;
+    },
+    withSequenceIdentity(persisted, identity) {
+      return {
+        ...(persisted ?? {}),
+        sequenceIdentity: identity,
+      };
     },
     autoScroll(event) {
       event.preventDefault();
@@ -506,12 +568,31 @@ export default {
   gap: var(--id-space-5);
 }
 
+.sequence-builder__workspace {
+  display: grid;
+  gap: var(--id-space-5);
+}
+
+.sequence-builder--split .sequence-builder__workspace {
+  align-items: start;
+  grid-template-columns: minmax(18rem, 0.9fr) minmax(24rem, 1.1fr);
+}
+
 .sequence-builder__selected {
   background: var(--id-color-surface-raised);
   border: 1px solid var(--id-color-border);
   border-radius: var(--id-radius-large);
   min-height: 12rem;
   padding: var(--id-space-4);
+}
+
+.sequence-builder--split .sequence-builder__selected {
+  min-height: min(42rem, 70vh);
+}
+
+.sequence-builder--split :deep(.entity-picker__items),
+.sequence-builder--split .sequence-builder__items {
+  max-height: min(32rem, 58vh);
 }
 
 .sequence-builder__selected-header,
@@ -562,11 +643,18 @@ export default {
   justify-content: flex-end;
 }
 
-.sequence-builder__drag-handle {
+.sequence-builder__item {
   cursor: grab;
 }
 
-.sequence-builder__drag-handle:active {
+.sequence-builder__duplicate-action,
+.sequence-builder__remove-action {
+  min-height: 2rem;
+  min-width: 2rem;
+  padding: 0;
+}
+
+.sequence-builder__item:active {
   cursor: grabbing;
 }
 
@@ -584,6 +672,10 @@ export default {
 }
 
 @media (max-width: 48rem) {
+  .sequence-builder--split .sequence-builder__workspace {
+    grid-template-columns: 1fr;
+  }
+
   .sequence-builder__selected-header,
   .sequence-builder__item {
     align-items: stretch;

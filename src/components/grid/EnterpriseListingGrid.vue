@@ -6,6 +6,7 @@
       :capabilities="capabilities"
       :columns="columns"
       :copy="tableCopy"
+      :density="density"
       :error="error"
       :has-active-filters="hasActiveFilters"
       :loading="loading"
@@ -81,6 +82,12 @@ export default {
     actions: { type: Array, default: () => [] },
     capabilities: { type: Array, default: () => [] },
     columns: { type: Array, required: true },
+    density: {
+      type: String,
+      default: "comfortable",
+      validator: (value) =>
+        ["comfortable", "compact", "spacious"].includes(value),
+    },
     error: { type: [Error, Object, String], default: null },
     hasActiveFilters: { type: Boolean, default: false },
     listingCopy: { type: Object, required: true },

@@ -568,6 +568,9 @@ export default {
     compositionTitle: "Configura la sequenza degli step",
     compositionDescription:
       "Seleziona gli step riutilizzabili, verifica runtime e versioni, configura l'ordine e salva il test.",
+    selectTestToManageStepsTitle: "Seleziona un test per gestire gli step",
+    selectTestToManageStepsDescription:
+      "Scegli un test dalla lista sopra prima di consultare, aggiungere o riordinare gli step riutilizzabili.",
     moveUp: "Sposta su",
     moveDown: "Sposta giù",
     moveImportedUp: "Sposta su lo step importato",

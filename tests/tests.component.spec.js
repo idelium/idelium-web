@@ -32,6 +32,10 @@ describe("tests component", () => {
                 tabTitleModify: "Modify Test",
                 tabTitleNewTest: "New Test",
                 tabTitleImportTest: "Import Test",
+                selectTestToManageStepsTitle:
+                  "Select a test to manage its steps",
+                selectTestToManageStepsDescription:
+                  "Choose a test before reviewing steps.",
                 importReviewEyebrow: "Import review",
                 importReviewFallbackTitle: "Imported test definition",
                 importReviewDescription: "Review imported steps.",
@@ -144,9 +148,16 @@ describe("tests component", () => {
         config: { runtime: "postman", collectionId: "collection-1" },
       },
     ];
+    api.get.mockResolvedValue({
+      data: {
+        config: JSON.stringify(steps),
+        description: "Regression test",
+      },
+    });
     await wrapper.setData({
       arraySteps: steps,
       listOriginalSteps: steps,
+      testSelected: { id: 44, name: "Regression" },
       arrayStepsSelectedDragged: steps,
     });
 
@@ -174,7 +185,38 @@ describe("tests component", () => {
     expect(wrapper.findComponent({ name: "SequenceBuilder" }).exists()).toBe(
       true,
     );
+    expect(wrapper.findComponent({ name: "SequenceBuilder" }).props("layout")).toBe(
+      "split",
+    );
     expect(wrapper.findComponent({ name: "draggable" }).exists()).toBe(false);
+  });
+
+  it("does not show any step list until a test is selected on the modify tab", async () => {
+    api.get
+      .mockResolvedValueOnce({ data: [] })
+      .mockResolvedValueOnce({ data: [] });
+    useSessionStore(pinia).selectProject(9);
+    const wrapper = mountTests();
+    await vi.waitFor(() => expect(wrapper.vm.testsLoaded).toBe(true));
+
+    expect(wrapper.vm.testSelected).toBeNull();
+    expect(wrapper.findComponent({ name: "SequenceBuilder" }).exists()).toBe(
+      false,
+    );
+    expect(wrapper.text()).toContain("Select a test to manage its steps");
+
+    api.get.mockResolvedValue({
+      data: {
+        config: JSON.stringify([]),
+        description: "Regression test",
+      },
+    });
+    await wrapper.setData({ testSelected: { id: 44, name: "Regression" } });
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.findComponent({ name: "SequenceBuilder" }).exists()).toBe(
+      true,
+    );
   });
 
   it("keeps stale, archived, and missing step references visible", async () => {

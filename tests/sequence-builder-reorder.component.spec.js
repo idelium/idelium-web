@@ -42,14 +42,21 @@ async function applyLastSequence(wrapper) {
 }
 
 describe("SequenceBuilder accessible reorder", () => {
-  it("uses explicit commands, updates positions, and follows the moved item", async () => {
+  it("uses row drag and drop, updates positions, and follows the moved item", async () => {
     const wrapper = mountBuilder();
+    const dataTransfer = {
+      value: "",
+      setData(_type, value) {
+        this.value = value;
+      },
+      getData() {
+        return this.value;
+      },
+    };
     const rows = wrapper.findAll(".sequence-builder__item");
-    const moveDown = rows[0]
-      .findAll("button")
-      .find((button) => button.text() === "Move down");
 
-    await moveDown.trigger("click");
+    await rows[0].trigger("dragstart", { dataTransfer });
+    await rows[1].trigger("drop", { dataTransfer });
     const next = await applyLastSequence(wrapper);
 
     expect(next.map((item) => item.identity)).toEqual([
@@ -65,27 +72,21 @@ describe("SequenceBuilder accessible reorder", () => {
     expect(wrapper.text()).toContain("Position 2");
   });
 
-  it("disables boundary commands with localized reasons", () => {
+  it("keeps selected rows draggable without rendering order buttons", () => {
     const wrapper = mountBuilder();
     const rows = wrapper.findAll(".sequence-builder__item");
-    const firstButtons = rows[0].findAll("button");
-    const lastButtons = rows.at(-1).findAll("button");
 
-    expect(firstButtons[1].attributes("disabled")).toBe("");
-    expect(firstButtons[1].attributes("title")).toBe(
-      "This item is already first.",
+    expect(wrapper.find(".sequence-builder__order-action").exists()).toBe(
+      false,
     );
-    expect(firstButtons[2].attributes("disabled")).toBe("");
-    expect(lastButtons[3].attributes("disabled")).toBe("");
-    expect(lastButtons[4].attributes("disabled")).toBe("");
-    expect(lastButtons[4].attributes("title")).toBe(
-      "This item is already last.",
-    );
+    expect(rows[0].attributes("draggable")).toBe("true");
+    expect(rows[0].attributes("title")).toBe("Drag Open browser to reorder");
+    expect(wrapper.get(".sequence-builder__remove-action").attributes("title"))
+      .toBe("Remove Open browser");
   });
 
-  it("makes pointer drop produce the same persisted order", async () => {
+  it("makes pointer drop persist the requested order", async () => {
     const pointerWrapper = mountBuilder();
-    const keyboardWrapper = mountBuilder();
     const dataTransfer = {
       value: "",
       setData(_type, value) {
@@ -97,24 +98,15 @@ describe("SequenceBuilder accessible reorder", () => {
     };
     const rows = pointerWrapper.findAll(".sequence-builder__item");
 
-    await rows[0]
-      .find(".sequence-builder__drag-handle")
-      .trigger("dragstart", { dataTransfer });
+    await rows[0].trigger("dragstart", { dataTransfer });
     await rows[2].trigger("drop", { dataTransfer });
     const pointerSequence = await applyLastSequence(pointerWrapper);
-    const moveToEnd = keyboardWrapper
-      .findAll(".sequence-builder__item")[0]
-      .findAll("button")
-      .find((button) => button.text() === "Move to end");
-    await moveToEnd.trigger("click");
-    const keyboardSequence = await applyLastSequence(keyboardWrapper);
 
     expect(pointerSequence.map((item) => item.identity)).toEqual([
       "step:2",
       "step:3",
       "step:1",
     ]);
-    expect(pointerSequence).toEqual(keyboardSequence);
   });
 
   it("bounds drag auto-scroll and unmounts without retained state", () => {

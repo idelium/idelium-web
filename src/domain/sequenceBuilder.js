@@ -82,7 +82,9 @@ export function loadPersistedSequence(rawSequence, options = {}) {
       entityType,
       position: index + 1,
     });
-    const authoritative = available?.get(normalized.identity);
+    const authoritative = available?.get(
+      normalized.referenceIdentity ?? normalized.identity,
+    );
     const item =
       authoritative == null && available != null
         ? missingSequenceItem(normalized)
@@ -138,10 +140,15 @@ export function normalizeSequenceItem(rawItem, options = {}) {
   );
   const entityId = normalizeEntityId(rawItem.entityId ?? rawItem.id);
   const position = positiveInteger(options.position ?? rawItem.position, 1);
-  const identity = `${entityType}:${entityId}`;
+  const referenceIdentity = `${entityType}:${entityId}`;
+  const identity = safeSequenceIdentity(
+    rawItem.sequenceIdentity ?? rawItem.identity,
+    referenceIdentity,
+  );
 
   return {
     identity,
+    referenceIdentity,
     entityId,
     entityType,
     name: safeDisplayText(rawItem.name, `Item ${entityId}`),
@@ -423,6 +430,7 @@ function indexAvailableItems(availableItems, entityType) {
   for (const entry of Array.isArray(availableItems) ? availableItems : []) {
     const item = normalizeSequenceItem(entry, { entityType });
     index.set(item.identity, item);
+    index.set(item.referenceIdentity, item);
   }
   return index;
 }
@@ -557,6 +565,13 @@ function normalizeEntityId(value) {
   return normalized !== "" && SAFE_IDENTIFIER.test(normalized)
     ? normalized
     : "unknown";
+}
+
+function safeSequenceIdentity(value, fallback) {
+  const normalized = String(value ?? "").trim();
+  return normalized !== "" && SAFE_IDENTIFIER.test(normalized)
+    ? normalized
+    : fallback;
 }
 
 function safeEntityType(value) {

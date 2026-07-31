@@ -7,6 +7,8 @@ import english from "@/languages/english";
 const availableItems = [
   {
     identity: "step:1",
+    entityId: "1",
+    entityType: "step",
     id: 1,
     name: "Open browser",
     status: "active",
@@ -14,6 +16,8 @@ const availableItems = [
   },
   {
     identity: "step:2",
+    entityId: "2",
+    entityType: "step",
     id: 2,
     name: "Submit form",
     status: "active",
@@ -21,6 +25,8 @@ const availableItems = [
   },
   {
     identity: "step:3",
+    entityId: "3",
+    entityType: "step",
     id: 3,
     name: "Verify result",
     status: "active",
@@ -28,7 +34,7 @@ const availableItems = [
   },
 ];
 
-function mountBuilder(sequence = []) {
+function mountBuilder(sequence = [], overrides = {}) {
   return mount(SequenceBuilder, {
     props: {
       accessibleLabel: english.SequenceBuilder.accessibleLabel,
@@ -58,6 +64,7 @@ function mountBuilder(sequence = []) {
         hasNextPage: false,
       },
       sequence,
+      ...overrides,
     },
     global: {
       stubs: { fontAwesomeIcon: true },
@@ -120,6 +127,119 @@ describe("SequenceBuilder addition and removal", () => {
     expect(wrapper.text()).toContain("1 duplicate items were not added.");
   });
 
+  it("allows the same available step to be added as a distinct occurrence", async () => {
+    const wrapper = mountBuilder([availableItems[0]], { allowDuplicates: true });
+    const dataTransfer = {
+      getData(type) {
+        return type === "application/x-idelium-sequence-item" ? "step:1" : "";
+      },
+    };
+
+    await wrapper
+      .get(".sequence-builder__selected")
+      .trigger("drop", { dataTransfer });
+
+    const sequence = await applyLastSequence(wrapper);
+    expect(sequence).toHaveLength(2);
+    expect(sequence.map((item) => item.id ?? item.entityId)).toEqual([1, 1]);
+    expect(sequence[1]).toMatchObject({
+      identity: "step:1:occurrence:2",
+      persisted: {
+        id: 1,
+        sequenceIdentity: "step:1:occurrence:2",
+      },
+    });
+  });
+
+  it("renders duplicate as an accessible icon action", async () => {
+    const wrapper = mountBuilder([availableItems[0]], { allowDuplicates: true });
+    const duplicateButton = wrapper.get(".sequence-builder__duplicate-action");
+
+    expect(duplicateButton.attributes("aria-label")).toBe(
+      "Duplicate Open browser",
+    );
+    expect(duplicateButton.attributes("title")).toBe("Duplicate Open browser");
+    expect(duplicateButton.text()).not.toContain("Duplicate Open browser");
+
+    await duplicateButton.trigger("click");
+
+    const sequence = await applyLastSequence(wrapper);
+    expect(sequence.map((item) => item.identity)).toEqual([
+      "step:1",
+      "step:1:occurrence:2",
+    ]);
+  });
+
+  it("adds a dragged available item at the dropped sequence row", async () => {
+    const wrapper = mountBuilder([availableItems[0], availableItems[2]]);
+    const dataTransfer = {
+      dropEffect: "",
+      effectAllowed: "",
+      value: "",
+      setData(_type, value) {
+        this.value = value;
+      },
+      getData() {
+        return this.value;
+      },
+    };
+
+    await wrapper
+      .getComponent({ name: "EntityPicker" })
+      .find("[data-identity='step:2']")
+      .trigger("dragstart", { dataTransfer });
+    await wrapper
+      .findAll(".sequence-builder__item")[1]
+      .trigger("dragover", { dataTransfer });
+    await wrapper
+      .findAll(".sequence-builder__item")[1]
+      .trigger("drop", { dataTransfer });
+
+    const sequence = await applyLastSequence(wrapper);
+    expect(dataTransfer.effectAllowed).toBe("copyMove");
+    expect(dataTransfer.dropEffect).toBe("copy");
+    expect(sequence.map((item) => item.identity)).toEqual([
+      "step:1",
+      "step:2",
+      "step:3",
+    ]);
+  });
+
+  it("keeps drop addition working when the browser drops the transfer payload", async () => {
+    const wrapper = mountBuilder([availableItems[0]]);
+    const picker = wrapper.getComponent({ name: "EntityPicker" });
+
+    picker.vm.$emit("drag-start", availableItems[1]);
+    await wrapper.vm.$nextTick();
+    await wrapper.get(".sequence-builder__selected").trigger("drop", {
+      dataTransfer: {
+        getData() {
+          return "";
+        },
+      },
+    });
+
+    const sequence = await applyLastSequence(wrapper);
+    expect(sequence.map((item) => item.identity)).toEqual(["step:1", "step:2"]);
+  });
+
+  it("primes the available item drag from pointer interaction before native drag starts", async () => {
+    const wrapper = mountBuilder([availableItems[0]]);
+    const picker = wrapper.getComponent({ name: "EntityPicker" });
+
+    await picker.find("[data-identity='step:2']").trigger("pointerdown");
+    await wrapper.get(".sequence-builder__selected").trigger("drop", {
+      dataTransfer: {
+        getData() {
+          return "";
+        },
+      },
+    });
+
+    const sequence = await applyLastSequence(wrapper);
+    expect(sequence.map((item) => item.identity)).toEqual(["step:1", "step:2"]);
+  });
+
   it("removes multiple items and restores their order and selection", async () => {
     const wrapper = mountBuilder(availableItems);
     const checkboxes = wrapper.findAll(
@@ -144,5 +264,14 @@ describe("SequenceBuilder addition and removal", () => {
       "step:3",
     ]);
     expect(wrapper.vm.selectedSequenceIds).toEqual(["step:1", "step:3"]);
+  });
+
+  it("renders item removal as an accessible trash icon action", () => {
+    const wrapper = mountBuilder([availableItems[0]]);
+    const removeButton = wrapper.get(".sequence-builder__remove-action");
+
+    expect(removeButton.attributes("aria-label")).toBe("Remove Open browser");
+    expect(removeButton.attributes("title")).toBe("Remove Open browser");
+    expect(removeButton.text()).not.toContain("Remove Open browser");
   });
 });
