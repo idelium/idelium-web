@@ -215,12 +215,20 @@
                 v-for="action in inlineActions"
                 :key="action.id"
                 :accessible-label="`${action.label}: ${rowLabel(row)}`"
-                :title="action.tooltip || action.label"
+                :class="[
+                  'enterprise-data-table__action-button',
+                  action.icon ? 'enterprise-data-table__action-button--icon' : '',
+                ]"
+                :icon-only="Boolean(action.icon)"
+                :tooltip="action.tooltip || action.label"
                 :variant="action.variant || 'ghost'"
                 :disabled="actionDisabled(action, row)"
                 @click="emitAction(action, row)"
               >
-                {{ action.label }}
+                <template v-if="action.icon" #icon>
+                  <font-awesome-icon :icon="action.icon" aria-hidden="true" />
+                </template>
+                <span v-if="!action.icon">{{ action.label }}</span>
               </IdButton>
               <details
                 v-if="overflowActions.length > 0"
@@ -690,6 +698,12 @@ tbody tr:focus-visible {
   flex-wrap: wrap;
   gap: var(--id-space-2);
   justify-content: flex-end;
+}
+
+.enterprise-data-table__action-button--icon {
+  min-height: 2rem;
+  min-width: 2rem;
+  padding: 0;
 }
 
 .enterprise-data-table__action-menu {

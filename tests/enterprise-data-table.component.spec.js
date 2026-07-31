@@ -232,4 +232,25 @@ describe("EnterpriseDataTable", () => {
       selectedIds: ["10", "11"],
     });
   });
+
+  it("renders icon-only row actions with accessible labels and tooltips", () => {
+    const wrapper = mountTable({
+      actions: [
+        {
+          icon: "eye",
+          id: "detail",
+          label: "Details",
+          tooltip: "Open details",
+        },
+      ],
+      capabilities: [],
+    });
+
+    const action = wrapper.get(".enterprise-data-table__action-button--icon");
+
+    expect(action.attributes("aria-label")).toBe("Details: Checkout");
+    expect(action.attributes("title")).toBe("Open details");
+    expect(action.text()).not.toContain("Details");
+    expect(action.find("i").exists()).toBe(true);
+  });
 });

@@ -1249,6 +1249,16 @@ export default {
     btnReactivate: "reactivate",
     btnResendInvite: "resend invite",
     btnSuspend: "suspend",
+    tooltips: {
+      audit: "Open the account audit history",
+      cancelInvite: "Cancel the pending account invitation",
+      delete: "Archive or delete this account",
+      detail: "Open account details",
+      modify: "Modify account profile and role",
+      reactivate: "Reactivate the suspended account",
+      resendInvite: "Resend the account invitation",
+      suspend: "Suspend the active account",
+    },
     confirmDeleteAccount: "Do you want to delete this account ?",
     accountExist: "Account exist",
     formHelp:

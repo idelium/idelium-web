@@ -210,8 +210,15 @@ describe("administration enterprise listings", () => {
     const wrapper = shallowMount(Accounts, {
       global: {
         stubs: {
-          EnterpriseListingGrid: true,
-          EnterpriseListingPage: true,
+          EnterpriseListingGrid: {
+            name: "EnterpriseListingGrid",
+            props: ["density"],
+            template: "<div />",
+          },
+          EnterpriseListingPage: {
+            name: "EnterpriseListingPage",
+            template: "<section><slot /></section>",
+          },
           modalModifyAccount: true,
         },
         mocks: commonMocks(
@@ -260,6 +267,22 @@ describe("administration enterprise listings", () => {
       "audit",
       "delete",
     ]);
+    expect(wrapper.vm.actions.find((action) => action.id === "detail")).toMatchObject({
+      icon: "eye",
+      tooltip: "Details",
+    });
+    expect(wrapper.vm.actions.find((action) => action.id === "edit")).toMatchObject({
+      icon: "pen",
+      tooltip: "Edit",
+    });
+    expect(wrapper.vm.actions.find((action) => action.id === "delete")).toMatchObject({
+      icon: "trash",
+      tooltip: "Delete",
+      variant: "danger",
+    });
+    expect(wrapper.getComponent({ name: "EnterpriseListingGrid" }).props("density")).toBe(
+      "compact",
+    );
   });
 
   it("persists account governance filters in the route and request contract", async () => {

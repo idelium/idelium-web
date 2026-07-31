@@ -182,11 +182,13 @@ export default {
     projectActions() {
       return [
         {
+          icon: "pen",
           id: "edit",
           label: this.projectCopy.btnModify,
           tooltip: this.projectCopy.btnModalModifyProject,
         },
         {
+          icon: "trash",
           id: "delete",
           label: this.projectCopy.btnDelete,
           tooltip: this.language[this.config.currentLanguage].Actions.delete,

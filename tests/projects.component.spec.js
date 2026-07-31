@@ -136,6 +136,31 @@ describe("projects component", () => {
     expect(() => wrapper.vm.trackProjectView()).not.toThrow();
   });
 
+  it("uses icon-only enterprise actions for update and delete", async () => {
+    api.get.mockResolvedValueOnce({
+      data: [{ id: 3, name: "DEMO", description: "Local project" }],
+    });
+
+    const wrapper = mountProjects();
+
+    await vi.waitFor(() => expect(wrapper.vm.arrayProjects).toHaveLength(1));
+    expect(wrapper.vm.projectActions).toEqual([
+      {
+        icon: "pen",
+        id: "edit",
+        label: "Edit",
+        tooltip: "Edit project",
+      },
+      {
+        icon: "trash",
+        id: "delete",
+        label: "Delete",
+        tooltip: "Delete",
+        variant: "danger",
+      },
+    ]);
+  });
+
   it("keeps search, sorting, and pagination in the route query", async () => {
     vi.useFakeTimers();
     api.get.mockResolvedValue({

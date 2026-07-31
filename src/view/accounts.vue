@@ -12,6 +12,7 @@
       :actions="actions"
       :capabilities="accountCapabilities"
       :columns="columns"
+      density="compact"
       :error="error"
       :has-active-filters="hasActiveFilters"
       :listing-copy="copy"
@@ -307,52 +308,73 @@ export default {
       return [
         {
           capability: "account.detail",
+          icon: "eye",
           id: "detail",
           label: this.copy.btnDetail,
+          tooltip: this.copy.tooltips?.detail ?? this.copy.btnDetail,
         },
         {
           capability: "account.invite",
           disabled: (account) => account.status !== "invited",
+          icon: "sync",
           id: "resend-invite",
           label: this.copy.btnResendInvite,
-          variant: "info",
+          placement: "overflow",
+          tooltip:
+            this.copy.tooltips?.resendInvite ?? this.copy.btnResendInvite,
         },
         {
           capability: "account.invite",
           disabled: (account) =>
             !["invited", "expired-invitation"].includes(account.status),
+          icon: "times-circle",
           id: "cancel-invite",
           label: this.copy.btnCancelInvite,
+          placement: "overflow",
+          tooltip:
+            this.copy.tooltips?.cancelInvite ?? this.copy.btnCancelInvite,
           variant: "warning",
         },
         {
           capability: "account.role.assign",
+          icon: "pen",
           id: "edit",
           label: this.copy.btnModify,
+          tooltip: this.copy.tooltips?.modify ?? this.copy.btnModify,
         },
         {
           capability: "account.suspend",
           disabled: (account) => account.status !== "active",
+          icon: "user-secret",
           id: "suspend",
           label: this.copy.btnSuspend,
+          placement: "overflow",
+          tooltip: this.copy.tooltips?.suspend ?? this.copy.btnSuspend,
           variant: "warning",
         },
         {
           capability: "account.reactivate",
           disabled: (account) => account.status !== "suspended",
+          icon: "sync",
           id: "reactivate",
           label: this.copy.btnReactivate,
-          variant: "success",
+          placement: "overflow",
+          tooltip:
+            this.copy.tooltips?.reactivate ?? this.copy.btnReactivate,
         },
         {
           capability: "account.audit",
+          icon: "history",
           id: "audit",
           label: this.copy.btnAudit,
+          tooltip: this.copy.tooltips?.audit ?? this.copy.btnAudit,
         },
         {
           capability: "account.archive",
+          icon: "trash",
           id: "delete",
           label: this.copy.btnDelete,
+          tooltip: this.copy.tooltips?.delete ?? this.copy.btnDelete,
           variant: "danger",
           disabled: (account) => account.email === "admin",
         },
@@ -934,9 +956,16 @@ export default {
 
 <style scoped>
 .accounts-governance-filters {
+  align-items: end;
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 4%), transparent),
+    var(--id-color-surface-raised);
+  border: 1px solid var(--id-color-border);
+  border-radius: var(--id-radius-large);
   display: grid;
   gap: var(--id-space-3);
   grid-template-columns: repeat(4, minmax(0, 1fr));
+  padding: var(--id-space-4);
   width: 100%;
 }
 
@@ -950,12 +979,32 @@ export default {
 
 .accounts-governance-filters input,
 .accounts-governance-filters select {
-  min-height: var(--id-control-min-size);
-  padding: 0 var(--id-space-3);
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 5%), transparent),
+    var(--id-color-surface);
   border: 1px solid var(--id-color-border);
   border-radius: var(--id-radius-medium);
   color: var(--id-color-text);
-  background: var(--id-color-surface);
+  min-height: var(--id-control-min-size);
+  padding: 0 var(--id-space-3);
+}
+
+.accounts-governance-filters select {
+  appearance: none;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--id-color-text-muted) 50%),
+    linear-gradient(135deg, var(--id-color-text-muted) 50%, transparent 50%),
+    linear-gradient(180deg, rgb(255 255 255 / 5%), transparent);
+  background-position:
+    calc(100% - 1rem) 50%,
+    calc(100% - 0.7rem) 50%,
+    0 0;
+  background-repeat: no-repeat;
+  background-size:
+    0.3rem 0.3rem,
+    0.3rem 0.3rem,
+    100% 100%;
+  padding-right: 2rem;
 }
 
 @media (max-width: 64rem) {
