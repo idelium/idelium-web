@@ -132,7 +132,7 @@ const router = createRouter({
           meta: { requiresAuth: true },
         },
         {
-          path: "apikey",
+          path: "apikey/:tab?",
           name: "apikey",
           component: apikey,
           meta: { requiresAuth: true },

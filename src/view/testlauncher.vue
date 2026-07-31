@@ -6,56 +6,83 @@
         <h1 id="launch-page-title">{{ launcherCopy.pageTitle }}</h1>
         <span>{{ launcherCopy.pageDescription }}</span>
       </div>
-      <button
-        class="btn btn-outline-light btn-sm"
-        type="button"
-        v-on:click="refreshLaunchAssets"
+      <div class="launch-page__hero-actions">
+        <span :class="['launch-page__readiness', launchReadiness.className]">
+          <font-awesome-icon :icon="launchReadiness.icon" aria-hidden="true" />
+          {{ launchReadiness.label }}
+        </span>
+        <button
+          class="btn btn-outline-light btn-sm"
+          type="button"
+          v-on:click="refreshLaunchAssets"
+        >
+          <font-awesome-icon icon="rotate" aria-hidden="true" />
+          {{ launcherCopy.refresh }}
+        </button>
+      </div>
+    </section>
+
+    <section class="launch-page__path" :aria-label="launcherCopy.pathLabel">
+      <article
+        v-for="step in launchPathSteps"
+        v-bind:key="step.key"
+        :class="[
+          'launch-page__path-step',
+          { 'launch-page__path-step--complete': step.complete },
+        ]"
       >
-        <font-awesome-icon icon="rotate" aria-hidden="true" />
-        {{ launcherCopy.refresh }}
-      </button>
+        <span class="launch-page__path-index">{{ step.index }}</span>
+        <div>
+          <strong>{{ step.title }}</strong>
+          <small>{{ step.value }}</small>
+        </div>
+      </article>
     </section>
 
-    <section class="launch-page__grid">
-      <LaunchAssetSelector
-        v-model="selectedCycleId"
-        group-name="launch-cycle"
-        :copy="launcherCopy.cycleSelector"
-        :items="cycleAssets"
-        :query="cycleQuery"
-        v-on:query-change="updateCycleQuery"
-        v-on:update:model-value="selectCycle"
-      />
-      <LaunchAssetSelector
-        v-model="selectedEnvironmentId"
-        group-name="launch-environment"
-        :copy="launcherCopy.environmentSelector"
-        :items="environmentAssets"
-        :query="environmentQuery"
-        v-on:query-change="updateEnvironmentQuery"
-        v-on:update:model-value="selectEnvironment"
-      />
+    <section class="launch-page__workspace">
+      <div class="launch-page__selectors">
+        <LaunchAssetSelector
+          v-model="selectedCycleId"
+          group-name="launch-cycle"
+          :copy="launcherCopy.cycleSelector"
+          :items="cycleAssets"
+          :query="cycleQuery"
+          v-on:query-change="updateCycleQuery"
+          v-on:update:model-value="selectCycle"
+        />
+        <LaunchAssetSelector
+          v-model="selectedEnvironmentId"
+          group-name="launch-environment"
+          :copy="launcherCopy.environmentSelector"
+          :items="environmentAssets"
+          :query="environmentQuery"
+          v-on:query-change="updateEnvironmentQuery"
+          v-on:update:model-value="selectEnvironment"
+        />
+      </div>
+
+      <aside class="launch-page__side-panel">
+        <LaunchTargetConfigurator
+          v-model="selectedTargetId"
+          :concurrency="concurrency"
+          :copy="language[config.currentLanguage].LaunchTarget"
+          :overrides="targetOverrides"
+          :targets="targetAssets"
+          v-on:update:concurrency="selectConcurrency"
+          v-on:update:model-value="selectTarget"
+          v-on:update:overrides="selectOverrides"
+        />
+
+        <LaunchPreflightPanel
+          :copy="language[config.currentLanguage].LaunchPreflight"
+          :result="preflightResult"
+          :running="preflightRunning"
+          :stale="preflightStale"
+          v-on:focus-area="focusLaunchArea"
+          v-on:run="runPreflight"
+        />
+      </aside>
     </section>
-
-    <LaunchTargetConfigurator
-      v-model="selectedTargetId"
-      :concurrency="concurrency"
-      :copy="language[config.currentLanguage].LaunchTarget"
-      :overrides="targetOverrides"
-      :targets="targetAssets"
-      v-on:update:concurrency="selectConcurrency"
-      v-on:update:model-value="selectTarget"
-      v-on:update:overrides="selectOverrides"
-    />
-
-    <LaunchPreflightPanel
-      :copy="language[config.currentLanguage].LaunchPreflight"
-      :result="preflightResult"
-      :running="preflightRunning"
-      :stale="preflightStale"
-      v-on:focus-area="focusLaunchArea"
-      v-on:run="runPreflight"
-    />
 
     <section class="launch-page__review" aria-live="polite">
       <LaunchReviewSummary
@@ -252,6 +279,66 @@ export default {
         projectId: getSelectedProjectId(),
         target: this.selectedTarget,
       });
+    },
+    launchPathSteps() {
+      const launchCopy = this.language[this.config.currentLanguage].Launch;
+      return [
+        {
+          complete: Boolean(this.selectedCycle),
+          index: "01",
+          key: "cycle",
+          title: this.launcherCopy.cycleSelector.title,
+          value: this.selectedCycle?.name ?? this.launcherCopy.notSelected,
+        },
+        {
+          complete: Boolean(this.selectedEnvironment),
+          index: "02",
+          key: "environment",
+          title: this.launcherCopy.environmentSelector.title,
+          value:
+            this.selectedEnvironment?.name ?? this.launcherCopy.notSelected,
+        },
+        {
+          complete: Boolean(this.selectedTarget),
+          index: "03",
+          key: "target",
+          title: launchCopy.target,
+          value: this.selectedTarget?.name ?? this.launcherCopy.notSelected,
+        },
+        {
+          complete:
+            Boolean(this.preflightResult) &&
+            !this.preflightStale &&
+            !this.preflightResult?.hasBlockingDiagnostics,
+          index: "04",
+          key: "preflight",
+          title: launchCopy.preflight,
+          value: this.preflightStale
+            ? this.launcherCopy.preflightRequired
+            : this.launcherCopy.preflightReady,
+        },
+      ];
+    },
+    launchReadiness() {
+      if (this.launchSubmitting) {
+        return {
+          className: "launch-page__readiness--busy",
+          icon: "rotate",
+          label: this.launcherCopy.launching,
+        };
+      }
+      if (this.canOpenTargetSelection) {
+        return {
+          className: "launch-page__readiness--ready",
+          icon: "check-circle",
+          label: this.launcherCopy.readyToLaunch,
+        };
+      }
+      return {
+        className: "launch-page__readiness--draft",
+        icon: "exclamation-triangle",
+        label: this.launcherCopy.needsReview,
+      };
     },
     launchErrorCopy() {
       if (!this.launchError) return "";
@@ -658,7 +745,9 @@ export default {
 <style scoped>
 .launch-page {
   display: grid;
-  gap: var(--id-space-5);
+  gap: var(--id-space-4);
+  margin: 0 auto;
+  max-width: 1400px;
   min-width: 0;
   width: 100%;
 }
@@ -666,14 +755,16 @@ export default {
 .launch-page__hero,
 .launch-page__review {
   background:
-    linear-gradient(135deg, rgb(255 108 27 / 18%), transparent 38%),
+    radial-gradient(circle at top left, rgb(255 108 27 / 24%), transparent 34%),
+    linear-gradient(135deg, rgb(255 255 255 / 6%), transparent 48%),
     var(--id-color-surface-raised);
   border: 1px solid var(--id-color-border);
   border-radius: var(--id-radius-large);
   display: flex;
   gap: var(--id-space-4);
   justify-content: space-between;
-  padding: var(--id-space-5);
+  padding: clamp(1rem, 2vw, 1.5rem);
+  box-shadow: 0 1.5rem 4rem rgb(0 0 0 / 24%);
 }
 
 .launch-page__hero {
@@ -691,7 +782,8 @@ export default {
 
 .launch-page__hero p,
 .launch-page__review p,
-.launch-page__review dt {
+.launch-page__review dt,
+.launch-page__path-step strong {
   color: var(--id-color-text-muted);
   font-size: 0.75rem;
   font-weight: 800;
@@ -699,14 +791,161 @@ export default {
   text-transform: uppercase;
 }
 
-.launch-page__grid {
+.launch-page__hero h1 {
+  color: var(--id-color-text);
+  font-size: clamp(1.7rem, 3vw, 2.6rem);
+  line-height: 1;
+  margin-top: var(--id-space-1);
+}
+
+.launch-page__hero span {
+  color: var(--id-color-text-muted);
+  display: block;
+  margin-top: var(--id-space-2);
+  max-width: 52rem;
+}
+
+.launch-page__hero-actions {
+  align-items: flex-end;
+  display: grid;
+  gap: var(--id-space-3);
+  justify-items: end;
+}
+
+.launch-page__readiness {
+  align-items: center;
+  border: 1px solid var(--id-color-border);
+  border-radius: var(--id-radius-pill);
+  display: inline-flex;
+  font-size: 0.72rem;
+  font-weight: 900;
+  gap: var(--id-space-2);
+  letter-spacing: 0.14em;
+  min-height: 2.1rem;
+  padding: 0 var(--id-space-3);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.launch-page__readiness--ready {
+  background: rgb(25 135 84 / 18%);
+  border-color: rgb(25 135 84 / 42%);
+  color: #9ef0c4;
+}
+
+.launch-page__readiness--busy {
+  background: rgb(13 202 240 / 14%);
+  border-color: rgb(13 202 240 / 36%);
+  color: #a7ecff;
+}
+
+.launch-page__readiness--draft {
+  background: rgb(255 193 7 / 13%);
+  border-color: rgb(255 193 7 / 34%);
+  color: #ffe29a;
+}
+
+.launch-page__path {
+  display: grid;
+  gap: var(--id-space-3);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.launch-page__path-step {
+  align-items: center;
+  background: linear-gradient(180deg, rgb(255 255 255 / 5%), transparent),
+    var(--id-color-surface-raised);
+  border: 1px solid var(--id-color-border);
+  border-radius: var(--id-radius-large);
+  display: flex;
+  gap: var(--id-space-3);
+  min-width: 0;
+  padding: var(--id-space-3);
+}
+
+.launch-page__path-step--complete {
+  border-color: rgb(255 108 27 / 52%);
+  box-shadow: inset 0 0 0 1px rgb(255 108 27 / 16%);
+}
+
+.launch-page__path-index {
+  align-items: center;
+  background: rgb(255 108 27 / 14%);
+  border: 1px solid rgb(255 108 27 / 32%);
+  border-radius: var(--id-radius-medium);
+  color: #ffd1b5;
+  display: inline-flex;
+  flex: 0 0 2.4rem;
+  font-weight: 900;
+  height: 2.4rem;
+  justify-content: center;
+}
+
+.launch-page__path-step div {
+  display: grid;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.launch-page__path-step small {
+  color: var(--id-color-text);
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.launch-page__workspace {
   display: grid;
   gap: var(--id-space-4);
+  grid-template-columns: minmax(0, 1.35fr) minmax(22rem, 0.65fr);
+  min-width: 0;
+}
+
+.launch-page__selectors,
+.launch-page__side-panel {
+  display: grid;
+  gap: var(--id-space-4);
+  min-width: 0;
+}
+
+.launch-page__selectors {
   grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.launch-page :deep(.launch-asset-selector),
+.launch-page :deep(.launch-target),
+.launch-page :deep(.launch-preflight) {
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 4%), transparent),
+    var(--id-color-surface-raised);
+  box-shadow: 0 1.1rem 2.6rem rgb(0 0 0 / 18%);
+}
+
+.launch-page :deep(.launch-asset-selector__items) {
+  max-height: min(24rem, 42vh);
+}
+
+.launch-page :deep(.launch-asset-selector__item--active),
+.launch-page :deep(.launch-target__item--active) {
+  background:
+    linear-gradient(90deg, rgb(255 108 27 / 18%), transparent 45%),
+    var(--id-color-surface);
+  border-color: rgb(255 108 27 / 68%);
+  box-shadow:
+    0 0 0 1px rgb(255 108 27 / 20%),
+    0 1rem 2.2rem rgb(255 108 27 / 10%);
+}
+
+.launch-page :deep(.launch-asset-selector__name),
+.launch-page :deep(.launch-target__name) {
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .launch-page__review {
   align-items: flex-end;
+  border-color: rgb(255 108 27 / 34%);
 }
 
 .launch-page__review dl {
@@ -723,8 +962,29 @@ export default {
   margin: var(--id-space-1) 0 0;
 }
 
+.launch-page__review > button {
+  border-radius: var(--id-radius-pill);
+  box-shadow: 0 1rem 2.5rem rgb(25 135 84 / 18%);
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  min-height: 2.75rem;
+  padding-inline: var(--id-space-5);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.launch-page__error {
+  background: rgb(220 53 69 / 12%);
+  border: 1px solid rgb(220 53 69 / 34%);
+  border-radius: var(--id-radius-medium);
+  color: #ffb8c1 !important;
+  padding: var(--id-space-3);
+}
+
 @media (max-width: 64rem) {
-  .launch-page__grid,
+  .launch-page__path,
+  .launch-page__selectors,
+  .launch-page__workspace,
   .launch-page__review dl {
     grid-template-columns: 1fr;
   }
@@ -733,6 +993,11 @@ export default {
   .launch-page__review {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .launch-page__hero-actions {
+    align-items: stretch;
+    justify-items: stretch;
   }
 }
 </style>

@@ -3,7 +3,7 @@
     <section class="card testcycles-setup-card">
       <div class="card-header testcycles-tabs-header">
         <ul
-          class="nav nav-tabs card-header-tabs testcycles-tabs"
+          class="nav nav-tabs card-header-tabs idelium-enterprise-tabs testcycles-tabs"
           id="nav-tab"
           role="tablist"
         >
@@ -44,7 +44,10 @@
         </ul>
       </div>
 
-      <div class="tab-content testcycles-tab-content" id="pills-tabContent">
+      <div
+        class="tab-content idelium-enterprise-tab-content testcycles-tab-content"
+        id="pills-tabContent"
+      >
         <div
           :class="tabPaneClass('modify')"
           id="nav-tabTitleModify"
@@ -220,6 +223,7 @@
         :accessible-label="sequenceBuilderCopy.accessibleLabel"
         :available-items="builderAvailableTests"
         :copy="sequenceBuilderCopy"
+        layout="split"
         :picker-filters="testCyclePickerFilters"
         :picker-meta="testCyclePickerMeta"
         :picker-query="testCyclePickerQuery"

@@ -1,6 +1,10 @@
 <template>
   <nav class="plugins-tabs-container">
-    <div class="nav nav-tabs" id="nav-tab" role="tablist">
+    <div
+      class="nav nav-tabs idelium-enterprise-tabs"
+      id="nav-tab"
+      role="tablist"
+    >
       <button
         :class="tabButtonClass('list')"
         id="nav-home-tab"
@@ -45,7 +49,10 @@
       </button>
     </div>
   </nav>
-  <div class="tab-content" id="pills-tabContent">
+  <div
+    class="tab-content idelium-enterprise-tab-content"
+    id="pills-tabContent"
+  >
     <div
       :class="tabPaneClass('list')"
       id="nav-home"

@@ -168,6 +168,9 @@ describe("test-cycle creation component", () => {
     expect(wrapper.findComponent({ name: "SequenceBuilder" }).exists()).toBe(
       true,
     );
+    expect(
+      wrapper.findComponent({ name: "SequenceBuilder" }).props("layout"),
+    ).toBe("split");
     expect(wrapper.findComponent({ name: "draggable" }).exists()).toBe(false);
   });
 

@@ -3,7 +3,11 @@
     <div class="row">
       <div class="col-12">
         <div class="card">
-          <div class="nav nav-tabs" id="nav-tab" role="tablist">
+          <div
+            class="nav nav-tabs idelium-enterprise-tabs"
+            id="nav-tab"
+            role="tablist"
+          >
             <button
               :class="tabButtonClass('modify')"
               id="nav-tabTitleModify-tab"
@@ -42,7 +46,10 @@
               {{ language[config.currentLanguage].Tests.tabTitleImportTest }}
             </button>
           </div>
-          <div class="tab-content" id="pills-tabContent">
+          <div
+            class="tab-content idelium-enterprise-tab-content"
+            id="pills-tabContent"
+          >
             <div
               :class="tabPaneClass('modify')"
               id="nav-tabTitleModify"

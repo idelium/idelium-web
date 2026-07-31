@@ -701,4 +701,51 @@ describe("launch asset selection", () => {
     expect(wrapper.vm.selectedEnvironmentId).toBe("8");
     expect(wrapper.vm.selectedCycleId).toBeNull();
   });
+
+  it("renders the enterprise launch readiness cockpit", async () => {
+    api.get
+      .mockResolvedValueOnce({
+        data: {
+          data: [
+            {
+              id: 1,
+              name: "Release cycle",
+              projectId: 7,
+              runtime: "selenium",
+              status: "active",
+            },
+          ],
+        },
+      })
+      .mockResolvedValueOnce({ data: { data: [] } })
+      .mockResolvedValueOnce({
+        data: {
+          data: [
+            {
+              id: 2,
+              name: "Demo",
+              projectId: 7,
+              runtimeType: "selenium",
+              status: "active",
+            },
+          ],
+        },
+      });
+
+    const wrapper = mountLauncher({
+      route: {
+        name: "testlauncher",
+        query: { cycleId: "1", environmentId: "2" },
+      },
+    });
+
+    await vi.waitFor(() => expect(api.get).toHaveBeenCalledTimes(3));
+
+    expect(wrapper.find(".launch-page__path").exists()).toBe(true);
+    expect(wrapper.findAll(".launch-page__path-step")).toHaveLength(4);
+    expect(wrapper.find(".launch-page__workspace").exists()).toBe(true);
+    expect(wrapper.find(".launch-page__side-panel").exists()).toBe(true);
+    expect(wrapper.text()).toContain("Release cycle");
+    expect(wrapper.text()).toContain("Demo");
+  });
 });

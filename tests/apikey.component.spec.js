@@ -20,11 +20,12 @@ describe("apikey component", () => {
     vi.spyOn(window, "open").mockImplementation(() => null);
   });
 
-  function mountApikey() {
+  function mountApikey(options = {}) {
     return shallowMount(Apikey, {
       global: {
         mocks: {
-          $route: { name: "apikey" },
+          $route: options.route ?? { name: "apikey", params: {}, query: {} },
+          $router: options.router,
           config: {
             currentLanguage: "gb",
             serviceBaseUrl: "/api/",
@@ -52,6 +53,19 @@ describe("apikey component", () => {
                 cliInfo: "Install the CLI from PyPI.",
                 keyCopy: "Key copied",
                 confirmGenerateMessage: "Generate a new key?",
+                tabsLabel: "API key sections",
+                tabOverview: "Overview",
+                tabOverviewDescription: "Current key.",
+                tabCli: "CLI usage",
+                tabCliDescription: "Install snippets.",
+                tabCredentials: "Credentials",
+                tabCredentialsDescription: "Credential inventory.",
+                tabCreate: "Create",
+                tabCreateDescription: "Create credential.",
+                tabOperations: "Operations",
+                tabOperationsDescription: "Rotate or revoke.",
+                operationsEmptyTitle: "No operation selected",
+                operationsEmptyDescription: "Select an operation.",
                 credentialLifecycleTitle: "Credential lifecycle",
                 credentialLifecycleDescription: "Manage credentials safely.",
                 revealOnceNotice: "Secret is shown only once.",
@@ -182,9 +196,15 @@ describe("apikey component", () => {
     });
   }
 
+  async function selectTab(wrapper, tab) {
+    wrapper.vm.selectApiKeyTab(tab);
+    await wrapper.vm.$nextTick();
+  }
+
   it("opens the Idelium PyPI package from the download button", async () => {
     api.get.mockResolvedValue({ data: { apiKey: "token" } });
     const wrapper = mountApikey();
+    await selectTab(wrapper, "cli");
 
     const downloadButton = wrapper
       .findAll("button")
@@ -196,6 +216,44 @@ describe("apikey component", () => {
       "https://pypi.org/project/idelium/",
       "_blank",
     );
+  });
+
+  it("splits the API key workspace into task-focused tabs", async () => {
+    api.get.mockResolvedValue({ data: { apiKey: "token" } });
+    const wrapper = mountApikey();
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.findAll(".apikey-tab")).toHaveLength(5);
+    expect(wrapper.find(".apikey-card-main").exists()).toBe(true);
+    expect(wrapper.find(".apikey-cli-card").exists()).toBe(false);
+
+    await selectTab(wrapper, "cli");
+
+    expect(wrapper.find(".apikey-card-main").exists()).toBe(false);
+    expect(wrapper.find(".apikey-cli-card").exists()).toBe(true);
+  });
+
+  it("syncs API key tabs with routable URLs", async () => {
+    api.get.mockResolvedValue({ data: { apiKey: "token" } });
+    const push = vi.fn();
+    const wrapper = mountApikey({
+      route: { name: "apikey", params: { tab: "credentials" }, query: {} },
+      router: { push },
+    });
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.vm.activeApikeyTab).toBe("credentials");
+    expect(wrapper.findComponent({ name: "EnterpriseDataTable" }).exists()).toBe(
+      true,
+    );
+
+    await selectTab(wrapper, "cli");
+
+    expect(push).toHaveBeenCalledWith({
+      name: "apikey",
+      params: { tab: "cli" },
+      query: {},
+    });
   });
 
   it("renders redacted pinned usage snippets and copies them accessibly", async () => {
@@ -253,6 +311,7 @@ describe("apikey component", () => {
     const wrapper = mountApikey();
     await wrapper.vm.$nextTick();
     await vi.waitFor(() => expect(wrapper.vm.credentialRows).toHaveLength(2));
+    await selectTab(wrapper, "credentials");
 
     const inventory = wrapper.findComponent({ name: "EnterpriseDataTable" });
     expect(inventory.exists()).toBe(true);
@@ -293,6 +352,7 @@ describe("apikey component", () => {
     wrapper.vm.$router = { push };
     await wrapper.vm.$nextTick();
     await vi.waitFor(() => expect(api.get).toHaveBeenCalled());
+    await selectTab(wrapper, "create");
     await wrapper.setData({
       credentialCreate: {
         constraints: "",
@@ -322,6 +382,7 @@ describe("apikey component", () => {
     );
     expect(push).toHaveBeenCalledWith({
       name: "apikey",
+      params: { tab: "create" },
       query: { credentialId: "cred-3", mode: "reveal-once" },
     });
     expect(wrapper.text()).toContain("idelium_secret_revealed_once_value");

@@ -20,7 +20,13 @@ export function routableTabs(defaultTab, tabs) {
         return this.activeTab === tab
       },
       tabButtonClass(tab) {
-        return ['nav-link', { active: this.isActiveTab(tab) }]
+        const isActive = this.isActiveTab(tab)
+
+        return [
+          'nav-link',
+          'idelium-enterprise-tab',
+          { active: isActive, 'idelium-enterprise-tab--active': isActive }
+        ]
       },
       tabPaneClass(tab) {
         return ['tab-pane', 'fade', { show: this.isActiveTab(tab), active: this.isActiveTab(tab) }]

@@ -11,6 +11,27 @@ describe("shared tab styling", () => {
     expect(styles).toContain(".nav-tabs .nav-link.active");
     expect(styles).toContain("var(--idelium-primary)");
     expect(styles).toContain(".nav-tabs .nav-link:disabled");
+    expect(styles).toContain(".idelium-enterprise-tabs");
+    expect(styles).toContain(".idelium-enterprise-tab-content");
+  });
+
+  it("applies the enterprise tab system to all project scoped tab pages", () => {
+    [
+      "testcycles.vue",
+      "tests.vue",
+      "steps.vue",
+      "plugins.vue",
+      "environments.vue",
+      "platforms.vue",
+    ].forEach((viewFile) => {
+      const source = readFileSync(
+        join(process.cwd(), "src/view", viewFile),
+        "utf8",
+      );
+
+      expect(source).toContain("idelium-enterprise-tabs");
+      expect(source).toContain("idelium-enterprise-tab-content");
+    });
   });
 
   it("uses enterprise modal and form styling", () => {
@@ -63,5 +84,14 @@ describe("shared tab styling", () => {
     expect(styles).toContain(".idelium-environment-form__grid");
     expect(styles).toContain(".idelium-environment-form__builder");
     expect(styles).toContain("grid-template-columns");
+  });
+
+  it("allows the execution results workspace to use wide enterprise screens", () => {
+    const styles = readFileSync(customVarsPath, "utf8");
+
+    expect(styles).toContain(
+      ".idelium-tabler-container > .testsperformed-page.costum",
+    );
+    expect(styles).toContain("max-width: min(1760px, calc(100vw - 3rem))");
   });
 });

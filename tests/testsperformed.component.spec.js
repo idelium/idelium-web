@@ -271,26 +271,36 @@ describe("tests performed component", () => {
 
   it("separates live runs and historical results into top-level tabs", async () => {
     api.get.mockResolvedValue({ data: [] });
-    const wrapper = mountTestsPerformed();
+    const replace = vi.fn();
+    const wrapper = mountTestsPerformed({
+      $route: {
+        name: "testsperformed",
+        query: { cyclePage: "1", cyclePerPage: "25", view: "running" },
+      },
+      $router: { replace },
+    });
 
-    expect(wrapper.vm.activeExecutionTab).toBe("results");
+    expect(wrapper.vm.activeExecutionTab).toBe("running");
     expect(wrapper.find(".testsperformed-summary").attributes("style")).toBe(
-      undefined,
+      "display: none;",
     );
     expect(
       wrapper.find(".testsperformed-parallel-panel").attributes("style"),
-    ).toContain("display: none");
+    ).toBe(undefined);
 
-    await wrapper.findAll(".testsperformed-page-tab")[0].trigger("click");
+    await wrapper.findAll(".testsperformed-page-tab")[1].trigger("click");
     await wrapper.vm.$nextTick();
 
-    expect(wrapper.vm.activeExecutionTab).toBe("running");
+    expect(wrapper.vm.activeExecutionTab).toBe("results");
     expect(
       wrapper.find(".testsperformed-summary").attributes("style"),
-    ).toContain("display: none");
+    ).not.toContain("display: none");
     expect(
       wrapper.find(".testsperformed-parallel-panel").attributes("style"),
-    ).not.toContain("display: none");
+    ).toContain("display: none");
+    expect(replace).toHaveBeenCalledWith({
+      query: { cyclePage: "1", cyclePerPage: "25", view: "results" },
+    });
   });
 
   it("loads test cycles through a bounded reload-safe page", async () => {

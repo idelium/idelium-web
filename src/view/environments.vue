@@ -1,7 +1,11 @@
 <template>
   <div>
     <nav>
-      <div class="nav nav-tabs" id="nav-tab" role="tablist">
+      <div
+        class="nav nav-tabs idelium-enterprise-tabs"
+        id="nav-tab"
+        role="tablist"
+      >
         <button
           :class="tabButtonClass('order')"
           id="nav-home-tab"
@@ -30,7 +34,10 @@
         </button>
       </div>
     </nav>
-    <div class="tab-content" id="pills-tabContent">
+    <div
+      class="tab-content idelium-enterprise-tab-content"
+      id="pills-tabContent"
+    >
       <div
         :class="tabPaneClass('order')"
         id="nav-home"

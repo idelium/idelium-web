@@ -17,8 +17,36 @@
       </div>
     </section>
 
-    <section class="apikey-grid">
-      <article class="apikey-card apikey-card-main">
+    <nav
+      class="apikey-tabs"
+      :aria-label="language[config.currentLanguage].Apikey.tabsLabel"
+    >
+      <button
+        v-for="tab in apikeyTabs"
+        v-bind:key="tab.id"
+        type="button"
+        :class="[
+          'apikey-tab',
+          { 'apikey-tab--active': activeApikeyTab === tab.id },
+        ]"
+        :aria-selected="activeApikeyTab === tab.id"
+        role="tab"
+        v-on:click="selectApiKeyTab(tab.id)"
+      >
+        <span>{{ tab.label }}</span>
+        <small>{{ tab.description }}</small>
+      </button>
+    </nav>
+
+    <section
+      v-if="activeApikeyTab === 'overview' || activeApikeyTab === 'cli'"
+      class="apikey-grid apikey-grid--single"
+      role="tabpanel"
+    >
+      <article
+        v-if="activeApikeyTab === 'overview'"
+        class="apikey-card apikey-card-main"
+      >
         <div class="apikey-card-header">
           <div>
             <p class="apikey-eyebrow">
@@ -76,7 +104,7 @@
         </div>
       </article>
 
-      <aside class="apikey-card apikey-cli-card">
+      <aside v-if="activeApikeyTab === 'cli'" class="apikey-card apikey-cli-card">
         <p class="apikey-eyebrow">
           {{ language[config.currentLanguage].Apikey.packageEyebrow }}
         </p>
@@ -130,7 +158,11 @@
       </aside>
     </section>
 
-    <section class="apikey-card apikey-inventory-card">
+    <section
+      v-if="activeApikeyTab === 'credentials'"
+      class="apikey-card apikey-inventory-card"
+      role="tabpanel"
+    >
       <div class="apikey-card-header">
         <div>
           <p class="apikey-eyebrow">
@@ -237,7 +269,11 @@
       </p>
     </section>
 
-    <section v-if="rotationTarget" class="apikey-card apikey-rotation-card">
+    <section
+      v-if="activeApikeyTab === 'operations' && rotationTarget"
+      class="apikey-card apikey-rotation-card"
+      role="tabpanel"
+    >
       <div class="apikey-card-header">
         <div>
           <p class="apikey-eyebrow">
@@ -302,7 +338,11 @@
       </button>
     </section>
 
-    <section v-if="revocationTarget" class="apikey-card apikey-rotation-card">
+    <section
+      v-if="activeApikeyTab === 'operations' && revocationTarget"
+      class="apikey-card apikey-rotation-card"
+      role="tabpanel"
+    >
       <div class="apikey-card-header">
         <div>
           <p class="apikey-eyebrow">
@@ -397,7 +437,29 @@
       </button>
     </section>
 
-    <section class="apikey-card apikey-create-card">
+    <section
+      v-if="
+        activeApikeyTab === 'operations' && !rotationTarget && !revocationTarget
+      "
+      class="apikey-card apikey-operations-empty-card"
+      role="tabpanel"
+    >
+      <p class="apikey-eyebrow">
+        {{ language[config.currentLanguage].Apikey.tabOperations }}
+      </p>
+      <h2 class="apikey-card-title">
+        {{ language[config.currentLanguage].Apikey.operationsEmptyTitle }}
+      </h2>
+      <p class="apikey-cli-copy">
+        {{ language[config.currentLanguage].Apikey.operationsEmptyDescription }}
+      </p>
+    </section>
+
+    <section
+      v-if="activeApikeyTab === 'create'"
+      class="apikey-card apikey-create-card"
+      role="tabpanel"
+    >
       <div class="apikey-card-header">
         <div>
           <p class="apikey-eyebrow">
@@ -611,6 +673,72 @@
   grid-template-columns: minmax(0, 1fr) minmax(20rem, 0.42fr);
 }
 
+.apikey-grid--single {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.apikey-tabs {
+  background:
+    linear-gradient(135deg, rgba(255, 122, 24, 0.09), transparent),
+    rgba(35, 38, 50, 0.78);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1.1rem;
+  display: grid;
+  gap: 0.65rem;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  padding: 0.7rem;
+}
+
+.apikey-tab {
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.95rem;
+  color: rgba(244, 244, 245, 0.72);
+  display: grid;
+  gap: 0.35rem;
+  min-height: 4.25rem;
+  padding: 0.85rem 1rem;
+  text-align: left;
+  transition:
+    background 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    color 160ms ease,
+    transform 160ms ease;
+}
+
+.apikey-tab span {
+  font-size: 0.72rem;
+  font-weight: 850;
+  letter-spacing: 0.14rem;
+  text-transform: uppercase;
+}
+
+.apikey-tab small {
+  color: rgba(244, 244, 245, 0.52);
+  font-size: 0.68rem;
+  line-height: 1.35;
+}
+
+.apikey-tab:hover,
+.apikey-tab:focus-visible {
+  border-color: rgba(255, 122, 24, 0.52);
+  color: #ffffff;
+  outline: none;
+  transform: translateY(-1px);
+}
+
+.apikey-tab--active {
+  background: linear-gradient(135deg, #ff8a00, #ff5a2e);
+  border-color: rgba(255, 122, 24, 0.88);
+  box-shadow: 0 0.9rem 2.3rem rgba(255, 105, 34, 0.24);
+  color: #111318;
+}
+
+.apikey-tab--active small {
+  color: rgba(17, 19, 24, 0.72);
+}
+
 .apikey-card {
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.035), transparent),
@@ -801,6 +929,7 @@
 }
 
 .apikey-create-card,
+.apikey-operations-empty-card,
 .apikey-create-form {
   display: grid;
   gap: 1rem;
@@ -948,6 +1077,10 @@
     grid-template-columns: 1fr;
   }
 
+  .apikey-tabs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .apikey-inventory-toolbar {
     grid-template-columns: 1fr 1fr;
   }
@@ -983,6 +1116,10 @@
   .apikey-rotation-metadata {
     grid-template-columns: 1fr;
   }
+
+  .apikey-tabs {
+    grid-template-columns: 1fr;
+  }
 }
 </style>
 <script>
@@ -1012,6 +1149,7 @@ export default {
   components: { EnterpriseDataTable },
   data() {
     return {
+      activeApikeyTab: "overview",
       status: "not_accepted",
       error: null,
       showError: false,
@@ -1058,6 +1196,36 @@ export default {
     };
   },
   computed: {
+    apikeyTabs() {
+      const copy = this.language[this.config.currentLanguage].Apikey;
+      return [
+        {
+          description: copy.tabOverviewDescription,
+          id: "overview",
+          label: copy.tabOverview,
+        },
+        {
+          description: copy.tabCliDescription,
+          id: "cli",
+          label: copy.tabCli,
+        },
+        {
+          description: copy.tabCredentialsDescription,
+          id: "credentials",
+          label: copy.tabCredentials,
+        },
+        {
+          description: copy.tabCreateDescription,
+          id: "create",
+          label: copy.tabCreate,
+        },
+        {
+          description: copy.tabOperationsDescription,
+          id: "operations",
+          label: copy.tabOperations,
+        },
+      ];
+    },
     credentialColumns() {
       const copy = this.language[this.config.currentLanguage].Apikey;
       return [
@@ -1185,14 +1353,17 @@ export default {
   },
   watch: {
     $route(to, from) {
+      this.syncApiKeyTabFromRoute(to);
       if (shouldClearRevealOnceRoute(to, from, this.revealedCredential)) {
         this.clearRevealOnceSecret("navigation");
       }
+      if (this.isApiKeyTabOnlyNavigation(to, from)) return;
       this.getApiKey();
       this.$forceUpdate();
     },
   },
   created() {
+    this.syncApiKeyTabFromRoute(this.$route);
     this.emitter.on("refreshApiKey", (msg) => {
       if (msg == true) this.getApiKey();
       else this.$forceUpdate();
@@ -1205,6 +1376,41 @@ export default {
     this.unregisterRevealOnceCleanup();
   },
   methods: {
+    normalizedApiKeyTab(tab) {
+      return this.apikeyTabs.some((entry) => entry.id === tab)
+        ? tab
+        : "overview";
+    },
+    syncApiKeyTabFromRoute(route) {
+      this.activeApikeyTab = this.normalizedApiKeyTab(route?.params?.tab);
+    },
+    isApiKeyTabOnlyNavigation(to, from) {
+      if (!to || !from || to.name !== "apikey" || from.name !== "apikey") {
+        return false;
+      }
+      const toParams = { ...(to.params ?? {}) };
+      const fromParams = { ...(from.params ?? {}) };
+      delete toParams.tab;
+      delete fromParams.tab;
+      return (
+        JSON.stringify(toParams) === JSON.stringify(fromParams) &&
+        JSON.stringify(to.query ?? {}) === JSON.stringify(from.query ?? {}) &&
+        to.params?.tab !== from.params?.tab
+      );
+    },
+    selectApiKeyTab(tab) {
+      const normalizedTab = this.normalizedApiKeyTab(tab);
+      this.activeApikeyTab = normalizedTab;
+      if (!this.$router?.push) return;
+      const targetParams = { ...(this.$route?.params ?? {}) };
+      if (normalizedTab === "overview") delete targetParams.tab;
+      else targetParams.tab = normalizedTab;
+      this.$router.push({
+        name: "apikey",
+        params: targetParams,
+        query: this.$route?.query ?? {},
+      });
+    },
     makeToast(text) {
       this.$wkToast(text);
     },
@@ -1273,6 +1479,10 @@ export default {
           if (this.$router?.push) {
             this.$router.push({
               name: "apikey",
+              params: {
+                ...(this.$route?.params ?? {}),
+                tab: "create",
+              },
               query: {
                 credentialId: this.revealedCredential.credential.id,
                 mode: "reveal-once",
@@ -1295,6 +1505,7 @@ export default {
       this.revealAcknowledged = false;
       this.revealFeedback =
         this.language[this.config.currentLanguage].Apikey.revealOnceReady;
+      this.selectApiKeyTab("create");
       this.revealTimeoutId = window.setTimeout(() => {
         this.clearRevealOnceSecret("timeout");
       }, 10 * 60 * 1000);
@@ -1449,6 +1660,7 @@ export default {
         : null;
       this.rotationPolicy = "overlap-24h";
       this.rotationErrors = [];
+      this.selectApiKeyTab("operations");
     },
     cancelCredentialRotation() {
       this.rotationTarget = null;
@@ -1465,6 +1677,7 @@ export default {
         reason: "",
       };
       this.revocationErrors = [];
+      this.selectApiKeyTab("operations");
     },
     cancelCredentialRevocation() {
       this.revocationTarget = null;

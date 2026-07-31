@@ -300,6 +300,10 @@ $font-stack: "Roboto Slab", serif;
   width: 100%;
 }
 
+.idelium-tabler-container > .testsperformed-page.costum {
+  max-width: min(1760px, calc(100vw - 3rem));
+}
+
 .idelium-tabler-container .nav-tabs {
   background: rgba(255, 255, 255, 0.035);
   border: 1px solid var(--idelium-border);
@@ -600,6 +604,152 @@ optgroup {
   color: rgba(244, 244, 245, 0.34) !important;
   cursor: not-allowed;
   opacity: 0.68;
+}
+.idelium-enterprise-tabs {
+  background:
+    linear-gradient(135deg, rgba(255, 122, 24, 0.09), transparent),
+    rgba(35, 38, 50, 0.78);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1.1rem;
+  display: grid;
+  gap: 0.65rem;
+  grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr));
+  margin: 0 auto;
+  max-width: 1280px;
+  overflow: visible;
+  padding: 0.7rem;
+  position: relative;
+  width: 100%;
+  z-index: 8;
+}
+.idelium-enterprise-tabs .nav-item {
+  display: flex;
+}
+.idelium-enterprise-tabs .nav-link,
+.idelium-enterprise-tabs .idelium-enterprise-tab {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.035) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 0.95rem !important;
+  color: rgba(244, 244, 245, 0.72) !important;
+  display: grid;
+  font-family: "Arial", sans-serif;
+  gap: 0.35rem;
+  justify-content: stretch;
+  min-height: 4.25rem;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  padding: 0.85rem 1rem;
+  text-align: center;
+  text-transform: uppercase;
+  transition:
+    background 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    color 160ms ease,
+    transform 160ms ease;
+  line-height: 1.35;
+  white-space: normal;
+  word-break: normal;
+}
+.idelium-enterprise-tabs .nav-item .nav-link,
+.idelium-enterprise-tabs .nav-item .idelium-enterprise-tab {
+  width: 100%;
+}
+.idelium-enterprise-tabs .nav-link span,
+.idelium-enterprise-tabs .idelium-enterprise-tab span {
+  font-size: 0.72rem;
+  font-weight: 850;
+  letter-spacing: 0.14rem;
+  line-height: 1.35;
+  max-width: 100%;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  white-space: normal;
+  word-break: normal;
+}
+.idelium-enterprise-tabs .nav-link small,
+.idelium-enterprise-tabs .idelium-enterprise-tab small {
+  color: rgba(244, 244, 245, 0.52);
+  font-size: 0.68rem;
+  line-height: 1.35;
+  text-transform: none;
+}
+.idelium-enterprise-tabs .nav-link:hover,
+.idelium-enterprise-tabs .nav-link:focus-visible,
+.idelium-enterprise-tabs .idelium-enterprise-tab:hover,
+.idelium-enterprise-tabs .idelium-enterprise-tab:focus-visible {
+  border-color: rgba(255, 122, 24, 0.52) !important;
+  color: #ffffff !important;
+  outline: none;
+  transform: translateY(-1px);
+}
+.idelium-enterprise-tabs .nav-link.active,
+.idelium-enterprise-tabs .idelium-enterprise-tab--active {
+  background: linear-gradient(135deg, #ff8a00, #ff5a2e) !important;
+  border-color: rgba(255, 122, 24, 0.88) !important;
+  box-shadow: 0 0.9rem 2.3rem rgba(255, 105, 34, 0.24);
+  color: #111318 !important;
+}
+.idelium-enterprise-tabs .nav-link.active::after {
+  display: none;
+}
+.idelium-enterprise-tabs .nav-link.active small,
+.idelium-enterprise-tabs .idelium-enterprise-tab--active small {
+  color: rgba(17, 19, 24, 0.72);
+}
+.idelium-enterprise-tabs .nav-link:disabled,
+.idelium-enterprise-tabs .idelium-enterprise-tab:disabled {
+  color: rgba(244, 244, 245, 0.34) !important;
+  cursor: not-allowed;
+  opacity: 0.68;
+  transform: none;
+}
+.idelium-enterprise-tab-content {
+  background:
+    linear-gradient(180deg, rgba(38, 43, 58, 0.96), rgba(33, 38, 50, 0.96)),
+    var(--widget-bg);
+  border: 1px solid var(--idelium-border);
+  border-radius: 1.1rem;
+  box-shadow: 0 1.25rem 3rem rgba(0, 0, 0, 0.14);
+  margin: 1rem auto 1.25rem;
+  max-width: 1280px;
+  overflow: visible;
+  width: 100%;
+}
+.idelium-enterprise-tab-content > .tab-pane {
+  min-height: 8rem;
+}
+@media (max-width: 768px) {
+  .idelium-enterprise-tabs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .idelium-enterprise-tabs .nav-link,
+  .idelium-enterprise-tabs .idelium-enterprise-tab {
+    white-space: normal;
+  }
+}
+@media (max-width: 1320px) {
+  .idelium-enterprise-tabs {
+    grid-template-columns: repeat(auto-fit, minmax(6.75rem, 1fr));
+  }
+
+  .idelium-enterprise-tabs .nav-link,
+  .idelium-enterprise-tabs .idelium-enterprise-tab {
+    padding-inline: 0.75rem;
+  }
+
+  .idelium-enterprise-tabs .nav-link span,
+  .idelium-enterprise-tabs .idelium-enterprise-tab span {
+    font-size: 0.66rem;
+    letter-spacing: 0.105rem;
+  }
+}
+@media (max-width: 600px) {
+  .idelium-enterprise-tabs {
+    grid-template-columns: 1fr;
+  }
 }
 .idelium-action-icon {
   font-size: 1rem;

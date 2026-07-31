@@ -49,7 +49,7 @@
         ]"
         role="tab"
         :aria-selected="activeExecutionTab === 'running'"
-        v-on:click="activeExecutionTab = 'running'"
+        v-on:click="selectExecutionTab('running')"
       >
         <font-awesome-icon icon="rocket" class="iconClass" />
         {{ language[config.currentLanguage].TestsPerformed.testRunningTab }}
@@ -63,7 +63,7 @@
         ]"
         role="tab"
         :aria-selected="activeExecutionTab === 'results'"
-        v-on:click="activeExecutionTab = 'results'"
+        v-on:click="selectExecutionTab('results')"
       >
         <font-awesome-icon icon="vial" class="iconClass" />
         {{ language[config.currentLanguage].TestsPerformed.testResultsTab }}
@@ -1854,8 +1854,8 @@ button.testsperformed-advanced-row:focus-visible {
   display: flex;
   flex: 0 0 auto;
   flex-direction: column;
-  max-height: 20rem;
-  min-height: 12rem;
+  max-height: min(42rem, calc(100dvh - 18rem));
+  min-height: min(32rem, calc(100dvh - 18rem));
   order: 3;
   overflow: hidden;
   padding: 1rem;
@@ -2517,6 +2517,12 @@ import {
 } from "@/domain/runRetry";
 import { getSelectedProjectId } from "@/stores/session";
 
+const EXECUTION_TABS = new Set(["running", "results"]);
+
+function normalizeExecutionTab(tab) {
+  return EXECUTION_TABS.has(tab) ? tab : "results";
+}
+
 export default {
   name: "TestsPerformedComponent",
   components: {
@@ -2866,12 +2872,14 @@ export default {
       this.stopParallelRunPolling();
       this.loadParallelRuns();
       this.startParallelRunPolling();
+      this.syncExecutionTabFromRoute();
       this.restoreAnalyticsFiltersFromRoute();
       this.syncSelectionFromRoute();
       this.$forceUpdate();
     },
   },
   created() {
+    this.syncExecutionTabFromRoute();
     this.restoreAnalyticsFiltersFromRoute();
     this.getTestCycles({ autoSelectLatest: true, restoreFromRoute: true });
     this.loadParallelRuns();
@@ -3393,6 +3401,15 @@ export default {
         return value.split(",").filter(Boolean);
       }
       return [];
+    },
+    syncExecutionTabFromRoute() {
+      this.activeExecutionTab = normalizeExecutionTab(
+        this.routeQueryText("view", "results"),
+      );
+    },
+    selectExecutionTab(tab) {
+      this.activeExecutionTab = normalizeExecutionTab(tab);
+      this.replaceExecutionQuery({ view: this.activeExecutionTab });
     },
     replaceExecutionQuery(patch, options = {}) {
       if (!this.$router?.replace) return;

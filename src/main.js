@@ -56,6 +56,8 @@ import {
   faTrash,
   faClone,
   faRocket,
+  faCheckCircle,
+  faExclamationTriangle,
   faLaptop,
   faHistory,
 } from "@fortawesome/free-solid-svg-icons";
@@ -75,6 +77,8 @@ library.add(
   faClone,
   faDownload,
   faRocket,
+  faCheckCircle,
+  faExclamationTriangle,
   faLaptop,
   faHistory,
 );

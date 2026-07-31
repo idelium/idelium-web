@@ -1,6 +1,10 @@
 <template>
   <div>
-    <div class="nav nav-tabs" id="nav-tab" role="tablist">
+    <div
+      class="nav nav-tabs idelium-enterprise-tabs"
+      id="nav-tab"
+      role="tablist"
+    >
       <button
         :class="tabButtonClass('platforms')"
         id="nav-platforms-tab"
@@ -97,7 +101,10 @@
         {{ language[config.currentLanguage].Platforms.locations }}
       </button>
     </div>
-    <div class="tab-content" id="pills-tabContent">
+    <div
+      class="tab-content idelium-enterprise-tab-content"
+      id="pills-tabContent"
+    >
       <div
         :class="tabPaneClass('platforms')"
         id="nav-platforms"
@@ -297,7 +304,13 @@ export default {
       return this.activeTab === tab;
     },
     tabButtonClass(tab) {
-      return ["nav-link", { active: this.isActiveTab(tab) }];
+      const isActive = this.isActiveTab(tab);
+
+      return [
+        "nav-link",
+        "idelium-enterprise-tab",
+        { active: isActive, "idelium-enterprise-tab--active": isActive },
+      ];
     },
     tabPaneClass(tab) {
       return [
