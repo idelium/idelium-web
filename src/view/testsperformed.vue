@@ -891,6 +891,30 @@
             }}</span>
             <strong>{{ selectedTestSteps.length }}</strong>
           </article>
+          <article>
+            <span>{{
+              language[config.currentLanguage].TestsPerformed.environment
+            }}</span>
+            <strong>{{ selectedExecutionContext.environment }}</strong>
+          </article>
+          <article>
+            <span>{{
+              language[config.currentLanguage].TestsPerformed.browser
+            }}</span>
+            <strong>{{ selectedExecutionContext.browser }}</strong>
+          </article>
+          <article>
+            <span>{{
+              language[config.currentLanguage].TestsPerformed.device
+            }}</span>
+            <strong>{{ selectedExecutionContext.device }}</strong>
+          </article>
+          <article>
+            <span>{{
+              language[config.currentLanguage].TestsPerformed.operatingSystem
+            }}</span>
+            <strong>{{ selectedExecutionContext.operatingSystem }}</strong>
+          </article>
         </div>
       </article>
 
@@ -1035,6 +1059,9 @@
                   language[config.currentLanguage].TestsPerformed.cycleDuration
                 }}:
                 {{ runDuration(testCycleDate) }}
+              </small>
+              <small class="testsperformed-item-meta testsperformed-context-line">
+                {{ executionContextSummary(testCycleDate) }}
               </small>
               <span class="testsperformed-report-toolbar">
                 <button
@@ -1848,6 +1875,12 @@ button.testsperformed-advanced-row:focus-visible {
   display: block;
   font-size: 1.35rem;
   margin-top: 0.35rem;
+}
+
+.testsperformed-context-line {
+  letter-spacing: 0.04em;
+  line-height: 1.45;
+  text-transform: none;
 }
 
 .testsperformed-parallel-panel {
@@ -2865,6 +2898,9 @@ export default {
     },
     selectedExecutionDuration() {
       return this.selectedExecution ? this.runDuration(this.selectedExecution) : "—";
+    },
+    selectedExecutionContext() {
+      return this.executionContextFor(this.selectedExecution);
     },
   },
   watch: {
@@ -4124,6 +4160,39 @@ export default {
     },
     runDuration(run) {
       return this.formatElapsed(this.timestampDiff(run?.created_at, run?.updated_at));
+    },
+    executionContextFor(run) {
+      const labels = this.language[this.config.currentLanguage].TestsPerformed;
+      const context = this.safeJsonObject(
+        run?.executionContext ?? run?.execution_context ?? run?.context,
+      );
+      const browser = [context.browser, context.browserVersion]
+        .filter(Boolean)
+        .join(" ");
+      const operatingSystem = [context.platformName, context.platformVersion]
+        .filter(Boolean)
+        .join(" ");
+      return {
+        environment:
+          context.environmentName || context.environment || labels.notCaptured,
+        browser: browser || labels.notCaptured,
+        device:
+          context.deviceName ||
+          context.device ||
+          context.deviceType ||
+          labels.notCaptured,
+        operatingSystem: operatingSystem || labels.notCaptured,
+      };
+    },
+    executionContextSummary(run) {
+      const labels = this.language[this.config.currentLanguage].TestsPerformed;
+      const context = this.executionContextFor(run);
+      return [
+        `${labels.environment}: ${context.environment}`,
+        `${labels.browser}: ${context.browser}`,
+        `${labels.device}: ${context.device}`,
+        `${labels.operatingSystem}: ${context.operatingSystem}`,
+      ].join(" · ");
     },
     timestampDiff(start, end) {
       const startMs = Date.parse(String(start || ""));
