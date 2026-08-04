@@ -178,14 +178,14 @@ export default {
 <style scoped>
 .idelium-tabler-sidebar {
   background:
-    linear-gradient(180deg, rgba(15, 17, 26, 0.98), rgba(7, 9, 15, 0.98)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(245, 247, 251, 0.98)),
     radial-gradient(
       circle at top left,
-      rgba(255, 122, 24, 0.2),
+      rgba(255, 122, 24, 0.12),
       transparent 16rem
     );
-  border-right: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 18px 0 42px rgba(0, 0, 0, 0.28);
+  border-right: 1px solid var(--id-color-border);
+  box-shadow: 18px 0 42px rgba(15, 23, 42, 0.08);
   display: flex;
   flex: 0 0 280px;
   flex-direction: column;
@@ -196,6 +196,18 @@ export default {
     width 0.2s ease;
   width: 280px;
   z-index: 25;
+}
+
+:global(:root[data-theme="dark"]) .idelium-tabler-sidebar {
+  background:
+    linear-gradient(180deg, rgba(15, 17, 26, 0.98), rgba(7, 9, 15, 0.98)),
+    radial-gradient(
+      circle at top left,
+      rgba(255, 122, 24, 0.2),
+      transparent 16rem
+    );
+  border-right-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 18px 0 42px rgba(0, 0, 0, 0.28);
 }
 
 .idelium-tabler-sidebar.is-collapsed {
@@ -227,7 +239,7 @@ export default {
 }
 
 .idelium-sidebar-title {
-  color: #ffffff;
+  color: var(--id-color-text);
   font-size: 1rem;
   font-weight: 900;
   letter-spacing: 0.2rem;
@@ -235,13 +247,21 @@ export default {
   white-space: nowrap;
 }
 
+:global(:root[data-theme="dark"]) .idelium-sidebar-title {
+  color: #ffffff;
+}
+
 .idelium-sidebar-subtitle {
-  color: rgba(244, 244, 245, 0.56);
+  color: var(--id-color-text-subtle);
   font-size: 0.62rem;
   font-weight: 800;
   letter-spacing: 0.14rem;
   text-transform: uppercase;
   white-space: nowrap;
+}
+
+:global(:root[data-theme="dark"]) .idelium-sidebar-subtitle {
+  color: rgba(244, 244, 245, 0.56);
 }
 
 .idelium-sidebar-nav {
@@ -277,7 +297,7 @@ export default {
   background: transparent;
   border: 1px solid transparent;
   border-radius: 0.95rem;
-  color: rgba(244, 244, 245, 0.72);
+  color: var(--id-color-text-muted);
   cursor: pointer;
   display: flex;
   gap: 0.85rem;
@@ -292,11 +312,21 @@ export default {
   width: 100%;
 }
 
+:global(:root[data-theme="dark"]) .idelium-sidebar-link {
+  color: rgba(244, 244, 245, 0.72);
+}
+
 .idelium-sidebar-link:hover {
+  background: rgba(255, 122, 24, 0.07);
+  border-color: rgba(255, 122, 24, 0.18);
+  color: var(--id-color-text);
+  transform: translateX(2px);
+}
+
+:global(:root[data-theme="dark"]) .idelium-sidebar-link:hover {
   background: rgba(255, 255, 255, 0.06);
   border-color: rgba(255, 255, 255, 0.08);
   color: #ffffff;
-  transform: translateX(2px);
 }
 
 .idelium-sidebar-link.active {

@@ -71,11 +71,17 @@
             <template #toolbar>
               <button
                 type="button"
-                class="btn btn-success"
+                class="btn btn-success idelium-icon-button"
                 v-on:click="saveOrderSteps()"
                 :disabled="btnSaveOrderDisabled"
+                :title="stepCopy.btnSaveOrder"
+                :aria-label="stepCopy.btnSaveOrder"
               >
-                {{ stepCopy.btnSaveOrder }}
+                <font-awesome-icon
+                  icon="check-circle"
+                  class="idelium-action-icon--save"
+                  aria-hidden="true"
+                />
               </button>
             </template>
           </EnterpriseListingGrid>
@@ -128,15 +134,21 @@
           <div class="col">
             <button
               type="button"
-              class="btn btn-success"
+              class="btn btn-success idelium-icon-button"
               size="sm"
               style="float: right"
               v-on:click="saveStep()"
               :disabled="
                 stepDescription.length == 0 || stepNameFile.length == 0
               "
+              :title="language[config.currentLanguage].Steps.btnSaveStep"
+              :aria-label="language[config.currentLanguage].Steps.btnSaveStep"
             >
-              {{ language[config.currentLanguage].Steps.btnSaveStep }}
+              <font-awesome-icon
+                icon="plus"
+                class="idelium-action-icon--create"
+                aria-hidden="true"
+              />
             </button>
           </div>
         </div>
@@ -187,10 +199,16 @@
           </section>
           <button
             type="button"
-            class="btn btn-outline-info btn-sm mt-3"
+            class="btn btn-outline-info btn-sm mt-3 idelium-icon-button"
             v-on:click="validateDsl('new')"
+            :title="language[config.currentLanguage].Steps.dsl.validate"
+            :aria-label="language[config.currentLanguage].Steps.dsl.validate"
           >
-            {{ language[config.currentLanguage].Steps.dsl.validate }}
+            <font-awesome-icon
+              icon="vial"
+              class="idelium-action-icon--test"
+              aria-hidden="true"
+            />
           </button>
           <ul
             v-if="dslDiagnostics.length > 0"
@@ -335,10 +353,16 @@
               </section>
               <button
                 type="button"
-                class="btn btn-outline-info btn-sm mt-3"
+                class="btn btn-outline-info btn-sm mt-3 idelium-icon-button"
                 v-on:click="validateDsl('edit')"
+                :title="language[config.currentLanguage].Steps.dsl.validate"
+                :aria-label="language[config.currentLanguage].Steps.dsl.validate"
               >
-                {{ language[config.currentLanguage].Steps.dsl.validate }}
+                <font-awesome-icon
+                  icon="vial"
+                  class="idelium-action-icon--test"
+                  aria-hidden="true"
+                />
               </button>
               <ul
                 v-if="dslEditDiagnostics.length > 0"
@@ -364,21 +388,33 @@
             <div class="footer-modal">
               <button
                 type="button"
-                class="btn btn-danger"
+                class="btn btn-danger idelium-icon-button"
                 size="sm"
                 style="float: right"
                 v-on:click="updateStep()"
                 :disabled="btnSaveEnable == false"
+                :title="language[config.currentLanguage].Steps.btnSave"
+                :aria-label="language[config.currentLanguage].Steps.btnSave"
               >
-                {{ language[config.currentLanguage].Steps.btnSave }}
+                <font-awesome-icon
+                  icon="check-circle"
+                  class="idelium-action-icon--save"
+                  aria-hidden="true"
+                />
               </button>
               <button
                 type="button"
-                class="btn btn-secondary btn-sm"
+                class="btn btn-secondary btn-sm idelium-icon-button"
                 style="color: black !important"
                 v-on:click="modalElem.hide()"
+                :title="language[config.currentLanguage].Steps.btnCancel"
+                :aria-label="language[config.currentLanguage].Steps.btnCancel"
               >
-                {{ language[config.currentLanguage].Steps.btnCancel }}
+                <font-awesome-icon
+                  icon="times-circle"
+                  class="idelium-action-icon--cancel"
+                  aria-hidden="true"
+                />
               </button>
             </div>
           </div>
@@ -539,6 +575,20 @@
   border-radius: 999px;
   min-height: 2.25rem;
   padding: 0.35rem 0.9rem;
+}
+
+.idelium-icon-button {
+  align-items: center;
+  display: inline-flex;
+  gap: 0.35rem;
+  justify-content: center;
+  min-height: 2.25rem;
+  min-width: 2.25rem;
+  padding: 0.45rem;
+}
+
+.idelium-icon-button svg {
+  font-size: 0.95rem;
 }
 .ghost {
   opacity: 0.5;
@@ -747,19 +797,50 @@ export default {
       return [
         {
           id: "move-up",
+          icon: "arrow-up",
+          iconClass: "idelium-action-icon--reorder",
           label: this.stepCopy.moveUp,
+          tooltip: this.stepCopy.moveUp,
           disabled: (row) => this.listSteps.indexOf(row) <= 0,
         },
         {
           id: "move-down",
+          icon: "arrow-down",
+          iconClass: "idelium-action-icon--reorder",
           label: this.stepCopy.moveDown,
+          tooltip: this.stepCopy.moveDown,
           disabled: (row) =>
             this.listSteps.indexOf(row) === this.listSteps.length - 1,
         },
-        { id: "edit", label: actions.edit },
-        { id: "duplicate", label: actions.duplicate },
-        { id: "download", label: actions.download },
-        { id: "delete", label: actions.delete, variant: "danger" },
+        {
+          id: "edit",
+          icon: "pen",
+          iconClass: "idelium-action-icon--edit",
+          label: actions.edit,
+          tooltip: actions.edit,
+        },
+        {
+          id: "duplicate",
+          icon: "clone",
+          iconClass: "idelium-action-icon--duplicate",
+          label: actions.duplicate,
+          tooltip: actions.duplicate,
+        },
+        {
+          id: "download",
+          icon: "download",
+          iconClass: "idelium-action-icon--download",
+          label: actions.download,
+          tooltip: actions.download,
+        },
+        {
+          id: "delete",
+          icon: "trash",
+          iconClass: "idelium-action-icon--delete",
+          label: actions.delete,
+          tooltip: actions.delete,
+          variant: "danger",
+        },
       ];
     },
     stepSort() {
@@ -1092,7 +1173,7 @@ export default {
       isDownload = false,
     ) {
       this.emitter.emit("showLoader", true);
-      apiClient
+      return apiClient
         .get(
           this.config.serviceBaseUrl +
             this.config.url.steps +
@@ -1104,13 +1185,14 @@ export default {
             headers: this.setHeaders(),
           },
         )
-        .then((response) => {
+        .then(async (response) => {
           this.emitter.emit("showLoader", false);
           if (isDuplicate == false) {
             if (isDownload == false) {
               this.jsonResumeNameSelected = name;
               this.stepEditDescription = response.data.description;
               this.stepEditNameFile = response.data.name;
+              this.btnSaveEnable = false;
               if (isDslSourcePayload(response.data.config)) {
                 this.modeEditSelected = "dsl";
                 this.dslEditSource = extractDslSource(response.data.config);
@@ -1129,6 +1211,7 @@ export default {
                 this.syncEditWizardJson();
               }
               this.idResume = id;
+              await this.$nextTick();
               this.modalElem.show();
             } else {
               download.file(

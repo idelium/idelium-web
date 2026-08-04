@@ -7,6 +7,7 @@ export const PROJECT_SCOPED_ROUTE_NAMES = new Set([
   "testlauncher",
   "testcycles",
   "tests",
+  "tests-builder",
   "steps",
   "plugins",
   "environments",
@@ -20,6 +21,7 @@ export const PROJECT_SCOPED_ROUTE_NAMES = new Set([
 const PROJECT_ROUTE_SECTIONS = Object.freeze({
   "execution-detail": "testsperformed",
   "testsperformed-step-results": "testsperformed",
+  "tests-builder": "tests",
   "environment-detail": "environments",
   "environment-edit": "environments",
   "environment-clone": "environments",

@@ -659,6 +659,13 @@ export default {
     this.initWrapperArray();
   },
   watch: {
+    jsonFromEditor_prop: {
+      handler() {
+        this.changeJsonEditor();
+      },
+      deep: true,
+      immediate: true,
+    },
     stepTypeSelected() {
       if (this.stepTypeSelected == null) return false;
       this.arraySyntax = [];
@@ -680,7 +687,9 @@ export default {
     typeOfWrapperSelected() {
       localStorage.wrapperSelected = this.typeOfWrapperSelected;
       this.initWrapperArray();
-      this.arrayStepTypeToAdd = [];
+      if (!this.isHydratingFromEditor) {
+        this.arrayStepTypeToAdd = [];
+      }
       if (this.typeOfWrapperSelected == "plugin") {
         this.listPlugin();
       }
@@ -751,6 +760,7 @@ export default {
       nextStepKey: 1,
       postmanJson: { environment: null, collection: null },
       showOverriteLabel: false,
+      isHydratingFromEditor: false,
     };
   },
   methods: {
@@ -841,22 +851,41 @@ export default {
       return true;
     },
     changeJsonEditor() {
-      if (this.jsonFromEditor_prop == {}) return false;
-      else {
-        this.jsonFromEditor = this.jsonFromEditor_prop;
+      if (
+        this.jsonFromEditor_prop == null ||
+        Object.keys(this.jsonFromEditor_prop).length === 0
+      ) {
+        return false;
+      }
+
+      this.isHydratingFromEditor = true;
+      try {
+        this.jsonFromEditor = JSON.parse(
+          JSON.stringify(this.jsonFromEditor_prop),
+        );
         if (this.jsonFromEditor.editorType) {
           this.typeOfWrapperSelected = this.jsonFromEditor.editorType;
         }
         this.initWrapperArray();
+        this.name = this.jsonFromEditor.name || "";
+        this.attachScreenshot = this.jsonFromEditor.attachScreenshot !== false;
+        this.failedExit = this.jsonFromEditor.failedExit !== false;
+        const steps = Array.isArray(this.jsonFromEditor.steps)
+          ? this.jsonFromEditor.steps
+          : [];
+        this.arrayStepTypeToAdd = steps.map((step) => ({
+          ...step,
+          __key: step.__key || this.createStepKey(),
+        }));
+        this.displayCard =
+          this.arrayStepTypeToAdd.length > 0 ? "fade-in" : "hide-element";
+        this.buildJson();
+        return true;
+      } finally {
+        this.$nextTick(() => {
+          this.isHydratingFromEditor = false;
+        });
       }
-      this.name = this.jsonFromEditor.name;
-      this.attachScreenshot = this.jsonFromEditor.attachScreenshot;
-      this.failedExit = this.jsonFromEditor.failedExit;
-      for (let i = 0; i < this.jsonFromEditor.steps.length; i++) {
-        this.jsonFromEditor.steps[i]["__key"] = this.createStepKey();
-      }
-      this.arrayStepTypeToAdd = this.jsonFromEditor.steps;
-      if (this.arrayStepTypeToAdd.length > 0) this.displayCard = "fade-in";
     },
     buildJson() {
       this.buildJson;

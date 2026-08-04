@@ -36,6 +36,23 @@ describe("tests component", () => {
                   "Select a test to manage its steps",
                 selectTestToManageStepsDescription:
                   "Choose a test before reviewing steps.",
+                testPickerEyebrow: "Test catalogue",
+                testPickerTitle: "Available tests",
+                testPickerDescription: "Pick a test.",
+                testPickerSearchPlaceholder: "Search tests",
+                testPickerCount: "{count} tests",
+                testPickerSelected: "Selected",
+                testPickerEmpty: "No tests match.",
+                testPickerNoDescription: "No description available",
+                testDetailEyebrow: "Test detail",
+                testDetailId: "Test ID",
+                testDetailSteps: "Steps",
+                testDetailEmptyDescription: "Select a test.",
+                openWorkflowBuilder: "Open workflow builder",
+                backToTestsCatalog: "Back to tests",
+                builderEyebrow: "Workflow builder",
+                builderFallbackTitle: "Selected test",
+                saveWorkflow: "Save workflow",
                 importReviewEyebrow: "Import review",
                 importReviewFallbackTitle: "Imported test definition",
                 importReviewDescription: "Review imported steps.",
@@ -123,7 +140,9 @@ describe("tests component", () => {
       .mockResolvedValueOnce({ data: [] })
       .mockResolvedValueOnce({ data: [] });
     useSessionStore(pinia).selectProject(9);
-    const wrapper = mountTests();
+    const wrapper = mountTests({
+      $route: { name: "tests-builder", params: { projectId: "9", testId: "44" } },
+    });
     await vi.waitFor(() => expect(wrapper.vm.testsLoaded).toBe(true));
     const steps = [
       {
@@ -191,7 +210,7 @@ describe("tests component", () => {
     expect(wrapper.findComponent({ name: "draggable" }).exists()).toBe(false);
   });
 
-  it("does not show any step list until a test is selected on the modify tab", async () => {
+  it("keeps step composition out of the modify tab and opens it in the builder route", async () => {
     api.get
       .mockResolvedValueOnce({ data: [] })
       .mockResolvedValueOnce({ data: [] });
@@ -212,9 +231,41 @@ describe("tests component", () => {
       },
     });
     await wrapper.setData({ testSelected: { id: 44, name: "Regression" } });
+    await wrapper.setData({
+      arrayTests: [{ id: 44, name: "Regression", description: "Regression test" }],
+    });
     await wrapper.vm.$nextTick();
 
     expect(wrapper.findComponent({ name: "SequenceBuilder" }).exists()).toBe(
+      false,
+    );
+    expect(wrapper.find(".tests-test-detail").exists()).toBe(true);
+
+    api.get
+      .mockResolvedValueOnce({ data: [] })
+      .mockResolvedValueOnce({ data: [] });
+    const builder = mountTests({
+      $route: {
+        name: "tests-builder",
+        params: { projectId: "9", testId: "44" },
+      },
+    });
+    await vi.waitFor(() => expect(builder.vm.testsLoaded).toBe(true));
+    api.get.mockResolvedValueOnce({
+      data: {
+        config: JSON.stringify([]),
+        description: "Regression test",
+      },
+    });
+    await builder.setData({
+      arrayTests: [
+        { id: 44, name: "Regression", description: "Regression test" },
+      ],
+      testSelected: { id: 44, name: "Regression" },
+    });
+    await builder.vm.$nextTick();
+
+    expect(builder.findComponent({ name: "SequenceBuilder" }).exists()).toBe(
       true,
     );
   });
@@ -302,5 +353,39 @@ describe("tests component", () => {
     );
     wrapper.vm.openTab("new");
     expect(() => wrapper.unmount()).not.toThrow();
+  });
+
+  it("uses an enterprise searchable picker instead of the native test dropdown", async () => {
+    api.get.mockResolvedValueOnce({ data: [] }).mockResolvedValueOnce({
+      data: [
+        { id: 11, name: "Checkout smoke", description: "Browser flow" },
+        { id: 12, name: "Postman Echo", description: "API collection" },
+      ],
+    });
+    useSessionStore(pinia).selectProject(9);
+    const wrapper = mountTests();
+
+    await vi.waitFor(() => expect(wrapper.vm.testsLoaded).toBe(true));
+    expect(wrapper.findComponent({ name: "v-select" }).exists()).toBe(false);
+    expect(wrapper.find(".tests-test-picker").exists()).toBe(true);
+    expect(wrapper.findAll(".tests-test-picker-card")).toHaveLength(2);
+
+    await wrapper.find(".tests-test-picker__search").setValue("postman");
+    expect(wrapper.vm.filteredTests).toEqual([
+      { id: 12, name: "Postman Echo", description: "API collection" },
+    ]);
+
+    api.get.mockResolvedValueOnce({
+      data: {
+        config: JSON.stringify([]),
+        description: "API collection",
+      },
+    });
+    await wrapper.find(".tests-test-picker-card").trigger("click");
+    expect(wrapper.vm.testSelected).toEqual({
+      id: 12,
+      name: "Postman Echo",
+      description: "API collection",
+    });
   });
 });

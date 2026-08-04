@@ -226,6 +226,54 @@ describe("steps component", () => {
     expect(grid.classes()).toContain("idelium-steps-order-grid");
   });
 
+  it("renders step table actions as icon-only enterprise controls", () => {
+    useSessionStore(pinia).selectProject(9);
+
+    const wrapper = mountSteps();
+
+    expect(wrapper.vm.stepActions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: "move-up",
+          icon: "arrow-up",
+          iconClass: "idelium-action-icon--reorder",
+          tooltip: "Move up",
+        }),
+        expect.objectContaining({
+          id: "move-down",
+          icon: "arrow-down",
+          iconClass: "idelium-action-icon--reorder",
+          tooltip: "Move down",
+        }),
+        expect.objectContaining({
+          id: "edit",
+          icon: "pen",
+          iconClass: "idelium-action-icon--edit",
+          tooltip: "Edit",
+        }),
+        expect.objectContaining({
+          id: "duplicate",
+          icon: "clone",
+          iconClass: "idelium-action-icon--duplicate",
+          tooltip: "Duplicate",
+        }),
+        expect.objectContaining({
+          id: "download",
+          icon: "download",
+          iconClass: "idelium-action-icon--download",
+          tooltip: "Download",
+        }),
+        expect.objectContaining({
+          id: "delete",
+          icon: "trash",
+          iconClass: "idelium-action-icon--delete",
+          tooltip: "Delete",
+          variant: "danger",
+        }),
+      ]),
+    );
+  });
+
   it("reorders the current bounded page with an absolute server offset", async () => {
     api.post.mockResolvedValue({ data: [] });
     useSessionStore(pinia).selectProject(9);
@@ -297,7 +345,7 @@ describe("steps component", () => {
     expect(wrapper.vm.idResume).toBe("16");
     expect(wrapper.vm.stepEditNameFile).toBe("checkout_flow");
     expect(wrapper.vm.jsonResumeSteps.name).toBe("Checkout flow");
-    expect(modal.show).toHaveBeenCalled();
+    await vi.waitFor(() => expect(modal.show).toHaveBeenCalled());
   });
 
   it("shows schema-driven step content when editing an order row", async () => {

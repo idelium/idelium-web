@@ -1330,7 +1330,7 @@
       rgba(255, 255, 255, 0.075),
       rgba(255, 255, 255, 0.025)
     );
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--id-color-border);
   display: flex;
   flex: 0 0 auto;
   justify-content: space-between;
@@ -1340,7 +1340,7 @@
 .testsperformed-eyebrow,
 .testsperformed-section-title,
 .testsperformed-metric-label {
-  color: rgba(255, 255, 255, 0.72);
+  color: var(--id-color-text-muted);
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.18em;
@@ -1348,14 +1348,14 @@
 }
 
 .testsperformed-title {
-  color: #ffffff;
+  color: var(--id-color-text);
   font-size: clamp(1.6rem, 2.5vw, 2.4rem);
   margin: 0.35rem 0;
 }
 
 .testsperformed-description,
 .testsperformed-helper {
-  color: rgba(255, 255, 255, 0.66);
+  color: var(--id-color-text-muted);
   margin: 0;
 }
 
@@ -1376,7 +1376,7 @@
 }
 
 .testsperformed-refresh {
-  border-color: rgba(255, 255, 255, 0.18);
+  border-color: var(--id-color-border-strong);
 }
 
 .testsperformed-latest-result {
@@ -1397,8 +1397,8 @@
 
 .testsperformed-page-tabs {
   align-items: center;
-  background: rgba(255, 255, 255, 0.045);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--id-color-surface-raised);
+  border: 1px solid var(--id-color-border);
   border-radius: 18px;
   display: inline-flex;
   flex: 0 0 auto;
@@ -1412,7 +1412,7 @@
   background: transparent;
   border: 1px solid transparent;
   border-radius: 14px;
-  color: rgba(246, 247, 251, 0.72);
+  color: var(--id-color-text-muted);
   display: inline-flex;
   font-size: 0.72rem;
   font-weight: 900;
@@ -1429,9 +1429,9 @@
 
 .testsperformed-page-tab span {
   align-items: center;
-  background: rgba(255, 255, 255, 0.08);
+  background: color-mix(in srgb, var(--id-color-text) 8%, transparent);
   border-radius: 999px;
-  color: #ffffff;
+  color: var(--id-color-text);
   display: inline-flex;
   height: 1.35rem;
   justify-content: center;
@@ -1441,8 +1441,8 @@
 
 .testsperformed-page-tab:hover,
 .testsperformed-page-tab:focus-visible {
-  border-color: rgba(255, 255, 255, 0.18);
-  color: #ffffff;
+  border-color: var(--id-color-border-strong);
+  color: var(--id-color-text);
   outline: none;
 }
 
@@ -1470,7 +1470,7 @@
 }
 
 .testsperformed-metric strong {
-  color: #ffffff;
+  color: var(--id-color-text);
   display: block;
   font-size: 2rem;
   line-height: 1;
@@ -1506,7 +1506,7 @@
 }
 
 .testsperformed-run-detail h2 {
-  color: #ffffff;
+  color: var(--id-color-text);
   margin: 0.25rem 0;
 }
 
@@ -1518,14 +1518,14 @@
 }
 
 .testsperformed-run-detail-grid div {
-  background: rgba(255, 255, 255, 0.045);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--id-color-surface-raised);
+  border: 1px solid var(--id-color-border);
   border-radius: 0.75rem;
   padding: 0.75rem;
 }
 
 .testsperformed-run-detail-grid dt {
-  color: rgba(255, 255, 255, 0.62);
+  color: var(--id-color-text-muted);
   font-size: 0.68rem;
   font-weight: 800;
   letter-spacing: 0.1em;
@@ -1533,7 +1533,7 @@
 }
 
 .testsperformed-run-detail-grid dd {
-  color: #ffffff;
+  color: var(--id-color-text);
   font-weight: 800;
   margin: 0.3rem 0 0;
   overflow-wrap: anywhere;
@@ -1556,8 +1556,8 @@
 }
 
 .testsperformed-run-tab-content {
-  background: rgba(255, 255, 255, 0.035);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--id-color-surface-raised);
+  border: 1px solid var(--id-color-border);
   border-radius: 0.85rem;
   padding: 0.85rem;
 }
@@ -1569,15 +1569,15 @@
 }
 
 .testsperformed-advanced-grid article {
-  background: rgba(255, 255, 255, 0.045);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--id-color-surface);
+  border: 1px solid var(--id-color-border);
   border-radius: 0.75rem;
   padding: 0.75rem;
 }
 
 .testsperformed-advanced-grid span,
 .testsperformed-advanced-row small {
-  color: rgba(255, 255, 255, 0.58);
+  color: var(--id-color-text-muted);
   display: block;
   font-size: 0.68rem;
   font-weight: 800;
@@ -1586,7 +1586,7 @@
 }
 
 .testsperformed-advanced-grid strong {
-  color: #ffffff;
+  color: var(--id-color-text);
   display: block;
   margin-top: 0.35rem;
 }
@@ -1598,10 +1598,10 @@
 
 .testsperformed-advanced-row {
   align-items: center;
-  background: rgba(255, 255, 255, 0.045);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--id-color-surface);
+  border: 1px solid var(--id-color-border);
   border-radius: 0.75rem;
-  color: rgba(255, 255, 255, 0.86);
+  color: var(--id-color-text);
   display: grid;
   gap: 0.75rem;
   grid-template-columns: auto minmax(0, 1fr) auto;
@@ -1612,26 +1612,26 @@
 button.testsperformed-advanced-row:hover,
 button.testsperformed-advanced-row:focus-visible {
   border-color: rgba(255, 107, 30, 0.58);
-  color: #ffffff;
+  color: var(--id-color-text);
   outline: none;
 }
 
 .testsperformed-advanced-row strong {
-  color: #ffffff;
+  color: var(--id-color-text);
 }
 
 .testsperformed-advanced-empty {
-  border: 1px dashed rgba(255, 255, 255, 0.18);
+  border: 1px dashed var(--id-color-border-strong);
   border-radius: 0.75rem;
-  color: rgba(255, 255, 255, 0.62);
+  color: var(--id-color-text-muted);
   padding: 1rem;
   text-align: center;
 }
 
 .testsperformed-run-actions {
   align-items: center;
-  background: rgba(255, 255, 255, 0.035);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: var(--id-color-surface-raised);
+  border: 1px solid var(--id-color-border);
   border-radius: 0.85rem;
   display: grid;
   gap: 0.85rem;
@@ -1661,10 +1661,10 @@ button.testsperformed-advanced-row:focus-visible {
 
 .testsperformed-drilldown-node {
   align-items: flex-start;
-  background: rgba(255, 255, 255, 0.045);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--id-color-surface);
+  border: 1px solid var(--id-color-border);
   border-radius: 0.75rem;
-  color: rgba(255, 255, 255, 0.86);
+  color: var(--id-color-text);
   display: grid;
   gap: 0.35rem;
   padding: 0.75rem;
@@ -1690,10 +1690,10 @@ button.testsperformed-advanced-row:focus-visible {
 }
 
 .testsperformed-artifact-card {
-  background: rgba(255, 255, 255, 0.045);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--id-color-surface);
+  border: 1px solid var(--id-color-border);
   border-radius: 0.85rem;
-  color: rgba(255, 255, 255, 0.82);
+  color: var(--id-color-text);
   display: grid;
   gap: 0.65rem;
   padding: 0.85rem;
@@ -1729,7 +1729,7 @@ button.testsperformed-advanced-row:focus-visible {
 
 .testsperformed-analytics-filters label,
 .testsperformed-history-toolbar label {
-  color: rgba(255, 255, 255, 0.72);
+  color: var(--id-color-text-muted);
   display: grid;
   font-size: 0.68rem;
   font-weight: 800;
@@ -1739,17 +1739,17 @@ button.testsperformed-advanced-row:focus-visible {
 }
 
 .testsperformed-filter-control {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  color: #ffffff;
+  background: var(--id-color-surface);
+  border: 1px solid var(--id-color-border);
+  color: var(--id-color-text);
   min-width: 8rem;
 }
 
 .testsperformed-status-filter {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: var(--id-color-surface-raised);
+  border: 1px solid var(--id-color-border);
   border-radius: 999px;
-  color: rgba(255, 255, 255, 0.72);
+  color: var(--id-color-text-muted);
   font-size: 0.68rem;
   font-weight: 800;
   letter-spacing: 0.12em;
@@ -1770,14 +1770,14 @@ button.testsperformed-advanced-row:focus-visible {
 }
 
 .testsperformed-analytics-card {
-  background: rgba(255, 255, 255, 0.045);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--id-color-surface-raised);
+  border: 1px solid var(--id-color-border);
   border-radius: 0.9rem;
   padding: 0.85rem;
 }
 
 .testsperformed-analytics-card span {
-  color: rgba(255, 255, 255, 0.62);
+  color: var(--id-color-text-muted);
   display: block;
   font-size: 0.68rem;
   font-weight: 800;
@@ -1786,7 +1786,7 @@ button.testsperformed-advanced-row:focus-visible {
 }
 
 .testsperformed-analytics-card strong {
-  color: #ffffff;
+  color: var(--id-color-text);
   display: block;
   font-size: 1.45rem;
   margin-top: 0.35rem;
@@ -1801,8 +1801,8 @@ button.testsperformed-advanced-row:focus-visible {
 
 .testsperformed-taxonomy div {
   align-items: center;
-  background: rgba(255, 255, 255, 0.035);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--id-color-surface-raised);
+  border: 1px solid var(--id-color-border);
   border-radius: 0.7rem;
   display: flex;
   justify-content: space-between;
@@ -1810,7 +1810,7 @@ button.testsperformed-advanced-row:focus-visible {
 }
 
 .testsperformed-taxonomy dt {
-  color: rgba(255, 255, 255, 0.64);
+  color: var(--id-color-text-muted);
   font-size: 0.68rem;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -1818,13 +1818,13 @@ button.testsperformed-advanced-row:focus-visible {
 }
 
 .testsperformed-taxonomy dd {
-  color: #ffffff;
+  color: var(--id-color-text);
   font-weight: 800;
   margin: 0;
 }
 
 .testsperformed-flaky-list ul {
-  color: rgba(255, 255, 255, 0.78);
+  color: var(--id-color-text-muted);
   margin: 0.45rem 0 0;
 }
 
@@ -1853,8 +1853,8 @@ button.testsperformed-advanced-row:focus-visible {
 }
 
 .testsperformed-execution-metrics article {
-  background: rgba(255, 255, 255, 0.045);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--id-color-surface-raised);
+  border: 1px solid var(--id-color-border);
   border-radius: 0.85rem;
   padding: 0.85rem;
 }
@@ -1862,7 +1862,7 @@ button.testsperformed-advanced-row:focus-visible {
 .testsperformed-execution-metrics span,
 .testsperformed-item-meta,
 .testsperformed-step-row small {
-  color: rgba(255, 255, 255, 0.58);
+  color: var(--id-color-text-muted);
   display: block;
   font-size: 0.68rem;
   font-weight: 800;
@@ -1871,7 +1871,7 @@ button.testsperformed-advanced-row:focus-visible {
 }
 
 .testsperformed-execution-metrics strong {
-  color: #ffffff;
+  color: var(--id-color-text);
   display: block;
   font-size: 1.35rem;
   margin-top: 0.35rem;
@@ -1906,9 +1906,9 @@ button.testsperformed-advanced-row:focus-visible {
   background:
     linear-gradient(145deg, rgba(255, 255, 255, 0.06), transparent),
     rgba(9, 21, 37, 0.72);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--id-color-border);
   border-radius: 0.95rem;
-  color: rgba(255, 255, 255, 0.86);
+  color: var(--id-color-text);
   padding: 1rem;
 }
 
@@ -1924,7 +1924,7 @@ button.testsperformed-advanced-row:focus-visible {
 }
 
 .testsperformed-parallel-card-header strong {
-  color: #ffffff;
+  color: var(--id-color-text);
   display: block;
   margin-top: 0.55rem;
 }
@@ -1948,13 +1948,13 @@ button.testsperformed-advanced-row:focus-visible {
   background: rgba(255, 193, 7, 0.12);
   border: 1px solid rgba(255, 193, 7, 0.24);
   border-radius: 0.75rem;
-  color: #ffe0a3;
+  color: var(--id-color-warning);
   margin: 0 0 0.85rem;
   padding: 0.7rem;
 }
 
 .testsperformed-live-transport {
-  color: rgba(255, 255, 255, 0.62);
+  color: var(--id-color-text-muted);
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -1966,14 +1966,14 @@ button.testsperformed-advanced-row:focus-visible {
   background: rgba(13, 110, 253, 0.12);
   border: 1px solid rgba(13, 110, 253, 0.24);
   border-radius: 0.75rem;
-  color: #b7d6ff;
+  color: var(--id-color-info);
   margin: 0 0 0.85rem;
   padding: 0.7rem;
 }
 
 .testsperformed-cancel-button {
   border-color: rgba(255, 143, 155, 0.42);
-  color: #ffd2d7;
+  color: var(--id-color-danger);
   white-space: nowrap;
 }
 
@@ -1985,14 +1985,14 @@ button.testsperformed-advanced-row:focus-visible {
 }
 
 .testsperformed-worker-metrics div {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--id-color-surface-raised);
+  border: 1px solid var(--id-color-border);
   border-radius: 0.65rem;
   padding: 0.65rem;
 }
 
 .testsperformed-worker-metrics dt {
-  color: rgba(255, 255, 255, 0.54);
+  color: var(--id-color-text-muted);
   font-size: 0.68rem;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -2000,7 +2000,7 @@ button.testsperformed-advanced-row:focus-visible {
 }
 
 .testsperformed-worker-metrics dd {
-  color: #ffffff;
+  color: var(--id-color-text);
   font-size: 1.1rem;
   font-weight: 800;
   margin: 0.25rem 0 0;
@@ -2091,7 +2091,7 @@ button.testsperformed-advanced-row:focus-visible {
   background: rgba(255, 107, 30, 0.16);
   border: 1px solid rgba(255, 107, 30, 0.5);
   border-radius: 999px;
-  color: #ffd1b8;
+  color: #c2410c;
   display: inline-flex;
   font-weight: 800;
   justify-content: center;
@@ -2112,10 +2112,10 @@ button.testsperformed-advanced-row:focus-visible {
 
 .testsperformed-item,
 .testsperformed-test-card {
-  background: rgba(255, 255, 255, 0.035);
-  border: 1px solid rgba(255, 255, 255, 0.09);
+  background: var(--id-color-surface);
+  border: 1px solid var(--id-color-border);
   border-radius: 0.75rem;
-  color: rgba(255, 255, 255, 0.88);
+  color: var(--id-color-text);
   position: relative;
   text-align: left;
   transition:
@@ -2135,8 +2135,8 @@ button.testsperformed-advanced-row:focus-visible {
 .testsperformed-item:hover,
 .testsperformed-test-card:hover {
   border-color: rgba(255, 107, 30, 0.55);
-  box-shadow: 0 1rem 2rem rgba(0, 0, 0, 0.2);
-  color: #ffffff;
+  box-shadow: 0 1rem 2rem rgba(15, 23, 42, 0.1);
+  color: var(--id-color-text);
   transform: translateY(-1px);
 }
 
@@ -2152,7 +2152,7 @@ button.testsperformed-advanced-row:focus-visible {
     0 0 0 1px rgba(255, 107, 30, 0.28),
     0 1.15rem 2.8rem rgba(255, 107, 30, 0.22),
     inset 0 0 0 1px rgba(255, 255, 255, 0.08);
-  color: #ffffff !important;
+  color: var(--id-color-text) !important;
   transform: translateY(-1px);
 }
 
@@ -2170,8 +2170,8 @@ button.testsperformed-advanced-row:focus-visible {
 }
 
 .testsperformed-item.active .testsperformed-item-icon {
-  background: rgba(255, 107, 30, 0.28);
-  color: #ffb86b;
+  background: rgba(255, 107, 30, 0.16);
+  color: #c2410c;
 }
 
 .testsperformed-test-card.active {
@@ -2216,8 +2216,8 @@ button.testsperformed-advanced-row:focus-visible {
 
 .testsperformed-step-row {
   align-items: center;
-  background: rgba(255, 255, 255, 0.035);
-  border: 1px solid rgba(255, 255, 255, 0.09);
+  background: var(--id-color-surface);
+  border: 1px solid var(--id-color-border);
   border-radius: 0.85rem;
   display: grid;
   gap: 0.85rem;
@@ -2226,7 +2226,7 @@ button.testsperformed-advanced-row:focus-visible {
 }
 
 .testsperformed-step-row strong {
-  color: #ffffff;
+  color: var(--id-color-text);
   display: block;
 }
 
@@ -2235,7 +2235,7 @@ button.testsperformed-advanced-row:focus-visible {
 }
 
 .testsperformed-postman-step-details {
-  background: rgba(10, 13, 24, 0.6);
+  background: var(--id-color-surface-raised);
   border: 1px solid rgba(255, 108, 32, 0.28);
   border-radius: 0.85rem;
   display: grid;
@@ -2255,7 +2255,7 @@ button.testsperformed-advanced-row:focus-visible {
 }
 
 .testsperformed-postman-step-header p {
-  color: rgba(255, 255, 255, 0.64);
+  color: var(--id-color-text-muted);
   font-size: 0.78rem;
   margin: 0.25rem 0 0;
 }
@@ -2264,7 +2264,7 @@ button.testsperformed-advanced-row:focus-visible {
   background: rgba(255, 108, 32, 0.14);
   border: 1px solid rgba(255, 108, 32, 0.42);
   border-radius: 999px;
-  color: #ffb48a;
+  color: #c2410c;
   flex: 0 0 auto;
   font-size: 0.72rem;
   font-weight: 900;
@@ -2279,7 +2279,7 @@ button.testsperformed-advanced-row:focus-visible {
 }
 
 .testsperformed-postman-response-panel {
-  background: rgba(0, 0, 0, 0.24);
+  background: var(--id-color-surface);
   border: 1px solid rgba(255, 108, 32, 0.5);
   border-radius: 0.75rem;
   box-shadow: 0 1rem 2rem rgba(255, 108, 32, 0.12);
@@ -2287,14 +2287,14 @@ button.testsperformed-advanced-row:focus-visible {
 }
 
 .testsperformed-postman-response-title span {
-  color: rgba(255, 255, 255, 0.62);
+  color: var(--id-color-text-muted);
   display: block;
   font-size: 0.72rem;
   margin-top: 0.2rem;
 }
 
 .testsperformed-postman-response-panel pre {
-  color: rgba(255, 255, 255, 0.82);
+  color: var(--id-color-text);
   margin: 0.75rem 0 0;
   max-height: 18rem;
   overflow: auto;
@@ -2302,7 +2302,7 @@ button.testsperformed-advanced-row:focus-visible {
 }
 
 .testsperformed-step-index {
-  color: rgba(255, 255, 255, 0.48);
+  color: var(--id-color-text-subtle);
   font-size: 0.72rem;
   font-weight: 900;
   letter-spacing: 0.1em;
@@ -2310,7 +2310,7 @@ button.testsperformed-advanced-row:focus-visible {
 
 .testsperformed-item-icon {
   align-items: center;
-  background: rgba(255, 255, 255, 0.07);
+  background: var(--id-color-surface-muted);
   border-radius: 0.65rem;
   display: inline-flex;
   height: 2.25rem;
@@ -2330,10 +2330,10 @@ button.testsperformed-advanced-row:focus-visible {
 }
 
 .testsperformed-report-button {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: var(--id-color-surface-raised);
+  border: 1px solid var(--id-color-border);
   border-radius: 999px;
-  color: #dbeafe;
+  color: var(--id-color-text);
   cursor: pointer;
   font-size: 0.64rem;
   font-weight: 800;
@@ -2347,7 +2347,7 @@ button.testsperformed-advanced-row:focus-visible {
 }
 
 .testsperformed-report-button:disabled {
-  color: rgba(255, 255, 255, 0.36);
+  color: var(--id-color-text-subtle);
   cursor: not-allowed;
   opacity: 0.52;
 }
@@ -2361,7 +2361,7 @@ button.testsperformed-advanced-row:focus-visible {
 
 .testsperformed-pagination {
   align-items: center;
-  color: rgba(255, 255, 255, 0.72);
+  color: var(--id-color-text-muted);
   display: flex;
   font-size: 0.78rem;
   gap: 0.75rem;
@@ -2425,9 +2425,9 @@ button.testsperformed-advanced-row:focus-visible {
 
 .testsperformed-empty {
   align-items: center;
-  border: 1px dashed rgba(255, 255, 255, 0.16);
+  border: 1px dashed var(--id-color-border-strong);
   border-radius: 0.9rem;
-  color: rgba(255, 255, 255, 0.58);
+  color: var(--id-color-text-muted);
   display: flex;
   flex: 1 1 auto;
   justify-content: center;
@@ -2447,6 +2447,170 @@ button.testsperformed-advanced-row:focus-visible {
 
 .iconClass {
   margin-right: 5px;
+}
+
+:global(:root:not([data-theme="dark"])) .testsperformed-hero,
+:global(:root:not([data-theme="dark"])) .testsperformed-metric,
+:global(:root:not([data-theme="dark"])) .testsperformed-run-detail,
+:global(:root:not([data-theme="dark"])) .testsperformed-analytics-panel,
+:global(:root:not([data-theme="dark"])) .testsperformed-history-panel,
+:global(:root:not([data-theme="dark"])) .testsperformed-parallel-panel,
+:global(:root:not([data-theme="dark"])) .testsperformed-execution-summary,
+:global(:root:not([data-theme="dark"])) .testsperformed-panel,
+:global(:root:not([data-theme="dark"])) .testsperformed-step-panel {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(248, 250, 252, 0.82)),
+    var(--id-color-surface);
+  border-color: var(--id-color-border);
+  box-shadow: var(--id-shadow-raised);
+  color: var(--id-color-text);
+}
+
+:global(:root:not([data-theme="dark"])) .testsperformed-hero {
+  background:
+    radial-gradient(circle at top left, rgba(255, 107, 30, 0.12), transparent 32rem),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(241, 245, 249, 0.78));
+}
+
+:global(:root:not([data-theme="dark"])) .testsperformed-eyebrow,
+:global(:root:not([data-theme="dark"])) .testsperformed-section-title,
+:global(:root:not([data-theme="dark"])) .testsperformed-metric-label,
+:global(:root:not([data-theme="dark"])) .testsperformed-analytics-filters label,
+:global(:root:not([data-theme="dark"])) .testsperformed-history-toolbar label,
+:global(:root:not([data-theme="dark"])) .testsperformed-execution-metrics span,
+:global(:root:not([data-theme="dark"])) .testsperformed-item-meta,
+:global(:root:not([data-theme="dark"])) .testsperformed-step-row small,
+:global(:root:not([data-theme="dark"])) .testsperformed-helper {
+  color: var(--id-color-text-muted);
+}
+
+:global(:root:not([data-theme="dark"])) .testsperformed-title,
+:global(:root:not([data-theme="dark"])) .testsperformed-analytics-card strong,
+:global(:root:not([data-theme="dark"])) .testsperformed-execution-metrics strong,
+:global(:root:not([data-theme="dark"])) .testsperformed-parallel-card-header strong,
+:global(:root:not([data-theme="dark"])) .testsperformed-step-row strong {
+  color: var(--id-color-text);
+}
+
+:global(:root:not([data-theme="dark"])) .testsperformed-page-tabs {
+  background: rgba(255, 255, 255, 0.84);
+  border-color: var(--id-color-border);
+  box-shadow: var(--id-shadow-raised);
+}
+
+:global(:root:not([data-theme="dark"])) .testsperformed-page-tab {
+  color: var(--id-color-text-muted);
+}
+
+:global(:root:not([data-theme="dark"])) .testsperformed-page-tab span {
+  background: rgba(15, 23, 42, 0.08);
+  color: var(--id-color-text);
+}
+
+:global(:root:not([data-theme="dark"])) .testsperformed-page-tab:hover,
+:global(:root:not([data-theme="dark"])) .testsperformed-page-tab:focus-visible {
+  border-color: rgba(255, 107, 30, 0.38);
+  color: var(--id-color-text);
+}
+
+:global(:root:not([data-theme="dark"])) .testsperformed-page-tab.active,
+:global(:root:not([data-theme="dark"])) .testsperformed-page-tab.active span {
+  color: #111827;
+}
+
+:global(:root:not([data-theme="dark"])) .testsperformed-analytics-card,
+:global(:root:not([data-theme="dark"])) .testsperformed-taxonomy div,
+:global(:root:not([data-theme="dark"])) .testsperformed-execution-metrics article,
+:global(:root:not([data-theme="dark"])) .testsperformed-parallel-card,
+:global(:root:not([data-theme="dark"])) .testsperformed-item,
+:global(:root:not([data-theme="dark"])) .testsperformed-test-card,
+:global(:root:not([data-theme="dark"])) .testsperformed-step-row {
+  background: rgba(255, 255, 255, 0.82);
+  border-color: var(--id-color-border);
+  color: var(--id-color-text);
+}
+
+:global(:root:not([data-theme="dark"])) .testsperformed-item:hover,
+:global(:root:not([data-theme="dark"])) .testsperformed-test-card:hover {
+  box-shadow: 0 1rem 2rem rgba(15, 23, 42, 0.1);
+  color: var(--id-color-text);
+}
+
+:global(:root:not([data-theme="dark"])) .testsperformed-item.active,
+:global(:root:not([data-theme="dark"])) .testsperformed-test-card.active {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 107, 30, 0.18),
+    rgba(255, 139, 35, 0.08) 48%,
+    rgba(255, 255, 255, 0.9)
+  );
+  color: var(--id-color-text) !important;
+}
+
+:global(:root:not([data-theme="dark"])) .testsperformed-counter {
+  background: rgba(255, 107, 30, 0.12);
+  color: #c2410c;
+}
+
+:global(:root:not([data-theme="dark"])) .testsperformed-item.active .testsperformed-item-icon {
+  background: rgba(255, 107, 30, 0.16);
+  color: #c2410c;
+}
+
+:global(:root:not([data-theme="dark"])) .testsperformed-postman-step-details {
+  background: rgba(255, 255, 255, 0.72);
+  border-color: rgba(255, 108, 32, 0.36);
+}
+
+:global(:root:not([data-theme="dark"])) .testsperformed-filter-control {
+  background: #ffffff;
+  border-color: var(--id-color-border);
+  color: var(--id-color-text);
+}
+
+:global(:root:not([data-theme="dark"])) .testsperformed-status-filter {
+  background: rgba(255, 255, 255, 0.78);
+  border-color: var(--id-color-border);
+  color: var(--id-color-text-muted);
+}
+
+:global(:root:not([data-theme="dark"])) .testsperformed-status-filter.active {
+  color: #10131d;
+}
+
+:global(:root:not([data-theme="dark"])) .testsperformed-empty {
+  border-color: var(--id-color-border);
+  color: var(--id-color-text-muted);
+}
+
+:global(:root:not([data-theme="dark"])) .testsperformed-status.secondary,
+:global(:root:not([data-theme="dark"])) .testsperformed-worker-state.secondary {
+  background: rgba(100, 116, 139, 0.12);
+  color: #475569;
+}
+
+:global(:root:not([data-theme="dark"])) .testsperformed-status.success,
+:global(:root:not([data-theme="dark"])) .testsperformed-worker-state.success {
+  background: rgba(5, 150, 105, 0.12);
+  color: #047857;
+}
+
+:global(:root:not([data-theme="dark"])) .testsperformed-status.danger,
+:global(:root:not([data-theme="dark"])) .testsperformed-worker-state.danger {
+  background: rgba(220, 38, 38, 0.11);
+  color: #b91c1c;
+}
+
+:global(:root:not([data-theme="dark"])) .testsperformed-status.running,
+:global(:root:not([data-theme="dark"])) .testsperformed-worker-state.running {
+  background: rgba(37, 99, 235, 0.12);
+  color: #1d4ed8;
+}
+
+:global(:root:not([data-theme="dark"])) .testsperformed-status.warning,
+:global(:root:not([data-theme="dark"])) .testsperformed-worker-state.warning {
+  background: rgba(217, 119, 6, 0.12);
+  color: #b45309;
 }
 
 @media (max-width: 1180px) {

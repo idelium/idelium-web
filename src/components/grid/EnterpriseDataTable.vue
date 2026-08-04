@@ -226,7 +226,11 @@
                 @click="emitAction(action, row)"
               >
                 <template v-if="action.icon" #icon>
-                  <font-awesome-icon :icon="action.icon" aria-hidden="true" />
+                  <font-awesome-icon
+                    :icon="action.icon"
+                    :class="action.iconClass"
+                    aria-hidden="true"
+                  />
                 </template>
                 <span v-if="!action.icon">{{ action.label }}</span>
               </IdButton>

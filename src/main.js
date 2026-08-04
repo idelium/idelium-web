@@ -60,6 +60,8 @@ import {
   faExclamationTriangle,
   faLaptop,
   faHistory,
+  faMoon,
+  faSun,
 } from "@fortawesome/free-solid-svg-icons";
 library.add(
   faUsers,
@@ -81,6 +83,8 @@ library.add(
   faExclamationTriangle,
   faLaptop,
   faHistory,
+  faMoon,
+  faSun,
 );
 library.add(
   faLeaf,
@@ -107,6 +111,9 @@ import italian from "./languages/italian";
 import english from "./languages/english";
 
 Konva.legacyTextRendering = true;
+
+const storedTheme = localStorage.ideliumTheme === "dark" ? "dark" : "light";
+document.documentElement.dataset.theme = storedTheme;
 
 const emitter = mitt();
 const app = createApp(App);

@@ -1,5 +1,5 @@
 import { flushPromises, shallowMount } from "@vue/test-utils";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const api = vi.hoisted(() => ({ get: vi.fn(), post: vi.fn(), put: vi.fn() }));
 
@@ -17,6 +17,11 @@ vi.mock("@/stores/session", () => ({
 import TablerHeader from "@/components/tabler/TablerHeader.vue";
 
 describe("tabler header component", () => {
+  beforeEach(() => {
+    localStorage.clear();
+    document.documentElement.removeAttribute("data-theme");
+  });
+
   function mountHeader(
     route = { name: "projects", params: {} },
     headerData = { projects: [], costumers: [] },
@@ -57,6 +62,8 @@ describe("tabler header component", () => {
                 logOut: "Log out",
                 profile: "Profile",
                 project: "Project",
+                switchToDarkTheme: "Switch to dark theme",
+                switchToLightTheme: "Switch to light theme",
               },
             },
           },
@@ -142,5 +149,20 @@ describe("tabler header component", () => {
     wrapper.vm.syncProjectSelectionFromRoute();
 
     expect(wrapper.vm.projectSelected).toBe(3);
+  });
+
+  it("toggles and persists the portal theme", async () => {
+    const wrapper = mountHeader();
+
+    expect(wrapper.vm.currentTheme).toBe("light");
+    expect(document.documentElement.dataset.theme).toBe("light");
+
+    wrapper.vm.toggleTheme();
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.vm.currentTheme).toBe("dark");
+    expect(document.documentElement.dataset.theme).toBe("dark");
+    expect(localStorage.ideliumTheme).toBe("dark");
+    expect(wrapper.vm.themeToggleLabel).toBe("Switch to light theme");
   });
 });

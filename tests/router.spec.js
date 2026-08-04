@@ -98,6 +98,14 @@ describe("route smoke checks", () => {
     expect(router.currentRoute.value.query.runId).toBe("9");
   });
 
+  it("opens the canonical test workflow builder route", async () => {
+    useSessionStore(pinia).establishSession();
+    await router.push("/projects/7/tests/44/builder");
+    expect(router.currentRoute.value.name).toBe("tests-builder");
+    expect(router.currentRoute.value.params.projectId).toBe("7");
+    expect(router.currentRoute.value.params.testId).toBe("44");
+  });
+
   it("redirects legacy project routes to the selected project URL", async () => {
     const session = useSessionStore(pinia);
     session.establishSession();

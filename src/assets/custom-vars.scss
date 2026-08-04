@@ -770,6 +770,17 @@ optgroup {
 .idelium-action-icon--edit {
   color: #f59e0b !important;
 }
+.idelium-action-icon--create,
+.idelium-action-icon--save {
+  color: #22c55e !important;
+}
+.idelium-action-icon--cancel {
+  color: #ef4444 !important;
+}
+.idelium-action-icon--reorder,
+.idelium-action-icon--test {
+  color: #38bdf8 !important;
+}
 .idelium-action-icon--expand,
 .idelium-action-icon--refresh {
   color: #38bdf8 !important;
@@ -1233,4 +1244,455 @@ select:focus {
   -ms-animation: rotating 2s linear infinite;
   -o-animation: rotating 2s linear infinite;
   animation: rotating 2s linear infinite;
+}
+
+/* Light portal theme overrides */
+:root:not([data-theme="dark"]) {
+  .vs__dropdown-option {
+  background: #ffffff !important;
+  color: var(--idelium-text) !important;
+}
+
+.list-group-item {
+  color: var(--idelium-text) !important;
+}
+
+.list-group-item[aria-expanded="true"],
+.list-group-item.active {
+  background-color: var(--id-color-surface-muted) !important;
+  border-color: var(--id-color-border-strong) !important;
+  color: var(--idelium-text) !important;
+}
+
+.btn {
+  color: var(--idelium-text) !important;
+}
+
+.btn-primary,
+.nav-tabs .nav-link.active,
+.idelium-enterprise-tabs .nav-link.active,
+.idelium-enterprise-tabs .idelium-enterprise-tab--active {
+  color: var(--id-color-on-primary) !important;
+}
+
+.btn-secondary,
+.modal .btn-secondary {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(241, 245, 249, 0.92)),
+    var(--id-color-surface-raised) !important;
+  border-color: var(--id-color-border-strong) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.75),
+    0 0.55rem 1.25rem rgba(15, 23, 42, 0.08) !important;
+  color: var(--idelium-text) !important;
+}
+
+.btn-secondary:hover,
+.btn-secondary:focus,
+.modal .btn-secondary:hover,
+.modal .btn-secondary:focus {
+  background: #ffffff !important;
+  border-color: rgba(255, 122, 24, 0.46) !important;
+  color: var(--idelium-text) !important;
+}
+
+.btn-success {
+  background: rgba(5, 150, 105, 0.1) !important;
+  border-color: rgba(5, 150, 105, 0.28) !important;
+  color: #047857 !important;
+}
+
+.btn-danger {
+  background: rgba(220, 38, 38, 0.09) !important;
+  border-color: rgba(220, 38, 38, 0.24) !important;
+  color: #b91c1c !important;
+}
+
+.costum {
+  --bs-table-color: var(--idelium-text);
+  --bs-table-striped-color: var(--idelium-text);
+  --bs-table-bg: transparent;
+  --bs-table-striped-bg: rgba(15, 23, 42, 0.025);
+  --bs-table-border-color: var(--idelium-border);
+}
+
+.card,
+.modal-content {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(248, 250, 252, 0.72)),
+    var(--idelium-surface);
+}
+
+.card-header,
+.modal-header {
+  background: rgba(241, 245, 249, 0.72);
+}
+
+.modal-backdrop.show {
+  background:
+    radial-gradient(circle at top, rgba(255, 122, 24, 0.12), transparent 34rem),
+    rgba(15, 23, 42, 0.42);
+}
+
+.modal-content {
+  border-color: var(--idelium-border);
+}
+
+.modal-footer {
+  background: rgba(241, 245, 249, 0.66);
+}
+
+.modal .btn-close {
+  background-color: rgba(255, 255, 255, 0.94);
+}
+
+.modal .form-label,
+.modal .col-form-label,
+.modal label {
+  color: var(--id-color-text-muted);
+}
+
+.modal .form-control,
+.modal .form-select,
+.modal select,
+.modal textarea,
+.modal .vs__dropdown-toggle {
+  background: #ffffff !important;
+  border-color: var(--id-color-border) !important;
+  box-shadow: inset 0 1px 0 rgba(15, 23, 42, 0.02);
+  color: var(--idelium-text) !important;
+}
+
+.modal .form-control::placeholder,
+.modal textarea::placeholder {
+  color: rgba(71, 85, 105, 0.48) !important;
+}
+
+.modal .form-control:focus,
+.modal .form-select:focus,
+.modal select:focus,
+.modal textarea:focus,
+.modal .vs__dropdown-toggle:focus-within {
+  background: #ffffff !important;
+  border-color: rgba(255, 122, 24, 0.72) !important;
+  box-shadow: 0 0 0 0.18rem rgba(255, 122, 24, 0.16) !important;
+}
+
+.modal .form-control:disabled,
+.modal .form-control[readonly],
+.modal .form-select:disabled,
+.modal .form-select[readonly] {
+  background: var(--id-color-surface-muted) !important;
+  color: var(--id-color-text-subtle) !important;
+}
+
+.idelium-tabler-container .nav-tabs,
+.idelium-enterprise-tabs {
+  background:
+    linear-gradient(135deg, rgba(255, 122, 24, 0.06), transparent),
+    rgba(255, 255, 255, 0.82);
+  border-color: var(--idelium-border);
+}
+
+.idelium-tabler-container .tab-content,
+.idelium-enterprise-tab-content {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(248, 250, 252, 0.78)),
+    var(--idelium-surface);
+  border-color: var(--idelium-border);
+}
+
+.idelium-tabler-container .list-group-item,
+.idelium-tabler-container .paneColumn,
+.idelium-tabler-container .scroll-area,
+.idelium-tabler-container .scroll-area2,
+.idelium-tabler-container .scroll-area90,
+.account-readonly-summary > div {
+  background: rgba(255, 255, 255, 0.78) !important;
+  border-color: var(--idelium-border) !important;
+  color: var(--idelium-text) !important;
+}
+
+.idelium-tabler-container .dragArea {
+  background:
+    linear-gradient(180deg, rgba(255, 122, 24, 0.055), transparent),
+    rgba(255, 255, 255, 0.74);
+  border-color: rgba(255, 122, 24, 0.36);
+}
+
+.idelium-tabler-container .idelium-steps-grid,
+.table.costum {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(248, 250, 252, 0.78)),
+    var(--idelium-surface);
+  border-color: var(--idelium-border);
+  box-shadow: var(--idelium-shadow);
+}
+
+.idelium-steps-grid__header,
+.table.costum > thead > tr > th {
+  background:
+    linear-gradient(90deg, rgba(255, 122, 24, 0.1), transparent 44%),
+    rgba(241, 245, 249, 0.88);
+  border-bottom-color: var(--idelium-border);
+  color: var(--idelium-text) !important;
+}
+
+.idelium-steps-grid__row,
+.idelium-steps-grid__row:nth-child(even),
+.table.costum > tbody > tr {
+  background: rgba(255, 255, 255, 0.74);
+  border-bottom-color: var(--idelium-border);
+  color: var(--idelium-text);
+}
+
+.idelium-steps-grid__row:hover,
+.table.costum > tbody > tr:hover {
+  background: rgba(255, 122, 24, 0.075);
+}
+
+.idelium-steps-grid__link,
+.idelium-steps-grid__link:hover,
+.idelium-steps-grid__link:focus-visible,
+.costum th,
+.costum td,
+.table.costum > :not(caption) > * > *,
+.table.costum > tbody > tr > td,
+.table.costum > tbody > tr > td span,
+.table.costum > tbody > tr > td button.btn-link {
+  color: var(--idelium-text) !important;
+}
+
+.nav-tabs .nav-link,
+.idelium-enterprise-tabs .nav-link,
+.idelium-enterprise-tabs .idelium-enterprise-tab {
+  background: rgba(255, 255, 255, 0.74) !important;
+  border-color: var(--idelium-border) !important;
+  color: var(--id-color-text-muted) !important;
+}
+
+.nav-tabs .nav-link:hover,
+.idelium-enterprise-tabs .nav-link:hover,
+.idelium-enterprise-tabs .nav-link:focus-visible,
+.idelium-enterprise-tabs .idelium-enterprise-tab:hover,
+.idelium-enterprise-tabs .idelium-enterprise-tab:focus-visible {
+  background: #ffffff !important;
+  border-color: rgba(255, 122, 24, 0.42) !important;
+  color: var(--idelium-text) !important;
+}
+
+.idelium-enterprise-tabs .nav-link small,
+.idelium-enterprise-tabs .idelium-enterprise-tab small {
+  color: var(--id-color-text-subtle);
+}
+
+.idelium-enterprise-tabs .nav-link.active small,
+.idelium-enterprise-tabs .idelium-enterprise-tab--active small {
+  color: rgba(17, 19, 24, 0.72);
+}
+
+.nav-tabs .nav-link:disabled,
+.idelium-enterprise-tabs .nav-link:disabled,
+.idelium-enterprise-tabs .idelium-enterprise-tab:disabled {
+  color: rgba(100, 116, 139, 0.54) !important;
+}
+
+.form-control,
+.form-select,
+select.form-control,
+select,
+.vs__dropdown-toggle {
+  background-color: #ffffff !important;
+  border-color: var(--id-color-border) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+    0 0.35rem 1rem rgba(15, 23, 42, 0.05) !important;
+  color: var(--idelium-text) !important;
+}
+
+.form-select,
+select.form-control,
+select {
+  background:
+    url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23475569' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e")
+      right 0.85rem center / 0.78rem 0.78rem no-repeat,
+    #ffffff !important;
+}
+
+.form-select option,
+select.form-control option,
+select option {
+  background: #ffffff;
+  color: var(--idelium-text);
+}
+
+.form-select:hover,
+select.form-control:hover,
+select:hover {
+  border-color: var(--id-color-border-strong) !important;
+}
+
+.vs__selected,
+.vs__search,
+.vs__search:focus {
+  color: var(--idelium-text) !important;
+}
+
+.vs__clear,
+.vs__open-indicator {
+  fill: var(--id-color-text-muted) !important;
+}
+
+.vs__dropdown-menu {
+  background: #ffffff !important;
+  border-color: var(--id-color-border) !important;
+  box-shadow: var(--id-shadow-dialog) !important;
+  color: var(--idelium-text) !important;
+  scrollbar-color: rgba(249, 128, 8, 0.72) rgba(15, 23, 42, 0.06);
+}
+
+.vs__dropdown-menu::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.06);
+}
+
+.idelium-action-icon--navigation,
+.idelium-action-icon--user,
+.idelium-action-icon--visibility {
+  color: var(--id-color-text-muted) !important;
+}
+
+.bodyLoader {
+  background:
+    radial-gradient(circle at 50% 35%, rgba(255, 122, 24, 0.12), transparent 18rem),
+    rgba(248, 250, 252, 0.62);
+}
+}
+
+/* Dark portal theme shell overrides */
+:root[data-theme="dark"] {
+  body {
+    background: var(--id-color-canvas) !important;
+    color: var(--id-color-text) !important;
+  }
+
+  .idelium-tabler-layout {
+    background:
+      radial-gradient(
+        circle at 84% 0%,
+        rgba(255, 122, 24, 0.14),
+        transparent 28rem
+      ),
+      linear-gradient(135deg, #171923 0%, #232632 48%, #2d303b 100%) !important;
+    color: #f4f4f5 !important;
+  }
+
+  .idelium-tabler-header {
+    background:
+      linear-gradient(180deg, rgba(15, 17, 26, 0.98), rgba(10, 12, 20, 0.96)),
+      radial-gradient(
+        circle at 12% 0%,
+        rgba(255, 122, 24, 0.08),
+        transparent 18rem
+      ) !important;
+    border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 0 18px 42px rgba(0, 0, 0, 0.28) !important;
+  }
+
+  .idelium-tabler-sidebar {
+    background:
+      linear-gradient(180deg, rgba(15, 17, 26, 0.98), rgba(7, 9, 15, 0.98)),
+      radial-gradient(
+        circle at top left,
+        rgba(255, 122, 24, 0.2),
+        transparent 16rem
+      ) !important;
+    border-right-color: rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 18px 0 42px rgba(0, 0, 0, 0.28) !important;
+  }
+
+  .idelium-sidebar-title {
+    color: #ffffff !important;
+  }
+
+  .idelium-sidebar-subtitle {
+    color: rgba(244, 244, 245, 0.56) !important;
+  }
+
+  .idelium-sidebar-link {
+    color: rgba(244, 244, 245, 0.72) !important;
+  }
+
+  .idelium-sidebar-link:hover {
+    background: rgba(255, 255, 255, 0.06) !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+    color: #ffffff !important;
+  }
+
+  .idelium-header-left::after {
+    background: rgba(255, 255, 255, 0.08) !important;
+  }
+
+  .idelium-header-logo {
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  .idelium-icon-button {
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.075),
+      rgba(255, 255, 255, 0.035)
+    ) !important;
+    border-color: rgba(255, 255, 255, 0.12) !important;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.08),
+      0 0.75rem 1.8rem rgba(0, 0, 0, 0.22) !important;
+    color: #f8fafc !important;
+  }
+
+  .idelium-icon-button:hover {
+    background: rgba(255, 255, 255, 0.09) !important;
+    border-color: rgba(255, 255, 255, 0.18) !important;
+  }
+
+  .idelium-icon-button.dropdown-toggle::after {
+    border-top-color: rgba(255, 255, 255, 0.72) !important;
+  }
+
+  .idelium-context-field {
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.07),
+      rgba(255, 255, 255, 0.035)
+    ) !important;
+    border-color: rgba(255, 255, 255, 0.12) !important;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.08),
+      0 0.9rem 2rem rgba(0, 0, 0, 0.18) !important;
+  }
+
+  .idelium-context-field span,
+  .idelium-context-action {
+    color: rgba(244, 244, 245, 0.7) !important;
+  }
+
+  .idelium-context-field select {
+    background:
+      url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23f8fafc' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e")
+        right 0.75rem center / 0.72rem 0.72rem no-repeat,
+      rgba(255, 255, 255, 0.085) !important;
+    border-color: rgba(255, 255, 255, 0.11) !important;
+    color: #ffffff !important;
+  }
+
+  .idelium-context-field option {
+    background: #171923 !important;
+    color: #ffffff !important;
+  }
+
+  .idelium-context-action {
+    background: rgba(32, 201, 151, 0.14) !important;
+    border-color: rgba(32, 201, 151, 0.32) !important;
+    color: #b7f7df !important;
+  }
 }

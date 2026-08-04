@@ -111,14 +111,26 @@ export default {
   background:
     radial-gradient(
       circle at 84% 0%,
+      rgba(255, 122, 24, 0.12),
+      transparent 28rem
+    ),
+    radial-gradient(circle at 0% 100%, rgba(2, 132, 199, 0.09), transparent 26rem),
+    linear-gradient(135deg, #f8fafc 0%, #f1f5f9 48%, #e9eef7 100%);
+  color: var(--id-color-text);
+  display: flex;
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+:global(:root[data-theme="dark"]) .idelium-tabler-layout {
+  background:
+    radial-gradient(
+      circle at 84% 0%,
       rgba(255, 122, 24, 0.14),
       transparent 28rem
     ),
     linear-gradient(135deg, #171923 0%, #232632 48%, #2d303b 100%);
   color: #f4f4f5;
-  display: flex;
-  min-height: 100vh;
-  overflow: hidden;
 }
 
 .idelium-skip-link {

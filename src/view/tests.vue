@@ -2,7 +2,7 @@
   <div class="costum tests-page">
     <div class="row">
       <div class="col-12">
-        <div class="card">
+        <div class="card" v-if="!isBuilderRoute">
           <div
             class="nav nav-tabs idelium-enterprise-tabs"
             id="nav-tab"
@@ -57,36 +57,165 @@
               aria-labelledby="tabTitleModify-tab"
             >
               <!-- start tabTitleModify tab -->
-              <div v-if="arrayTests.length > 0">
-                <v-select
-                  label="name"
-                  :options="arrayTests"
-                  v-model="testSelected"
-                  class="costum formTest"
-                  style="min-width: 98%"
-                ></v-select>
-                <input
-                  class="form-control formTest"
+              <div v-if="arrayTests.length > 0" class="tests-master-detail">
+                <section class="tests-test-picker">
+                  <header class="tests-test-picker__header">
+                    <div>
+                      <p class="tests-test-picker__eyebrow">
+                        {{
+                          language[config.currentLanguage].Tests
+                            .testPickerEyebrow
+                        }}
+                      </p>
+                      <h2 id="tests-test-picker-title">
+                        {{
+                          language[config.currentLanguage].Tests.testPickerTitle
+                        }}
+                      </h2>
+                      <p>
+                        {{
+                          language[config.currentLanguage].Tests
+                            .testPickerDescription
+                        }}
+                      </p>
+                    </div>
+                    <span class="tests-test-picker__count">
+                      {{
+                        formatTestPickerCount(
+                          filteredTests.length,
+                          language[config.currentLanguage].Tests.testPickerCount,
+                        )
+                      }}
+                    </span>
+                  </header>
+                  <input
+                    class="form-control tests-test-picker__search"
+                    type="search"
+                    v-model.trim="testSearch"
+                    :placeholder="
+                      language[config.currentLanguage].Tests
+                        .testPickerSearchPlaceholder
+                    "
+                    aria-labelledby="tests-test-picker-title"
+                  />
+                  <div
+                    v-if="filteredTests.length > 0"
+                    class="tests-test-picker__grid"
+                    role="listbox"
+                    :aria-label="
+                      language[config.currentLanguage].Tests.testPickerTitle
+                    "
+                  >
+                    <button
+                      v-for="test in filteredTests"
+                      v-bind:key="test.id"
+                      type="button"
+                      :class="[
+                        'tests-test-picker-card',
+                        { 'is-selected': isSelectedTest(test) },
+                      ]"
+                      role="option"
+                      :aria-selected="isSelectedTest(test)"
+                      v-on:click="selectTest(test)"
+                    >
+                      <span class="tests-test-picker-card__id">
+                        #{{ test.id }}
+                      </span>
+                      <span class="tests-test-picker-card__body">
+                        <strong>{{ test.name }}</strong>
+                        <small>{{ testSummary(test) }}</small>
+                      </span>
+                      <span
+                        v-if="isSelectedTest(test)"
+                        class="tests-test-picker-card__status"
+                      >
+                        {{
+                          language[config.currentLanguage].Tests
+                            .testPickerSelected
+                        }}
+                      </span>
+                    </button>
+                  </div>
+                  <div v-else class="tests-test-picker__empty">
+                    {{ language[config.currentLanguage].Tests.testPickerEmpty }}
+                  </div>
+                </section>
+                <aside
+                  class="tests-test-detail"
                   v-if="testSelected != null"
-                  :placeholder="
-                    language[config.currentLanguage].Tests
-                      .placeholderDescriptionTest
-                  "
-                  v-model="modifyDescriptionTest"
-                  :disabled="testSelected == null"
-                />
-                <button
-                  type="button"
-                  v-if="testSelected != null"
-                  class="btn btn-success"
-                  size="sm"
-                  style="float: right"
-                  :disabled="testSelected == null"
-                  v-on:click="modifyTest()"
+                  aria-live="polite"
                 >
-                  {{ language[config.currentLanguage].Tests.btnModifyTest }}
-                </button>
-                <br />
+                  <p class="tests-test-picker__eyebrow">
+                    {{ language[config.currentLanguage].Tests.testDetailEyebrow }}
+                  </p>
+                  <h2>{{ selectedTestName }}</h2>
+                  <p>{{ testSummary(testSelected) }}</p>
+                  <dl class="tests-test-detail__metrics">
+                    <div>
+                      <dt>{{ language[config.currentLanguage].Tests.testDetailId }}</dt>
+                      <dd>#{{ testSelected.id }}</dd>
+                    </div>
+                    <div>
+                      <dt>
+                        {{ language[config.currentLanguage].Tests.testDetailSteps }}
+                      </dt>
+                      <dd>{{ selectedTestStepCount }}</dd>
+                    </div>
+                  </dl>
+                  <label class="tests-test-detail__field">
+                    <span>
+                      {{
+                        language[config.currentLanguage].Tests
+                          .placeholderDescriptionTest
+                      }}
+                    </span>
+                    <input
+                      class="form-control tests-test-picker__description"
+                      :placeholder="
+                        language[config.currentLanguage].Tests
+                          .placeholderDescriptionTest
+                      "
+                      v-model="modifyDescriptionTest"
+                    />
+                  </label>
+                  <div class="tests-test-detail__actions">
+                    <button
+                      type="button"
+                      class="btn btn-success"
+                      :disabled="testSelected == null"
+                      v-on:click="modifyTest()"
+                    >
+                      {{ language[config.currentLanguage].Tests.btnModifyTest }}
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn-primary"
+                      v-on:click="openTestBuilder(testSelected)"
+                    >
+                      {{
+                        language[config.currentLanguage].Tests
+                          .openWorkflowBuilder
+                      }}
+                    </button>
+                  </div>
+                </aside>
+                <aside class="tests-test-detail tests-test-detail--empty" v-else>
+                  <p class="tests-test-picker__eyebrow">
+                    {{ language[config.currentLanguage].Tests.testDetailEyebrow }}
+                  </p>
+                  <h2>
+                    {{
+                      language[config.currentLanguage].Tests
+                        .selectTestToManageStepsTitle
+                    }}
+                  </h2>
+                  <p>
+                    {{
+                      language[config.currentLanguage].Tests
+                        .testDetailEmptyDescription
+                    }}
+                  </p>
+                </aside>
               </div>
               <!-- end tabTitleModify tab -->
             </div>
@@ -141,8 +270,40 @@
           </div>
         </div>
         <section
+          v-if="isBuilderRoute"
+          class="tests-builder-hero"
+          aria-labelledby="tests-builder-title"
+        >
+          <button
+            type="button"
+            class="btn btn-secondary tests-builder-back"
+            v-on:click="backToTestsCatalog()"
+          >
+            <font-awesome-icon icon="arrow-left" />
+            {{ language[config.currentLanguage].Tests.backToTestsCatalog }}
+          </button>
+          <div>
+            <p class="tests-test-picker__eyebrow">
+              {{ language[config.currentLanguage].Tests.builderEyebrow }}
+            </p>
+            <h1 id="tests-builder-title">{{ selectedTestName }}</h1>
+            <p>{{ builderDescription }}</p>
+          </div>
+          <button
+            type="button"
+            class="btn btn-success tests-builder-save"
+            :disabled="testSelected == null"
+            v-on:click="modifyTest()"
+          >
+            {{ language[config.currentLanguage].Tests.saveWorkflow }}
+          </button>
+        </section>
+        <section
           v-if="shouldShowStepComposition"
-          class="tests-composition"
+          :class="[
+            'tests-composition',
+            { 'tests-composition--builder': isBuilderRoute },
+          ]"
           aria-labelledby="test-composition-title"
         >
           <header>
@@ -171,7 +332,7 @@
           />
         </section>
         <section
-          v-else-if="tabOpen == 0"
+          v-else-if="!isBuilderRoute && tabOpen == 0"
           class="tests-composition tests-composition--empty"
           aria-labelledby="test-composition-empty-title"
         >
@@ -192,7 +353,7 @@
         </section>
         <section
           class="tests-import-workspace"
-          v-if="tabOpen == 2 && arrayStepsImported.length != 0"
+          v-if="!isBuilderRoute && tabOpen == 2 && arrayStepsImported.length != 0"
           aria-labelledby="tests-import-review-title"
         >
           <div class="tests-import-review-panel">
@@ -389,10 +550,298 @@
   flex: 0 0 auto;
 }
 
+.tests-master-detail {
+  display: grid;
+  gap: var(--id-space-4);
+  grid-template-columns: minmax(18rem, 0.95fr) minmax(22rem, 1.05fr);
+  padding: var(--id-space-4);
+}
+
 .formTest {
   margin: 10px;
   width: 98%;
   text-transform: uppercase;
+}
+
+.tests-test-picker {
+  display: grid;
+  gap: var(--id-space-3);
+  min-width: 0;
+}
+
+.tests-test-picker__header {
+  align-items: flex-start;
+  display: flex;
+  gap: var(--id-space-3);
+  justify-content: space-between;
+}
+
+.tests-test-picker__header h2,
+.tests-test-picker__header p {
+  margin: 0;
+}
+
+.tests-test-picker__header h2 {
+  color: var(--id-text-primary);
+  font-size: 1rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.tests-test-picker__header p:not(.tests-test-picker__eyebrow) {
+  color: var(--id-text-secondary);
+  line-height: 1.5;
+  margin-top: 0.35rem;
+}
+
+.tests-test-picker__eyebrow,
+.tests-test-picker__count {
+  color: var(--id-text-muted);
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.tests-test-picker__count {
+  background: var(--id-surface-soft);
+  border: 1px solid var(--id-border);
+  border-radius: 999px;
+  color: var(--id-accent);
+  flex: 0 0 auto;
+  padding: 0.4rem 0.75rem;
+}
+
+.tests-test-picker__search,
+.tests-test-picker__description {
+  margin: 0;
+  width: 100%;
+}
+
+.tests-test-picker__grid {
+  display: grid;
+  gap: var(--id-space-3);
+  grid-template-columns: 1fr;
+  max-height: 31rem;
+  overflow-y: auto;
+  padding-right: 0.25rem;
+  scrollbar-color: rgba(255, 122, 24, 0.8) rgba(255, 255, 255, 0.08);
+}
+
+.tests-test-picker-card {
+  align-items: center;
+  background:
+    linear-gradient(145deg, rgba(255, 122, 24, 0.05), transparent 36%),
+    var(--id-surface-soft);
+  border: 1px solid var(--id-border);
+  border-radius: 1rem;
+  color: var(--id-text-primary);
+  cursor: pointer;
+  display: grid;
+  gap: var(--id-space-3);
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  min-height: 5rem;
+  padding: 0.95rem 1rem;
+  text-align: left;
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease,
+    transform 0.18s ease;
+}
+
+.tests-test-picker-card:hover,
+.tests-test-picker-card:focus-visible {
+  border-color: rgba(255, 122, 24, 0.62);
+  box-shadow: 0 0.9rem 2rem rgba(255, 122, 24, 0.12);
+  outline: none;
+  transform: translateY(-1px);
+}
+
+.tests-test-picker-card.is-selected {
+  background:
+    linear-gradient(145deg, rgba(255, 122, 24, 0.22), transparent 42%),
+    var(--id-surface-soft);
+  border-color: var(--id-accent);
+  box-shadow: 0 1rem 2.4rem rgba(255, 122, 24, 0.18);
+}
+
+.tests-test-picker-card__id {
+  align-items: center;
+  background: rgba(255, 122, 24, 0.15);
+  border: 1px solid rgba(255, 122, 24, 0.35);
+  border-radius: 0.85rem;
+  color: var(--id-accent);
+  display: inline-flex;
+  font-weight: 900;
+  height: 2.5rem;
+  justify-content: center;
+  min-width: 2.8rem;
+}
+
+.tests-test-picker-card__body {
+  display: grid;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.tests-test-picker-card__body strong,
+.tests-test-picker-card__body small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tests-test-picker-card__body strong {
+  font-size: 0.82rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.tests-test-picker-card__body small {
+  color: var(--id-text-secondary);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.tests-test-picker-card__status {
+  background: rgba(255, 122, 24, 0.18);
+  border-radius: 999px;
+  color: var(--id-accent);
+  font-size: 0.64rem;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  padding: 0.35rem 0.6rem;
+  text-transform: uppercase;
+}
+
+.tests-test-picker__empty {
+  border: 1px dashed var(--id-border);
+  border-radius: 1rem;
+  color: var(--id-text-secondary);
+  padding: 1.2rem;
+  text-align: center;
+}
+
+.tests-test-detail,
+.tests-builder-hero {
+  background:
+    linear-gradient(145deg, rgba(255, 122, 24, 0.1), transparent 34%),
+    var(--id-surface-soft);
+  border: 1px solid var(--id-border);
+  border-radius: 1.15rem;
+  box-shadow: 0 1rem 2.4rem rgba(0, 0, 0, 0.16);
+}
+
+.tests-test-detail {
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  gap: var(--id-space-4);
+  min-width: 0;
+  padding: var(--id-space-4);
+}
+
+.tests-test-detail h2,
+.tests-test-detail p,
+.tests-builder-hero h1,
+.tests-builder-hero p {
+  margin: 0;
+}
+
+.tests-test-detail h2,
+.tests-builder-hero h1 {
+  color: var(--id-text-primary);
+  font-weight: 900;
+  letter-spacing: 0.04em;
+}
+
+.tests-test-detail p,
+.tests-builder-hero p {
+  color: var(--id-text-secondary);
+  line-height: 1.55;
+}
+
+.tests-test-detail__metrics {
+  display: grid;
+  gap: var(--id-space-3);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0;
+}
+
+.tests-test-detail__metrics div,
+.tests-test-detail__field {
+  background: var(--id-surface);
+  border: 1px solid var(--id-border);
+  border-radius: 0.95rem;
+  padding: 0.95rem;
+}
+
+.tests-test-detail__metrics dt,
+.tests-test-detail__field span {
+  color: var(--id-text-muted);
+  display: block;
+  font-size: 0.66rem;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.tests-test-detail__metrics dd {
+  color: var(--id-text-primary);
+  font-size: 1.25rem;
+  font-weight: 900;
+  margin: 0.25rem 0 0;
+}
+
+.tests-test-detail__field {
+  display: grid;
+  gap: var(--id-space-2);
+}
+
+.tests-test-detail__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--id-space-3);
+  margin-top: auto;
+}
+
+.tests-test-detail__actions .btn {
+  align-items: center;
+  display: inline-flex;
+  justify-content: center;
+  min-width: 11rem;
+}
+
+.tests-test-detail--empty {
+  justify-content: center;
+}
+
+.tests-builder-hero {
+  align-items: center;
+  display: grid;
+  gap: var(--id-space-4);
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  margin-top: var(--id-space-4);
+  padding: var(--id-space-4);
+}
+
+.tests-builder-back,
+.tests-builder-save {
+  align-items: center;
+  display: inline-flex;
+  gap: var(--id-space-2);
+  justify-content: center;
+  white-space: nowrap;
+}
+
+.tests-composition--builder {
+  background: var(--id-surface-soft);
+  border: 1px solid var(--id-border);
+  border-radius: 1.15rem;
+  padding: var(--id-space-4);
 }
 
 .tests-workspace {
@@ -720,6 +1169,15 @@
     overflow: visible;
   }
 
+  .tests-master-detail,
+  .tests-builder-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .tests-test-detail__metrics {
+    grid-template-columns: 1fr;
+  }
+
   .tests-import-review-header {
     align-items: flex-start;
     flex-direction: column;
@@ -772,6 +1230,7 @@ export default {
       listOriginalSteps: [],
       arrayTests: [],
       testSelected: null,
+      testSearch: "",
       stepFilter: "",
       testStepPickerQuery: {
         page: 1,
@@ -830,17 +1289,61 @@ export default {
     testSelected() {
       this.getTest();
     },
+    "$route.params.testId"() {
+      this.applyRouteTestSelection();
+    },
     /*$route() {
       this.$forceUpdate();
     }, */
     files() {},
   },
   computed: {
+    isBuilderRoute() {
+      return this.$route.name === "tests-builder";
+    },
+    selectedTestName() {
+      return (
+        this.testSelected?.name ||
+        this.language[this.config.currentLanguage].Tests.builderFallbackTitle
+      );
+    },
+    builderDescription() {
+      return (
+        this.modifyDescriptionTest ||
+        this.testSummary(this.testSelected) ||
+        this.language[this.config.currentLanguage].Tests.testPickerNoDescription
+      );
+    },
+    selectedTestStepCount() {
+      return Array.isArray(this.arrayStepsSelectedDragged)
+        ? this.arrayStepsSelectedDragged.length
+        : 0;
+    },
+    filteredTests() {
+      const search = String(this.testSearch ?? "")
+        .trim()
+        .toLowerCase();
+      if (search === "") return this.arrayTests;
+      return this.arrayTests.filter((test) => {
+        const searchable = [
+          test.id,
+          test.name,
+          test.description,
+          test.runtime,
+          test.status,
+        ]
+          .map((value) => String(value ?? "").toLowerCase())
+          .join(" ");
+        return searchable.includes(search);
+      });
+    },
     isModifyTabDisabled() {
       return this.testsLoaded && this.arrayTests.length === 0;
     },
     shouldShowStepComposition() {
-      return this.tabOpen === 1 || (this.tabOpen === 0 && this.testSelected != null);
+      return this.isBuilderRoute
+        ? this.testSelected != null
+        : this.tabOpen === 1;
     },
     sequenceBuilderCopy() {
       const dictionary = this.language[this.config.currentLanguage] ?? english;
@@ -916,6 +1419,53 @@ export default {
     },
   },
   methods: {
+    applyRouteTestSelection() {
+      if (!this.isBuilderRoute || this.arrayTests.length === 0) return;
+      const routeTestId = String(this.$route.params.testId ?? "");
+      const nextTest = this.arrayTests.find(
+        (test) => String(test.id) === routeTestId,
+      );
+      if (nextTest != null && !this.isSelectedTest(nextTest)) {
+        this.testSelected = nextTest;
+      }
+    },
+    openTestBuilder(test) {
+      if (test?.id == null) return;
+      this.$router.push({
+        name: "tests-builder",
+        params: {
+          projectId: getSelectedProjectId(),
+          testId: test.id,
+        },
+      });
+    },
+    backToTestsCatalog() {
+      this.$router.push({
+        name: "tests",
+        params: {
+          projectId: getSelectedProjectId(),
+          tab: "modify",
+        },
+      });
+    },
+    selectTest(test) {
+      this.testSelected = test;
+    },
+    isSelectedTest(test) {
+      return (
+        this.testSelected != null &&
+        String(this.testSelected.id) === String(test?.id)
+      );
+    },
+    testSummary(test) {
+      return (
+        test?.description ||
+        this.language[this.config.currentLanguage].Tests.testPickerNoDescription
+      );
+    },
+    formatTestPickerCount(count, template) {
+      return String(template ?? "{count}").replace("{count}", count);
+    },
     stepRuntime(step) {
       return (
         step.runtime ??
@@ -957,7 +1507,11 @@ export default {
       this.tabOpen = ["modify", "new", "import"].indexOf(tab);
     },
     redirectEmptyTests() {
-      if (this.isModifyTabDisabled && this.isActiveTab("modify")) {
+      if (
+        !this.isBuilderRoute &&
+        this.isModifyTabDisabled &&
+        this.isActiveTab("modify")
+      ) {
         this.openTab("new");
       }
     },
@@ -1087,6 +1641,7 @@ export default {
           this.arrayTests = result.rows;
           this.testsGridMeta = result.meta;
           this.testsLoaded = true;
+          this.applyRouteTestSelection();
           this.redirectEmptyTests();
         })
         .catch((e) => {

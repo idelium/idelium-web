@@ -6,8 +6,9 @@ import Wizard from "@/view/steps/wizard.vue";
 import { STEP_CATALOG_VERSION } from "@/domain/stepCatalog";
 
 describe("steps wizard Postman import", () => {
-  function mountWizard() {
+  function mountWizard(options = {}) {
     return shallowMount(Wizard, {
+      props: options.props || {},
       global: {
         stubs: {
           JsonEditor: { template: "<div />" },
@@ -267,5 +268,63 @@ describe("steps wizard Postman import", () => {
       "Advanced Selenium",
     );
     expect(wrapper.vm.showStepOptionGroup(wrapper.vm.stepsType[2])).toBe(false);
+  });
+
+  it("hydrates the wizard from an existing editable step payload", async () => {
+    const wrapper = mountWizard({
+      props: {
+        jsonFromEditor_prop: {
+          name: "Existing browser flow",
+          editorType: "selenium",
+          failedExit: true,
+          attachScreenshot: false,
+          steps: [
+            {
+              stepType: "open_browser",
+              runtime: "selenium",
+              note: "Open the application",
+              url: "https://idelium.org/demo/",
+            },
+          ],
+        },
+      },
+    });
+
+    expect(wrapper.vm.name).toBe("Existing browser flow");
+    expect(wrapper.vm.typeOfWrapperSelected).toBe("selenium");
+    expect(wrapper.vm.attachScreenshot).toBe(false);
+    expect(wrapper.vm.arrayStepTypeToAdd).toHaveLength(1);
+    expect(wrapper.vm.arrayStepTypeToAdd[0]).toMatchObject({
+      stepType: "open_browser",
+      note: "Open the application",
+      url: "https://idelium.org/demo/",
+    });
+    expect(wrapper.vm.arrayStepTypeToAdd[0].__key).toBeTruthy();
+    expect(wrapper.vm.displayCard).toBe("fade-in");
+
+    await wrapper.setProps({
+      jsonFromEditor_prop: {
+        name: "Updated mobile flow",
+        editorType: "appium",
+        failedExit: false,
+        attachScreenshot: true,
+        steps: [
+          {
+            stepType: "appium_back",
+            runtime: "appium",
+            note: "Go back on the device",
+          },
+        ],
+      },
+    });
+
+    expect(wrapper.vm.name).toBe("Updated mobile flow");
+    expect(wrapper.vm.typeOfWrapperSelected).toBe("appium");
+    expect(wrapper.vm.failedExit).toBe(false);
+    expect(wrapper.vm.arrayStepTypeToAdd).toHaveLength(1);
+    expect(wrapper.vm.arrayStepTypeToAdd[0]).toMatchObject({
+      stepType: "appium_back",
+      note: "Go back on the device",
+    });
   });
 });

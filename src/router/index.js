@@ -68,6 +68,12 @@ const router = createRouter({
           meta: { projectScoped: true, requiresAuth: true },
         },
         {
+          path: "projects/:projectId/tests/:testId/builder",
+          name: "tests-builder",
+          component: tests,
+          meta: { projectScoped: true, requiresAuth: true },
+        },
+        {
           path: "projects/:projectId/tests/:tab?",
           name: "tests",
           component: tests,

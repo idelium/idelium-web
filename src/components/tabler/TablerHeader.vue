@@ -68,6 +68,19 @@
         </ul>
       </div>
 
+      <button
+        type="button"
+        class="idelium-icon-button"
+        :aria-label="themeToggleLabel"
+        :title="themeToggleLabel"
+        v-on:click="toggleTheme"
+      >
+        <font-awesome-icon
+          :icon="currentTheme === 'dark' ? 'sun' : 'moon'"
+          class="idelium-action-icon--navigation"
+        />
+      </button>
+
       <div class="dropdown">
         <button
           class="idelium-icon-button dropdown-toggle"
@@ -148,6 +161,7 @@ export default {
       contextChangePending: false,
       logoutModalVisible: false,
       restoringProjectSelection: false,
+      currentTheme: "light",
     };
   },
   created() {
@@ -194,8 +208,27 @@ export default {
         switchCustomer: copy.btnChangeCostumer,
       };
     },
+    themeToggleLabel() {
+      const copy = this.language[this.config.currentLanguage].Header;
+      return this.currentTheme === "dark"
+        ? copy.switchToLightTheme
+        : copy.switchToDarkTheme;
+    },
+  },
+  mounted() {
+    this.currentTheme = localStorage.ideliumTheme || "light";
+    this.applyTheme(this.currentTheme);
   },
   methods: {
+    applyTheme(theme) {
+      const normalizedTheme = theme === "dark" ? "dark" : "light";
+      this.currentTheme = normalizedTheme;
+      document.documentElement.dataset.theme = normalizedTheme;
+      localStorage.ideliumTheme = normalizedTheme;
+    },
+    toggleTheme() {
+      this.applyTheme(this.currentTheme === "dark" ? "light" : "dark");
+    },
     syncProjectSelectionFromRoute() {
       const routeProjectId = this.$route.params?.projectId;
       if (!routeProjectId || this.arrayProjects.length === 0) return;
@@ -395,15 +428,15 @@ export default {
 .idelium-tabler-header {
   align-items: center;
   background:
-    linear-gradient(180deg, rgba(15, 17, 26, 0.98), rgba(10, 12, 20, 0.96)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 250, 252, 0.94)),
     radial-gradient(
       circle at 12% 0%,
       rgba(255, 122, 24, 0.08),
       transparent 18rem
     );
   backdrop-filter: blur(18px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.28);
+  border-bottom: 1px solid var(--id-color-border);
+  box-shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
   display: flex;
   gap: 1.15rem;
   min-height: 76px;
@@ -411,6 +444,18 @@ export default {
   position: sticky;
   top: 0;
   z-index: 20;
+}
+
+:global(:root[data-theme="dark"]) .idelium-tabler-header {
+  background:
+    linear-gradient(180deg, rgba(15, 17, 26, 0.98), rgba(10, 12, 20, 0.96)),
+    radial-gradient(
+      circle at 12% 0%,
+      rgba(255, 122, 24, 0.08),
+      transparent 18rem
+    );
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.28);
 }
 
 .idelium-header-left,
@@ -429,19 +474,31 @@ export default {
 }
 
 .idelium-header-left::after {
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--id-color-border);
   content: "";
   height: 2.15rem;
   margin-left: 0.1rem;
   width: 1px;
 }
 
+:global(:root[data-theme="dark"]) .idelium-header-left::after {
+  background: rgba(255, 255, 255, 0.08);
+}
+
 .idelium-header-logo {
+  background: #0f111a;
+  border-radius: 0.95rem;
+  box-shadow: 0 0.75rem 1.8rem rgba(15, 23, 42, 0.12);
   display: block;
   flex: 0 0 auto;
   height: 2.35rem;
   object-fit: contain;
   width: 9.65rem;
+}
+
+:global(:root[data-theme="dark"]) .idelium-header-logo {
+  background: transparent;
+  box-shadow: none;
 }
 
 .idelium-header-context {
@@ -461,15 +518,15 @@ export default {
   align-items: center;
   background: linear-gradient(
     180deg,
-    rgba(255, 255, 255, 0.075),
-    rgba(255, 255, 255, 0.035)
+    rgba(255, 255, 255, 0.96),
+    rgba(241, 245, 249, 0.9)
   );
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid var(--id-color-border);
   border-radius: 0.95rem;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.08),
-    0 0.75rem 1.8rem rgba(0, 0, 0, 0.22);
-  color: #f8fafc;
+    inset 0 1px 0 rgba(255, 255, 255, 0.75),
+    0 0.75rem 1.8rem rgba(15, 23, 42, 0.1);
+  color: var(--id-color-text);
   cursor: pointer;
   display: inline-flex;
   height: 2.75rem;
@@ -482,16 +539,38 @@ export default {
     transform 0.18s ease;
 }
 
+:global(:root[data-theme="dark"]) .idelium-icon-button {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.075),
+    rgba(255, 255, 255, 0.035)
+  );
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 0.75rem 1.8rem rgba(0, 0, 0, 0.22);
+  color: #f8fafc;
+}
+
 .idelium-icon-button:hover {
-  background: rgba(255, 255, 255, 0.09);
-  border-color: rgba(255, 255, 255, 0.18);
+  background: #ffffff;
+  border-color: var(--id-color-border-strong);
   transform: translateY(-1px);
 }
 
+:global(:root[data-theme="dark"]) .idelium-icon-button:hover {
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
 .idelium-icon-button.dropdown-toggle::after {
-  border-top-color: rgba(255, 255, 255, 0.72);
+  border-top-color: var(--id-color-text-muted);
   margin-left: 0.35rem;
   transform: translateY(1px);
+}
+
+:global(:root[data-theme="dark"]) .idelium-icon-button.dropdown-toggle::after {
+  border-top-color: rgba(255, 255, 255, 0.72);
 }
 
 .idelium-language-button {
@@ -513,23 +592,35 @@ export default {
 .idelium-context-field {
   background: linear-gradient(
     180deg,
-    rgba(255, 255, 255, 0.07),
-    rgba(255, 255, 255, 0.035)
+    rgba(255, 255, 255, 0.96),
+    rgba(241, 245, 249, 0.9)
   );
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid var(--id-color-border);
   border-radius: 999px;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.08),
-    0 0.9rem 2rem rgba(0, 0, 0, 0.18);
+    inset 0 1px 0 rgba(255, 255, 255, 0.76),
+    0 0.9rem 2rem rgba(15, 23, 42, 0.09);
   gap: 0.6rem;
   height: 2.75rem;
   min-width: 0;
   padding: 0.22rem 0.28rem 0.22rem 0.9rem;
 }
 
+:global(:root[data-theme="dark"]) .idelium-context-field {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.07),
+    rgba(255, 255, 255, 0.035)
+  );
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 0.9rem 2rem rgba(0, 0, 0, 0.18);
+}
+
 .idelium-context-field span,
 .idelium-context-action {
-  color: rgba(244, 244, 245, 0.7);
+  color: var(--id-color-text-muted);
   font-size: 0.62rem;
   font-weight: 800;
   letter-spacing: 0.14rem;
@@ -538,15 +629,20 @@ export default {
   white-space: nowrap;
 }
 
+:global(:root[data-theme="dark"]) .idelium-context-field span,
+:global(:root[data-theme="dark"]) .idelium-context-action {
+  color: rgba(244, 244, 245, 0.7);
+}
+
 .idelium-context-field select {
   appearance: none;
   background:
-    url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23f8fafc' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e")
+    url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23475569' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e")
       right 0.75rem center / 0.72rem 0.72rem no-repeat,
-    rgba(255, 255, 255, 0.085);
-  border: 1px solid rgba(255, 255, 255, 0.11);
+    rgba(255, 255, 255, 0.88);
+  border: 1px solid var(--id-color-border);
   border-radius: 999px;
-  color: #ffffff;
+  color: var(--id-color-text);
   font-size: 0.82rem;
   font-weight: 700;
   height: 2.15rem;
@@ -555,18 +651,38 @@ export default {
   padding: 0 2rem 0 0.9rem;
 }
 
+:global(:root[data-theme="dark"]) .idelium-context-field select {
+  background:
+    url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23f8fafc' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e")
+      right 0.75rem center / 0.72rem 0.72rem no-repeat,
+    rgba(255, 255, 255, 0.085);
+  border-color: rgba(255, 255, 255, 0.11);
+  color: #ffffff;
+}
+
 .idelium-context-field option {
+  background: #ffffff;
+  color: var(--id-color-text);
+}
+
+:global(:root[data-theme="dark"]) .idelium-context-field option {
   background: #171923;
   color: #ffffff;
 }
 
 .idelium-context-action {
-  background: rgba(32, 201, 151, 0.14);
-  border: 1px solid rgba(32, 201, 151, 0.32);
+  background: rgba(5, 150, 105, 0.1);
+  border: 1px solid rgba(5, 150, 105, 0.24);
   border-radius: 999px;
-  color: #b7f7df;
+  color: #047857;
   cursor: pointer;
   padding: 0.55rem 0.85rem;
+}
+
+:global(:root[data-theme="dark"]) .idelium-context-action {
+  background: rgba(32, 201, 151, 0.14);
+  border-color: rgba(32, 201, 151, 0.32);
+  color: #b7f7df;
 }
 
 .language-flag {
