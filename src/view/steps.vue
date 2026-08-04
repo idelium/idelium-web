@@ -266,7 +266,7 @@
             <div class="col-sm-2">
               <select v-model="modeEditSelected" class="form-control">
                 <option
-                  v-for="item in modeOptions"
+                  v-for="item in modeEditOptions"
                   v-bind:key="item"
                   :value="item.value"
                 >
@@ -721,6 +721,7 @@ export default {
       ],
       modeSelected: "wizard",
       modeEditSelected: "wizard",
+      editStepIsDsl: false,
       dslSource: 'idelium 1.0\n\ntest "smoke" {\n}\n',
       dslEditSource: "",
       dslDiagnostics: [],
@@ -862,6 +863,14 @@ export default {
     localizedDslConstructs() {
       return localizeDslConstructs(
         this.language[this.config.currentLanguage].Steps.dsl,
+      );
+    },
+    modeEditOptions() {
+      if (this.editStepIsDsl) {
+        return this.modeOptions.filter((option) => option.value === "dsl");
+      }
+      return this.modeOptions.filter((option) =>
+        ["wizard", "json"].includes(option.value),
       );
     },
   },
@@ -1058,8 +1067,8 @@ export default {
     setStepDescription(e) {
       this.stepDescription = e;
     },
-    setEditStepDescription() {
-      this.stepEditDescription;
+    setEditStepDescription(e) {
+      this.stepEditDescription = e;
     },
     formatDslDiagnostic(diagnostic, labels) {
       return `${labels.line} ${diagnostic.line}, ${labels.column} ${diagnostic.column}: ${diagnostic.message} ${diagnostic.remediation}`;
@@ -1194,6 +1203,7 @@ export default {
               this.stepEditNameFile = response.data.name;
               this.btnSaveEnable = false;
               if (isDslSourcePayload(response.data.config)) {
+                this.editStepIsDsl = true;
                 this.modeEditSelected = "dsl";
                 this.dslEditSource = extractDslSource(response.data.config);
                 this.dslEditDiagnostics = [];
@@ -1201,6 +1211,7 @@ export default {
                 this.jsonEditSteps = null;
                 this.jsonResumeSteps = null;
               } else {
+                this.editStepIsDsl = false;
                 this.modeEditSelected = "wizard";
                 this.resumeJson = normalizeEditableStepConfig(
                   response.data.config,

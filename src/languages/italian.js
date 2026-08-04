@@ -301,7 +301,11 @@ export default {
       attachScreenshot: "Cattura immagine",
       addStep: "Aggiungi Step",
       typeStepTitle: "Step type",
-      typeStepOrderTitle: "Gestisci",
+      typeStepOrderTitle: "Sequenza di esecuzione",
+      typeStepOrderDescription:
+        "Seleziona un'azione per modificarne i campi. Trascina gli elementi per cambiare l'ordine di esecuzione.",
+      selectedAction: "Selezionato",
+      emptyActionState: "Seleziona un'azione per modificarne i campi.",
       importPostmanCollectionFile: "Importa Postman Collection File (v2.1)",
       uploadPostmanCollection:
         "Carica il file collection di postman (aggiunge l'azione automaticamente)",

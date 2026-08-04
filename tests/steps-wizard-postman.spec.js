@@ -81,6 +81,10 @@ describe("steps wizard Postman import", () => {
                     note: "Note",
                   },
                   typeStepOrderTitle: "Selected steps",
+                  typeStepOrderDescription:
+                    "Select an action to edit its fields.",
+                  selectedAction: "Selected",
+                  emptyActionState: "Select an action to edit its fields.",
                   typeStepTitle: "Step type",
                   uploadPostmanCollection: "Upload Postman collection",
                   uploadPostmanEnvironment: "Upload Postman environment",
@@ -146,6 +150,10 @@ describe("steps wizard Postman import", () => {
                     note: "Nota",
                   },
                   typeStepOrderTitle: "Step selezionati",
+                  typeStepOrderDescription:
+                    "Seleziona un'azione per modificarne i campi.",
+                  selectedAction: "Selezionato",
+                  emptyActionState: "Seleziona un'azione per modificarne i campi.",
                   typeStepTitle: "Tipo step",
                   uploadPostmanCollection: "Carica collection Postman",
                   uploadPostmanEnvironment: "Carica environment Postman",
@@ -301,6 +309,19 @@ describe("steps wizard Postman import", () => {
     });
     expect(wrapper.vm.arrayStepTypeToAdd[0].__key).toBeTruthy();
     expect(wrapper.vm.displayCard).toBe("fade-in");
+    await vi.waitFor(() =>
+      expect(wrapper.vm.stepTypeSelected.name).toBe("open_browser"),
+    );
+    await vi.waitFor(() => expect(wrapper.vm.note).toBe("Open the application"));
+    expect(wrapper.vm.responseTypeSelect[0]).toBe("https://idelium.org/demo/");
+    expect(wrapper.vm.isManagedStepSelected(wrapper.vm.arrayStepTypeToAdd[0])).toBe(
+      true,
+    );
+    expect(wrapper.vm.managedStepClass(wrapper.vm.arrayStepTypeToAdd[0])).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ "is-selected": true }),
+      ]),
+    );
 
     await wrapper.setProps({
       jsonFromEditor_prop: {
@@ -326,5 +347,65 @@ describe("steps wizard Postman import", () => {
       stepType: "appium_back",
       note: "Go back on the device",
     });
+    await vi.waitFor(() =>
+      expect(wrapper.vm.stepTypeSelected.name).toBe("appium_back"),
+    );
+    await vi.waitFor(() => expect(wrapper.vm.note).toBe("Go back on the device"));
+  });
+
+  it("rebuilds JSON when an existing wizard action is edited", async () => {
+    const wrapper = mountWizard({
+      props: {
+        jsonFromEditor_prop: {
+          name: "Open Idelium demo page",
+          editorType: "selenium",
+          failedExit: true,
+          attachScreenshot: true,
+          steps: [
+            {
+              stepType: "open_browser",
+              runtime: "selenium",
+              url: "https://idelium.org/demo/",
+              xpath: "//*",
+              note: "Open the Idelium demo page",
+            },
+            {
+              stepType: "wait_for_next_step",
+              runtime: "selenium",
+              findBy: "css",
+              target: "[data-testid='selenium-demo-page']",
+              waitCondition: "visibility",
+              waitSeconds: 15,
+              note: "Verify the main demo page container is visible",
+            },
+          ],
+        },
+      },
+    });
+
+    await vi.waitFor(() =>
+      expect(wrapper.vm.note).toBe("Open the Idelium demo page"),
+    );
+
+    wrapper.vm.note = "Open the updated Idelium demo page";
+    wrapper.vm.responseTypeSelect[0] = "https://idelium.org/demo/?edited=true";
+    wrapper.vm.responseTypeSelect[1] = "//*";
+    wrapper.vm.addEditTypeStep(false);
+
+    const lastSync = wrapper.emitted("syncJson").at(-1)[0];
+    expect(lastSync.steps[0]).toEqual(
+      expect.objectContaining({
+        stepType: "open_browser",
+        note: "Open the updated Idelium demo page",
+        url: "https://idelium.org/demo/?edited=true",
+        xpath: "//*",
+      }),
+    );
+    expect(lastSync.steps[1]).toEqual(
+      expect.objectContaining({
+        stepType: "wait_for_next_step",
+        target: "[data-testid='selenium-demo-page']",
+      }),
+    );
   });
 });

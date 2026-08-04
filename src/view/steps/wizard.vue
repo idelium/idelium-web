@@ -1,130 +1,77 @@
 <template>
-  <div style="margin-top: 10px">
-    <div class="row">
-      <div class="col-sm-1" />
-      <div class="col">
-        <div class="card">
-          <div class="card-body">
-            <div class="row">
-              <div class="col-sm-1" />
-              <div class="col-sm-3">
-                <label class="form-check-label" :for="fieldId('name')">
-                  {{ language[config.currentLanguage].Steps.wizard.name }}
-                </label>
-              </div>
-              <div class="col-sm-7">
-                <input
-                  class="form-control"
-                  :id="fieldId('name')"
-                  :name="fieldId('name')"
-                  v-model="name"
-                />
-              </div>
-              <div class="col-sm-1" />
-            </div>
-            <div class="row">
-              <div class="col-sm-1" />
-              <div class="col-sm-3">
-                <font-awesome-icon
-                  icon="door-open"
-                  style="
-                    font-size: 20px;
-                    float: left;
-                    margin-top: 5px;
-                    margin-right: 10px;
-                  "
-                />
-                <label class="form-check-label" :for="fieldId('failed-exit')">
-                  {{ language[config.currentLanguage].Steps.wizard.failedExit }}
-                </label>
-              </div>
-              <div class="col-sm-7">
-                <div class="col-sm-7 form-check form-switch">
-                  <input
-                    type="checkbox"
-                    class="form-check-input"
-                    :id="fieldId('failed-exit')"
-                    :name="fieldId('failed-exit')"
-                    v-model="failedExit"
-                  />
-                </div>
-              </div>
-              <div class="col-sm-1" />
-            </div>
-            <div class="row">
-              <div class="col-sm-1" />
-              <div class="col-sm-3">
-                <font-awesome-icon
-                  icon="camera"
-                  style="
-                    font-size: 20px;
-                    float: left;
-                    margin-top: 5px;
-                    margin-right: 10px;
-                  "
-                />
-                <label
-                  class="form-check-label"
-                  :for="fieldId('attach-screenshot')"
-                >
-                  {{
-                    language[config.currentLanguage].Steps.wizard
-                      .attachScreenshot
-                  }}
-                </label>
-              </div>
-              <div class="col-sm-7">
-                <div class="form-check form-switch">
-                  <input
-                    type="checkbox"
-                    class="form-check-input"
-                    :id="fieldId('attach-screenshot')"
-                    :name="fieldId('attach-screenshot')"
-                    v-model="attachScreenshot"
-                  />
-                </div>
-              </div>
-              <div class="col-sm-1" />
-            </div>
-            <div class="row">
-              <div class="col-sm-1" />
-              <div class="col">
-                <button
-                  type="button"
-                  class="btn btn-success"
-                  style="float: right"
-                  size="sm"
-                  v-on:click="listPlugin()"
-                  :title="language[config.currentLanguage].Actions.refresh"
-                >
-                  <font-awesome-icon
-                    icon="plus"
-                    class="idelium-action-icon idelium-action-icon--refresh"
-                  />
-                  {{ language[config.currentLanguage].Steps.wizard.addStep }}
-                </button>
-              </div>
-              <div class="col-sm-1" />
-            </div>
+  <div class="idelium-step-wizard">
+    <div class="wizard-summary-card card">
+      <div class="card-body">
+        <div class="wizard-summary-grid">
+          <div class="wizard-field wizard-field--wide">
+            <label class="form-check-label" :for="fieldId('name')">
+              {{ language[config.currentLanguage].Steps.wizard.name }}
+            </label>
+            <input
+              class="form-control form-control-sm"
+              :id="fieldId('name')"
+              :name="fieldId('name')"
+              v-model="name"
+            />
           </div>
+          <label class="wizard-toggle" :for="fieldId('failed-exit')">
+            <font-awesome-icon icon="door-open" aria-hidden="true" />
+            <span>
+              {{ language[config.currentLanguage].Steps.wizard.failedExit }}
+            </span>
+            <input
+              type="checkbox"
+              class="form-check-input"
+              :id="fieldId('failed-exit')"
+              :name="fieldId('failed-exit')"
+              v-model="failedExit"
+            />
+          </label>
+          <label class="wizard-toggle" :for="fieldId('attach-screenshot')">
+            <font-awesome-icon icon="camera" aria-hidden="true" />
+            <span>
+              {{
+                language[config.currentLanguage].Steps.wizard.attachScreenshot
+              }}
+            </span>
+            <input
+              type="checkbox"
+              class="form-check-input"
+              :id="fieldId('attach-screenshot')"
+              :name="fieldId('attach-screenshot')"
+              v-model="attachScreenshot"
+            />
+          </label>
+          <button
+            type="button"
+            class="btn btn-success btn-sm wizard-plugin-button"
+            v-on:click="listPlugin()"
+            :title="language[config.currentLanguage].Actions.refresh"
+          >
+            <font-awesome-icon
+              icon="plus"
+              class="idelium-action-icon idelium-action-icon--refresh"
+              aria-hidden="true"
+            />
+            {{ language[config.currentLanguage].Steps.wizard.addStep }}
+          </button>
         </div>
       </div>
-      <div class="col-sm-1" />
     </div>
-    <div class="row">
+    <div class="row wizard-builder-row">
       <div class="col">
         <div :class="displayCard">
-          <div class="card" :style="'margin-top:10px;min-height:' + minheight">
+          <div class="card wizard-builder-card" :style="'min-height:' + minheight">
             <div class="card-body">
-              <h5 class="card-title">
+              <h5 class="card-title wizard-section-title">
                 {{
                   language[config.currentLanguage].Steps.wizard.typeStepTitle
                 }}
               </h5>
-              <div class="row">
-                <div class="col-sm-8">
-                  <div class="row">
-                    <div class="col">
+              <div class="row wizard-builder-grid">
+                <div class="col-sm-8 wizard-form-column">
+                  <div class="row wizard-toolbar-row">
+                    <div class="col-sm-3">
                       <select
                         class="form-select form-select-sm form-control"
                         v-model="typeOfWrapperSelected"
@@ -139,12 +86,11 @@
                         </option>
                       </select>
                     </div>
-                    <div class="col-sm-7">
+                    <div class="col">
                       <v-select
                         :options="stepsType"
                         v-model="stepTypeSelected"
                         class="costum idelium-step-type-select"
-                        style="float: left; min-width: 100%"
                         :get-option-label="stepOptionLabel"
                       >
                         <template #option="option">
@@ -170,11 +116,10 @@
                         </template>
                       </v-select>
                     </div>
-                    <div class="col">
+                    <div class="col-sm-auto wizard-action-group">
                       <button
                         type="button"
-                        class="btn btn-success"
-                        size="sm"
+                        class="btn btn-success btn-sm idelium-icon-button"
                         v-on:click="addEditTypeStep(true)"
                         :disabled="isBtnAddStepTypeDisabled"
                         :title="
@@ -185,179 +130,177 @@
                         <font-awesome-icon
                           icon="plus"
                           class="idelium-action-icon idelium-action-icon--duplicate"
+                          aria-hidden="true"
                         />
-                        {{
-                          language[config.currentLanguage].Steps.wizard.step
-                            .addStepType
-                        }}
                       </button>
                       <button
                         type="button"
-                        class="btn btn-warning"
-                        size="sm"
+                        class="btn btn-warning btn-sm idelium-icon-button"
                         :class="showBtnEditTestType"
-                        style="margin-left: 10px"
                         v-on:click="addEditTypeStep(false)"
                         :disabled="isBtnAddStepTypeDisabled"
-                      >
-                        {{
+                        :title="
                           language[config.currentLanguage].Steps.wizard.step
                             .editStepType
-                        }}
+                        "
+                      >
+                        <font-awesome-icon
+                          icon="check-circle"
+                          class="idelium-action-icon idelium-action-icon--save"
+                          aria-hidden="true"
+                        />
                       </button>
                     </div>
                   </div>
-                  <div class="row" style="margin-top: 10px">
-                    <div class="col">
-                      <div class="row" v-if="stepTypeSelected != null">
-                        <div class="col-sm-2">
-                          <label
-                            class="form-check-label"
-                            :for="fieldId('note')"
-                          >
-                            {{
-                              language[config.currentLanguage].Steps.wizard.step
-                                .note
-                            }}
-                          </label>
-                        </div>
-                        <div class="col">
-                          <input
-                            class="form-control"
-                            :id="fieldId('note')"
-                            :name="fieldId('note')"
-                            :state="isNoteOk"
-                            v-model="note"
-                          />
-                        </div>
-                      </div>
+                  <div class="wizard-fields-panel" v-if="stepTypeSelected != null">
+                    <div class="wizard-field">
+                      <label class="form-check-label" :for="fieldId('note')">
+                        {{
+                          language[config.currentLanguage].Steps.wizard.step
+                            .note
+                        }}
+                      </label>
+                      <input
+                        class="form-control form-control-sm"
+                        :id="fieldId('note')"
+                        :name="fieldId('note')"
+                        :state="isNoteOk"
+                        v-model="note"
+                      />
+                    </div>
+                    <div
+                      class="catalog-compatibility-note"
+                      v-if="stepCompatibilityNote().length > 0"
+                    >
+                      <strong>
+                        {{
+                          language[config.currentLanguage].Steps.catalog
+                            .compatibilityTitle
+                        }}:
+                      </strong>
+                      {{ stepCompatibilityNote() }}
+                    </div>
+                    <div class="fieldMaker">
                       <div
-                        class="catalog-compatibility-note"
-                        v-if="
-                          stepTypeSelected != null &&
-                          stepCompatibilityNote().length > 0
-                        "
+                        v-for="(syntax, index) in arraySyntax"
+                        v-bind:key="index"
+                        class="wizard-field"
                       >
-                        <strong>
-                          {{
-                            language[config.currentLanguage].Steps.catalog
-                              .compatibilityTitle
-                          }}:
-                        </strong>
-                        {{ stepCompatibilityNote() }}
-                      </div>
-                      <div class="fieldMaker">
-                        <div style="margin-right: 10px">
-                          <div
-                            v-for="(syntax, index) in arraySyntax"
-                            v-bind:key="index"
-                            class="row costum"
-                            style="margin-top: 10px"
+                        <label
+                          class="form-check-label"
+                          :for="fieldId('syntax-' + index)"
+                        >
+                          {{ syntaxLabel(syntax) }}
+                        </label>
+                        <input
+                          class="form-control form-control-sm"
+                          v-if="
+                            syntax.type == 'string' || syntax.type == 'integer'
+                          "
+                          :id="fieldId('syntax-' + index)"
+                          :name="fieldId('syntax-' + index)"
+                          :state="stateInput[index]"
+                          :placeholder="syntaxPlaceholder(syntax)"
+                          @input="checkInput(syntax.type, index)"
+                          v-model="responseTypeSelect[index]"
+                        />
+                        <select
+                          class="form-select form-select-sm form-control"
+                          :id="fieldId('syntax-' + index)"
+                          :name="fieldId('syntax-' + index)"
+                          v-model="responseTypeSelect[index]"
+                          v-if="syntax.type == 'options'"
+                        >
+                          <option
+                            v-for="item in syntax.options"
+                            v-bind:key="item"
+                            :value="item"
                           >
-                            <div class="col-sm-2">
-                              <label
-                                class="form-check-label"
-                                :for="fieldId('syntax-' + index)"
-                              >
-                                {{ syntaxLabel(syntax) }}
-                              </label>
+                            {{ optionLabel(syntax, item) }}
+                          </option>
+                        </select>
+                        <json-editor
+                          v-if="syntax.type == 'json'"
+                          :ref="'editor_' + index"
+                          class="wizard-json-field"
+                          :onChange="changeJson"
+                          :options="options"
+                          :json="responseTypeSelect[index]"
+                          :refName="index"
+                        />
+                        <div
+                          class="catalog-field-hint"
+                          v-if="syntaxHint(syntax).length > 0"
+                        >
+                          {{ syntaxHint(syntax) }}
+                        </div>
+                        <file-upload
+                          v-if="syntax.type == 'postman_collection'"
+                          ref="upload"
+                          v-model="files"
+                          class="upload"
+                          :extensions="extensions"
+                          :accept="accept"
+                          @input-filter="inputFilter"
+                          :drop="true"
+                          :multiple="true"
+                        >
+                          <div class="upload-text">
+                            <div>
+                              {{
+                                language[config.currentLanguage].Steps.wizard
+                                  .uploadPostmanCollection
+                              }}
                             </div>
-                            <div class="col-sm-7" style="margin-left: -45px">
-                              <input
-                                class="form-control"
-                                v-if="
-                                  syntax.type == 'string' ||
-                                  syntax.type == 'integer'
-                                "
-                                :id="fieldId('syntax-' + index)"
-                                :name="fieldId('syntax-' + index)"
-                                :state="stateInput[index]"
-                                :placeholder="syntaxPlaceholder(syntax)"
-                                @input="checkInput(syntax.type, index)"
-                                v-model="responseTypeSelect[index]"
-                              />
-                              <select
-                                class="form-select form-select-sm form-control"
-                                :id="fieldId('syntax-' + index)"
-                                :name="fieldId('syntax-' + index)"
-                                v-model="responseTypeSelect[index]"
-                                v-if="syntax.type == 'options'"
+                            <div>
+                              {{
+                                language[config.currentLanguage].Steps.wizard
+                                  .uploadPostmanEnvironment
+                              }}
+                              <span v-if="showOverriteLabel == true">
+                                {{
+                                  language[config.currentLanguage].Steps.wizard
+                                    .uploadPostmanEnvironmentOverrite
+                                }}</span
                               >
-                                <option
-                                  v-for="item in syntax.options"
-                                  v-bind:key="item"
-                                  :value="item"
-                                >
-                                  {{ optionLabel(syntax, item) }}
-                                </option>
-                              </select>
-                              <json-editor
-                                v-if="syntax.type == 'json'"
-                                :ref="'editor_' + index"
-                                style="height: 25vh; width: 60vh"
-                                :onChange="changeJson"
-                                :options="options"
-                                :json="responseTypeSelect[index]"
-                                :refName="index"
-                              />
-                              <div
-                                class="catalog-field-hint"
-                                v-if="syntaxHint(syntax).length > 0"
-                              >
-                                {{ syntaxHint(syntax) }}
-                              </div>
-                              <file-upload
-                                v-if="syntax.type == 'postman_collection'"
-                                ref="upload"
-                                v-model="files"
-                                class="upload"
-                                :extensions="extensions"
-                                :accept="accept"
-                                @input-filter="inputFilter"
-                                :drop="true"
-                                :multiple="true"
-                              >
-                                <div class="upload-text">
-                                  <div>
-                                    {{
-                                      language[config.currentLanguage].Steps
-                                        .wizard.uploadPostmanCollection
-                                    }}
-                                  </div>
-                                  <div>
-                                    {{
-                                      language[config.currentLanguage].Steps
-                                        .wizard.uploadPostmanEnvironment
-                                    }}
-                                    <span v-if="showOverriteLabel == true">
-                                      {{
-                                        language[config.currentLanguage].Steps
-                                          .wizard
-                                          .uploadPostmanEnvironmentOverrite
-                                      }}</span
-                                    >
-                                  </div>
-                                </div>
-                                <div class="upload-text error">
-                                  {{ errortext }}
-                                </div>
-                              </file-upload>
                             </div>
                           </div>
-                        </div>
+                          <div class="upload-text error">
+                            {{ errortext }}
+                          </div>
+                        </file-upload>
                       </div>
                     </div>
                   </div>
+                  <div class="wizard-empty-state" v-else>
+                    {{
+                      language[config.currentLanguage].Steps.wizard
+                        .emptyActionState
+                    }}
+                  </div>
                 </div>
-                <div class="col">
-                  <div class="card" :style="'min-height:' + minheight">
+                <div class="col wizard-list-column">
+                  <div class="card wizard-step-list-card" :style="'min-height:' + minheight">
                     <div class="card-body">
-                      <h5 class="card-title">
-                        {{
-                          language[config.currentLanguage].Steps.wizard
-                            .typeStepOrderTitle
-                        }}
-                      </h5>
+                      <div class="wizard-manage-header">
+                        <div>
+                          <h5 class="card-title wizard-section-title">
+                            {{
+                              language[config.currentLanguage].Steps.wizard
+                                .typeStepOrderTitle
+                            }}
+                          </h5>
+                          <p class="wizard-manage-description">
+                            {{
+                              language[config.currentLanguage].Steps.wizard
+                                .typeStepOrderDescription
+                            }}
+                          </p>
+                        </div>
+                        <span class="wizard-step-count">
+                          {{ arrayStepTypeToAdd.length }}
+                        </span>
+                      </div>
                       <div class="draggableBlock">
                         <draggable
                           v-model="arrayStepTypeToAdd"
@@ -365,16 +308,37 @@
                         >
                           <template #item="{ element, index }">
                             <div
-                              class="list-group-item costum text-truncate"
+                              :class="managedStepClass(element)"
                               :key="element.__key"
+                              :aria-current="
+                                isManagedStepSelected(element) ? 'step' : null
+                              "
+                              v-on:click="editStepType(element)"
                             >
-                              <span v-on:click="editStepType(element)">{{
-                                element.note
-                              }}</span>
+                              <span class="wizard-step-item-index">
+                                {{ index + 1 }}
+                              </span>
+                              <span class="wizard-step-item-copy">
+                                <span class="wizard-step-item-title">
+                                  {{ element.note }}
+                                </span>
+                                <span class="wizard-step-item-meta">
+                                  {{ element.stepType }}
+                                </span>
+                              </span>
+                              <span
+                                v-if="isManagedStepSelected(element)"
+                                class="wizard-selected-badge"
+                              >
+                                {{
+                                  language[config.currentLanguage].Steps.wizard
+                                    .selectedAction
+                                }}
+                              </span>
                               <button
                                 type="button"
                                 class="step-delete-button"
-                                v-on:click="deleteStepType(index)"
+                                v-on:click.stop="deleteStepType(index)"
                                 :aria-label="'Delete step type ' + element.note"
                                 :title="
                                   language[config.currentLanguage].Actions
@@ -402,11 +366,165 @@
   </div>
 </template>
 <style scoped>
+.idelium-step-wizard {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+.wizard-summary-card,
+.wizard-builder-card,
+.wizard-step-list-card {
+  background: var(--idelium-surface-panel, rgba(31, 34, 47, 0.92));
+  border: 1px solid var(--idelium-border, rgba(255, 255, 255, 0.12));
+  border-radius: 1rem;
+  box-shadow: none;
+}
+.wizard-summary-card .card-body,
+.wizard-builder-card > .card-body,
+.wizard-step-list-card .card-body {
+  padding: 0.85rem;
+}
+.wizard-summary-grid {
+  align-items: end;
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: minmax(16rem, 1fr) repeat(2, minmax(9rem, auto)) auto;
+}
+.wizard-builder-row {
+  margin-top: 0;
+}
+.wizard-builder-grid {
+  --bs-gutter-x: 0.75rem;
+}
+.wizard-toolbar-row {
+  --bs-gutter-x: 0.5rem;
+  align-items: center;
+}
+.wizard-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.28rem;
+  min-width: 0;
+}
+.wizard-field--wide {
+  min-width: 18rem;
+}
+.wizard-fields-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  margin-top: 0.75rem;
+}
+.wizard-toggle {
+  align-items: center;
+  background: var(--idelium-surface-subtle, rgba(255, 255, 255, 0.04));
+  border: 1px solid var(--idelium-border, rgba(255, 255, 255, 0.12));
+  border-radius: 0.75rem;
+  color: var(--idelium-text, #f8fafc);
+  display: grid;
+  gap: 0.45rem;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  margin: 0;
+  min-height: 2.35rem;
+  padding: 0.35rem 0.65rem;
+}
+.wizard-toggle svg {
+  color: var(--idelium-primary, #ff6b1a);
+  font-size: 0.85rem;
+}
+.wizard-toggle span {
+  font-size: 0.63rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+.wizard-plugin-button {
+  min-height: 2.35rem;
+  white-space: nowrap;
+}
+.wizard-section-title {
+  font-size: 0.7rem;
+  letter-spacing: 0.16em;
+  margin-bottom: 0.2rem;
+  text-transform: uppercase;
+}
+.wizard-manage-header {
+  align-items: flex-start;
+  display: flex;
+  gap: 0.75rem;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+.wizard-manage-description {
+  color: var(--idelium-text-muted, #b9bdc8);
+  font-size: 0.68rem;
+  letter-spacing: 0.07em;
+  line-height: 1.35;
+  margin: 0;
+}
+.wizard-step-count,
+.wizard-selected-badge {
+  align-items: center;
+  background: rgba(255, 107, 26, 0.14);
+  border: 1px solid rgba(255, 107, 26, 0.55);
+  border-radius: 999px;
+  color: var(--idelium-primary, #ff6b1a);
+  display: inline-flex;
+  font-size: 0.62rem;
+  font-weight: 900;
+  justify-content: center;
+  letter-spacing: 0.12em;
+  min-height: 1.5rem;
+  min-width: 1.5rem;
+  padding: 0.2rem 0.5rem;
+  text-transform: uppercase;
+}
+.wizard-action-group {
+  display: flex;
+  gap: 0.4rem;
+}
+.wizard-action-group .btn,
+.idelium-icon-button {
+  align-items: center;
+  display: inline-flex;
+  justify-content: center;
+  min-height: 2rem;
+  min-width: 2rem;
+  padding: 0.35rem 0.55rem;
+}
+.wizard-empty-state {
+  align-items: center;
+  border: 1px dashed var(--idelium-border, rgba(255, 255, 255, 0.14));
+  border-radius: 0.85rem;
+  color: var(--idelium-text-muted, #b9bdc8);
+  display: flex;
+  font-size: 0.72rem;
+  justify-content: center;
+  letter-spacing: 0.08em;
+  margin-top: 0.75rem;
+  min-height: 8rem;
+  padding: 1rem;
+  text-align: center;
+}
+.wizard-json-field {
+  height: 14rem;
+  width: 100%;
+}
+.idelium-step-wizard :deep(.form-control),
+.idelium-step-wizard :deep(.form-select),
+.idelium-step-wizard :deep(.vs__dropdown-toggle) {
+  min-height: 2.25rem;
+}
+.idelium-step-wizard :deep(.vs__dropdown-toggle) {
+  border-radius: 0.75rem;
+}
 .upload {
   border-style: dashed;
   border-color: white;
   text-align: center;
-  height: 20vh;
+  height: 9rem;
   width: 99%;
   position: relative;
 }
@@ -414,7 +532,7 @@
   border-style: dashed;
   border-color: green;
   text-align: center;
-  height: 20vh;
+  height: 9rem;
   width: 99%;
   position: relative;
 }
@@ -424,7 +542,7 @@
   top: 50%;
   -ms-transform: translateY(-50%);
   transform: translateY(-50%);
-  font-size: 2rem;
+  font-size: 0.85rem;
   width: 100%;
 }
 .upload-text-environment {
@@ -433,7 +551,7 @@
   top: 50%;
   -ms-transform: translateY(-50%);
   transform: translateY(-50%);
-  font-size: 2rem;
+  font-size: 0.85rem;
   width: 100%;
 }
 
@@ -445,9 +563,12 @@
 }
 
 .fieldMaker {
-  width: 55vw;
-  height: 50vh !important;
+  display: grid;
+  gap: 0.65rem;
+  max-height: 17rem;
   overflow: auto;
+  padding-right: 0.25rem;
+  width: 100%;
 }
 .catalog-compatibility-note,
 .catalog-field-hint {
@@ -459,7 +580,7 @@
   background: rgba(33, 150, 243, 0.08);
   border: 1px solid rgba(33, 150, 243, 0.22);
   border-radius: 0.5rem;
-  padding: 0.65rem 0.75rem;
+  padding: 0.5rem 0.65rem;
 }
 .step-option-group {
   color: var(--idelium-primary, #ff6b1a);
@@ -497,27 +618,101 @@
 }
 .draggableBlock {
   min-width: 100%;
-  max-height: 40vh;
-  overflow: scroll;
+  max-height: 19rem;
+  overflow: auto;
   overflow-x: hidden;
 }
 .list-group-item {
-  padding: 0.25rem 1.25rem;
-  min-width: 15vw;
-  max-width: 15vw;
+  align-items: center;
+  background: var(--idelium-surface-subtle, rgba(255, 255, 255, 0.04));
+  border: 1px solid var(--idelium-border, rgba(255, 255, 255, 0.12));
+  border-radius: 0.75rem;
+  color: var(--idelium-text, #f8fafc);
+  cursor: pointer;
+  display: grid;
+  font-size: 0.68rem;
+  font-weight: 800;
+  gap: 0.65rem;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.45rem;
+  max-width: 100%;
+  min-width: 100%;
+  padding: 0.55rem 2rem 0.55rem 0.75rem;
+  text-transform: uppercase;
+}
+.list-group-item.is-selected {
+  background:
+    linear-gradient(90deg, rgba(255, 107, 26, 0.2), rgba(255, 107, 26, 0.04)),
+    var(--idelium-surface-subtle, rgba(255, 255, 255, 0.04));
+  border-color: rgba(255, 107, 26, 0.78);
+  box-shadow:
+    inset 0.25rem 0 0 var(--idelium-primary, #ff6b1a),
+    0 0.8rem 1.8rem rgba(255, 107, 26, 0.14);
+}
+.wizard-step-item-index {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 0.5rem;
+  color: var(--idelium-text-muted, #b9bdc8);
+  display: inline-flex;
+  height: 1.55rem;
+  justify-content: center;
+  min-width: 1.55rem;
+}
+.list-group-item.is-selected .wizard-step-item-index {
+  background: var(--idelium-primary, #ff6b1a);
+  color: #111827;
+}
+.wizard-step-item-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.16rem;
+  min-width: 0;
+}
+.wizard-step-item-title,
+.wizard-step-item-meta {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.wizard-step-item-meta {
+  color: var(--idelium-text-muted, #b9bdc8);
+  font-family:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    "Courier New", monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.08em;
+  text-transform: none;
+}
+.wizard-selected-badge {
+  background: var(--idelium-primary, #ff6b1a);
+  border-color: var(--idelium-primary, #ff6b1a);
+  color: #111827;
 }
 .deleteIcon {
   position: absolute !important;
   color: red !important;
   font-size: 12px;
-  margin-top: 8px;
+  margin-top: 0;
   margin-bottom: 10px;
-  right: 5px !important;
+  right: 0.65rem !important;
+  top: 50%;
+  transform: translateY(-50%);
 }
 .step-delete-button {
   background: transparent;
   border: 0;
   padding: 0;
+}
+@media (max-width: 992px) {
+  .wizard-summary-grid {
+    grid-template-columns: 1fr;
+  }
+  .wizard-builder-grid,
+  .wizard-toolbar-row {
+    row-gap: 0.65rem;
+  }
 }
 .fade-in {
   animation: fadeIn ease 1s;
@@ -704,8 +899,11 @@ export default {
       this.checkPossibleAddType();
       this.buildJson();
     },
-    arrayStepTypeToAdd() {
-      this.buildJson();
+    arrayStepTypeToAdd: {
+      handler() {
+        this.buildJson();
+      },
+      deep: true,
     },
     name() {
       this.$emit("setStepDescription", this.name);
@@ -766,6 +964,20 @@ export default {
   methods: {
     fieldId(name) {
       return this.idPrefix + "-" + name;
+    },
+    isManagedStepSelected(step) {
+      if (step?.__key == null || this.indexForEdit < 0) return false;
+      return this.arrayStepTypeToAdd[this.indexForEdit]?.__key === step.__key;
+    },
+    managedStepClass(step) {
+      return [
+        "list-group-item",
+        "costum",
+        "wizard-step-item",
+        {
+          "is-selected": this.isManagedStepSelected(step),
+        },
+      ];
     },
     catalogTranslations() {
       return this.language?.[this.config.currentLanguage]?.Steps?.catalog || {};
@@ -879,6 +1091,11 @@ export default {
         }));
         this.displayCard =
           this.arrayStepTypeToAdd.length > 0 ? "fade-in" : "hide-element";
+        if (this.arrayStepTypeToAdd.length > 0) {
+          this.$nextTick(() => {
+            this.editStepType(this.arrayStepTypeToAdd[0]);
+          });
+        }
         this.buildJson();
         return true;
       } finally {
@@ -959,6 +1176,9 @@ export default {
       this.responseTypeSelect = [];
       this.note = typeStep.note;
       let objectFound = this.stepsType.find((d) => d.name == typeStep.stepType);
+      if (objectFound == null) {
+        return false;
+      }
       for (let i = 0; i < objectFound.syntax.length; i++) {
         this.responseTypeSelect.push(null);
       }
@@ -1020,6 +1240,7 @@ export default {
         this.showBtnEditTestType = "hide-element";
       }
       this.initWrapperArray();
+      this.buildJson();
     },
     createStepKey() {
       const key = "step-" + Date.now() + "-" + this.nextStepKey;
@@ -1028,6 +1249,7 @@ export default {
     },
     deleteStepType(index) {
       this.arrayStepTypeToAdd.splice(index, 1);
+      this.buildJson();
     },
     initWrapperArray() {
       this.arraySyntax = [];

@@ -382,7 +382,19 @@ describe("steps component", () => {
       }),
     );
     expect(wrapper.vm.jsonResumeSteps).toEqual(wrapper.vm.resumeJson);
+    expect(wrapper.vm.modeEditOptions).toEqual([
+      { text: "wizard", value: "wizard" },
+      { text: "json editor", value: "json" },
+    ]);
     expect(modal.show).toHaveBeenCalled();
+  });
+
+  it("updates the edit description from wizard changes", () => {
+    const wrapper = mountSteps();
+
+    wrapper.vm.setEditStepDescription("Updated guided step");
+
+    expect(wrapper.vm.stepEditDescription).toBe("Updated guided step");
   });
 
   it("saves a valid DSL step with the project id from the route", async () => {
@@ -465,6 +477,9 @@ describe("steps component", () => {
     await wrapper.vm.getJson(17);
 
     expect(wrapper.vm.modeEditSelected).toBe("dsl");
+    expect(wrapper.vm.modeEditOptions).toEqual([
+      { text: "DSL", value: "dsl" },
+    ]);
     expect(wrapper.vm.dslEditSource).toBe(source);
     expect(wrapper.vm.jsonResumeSteps).toBeNull();
     expect(modal.show).toHaveBeenCalled();
