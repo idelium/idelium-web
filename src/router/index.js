@@ -19,6 +19,8 @@ const plugins = () => import("@/view/plugins.vue");
 const tests = () => import("@/view/tests.vue");
 const testcycles = () => import("@/view/testcycles.vue");
 const testsperformed = () => import("@/view/testsperformed.vue");
+const stepResultsDetail = () =>
+  import("@/view/testperformed/StepResultsDetail.vue");
 const postman = () => import("@/view/testperformed/showPostmanCollection.vue");
 const page404 = () => import("@/view/pages/404.vue");
 const testlauncher = () => import("@/view/testlauncher.vue");
@@ -39,6 +41,12 @@ const router = createRouter({
           path: "projects/:projectId/testsperformed",
           name: "testsperformed",
           component: testsperformed,
+          meta: { projectScoped: true, requiresAuth: true },
+        },
+        {
+          path: "projects/:projectId/testsperformed/tests/:testId/steps",
+          name: "testsperformed-step-results",
+          component: stepResultsDetail,
           meta: { projectScoped: true, requiresAuth: true },
         },
         {

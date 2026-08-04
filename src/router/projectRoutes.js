@@ -3,6 +3,7 @@ import { useSessionStore } from "@/stores/session";
 export const PROJECT_SCOPED_ROUTE_NAMES = new Set([
   "execution-detail",
   "testsperformed",
+  "testsperformed-step-results",
   "testlauncher",
   "testcycles",
   "tests",
@@ -18,6 +19,7 @@ export const PROJECT_SCOPED_ROUTE_NAMES = new Set([
 
 const PROJECT_ROUTE_SECTIONS = Object.freeze({
   "execution-detail": "testsperformed",
+  "testsperformed-step-results": "testsperformed",
   "environment-detail": "environments",
   "environment-edit": "environments",
   "environment-clone": "environments",

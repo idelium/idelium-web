@@ -501,6 +501,7 @@ export default {
     emptyResults:
       "Non sono disponibili dati di esecuzione Postman per questo step.",
     fullDetails: "Apri dettagli Postman completi",
+    moreDetails: "Altri dettagli",
     responsePreview: "Anteprima response",
     hideResponse: "Nascondi response",
     requestDetail: "Dettaglio request Postman",
@@ -910,6 +911,9 @@ export default {
     cycleDuration: "Durata ciclo",
     testsInRun: "Test nel run",
     stepsInTest: "Step nel test",
+    executionContext: "Contesto esecuzione",
+    executionContextHelp:
+      "Ambiente e metadati piattaforma acquisiti quando la CLI ha creato questo run.",
     environment: "Ambiente",
     browser: "Browser",
     device: "Device",
@@ -917,6 +921,12 @@ export default {
     notCaptured: "Non acquisito",
     showStepResults: "Mostra risultati step",
     stepResults: "Risultati step by step",
+    stepResultsDetailDescription:
+      "Ispeziona ogni step registrato per il test eseguito selezionato.",
+    stepResultsDetailHelp:
+      "Consulta stato, durata, diagnostica e dettagli runtime catturati.",
+    stepResultsDetailFallback: "Test eseguito",
+    backToTestResults: "Torna ai risultati test",
     selectTestFirst: "Seleziona un test per vedere i suoi step.",
     emptySteps: "Non sono stati registrati step per questo test.",
     stepDuration: "Durata step",
