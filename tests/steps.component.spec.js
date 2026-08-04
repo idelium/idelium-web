@@ -53,6 +53,11 @@ describe("steps component", () => {
               Steps: {
                 tabOrderSteps: "Order Steps",
                 tabNewStep: "New Step",
+                newStepEyebrow: "Step authoring",
+                newStepTitle: "Create automation step",
+                newStepDescription:
+                  "Compose one or more automation actions and save them as a reusable step.",
+                newStepModeLabel: "Authoring mode",
                 confirmationDelete: "Delete step ",
                 placeholderDescriptionStep: "Step description",
                 placeholderFileName: "File name",
@@ -224,6 +229,24 @@ describe("steps component", () => {
 
     expect(grid.props("density")).toBe("compact");
     expect(grid.classes()).toContain("idelium-steps-order-grid");
+  });
+
+  it("renders the new step authoring header and controls", () => {
+    useSessionStore(pinia).selectProject(9);
+
+    const wrapper = mountSteps({
+      $route: { name: "steps", params: { tab: "new" } },
+    });
+
+    expect(wrapper.find(".idelium-step-authoring__eyebrow").text()).toBe(
+      "Step authoring",
+    );
+    expect(wrapper.find(".idelium-step-authoring h2").text()).toBe(
+      "Create automation step",
+    );
+    expect(wrapper.find("label[for='step-authoring-mode']").text()).toBe(
+      "Authoring mode",
+    );
   });
 
   it("renders step table actions as icon-only enterprise controls", () => {

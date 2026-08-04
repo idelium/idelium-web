@@ -95,48 +95,23 @@
         aria-labelledby="tabNewStep-tab"
       >
         <!-- start tabOrderSteps tab -->
-        <div class="row">
-          <div class="col-sm-2">
-            <select
-              v-model="modeSelected"
-              class="form-select form-select-sm form-control"
-            >
-              <option
-                v-for="item in modeOptions"
-                v-bind:key="item"
-                :value="item.value"
-              >
-                {{ item.text }}
-              </option>
-            </select>
-          </div>
-          <div class="col-7">
-            <input
-              v-model="stepDescription"
-              type="text"
-              class="form-control form-control-sm"
-              :placeholder="
-                language[config.currentLanguage].Steps
-                  .placeholderDescriptionStep
-              "
-            />
-          </div>
-          <!--div class="col">
-            <input
-              v-model="stepNameFile"
-              type="text"
-              class="form-control form-control-sm"
-              :placeholder="language[config.currentLanguage].Steps.placeholderFileName"
-              v-on:keypress="isLetter($event, false)"
-              :disabled="stepDescription.length == 0"
-            />
-          </div-->
-          <div class="col">
+        <section class="idelium-step-authoring">
+          <div class="idelium-step-authoring__header">
+            <div>
+              <p class="idelium-step-authoring__eyebrow">
+                {{ language[config.currentLanguage].Steps.newStepEyebrow }}
+              </p>
+              <h2>{{ language[config.currentLanguage].Steps.newStepTitle }}</h2>
+              <p class="idelium-step-authoring__description">
+                {{
+                  language[config.currentLanguage].Steps.newStepDescription
+                }}
+              </p>
+            </div>
             <button
               type="button"
               class="btn btn-success idelium-icon-button"
               size="sm"
-              style="float: right"
               v-on:click="saveStep()"
               :disabled="
                 stepDescription.length == 0 || stepNameFile.length == 0
@@ -149,9 +124,48 @@
                 class="idelium-action-icon--create"
                 aria-hidden="true"
               />
+              <span>{{ language[config.currentLanguage].Steps.btnSaveStep }}</span>
             </button>
           </div>
-        </div>
+          <div class="idelium-step-authoring__controls">
+            <div class="idelium-step-authoring__field">
+              <label for="step-authoring-mode">
+                {{ language[config.currentLanguage].Steps.newStepModeLabel }}
+              </label>
+              <select
+                id="step-authoring-mode"
+                v-model="modeSelected"
+                class="form-select form-select-sm form-control"
+              >
+                <option
+                  v-for="item in modeOptions"
+                  v-bind:key="item.value"
+                  :value="item.value"
+                >
+                  {{ item.text }}
+                </option>
+              </select>
+            </div>
+            <div class="idelium-step-authoring__field idelium-step-authoring__field--wide">
+              <label for="step-authoring-description">
+                {{
+                  language[config.currentLanguage].Steps
+                    .placeholderDescriptionStep
+                }}
+              </label>
+              <input
+                id="step-authoring-description"
+                v-model="stepDescription"
+                type="text"
+                class="form-control form-control-sm"
+                :placeholder="
+                  language[config.currentLanguage].Steps
+                    .placeholderDescriptionStep
+                "
+              />
+            </div>
+          </div>
+        </section>
         <json-editor
           ref="editor"
           style="height: 80vh"
@@ -590,6 +604,62 @@
 .idelium-icon-button svg {
   font-size: 0.95rem;
 }
+.idelium-step-authoring {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 108, 32, 0.1),
+      rgba(34, 40, 56, 0.86) 20rem
+    ),
+    rgba(30, 34, 46, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 1.15rem;
+  box-shadow: 0 1.25rem 3rem rgba(0, 0, 0, 0.22);
+  display: grid;
+  gap: 1rem;
+  margin: 0 auto 1rem;
+  max-width: min(92rem, calc(100vw - 4rem));
+  padding: 1rem;
+}
+.idelium-step-authoring__header {
+  align-items: center;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+}
+.idelium-step-authoring__eyebrow,
+.idelium-step-authoring__field label {
+  color: var(--idelium-text-muted, #b9bdc8);
+  font-size: 0.66rem;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  margin: 0;
+  text-transform: uppercase;
+}
+.idelium-step-authoring__header h2 {
+  color: var(--idelium-text, #f8fafc);
+  font-size: 1.25rem;
+  margin: 0.15rem 0 0;
+}
+.idelium-step-authoring__description {
+  color: var(--idelium-text-muted, #b9bdc8);
+  font-size: 0.8rem;
+  margin: 0.2rem 0 0;
+}
+.idelium-step-authoring__controls {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: minmax(10rem, 16rem) minmax(16rem, 1fr);
+}
+.idelium-step-authoring__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
+}
+.idelium-step-authoring__field--wide {
+  min-width: 0;
+}
 .ghost {
   opacity: 0.5;
   background: #c8ebfb;
@@ -634,6 +704,16 @@
 @media (max-width: 62rem) {
   .idelium-steps-order-panel {
     max-width: calc(100vw - 1.5rem);
+  }
+  .idelium-step-authoring {
+    max-width: calc(100vw - 1.5rem);
+  }
+  .idelium-step-authoring__header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .idelium-step-authoring__controls {
+    grid-template-columns: 1fr;
   }
 }
 </style>

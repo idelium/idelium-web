@@ -216,6 +216,11 @@ export default {
   Steps: {
     tabOrderSteps: "Ordering Steps",
     tabNewStep: "New Step",
+    newStepEyebrow: "Step authoring",
+    newStepTitle: "Create automation step",
+    newStepDescription:
+      "Compose one or more automation actions and save them as a reusable step.",
+    newStepModeLabel: "Authoring mode",
     placeholderDescriptionStep: "step description",
     placeholderFileName: "File name (without extension)",
     btnSaveStep: "Save Step",
@@ -298,12 +303,67 @@ export default {
       failedExit: "Exits if it fails:",
       attachScreenshot: "Capture Image",
       addStep: "Add Step",
-      typeStepTitle: "Step type",
+      loadPluginActions: "Load plugin actions",
+      typeStepTitle: "Action builder",
+      typeStepDescription:
+        "Choose an automation action, configure its fields, then add it to the execution sequence.",
+      runtimeLabel: "Runtime",
+      actionLabel: "Action",
+      flowRuntime: "Choose runtime",
+      flowConfigure: "Configure fields",
+      flowSequence: "Add to sequence",
+      flowSave: "Save step",
       typeStepOrderTitle: "Execution sequence",
       typeStepOrderDescription:
         "Select an action to edit its fields. Drag items to change the execution order.",
       selectedAction: "Selected",
+      editingActionTitle: "Editing action",
+      cancelEditAction: "Cancel action edit",
+      deleteAction: "Delete action",
       emptyActionState: "Select an action to edit its fields.",
+      emptyCatalogState:
+        "No actions are available for this runtime yet. Load plugin actions or choose another runtime.",
+      emptySequenceState:
+        "Your execution sequence is empty. Configure an action and add it to start building the reusable step.",
+      validationNoteRequired: "Action note is required",
+      validationFieldRequired: "is required",
+      postmanCollectionLabel: "Collection",
+      postmanCollectionMissing: "Upload a Postman collection",
+      postmanRequestsLabel: "Requests",
+      postmanEnvironmentLabel: "Environment",
+      postmanEnvironmentOptional: "Optional",
+      fieldGroups: {
+        action: {
+          title: "Action values",
+          description:
+            "Define the value or operation that the runtime will execute.",
+        },
+        advanced: {
+          title: "Advanced settings",
+          description:
+            "Configure additional runtime options for this action.",
+        },
+        assertion: {
+          title: "Assertions",
+          description:
+            "Describe the expected outcome that must be validated.",
+        },
+        locator: {
+          title: "Locator",
+          description:
+            "Define how the runtime finds the target element or resource.",
+        },
+        postman: {
+          title: "Postman package",
+          description:
+            "Upload the collection and, optionally, the environment used by Newman.",
+        },
+        wait: {
+          title: "Wait policy",
+          description:
+            "Control timeout and wait condition before continuing the sequence.",
+        },
+      },
       importPostmanCollectionFile: "Import Postman Collection File (v2.1)",
       uploadPostmanCollection:
         "Upload postman collection file (automatically add action)",
@@ -319,8 +379,8 @@ export default {
         text: "Text",
         note: "Note",
         keys: "Key",
-        addStepType: "Add",
-        editStepType: "Edit",
+        addStepType: "Add action",
+        editStepType: "Update selected action",
       },
     },
     catalog: {
@@ -328,12 +388,45 @@ export default {
       groups: {
         advanced: "Advanced Selenium",
         appiumAdvanced: "Advanced Appium",
-        basic: "Basic steps",
+        appiumCore: "Mobile actions",
+        basic: "Core actions",
       },
       steps: {
+        open_browser: {
+          label: "Open browser",
+          description:
+            "Starts the browser session on the configured URL and prepares the page for the next actions.",
+        },
+        wait_and_click: {
+          label: "Wait and click",
+          description:
+            "Waits until the target is ready, then clicks it in a single compact action.",
+        },
         wait_for_next_step: {
           label: "Wait for condition",
+          description:
+            "Waits for an element, URL, title, frame, or stale-node condition before continuing.",
           note: "Compatible with Selenium explicit waits and URL/title wait conditions.",
+        },
+        select: {
+          label: "Select option",
+          description:
+            "Chooses an option from a select control by label, value, or index.",
+        },
+        click: {
+          label: "Click element",
+          description:
+            "Clicks a target element found through the selected locator strategy.",
+        },
+        clear: {
+          label: "Clear field",
+          description:
+            "Clears the current value from an input or editable field.",
+        },
+        write: {
+          label: "Write text",
+          description:
+            "Types the configured text into the target input or editable element.",
         },
         selenium_command: {
           group: "advanced",
@@ -344,6 +437,303 @@ export default {
           group: "advanced",
           label: "Selenium action chain",
           note: "Use JSON action definitions for pointer, keyboard, and composite user interactions.",
+        },
+        connect_appium: {
+          label: "Connect to Appium",
+          description:
+            "Opens the mobile automation session using the selected Appium endpoint and capabilities.",
+        },
+        appium_send_keys: {
+          label: "Send keys",
+          description: "Types text or key data into a mobile element located by XPath.",
+        },
+        appium_send_keys_xpath: {
+          label: "Send keys by XPath",
+          description:
+            "Types text into the mobile element matched by the configured XPath.",
+        },
+        appium_click: {
+          label: "Tap element",
+          description: "Taps a mobile element located by XPath.",
+        },
+        appium_click_xpath: {
+          label: "Tap by XPath",
+          description: "Taps the mobile element matched by the configured XPath.",
+        },
+        appium_switch_context: {
+          label: "Switch context",
+          description:
+            "Switches between native and webview contexts in a hybrid mobile app.",
+        },
+        appium_execute_script: {
+          label: "Execute mobile script",
+          description:
+            "Runs a driver-supported mobile script command during the Appium session.",
+        },
+        appium_desired_capabilities: {
+          label: "Read desired capabilities",
+          description:
+            "Returns the capabilities configured for the active Appium session.",
+        },
+        appium_back: {
+          label: "Back navigation",
+          description: "Sends the mobile back command to the active device or emulator.",
+        },
+        appium_page_source: {
+          label: "Read page source",
+          description:
+            "Captures the current mobile UI hierarchy for diagnostics or assertions.",
+        },
+        appium_set_page_load_timeout: {
+          label: "Set page load timeout",
+          description:
+            "Configures how long Appium waits for page loads in hybrid contexts.",
+        },
+        appium_implicitly_wait: {
+          label: "Set implicit wait",
+          description:
+            "Configures the implicit element lookup timeout for mobile commands.",
+        },
+        appium_set_script_timeout: {
+          label: "Set script timeout",
+          description:
+            "Configures how long asynchronous mobile script execution may run.",
+        },
+        appium_orientation: {
+          label: "Set orientation",
+          description: "Changes the device orientation to portrait or landscape.",
+        },
+        appium_location: {
+          label: "Set device location",
+          description:
+            "Mocks the device geolocation with latitude, longitude, and altitude.",
+        },
+        appium_log_types: {
+          label: "List log types",
+          description: "Lists the log streams exposed by the connected Appium driver.",
+        },
+        appium_get_log: {
+          label: "Read device log",
+          description: "Fetches log entries for the selected Appium log type.",
+        },
+        appium_update_settings: {
+          label: "Update Appium settings",
+          description: "Applies runtime Appium driver settings from a JSON payload.",
+        },
+        appium_get_settings: {
+          label: "Read Appium settings",
+          description: "Returns the current runtime settings from the Appium driver.",
+        },
+        appium_start_start_activity: {
+          label: "Start Android activity",
+          description:
+            "Starts an Android activity using the configured activity parameters.",
+        },
+        appium_current_activity: {
+          label: "Current activity",
+          description: "Reads the current Android activity name.",
+        },
+        appium_current_package: {
+          label: "Current package",
+          description: "Reads the package name currently in foreground.",
+        },
+        appium_is_app_installed: {
+          label: "Check app installed",
+          description:
+            "Verifies whether the requested application package is installed.",
+        },
+        appium_launch_app: {
+          label: "Launch app",
+          description: "Launches the application configured for the session.",
+        },
+        appium_background_app: {
+          label: "Background app",
+          description:
+            "Moves the app to the background for the configured number of seconds.",
+        },
+        appium_close_app: {
+          label: "Close app",
+          description: "Closes the application under test.",
+        },
+        appium_reset_app: {
+          label: "Reset app",
+          description: "Resets application state for a clean mobile run.",
+        },
+        appium_remove_app: {
+          label: "Remove app",
+          description: "Uninstalls the configured application package.",
+        },
+        appium_activate_app: {
+          label: "Activate app",
+          description:
+            "Brings the configured app bundle or package to the foreground.",
+        },
+        appium_terminate_app: {
+          label: "Terminate app",
+          description: "Stops the configured app bundle or package.",
+        },
+        appium_query_app_state: {
+          label: "Query app state",
+          description:
+            "Reads whether an app is installed, running, backgrounded, or foregrounded.",
+        },
+        appium_app_strings: {
+          label: "Read app strings",
+          description:
+            "Loads localized application strings for the requested language/path.",
+        },
+        appium_end_test_coverage: {
+          label: "End test coverage",
+          description:
+            "Stops Android coverage collection and stores the generated coverage artifact.",
+        },
+        appium_set_clipboard: {
+          label: "Set clipboard",
+          description: "Writes text into the device clipboard.",
+        },
+        appium_set_power_ac: {
+          label: "Set AC power",
+          description: "Changes the emulator AC power connection state.",
+        },
+        appium_set_power_capacity: {
+          label: "Set battery capacity",
+          description:
+            "Changes the emulator battery percentage for power-state testing.",
+        },
+        appium_push_file: {
+          label: "Push file",
+          description: "Uploads a file payload to the configured path on the device.",
+        },
+        appium_pull_file: {
+          label: "Pull file",
+          description: "Downloads a file from the configured path on the device.",
+        },
+        appium_pull_folder: {
+          label: "Pull folder",
+          description: "Downloads a folder from the configured path on the device.",
+        },
+        appium_shake: {
+          label: "Shake device",
+          description: "Simulates a shake gesture on the mobile device.",
+        },
+        appium_lock: {
+          label: "Lock device",
+          description: "Locks the mobile device screen.",
+        },
+        appium_unlock: {
+          label: "Unlock device",
+          description: "Unlocks the mobile device screen.",
+        },
+        appium_is_locked: {
+          label: "Check locked state",
+          description: "Checks whether the device screen is locked.",
+        },
+        appium_press_keycode: {
+          label: "Press keycode",
+          description: "Sends an Android keycode to the device.",
+        },
+        appium_long_press_keycode: {
+          label: "Long press keycode",
+          description: "Sends a long-press Android keycode to the device.",
+        },
+        appium_hide_keyboard: {
+          label: "Hide keyboard",
+          description: "Dismisses the on-screen keyboard.",
+        },
+        appium_is_keyboard_shown: {
+          label: "Check keyboard state",
+          description: "Checks whether the on-screen keyboard is visible.",
+        },
+        appium_toggle_wifi: {
+          label: "Toggle Wi-Fi",
+          description: "Toggles Wi-Fi on supported Android emulators/devices.",
+        },
+        appium_toggle_location_services: {
+          label: "Toggle location services",
+          description:
+            "Toggles device location services where supported by the driver.",
+        },
+        appium_send_sms: {
+          label: "Send SMS",
+          description: "Simulates an incoming SMS with phone number and message text.",
+        },
+        appium_make_gsm_call: {
+          label: "Make GSM call",
+          description: "Simulates a GSM call action on an emulator.",
+        },
+        appium_set_gsm_signal: {
+          label: "Set GSM signal",
+          description: "Changes the emulator GSM signal strength.",
+        },
+        appium_set_gsm_voice: {
+          label: "Set GSM voice",
+          description: "Changes the emulator GSM voice registration state.",
+        },
+        appium_set_network_speed: {
+          label: "Set network speed",
+          description: "Changes emulator network speed for connectivity testing.",
+        },
+        appium_get_performance_data: {
+          label: "Read performance data",
+          description:
+            "Collects performance metrics for the selected package and data type.",
+        },
+        appium_get_performance_data_types: {
+          label: "List performance data types",
+          description:
+            "Lists the performance metric types available from the driver.",
+        },
+        appium_start_recording_screen: {
+          label: "Start screen recording",
+          description:
+            "Starts recording the device screen with the configured options.",
+        },
+        appium_stop_recording_screen: {
+          label: "Stop screen recording",
+          description:
+            "Stops screen recording and returns the captured video payload.",
+        },
+        appium_touch_id: {
+          label: "Simulate Touch ID",
+          description:
+            "Simulates a Touch ID match or failure on supported iOS simulators.",
+        },
+        appium_toggle_touch_id_enrollment: {
+          label: "Toggle Touch ID enrollment",
+          description:
+            "Enables or disables Touch ID enrollment on supported iOS simulators.",
+        },
+        appium_open_notifications: {
+          label: "Open notifications",
+          description: "Opens the Android notification shade.",
+        },
+        appium_get_system_bars: {
+          label: "Read system bars",
+          description:
+            "Reads status and navigation bar metadata from the device.",
+        },
+        appium_get_system_time: {
+          label: "Read system time",
+          description: "Reads the device system time in the requested format.",
+        },
+        appium_get_device_density: {
+          label: "Read device density",
+          description: "Reads the Android device screen density.",
+        },
+        appium_finger_print: {
+          label: "Simulate fingerprint",
+          description:
+            "Simulates a fingerprint authentication event on supported Android emulators.",
+        },
+        appium_find_element_by_accessibility_id: {
+          label: "Find by accessibility ID",
+          description:
+            "Finds a mobile element through its accessibility identifier.",
+        },
+        appium_switch_to: {
+          label: "Switch target",
+          description:
+            "Switches the Appium driver target according to the runtime context.",
         },
         appium_mobile_command: {
           group: "appiumAdvanced",

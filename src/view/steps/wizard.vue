@@ -44,16 +44,18 @@
           </label>
           <button
             type="button"
-            class="btn btn-success btn-sm wizard-plugin-button"
+            class="btn btn-outline-info btn-sm wizard-plugin-button"
             v-on:click="listPlugin()"
-            :title="language[config.currentLanguage].Actions.refresh"
+            :title="
+              language[config.currentLanguage].Steps.wizard.loadPluginActions
+            "
           >
             <font-awesome-icon
-              icon="plus"
+              icon="plug"
               class="idelium-action-icon idelium-action-icon--refresh"
               aria-hidden="true"
             />
-            {{ language[config.currentLanguage].Steps.wizard.addStep }}
+            {{ language[config.currentLanguage].Steps.wizard.loadPluginActions }}
           </button>
         </div>
       </div>
@@ -63,23 +65,46 @@
         <div :class="displayCard">
           <div class="card wizard-builder-card" :style="'min-height:' + minheight">
             <div class="card-body">
+              <div class="wizard-flow-steps" aria-label="Step authoring flow">
+                <span
+                  v-for="(item, index) in wizardFlowSteps"
+                  :key="item"
+                  class="wizard-flow-step"
+                >
+                  <span>{{ index + 1 }}</span>
+                  {{ item }}
+                </span>
+              </div>
               <h5 class="card-title wizard-section-title">
                 {{
                   language[config.currentLanguage].Steps.wizard.typeStepTitle
                 }}
               </h5>
+              <p class="wizard-section-description">
+                {{
+                  language[config.currentLanguage].Steps.wizard
+                    .typeStepDescription
+                }}
+              </p>
               <div class="row wizard-builder-grid">
                 <div class="col-sm-8 wizard-form-column">
                   <div class="row wizard-toolbar-row">
                     <div class="col-sm-3">
+                      <label class="wizard-control-label" :for="fieldId('runtime')">
+                        {{
+                          language[config.currentLanguage].Steps.wizard
+                            .runtimeLabel
+                        }}
+                      </label>
                       <select
+                        :id="fieldId('runtime')"
                         class="form-select form-select-sm form-control"
                         v-model="typeOfWrapperSelected"
                         :disabled="isSelectWrapperDisabled"
                       >
                         <option
                           v-for="item in arrayTypeOfWrapper"
-                          v-bind:key="item"
+                          v-bind:key="item.value"
                           :value="item.value"
                         >
                           {{ item.text }}
@@ -87,6 +112,12 @@
                       </select>
                     </div>
                     <div class="col">
+                      <label class="wizard-control-label">
+                        {{
+                          language[config.currentLanguage].Steps.wizard
+                            .actionLabel
+                        }}
+                      </label>
                       <v-select
                         :options="stepsType"
                         v-model="stepTypeSelected"
@@ -105,7 +136,7 @@
                               {{ stepOptionLabel(option) }}
                             </span>
                             <span class="step-option-technical">
-                              {{ option.name }}
+                              {{ stepOptionDescription(option) }}
                             </span>
                           </div>
                         </template>
@@ -126,6 +157,10 @@
                           language[config.currentLanguage].Steps.wizard.step
                             .addStepType
                         "
+                        :aria-label="
+                          language[config.currentLanguage].Steps.wizard.step
+                            .addStepType
+                        "
                       >
                         <font-awesome-icon
                           icon="plus"
@@ -143,6 +178,10 @@
                           language[config.currentLanguage].Steps.wizard.step
                             .editStepType
                         "
+                        :aria-label="
+                          language[config.currentLanguage].Steps.wizard.step
+                            .editStepType
+                        "
                       >
                         <font-awesome-icon
                           icon="check-circle"
@@ -153,6 +192,44 @@
                     </div>
                   </div>
                   <div class="wizard-fields-panel" v-if="stepTypeSelected != null">
+                    <div class="wizard-editing-banner" v-if="isEditingAction">
+                      <div>
+                        <strong>
+                          {{
+                            language[config.currentLanguage].Steps.wizard
+                              .editingActionTitle
+                          }}
+                        </strong>
+                        <span>{{ currentEditingLabel }}</span>
+                      </div>
+                      <button
+                        type="button"
+                        class="btn btn-outline-secondary btn-sm idelium-icon-button"
+                        v-on:click="cancelActionEdit()"
+                        :title="
+                          language[config.currentLanguage].Steps.wizard
+                            .cancelEditAction
+                        "
+                        :aria-label="
+                          language[config.currentLanguage].Steps.wizard
+                            .cancelEditAction
+                        "
+                      >
+                        <font-awesome-icon icon="times-circle" aria-hidden="true" />
+                      </button>
+                    </div>
+                    <div class="wizard-action-profile">
+                      <span class="wizard-action-profile__icon">
+                        <font-awesome-icon
+                          :icon="runtimeIcon(typeOfWrapperSelected)"
+                          aria-hidden="true"
+                        />
+                      </span>
+                      <div>
+                        <strong>{{ stepOptionLabel(stepTypeSelected) }}</strong>
+                        <span>{{ actionProfileText }}</span>
+                      </div>
+                    </div>
                     <div class="wizard-field">
                       <label class="form-check-label" :for="fieldId('note')">
                         {{
@@ -180,62 +257,108 @@
                       </strong>
                       {{ stepCompatibilityNote() }}
                     </div>
+                    <div
+                      class="catalog-compatibility-note catalog-compatibility-note--warning"
+                      v-if="validationIssues.length > 0"
+                    >
+                      {{ validationIssues.join(" · ") }}
+                    </div>
+                    <div
+                      class="wizard-postman-profile"
+                      v-if="isPostmanActionSelected"
+                    >
+                      <div>
+                        <strong>
+                          {{
+                            language[config.currentLanguage].Steps.wizard
+                              .postmanCollectionLabel
+                          }}
+                        </strong>
+                        <span>{{ postmanCollectionName }}</span>
+                      </div>
+                      <div>
+                        <strong>
+                          {{
+                            language[config.currentLanguage].Steps.wizard
+                              .postmanRequestsLabel
+                          }}
+                        </strong>
+                        <span>{{ postmanRequestCount }}</span>
+                      </div>
+                      <div>
+                        <strong>
+                          {{
+                            language[config.currentLanguage].Steps.wizard
+                              .postmanEnvironmentLabel
+                          }}
+                        </strong>
+                        <span>{{ postmanEnvironmentName }}</span>
+                      </div>
+                    </div>
                     <div class="fieldMaker">
-                      <div
-                        v-for="(syntax, index) in arraySyntax"
-                        v-bind:key="index"
-                        class="wizard-field"
+                      <section
+                        v-for="section in groupedSyntaxSections"
+                        :key="section.id"
+                        class="wizard-field-section"
                       >
+                        <h6>{{ section.title }}</h6>
+                        <p>{{ section.description }}</p>
+                        <div
+                          v-for="field in section.fields"
+                          v-bind:key="field.index"
+                          class="wizard-field"
+                        >
                         <label
                           class="form-check-label"
-                          :for="fieldId('syntax-' + index)"
+                            :for="fieldId('syntax-' + field.index)"
                         >
-                          {{ syntaxLabel(syntax) }}
+                            {{ syntaxLabel(field.syntax) }}
                         </label>
                         <input
                           class="form-control form-control-sm"
                           v-if="
-                            syntax.type == 'string' || syntax.type == 'integer'
+                              field.syntax.type == 'string' ||
+                              field.syntax.type == 'integer'
                           "
-                          :id="fieldId('syntax-' + index)"
-                          :name="fieldId('syntax-' + index)"
-                          :state="stateInput[index]"
-                          :placeholder="syntaxPlaceholder(syntax)"
-                          @input="checkInput(syntax.type, index)"
-                          v-model="responseTypeSelect[index]"
+                            :id="fieldId('syntax-' + field.index)"
+                            :name="fieldId('syntax-' + field.index)"
+                            :class="fieldValidationClass(field.index)"
+                            :placeholder="syntaxPlaceholder(field.syntax)"
+                            @input="checkInput(field.syntax.type, field.index)"
+                            v-model="responseTypeSelect[field.index]"
                         />
                         <select
                           class="form-select form-select-sm form-control"
-                          :id="fieldId('syntax-' + index)"
-                          :name="fieldId('syntax-' + index)"
-                          v-model="responseTypeSelect[index]"
-                          v-if="syntax.type == 'options'"
+                            :id="fieldId('syntax-' + field.index)"
+                            :name="fieldId('syntax-' + field.index)"
+                            v-model="responseTypeSelect[field.index]"
+                            v-if="field.syntax.type == 'options'"
                         >
                           <option
-                            v-for="item in syntax.options"
+                              v-for="item in field.syntax.options"
                             v-bind:key="item"
                             :value="item"
                           >
-                            {{ optionLabel(syntax, item) }}
+                              {{ optionLabel(field.syntax, item) }}
                           </option>
                         </select>
                         <json-editor
-                          v-if="syntax.type == 'json'"
-                          :ref="'editor_' + index"
+                            v-if="field.syntax.type == 'json'"
+                            :ref="'editor_' + field.index"
                           class="wizard-json-field"
                           :onChange="changeJson"
                           :options="options"
-                          :json="responseTypeSelect[index]"
-                          :refName="index"
+                            :json="responseTypeSelect[field.index]"
+                            :refName="field.index"
                         />
                         <div
                           class="catalog-field-hint"
-                          v-if="syntaxHint(syntax).length > 0"
+                            v-if="syntaxHint(field.syntax).length > 0"
                         >
-                          {{ syntaxHint(syntax) }}
+                            {{ syntaxHint(field.syntax) }}
                         </div>
                         <file-upload
-                          v-if="syntax.type == 'postman_collection'"
+                            v-if="field.syntax.type == 'postman_collection'"
                           ref="upload"
                           v-model="files"
                           class="upload"
@@ -270,13 +393,20 @@
                           </div>
                         </file-upload>
                       </div>
+                      </section>
                     </div>
                   </div>
                   <div class="wizard-empty-state" v-else>
-                    {{
-                      language[config.currentLanguage].Steps.wizard
-                        .emptyActionState
-                    }}
+                    <font-awesome-icon icon="rocket" aria-hidden="true" />
+                    <span>
+                      {{
+                        stepsType.length === 0
+                          ? language[config.currentLanguage].Steps.wizard
+                              .emptyCatalogState
+                          : language[config.currentLanguage].Steps.wizard
+                              .emptyActionState
+                      }}
+                    </span>
                   </div>
                 </div>
                 <div class="col wizard-list-column">
@@ -301,6 +431,18 @@
                           {{ arrayStepTypeToAdd.length }}
                         </span>
                       </div>
+                      <div
+                        class="wizard-empty-state wizard-empty-state--compact"
+                        v-if="arrayStepTypeToAdd.length === 0"
+                      >
+                        <font-awesome-icon icon="shoe-prints" aria-hidden="true" />
+                        <span>
+                          {{
+                            language[config.currentLanguage].Steps.wizard
+                              .emptySequenceState
+                          }}
+                        </span>
+                      </div>
                       <div class="draggableBlock">
                         <draggable
                           v-model="arrayStepTypeToAdd"
@@ -323,7 +465,13 @@
                                   {{ element.note }}
                                 </span>
                                 <span class="wizard-step-item-meta">
-                                  {{ element.stepType }}
+                                  {{ managedStepSubtitle(element) }}
+                                </span>
+                                <span
+                                  v-if="managedStepLocator(element).length > 0"
+                                  class="wizard-step-item-locator"
+                                >
+                                  {{ managedStepLocator(element) }}
                                 </span>
                               </span>
                               <span
@@ -339,10 +487,15 @@
                                 type="button"
                                 class="step-delete-button"
                                 v-on:click.stop="deleteStepType(index)"
-                                :aria-label="'Delete step type ' + element.note"
+                                :aria-label="
+                                  language[config.currentLanguage].Steps.wizard
+                                    .deleteAction +
+                                  ' ' +
+                                  element.note
+                                "
                                 :title="
-                                  language[config.currentLanguage].Actions
-                                    .remove
+                                  language[config.currentLanguage].Steps.wizard
+                                    .deleteAction
                                 "
                               >
                                 <font-awesome-icon
@@ -399,7 +552,46 @@
 }
 .wizard-toolbar-row {
   --bs-gutter-x: 0.5rem;
+  align-items: end;
+}
+.wizard-control-label {
+  color: var(--idelium-text-muted, #b9bdc8);
+  display: block;
+  font-size: 0.62rem;
+  font-weight: 900;
+  letter-spacing: 0.15em;
+  margin-bottom: 0.3rem;
+  text-transform: uppercase;
+}
+.wizard-flow-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.85rem;
+}
+.wizard-flow-step {
   align-items: center;
+  background: rgba(255, 255, 255, 0.045);
+  border: 1px solid var(--idelium-border, rgba(255, 255, 255, 0.12));
+  border-radius: 999px;
+  color: var(--idelium-text-muted, #b9bdc8);
+  display: inline-flex;
+  font-size: 0.61rem;
+  font-weight: 900;
+  gap: 0.35rem;
+  letter-spacing: 0.12em;
+  padding: 0.25rem 0.6rem 0.25rem 0.3rem;
+  text-transform: uppercase;
+}
+.wizard-flow-step span {
+  align-items: center;
+  background: var(--idelium-primary, #ff6b1a);
+  border-radius: 999px;
+  color: #111827;
+  display: inline-flex;
+  height: 1.1rem;
+  justify-content: center;
+  min-width: 1.1rem;
 }
 .wizard-field {
   display: flex;
@@ -415,6 +607,62 @@
   flex-direction: column;
   gap: 0.65rem;
   margin-top: 0.75rem;
+}
+.wizard-editing-banner,
+.wizard-action-profile,
+.wizard-postman-profile {
+  background: var(--idelium-surface-subtle, rgba(255, 255, 255, 0.04));
+  border: 1px solid var(--idelium-border, rgba(255, 255, 255, 0.12));
+  border-radius: 0.85rem;
+}
+.wizard-editing-banner {
+  align-items: center;
+  display: flex;
+  gap: 0.75rem;
+  justify-content: space-between;
+  padding: 0.55rem 0.7rem;
+}
+.wizard-editing-banner strong,
+.wizard-action-profile strong,
+.wizard-postman-profile strong {
+  color: var(--idelium-text, #f8fafc);
+  display: block;
+  font-size: 0.64rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.wizard-editing-banner span,
+.wizard-action-profile span,
+.wizard-postman-profile span {
+  color: var(--idelium-text-muted, #b9bdc8);
+  display: block;
+  font-size: 0.7rem;
+  letter-spacing: 0.05em;
+}
+.wizard-action-profile {
+  align-items: center;
+  display: grid;
+  gap: 0.7rem;
+  grid-template-columns: auto minmax(0, 1fr);
+  padding: 0.65rem;
+}
+.wizard-action-profile__icon {
+  align-items: center;
+  background: rgba(255, 107, 26, 0.14);
+  border: 1px solid rgba(255, 107, 26, 0.42);
+  border-radius: 0.75rem;
+  color: var(--idelium-primary, #ff6b1a);
+  display: inline-flex;
+  height: 2.25rem;
+  justify-content: center;
+  width: 2.25rem;
+}
+.wizard-postman-profile {
+  display: grid;
+  gap: 0.6rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  padding: 0.65rem;
 }
 .wizard-toggle {
   align-items: center;
@@ -449,6 +697,14 @@
   letter-spacing: 0.16em;
   margin-bottom: 0.2rem;
   text-transform: uppercase;
+}
+.wizard-section-description {
+  color: var(--idelium-text-muted, #b9bdc8);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  line-height: 1.35;
+  margin: 0 0 0.75rem;
+  max-width: 52rem;
 }
 .wizard-manage-header {
   align-items: flex-start;
@@ -507,6 +763,14 @@
   min-height: 8rem;
   padding: 1rem;
   text-align: center;
+}
+.wizard-empty-state svg {
+  color: var(--idelium-primary, #ff6b1a);
+  margin-right: 0.5rem;
+}
+.wizard-empty-state--compact {
+  align-items: center;
+  min-height: 7rem;
 }
 .wizard-json-field {
   height: 14rem;
@@ -581,6 +845,32 @@
   border: 1px solid rgba(33, 150, 243, 0.22);
   border-radius: 0.5rem;
   padding: 0.5rem 0.65rem;
+}
+.catalog-compatibility-note--warning {
+  background: rgba(255, 107, 26, 0.08);
+  border-color: rgba(255, 107, 26, 0.25);
+}
+.wizard-field-section {
+  border: 1px solid var(--idelium-border, rgba(255, 255, 255, 0.1));
+  border-radius: 0.85rem;
+  display: grid;
+  gap: 0.55rem;
+  padding: 0.7rem;
+}
+.wizard-field-section h6 {
+  color: var(--idelium-text, #f8fafc);
+  font-size: 0.66rem;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  margin: 0;
+  text-transform: uppercase;
+}
+.wizard-field-section p {
+  color: var(--idelium-text-muted, #b9bdc8);
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  line-height: 1.35;
+  margin: -0.25rem 0 0.1rem;
 }
 .step-option-group {
   color: var(--idelium-primary, #ff6b1a);
@@ -660,6 +950,9 @@
   justify-content: center;
   min-width: 1.55rem;
 }
+.wizard-step-item-index svg {
+  font-size: 0.72rem;
+}
 .list-group-item.is-selected .wizard-step-item-index {
   background: var(--idelium-primary, #ff6b1a);
   color: #111827;
@@ -684,6 +977,19 @@
   font-size: 0.58rem;
   letter-spacing: 0.08em;
   text-transform: none;
+}
+.wizard-step-item-locator {
+  color: var(--idelium-text-muted, #b9bdc8);
+  font-family:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    "Courier New", monospace;
+  font-size: 0.56rem;
+  letter-spacing: 0.05em;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-transform: none;
+  white-space: nowrap;
 }
 .wizard-selected-badge {
   background: var(--idelium-primary, #ff6b1a);
@@ -874,10 +1180,21 @@ export default {
           this.responseTypeSelect.push("");
         } else if (this.arraySyntax[i].type == "integer") {
           this.responseTypeSelect.push(1);
+          this.stateInput[i] = true;
+        } else if (this.arraySyntax[i].type == "options") {
+          this.responseTypeSelect.push(this.arraySyntax[i].options?.[0] || "");
+          this.stateInput[i] = true;
         } else if (this.arraySyntax[i].type == "json") {
           this.responseTypeSelect.push({});
+          this.stateInput[i] = true;
+        } else if (
+          this.arraySyntax[i].type == "postman_collection" ||
+          this.arraySyntax[i].type == "postman_environment"
+        ) {
+          this.responseTypeSelect.push(null);
         }
       }
+      this.checkPossibleAddType();
     },
     typeOfWrapperSelected() {
       localStorage.wrapperSelected = this.typeOfWrapperSelected;
@@ -927,7 +1244,7 @@ export default {
       textBdd: "",
       failedExit: true,
       attachScreenshot: true,
-      displayCard: "hide-element",
+      displayCard: "fade-in",
       stepsType: [],
       stepTypeSelected: null,
       responseTypeSelect: [],
@@ -961,6 +1278,94 @@ export default {
       isHydratingFromEditor: false,
     };
   },
+  computed: {
+    wizardFlowSteps() {
+      return [
+        this.language[this.config.currentLanguage].Steps.wizard.flowRuntime,
+        this.language[this.config.currentLanguage].Steps.wizard.flowConfigure,
+        this.language[this.config.currentLanguage].Steps.wizard.flowSequence,
+        this.language[this.config.currentLanguage].Steps.wizard.flowSave,
+      ];
+    },
+    isEditingAction() {
+      return this.indexForEdit >= 0;
+    },
+    currentEditingLabel() {
+      return this.arrayStepTypeToAdd[this.indexForEdit]?.note || "";
+    },
+    actionProfileText() {
+      if (this.stepTypeSelected == null) return "";
+      return `${this.typeOfWrapperSelected} · ${this.stepTypeSelected.name}`;
+    },
+    isPostmanActionSelected() {
+      return this.typeOfWrapperSelected === "postman";
+    },
+    postmanPayload() {
+      const collectionIndex = this.arraySyntax.findIndex(
+        (syntax) => syntax.type === "postman_collection",
+      );
+      const payload =
+        collectionIndex >= 0
+          ? this.responseTypeSelect[collectionIndex]
+          : this.responseTypeSelect.find((item) => item?.collection);
+      return payload || this.postmanJson || {};
+    },
+    postmanCollectionName() {
+      return (
+        this.postmanPayload?.collection?.info?.name ||
+        this.language[this.config.currentLanguage].Steps.wizard
+          .postmanCollectionMissing
+      );
+    },
+    postmanEnvironmentName() {
+      return (
+        this.postmanPayload?.environment?.name ||
+        this.postmanPayload?.environment?.info?.name ||
+        this.language[this.config.currentLanguage].Steps.wizard
+          .postmanEnvironmentOptional
+      );
+    },
+    postmanRequestCount() {
+      return this.countPostmanItems(this.postmanPayload?.collection?.item || []);
+    },
+    validationIssues() {
+      const issues = [];
+      if (this.stepTypeSelected == null) return issues;
+      if (this.note.trim().length === 0) {
+        issues.push(
+          this.language[this.config.currentLanguage].Steps.wizard
+            .validationNoteRequired,
+        );
+      }
+      this.arraySyntax.forEach((syntax, index) => {
+        if (!this.isFieldValid(syntax, index)) {
+          issues.push(
+            `${this.syntaxLabel(syntax)} ${
+              this.language[this.config.currentLanguage].Steps.wizard
+                .validationFieldRequired
+            }`,
+          );
+        }
+      });
+      return issues;
+    },
+    groupedSyntaxSections() {
+      const groups = new Map();
+      this.arraySyntax.forEach((syntax, index) => {
+        const id = this.syntaxGroup(syntax);
+        if (!groups.has(id)) {
+          groups.set(id, {
+            id,
+            title: this.syntaxGroupTitle(id),
+            description: this.syntaxGroupDescription(id),
+            fields: [],
+          });
+        }
+        groups.get(id).fields.push({ syntax, index });
+      });
+      return Array.from(groups.values());
+    },
+  },
   methods: {
     fieldId(name) {
       return this.idPrefix + "-" + name;
@@ -979,6 +1384,82 @@ export default {
         },
       ];
     },
+    managedStepSubtitle(step) {
+      const runtime = step?.runtime || this.typeOfWrapperSelected || "runtime";
+      const type = step?.stepType || step?.actionType || step?.type || "action";
+      return `${runtime} · ${type}`;
+    },
+    managedStepLocator(step) {
+      const parts = [];
+      if (step?.method) parts.push(String(step.method).toUpperCase());
+      if (step?.url) parts.push(step.url);
+      if (step?.findBy) parts.push(step.findBy);
+      if (step?.target) parts.push(step.target);
+      if (step?.xpath && !parts.includes(step.xpath)) parts.push(step.xpath);
+      if (step?.waitCondition) parts.push(step.waitCondition);
+      if (step?.selectType) parts.push(step.selectType);
+      return parts.filter(Boolean).join(" · ");
+    },
+    runtimeIcon(runtime) {
+      const icons = {
+        appium: "vial",
+        plugin: "plug",
+        postman: "rocket",
+        selenium: "laptop",
+        webservice: "project-diagram",
+      };
+      return icons[runtime] || "shoe-prints";
+    },
+    syntaxGroup(syntax) {
+      const name = syntax?.typeName || "";
+      if (syntax?.type === "postman_collection") return "postman";
+      if (["findBy", "target", "xpath"].includes(name)) return "locator";
+      if (["waitCondition", "waitSeconds", "timeout"].includes(name))
+        return "wait";
+      if (["assertion", "expected", "operator"].includes(name))
+        return "assertion";
+      if (["value", "text", "keys", "params", "operation"].includes(name))
+        return "action";
+      return "advanced";
+    },
+    syntaxGroupTitle(group) {
+      return (
+        this.language[this.config.currentLanguage].Steps.wizard.fieldGroups[
+          group
+        ]?.title || group
+      );
+    },
+    syntaxGroupDescription(group) {
+      return (
+        this.language[this.config.currentLanguage].Steps.wizard.fieldGroups[
+          group
+        ]?.description || ""
+      );
+    },
+    countPostmanItems(items) {
+      if (!Array.isArray(items)) return 0;
+      return items.reduce((total, item) => {
+        const nested = Array.isArray(item.item)
+          ? this.countPostmanItems(item.item)
+          : 0;
+        return total + (item.request ? 1 : 0) + nested;
+      }, 0);
+    },
+    isFieldValid(syntax, index) {
+      const value = this.responseTypeSelect[index];
+      if (syntax?.type === "integer") return this.isNumber(value);
+      if (syntax?.type === "string") return String(value || "").trim() !== "";
+      if (syntax?.type === "options") return String(value || "").trim() !== "";
+      if (syntax?.type === "postman_collection") {
+        return Boolean(value?.collection || this.postmanJson?.collection);
+      }
+      return true;
+    },
+    fieldValidationClass(index) {
+      if (this.stateInput[index] === false) return "is-invalid";
+      if (this.stateInput[index] === true) return "is-valid";
+      return "";
+    },
     catalogTranslations() {
       return this.language?.[this.config.currentLanguage]?.Steps?.catalog || {};
     },
@@ -995,8 +1476,20 @@ export default {
         this.catalogTranslations().steps?.[option.name]?.label || option.name
       );
     },
+    stepOptionDescription(option) {
+      if (option == null) return "";
+      return (
+        this.catalogTranslations().steps?.[option.name]?.description ||
+        option.name
+      );
+    },
     stepOptionGroup(option) {
-      return this.catalogTranslations().steps?.[option.name]?.group || "basic";
+      const localizedGroup =
+        this.catalogTranslations().steps?.[option.name]?.group;
+      if (localizedGroup) return localizedGroup;
+      if (option?.name === "connect_appium" || option?.name?.startsWith("appium_"))
+        return "appiumCore";
+      return "basic";
     },
     stepOptionGroupLabel(option) {
       const group = this.stepOptionGroup(option);
@@ -1122,17 +1615,12 @@ export default {
     checkPossibleAddType() {
       let checkField = true;
       for (let i = 0; i < this.arraySyntax.length; i++) {
-        this.stateInput.push(false);
-        if (
-          (this.arraySyntax[i].type == "string" &&
-            this.responseTypeSelect[i] == "") ||
-          (this.arraySyntax[i].type == "integer" &&
-            this.stateInput[i] === false)
-        ) {
+        this.stateInput[i] = this.isFieldValid(this.arraySyntax[i], i);
+        if (!this.stateInput[i]) {
           checkField = false;
         }
       }
-      if (this.isNoteOk == true && checkField == true)
+      if (this.note.trim().length > 0 && checkField == true)
         this.isBtnAddStepTypeDisabled = false;
       else this.isBtnAddStepTypeDisabled = true;
     },
@@ -1237,10 +1725,25 @@ export default {
         objectToStore["__key"] =
           this.arrayStepTypeToAdd[this.indexForEdit].__key;
         this.arrayStepTypeToAdd[this.indexForEdit] = objectToStore;
-        this.showBtnEditTestType = "hide-element";
       }
+      this.clearActionForm();
       this.initWrapperArray();
       this.buildJson();
+    },
+    clearActionForm() {
+      this.indexForEdit = -1;
+      this.stepTypeSelected = null;
+      this.arraySyntax = [];
+      this.responseTypeSelect = [];
+      this.stateInput = [];
+      this.note = "";
+      this.isNoteOk = false;
+      this.isBtnAddStepTypeDisabled = true;
+      this.showBtnEditTestType = "hide-element";
+    },
+    cancelActionEdit() {
+      this.clearActionForm();
+      this.initWrapperArray();
     },
     createStepKey() {
       const key = "step-" + Date.now() + "-" + this.nextStepKey;
@@ -1249,6 +1752,11 @@ export default {
     },
     deleteStepType(index) {
       this.arrayStepTypeToAdd.splice(index, 1);
+      if (this.indexForEdit === index) {
+        this.clearActionForm();
+      } else if (this.indexForEdit > index) {
+        this.indexForEdit -= 1;
+      }
       this.buildJson();
     },
     initWrapperArray() {
