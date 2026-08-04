@@ -27,7 +27,7 @@
     "bootstrap": "^5.3.8",
     "copy-to-clipboard": "^3.3.3",
     "element-plus": "^2.5.4",
-    "jsoneditor": "^9.10.2",
+    "jsoneditor": "^10.4.3",
     "konva": "^10.3.0",
     "mitt": "^3.0.1",
     "pinia": "^4.0.2",
