@@ -10,7 +10,9 @@
       aria-labelledby="postman-response-title"
       aria-hidden="true"
     >
-      <div class="modal-dialog modal-fullscreen-lg-down modal-xl modal-dialog-centered">
+      <div
+        class="modal-dialog modal-fullscreen-lg-down modal-xl modal-dialog-centered"
+      >
         <div class="modal-content postman-response-modal__content">
           <div class="modal-header postman-response-modal__header">
             <div>

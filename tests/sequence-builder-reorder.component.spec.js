@@ -81,8 +81,9 @@ describe("SequenceBuilder accessible reorder", () => {
     );
     expect(rows[0].attributes("draggable")).toBe("true");
     expect(rows[0].attributes("title")).toBe("Drag Open browser to reorder");
-    expect(wrapper.get(".sequence-builder__remove-action").attributes("title"))
-      .toBe("Remove Open browser");
+    expect(
+      wrapper.get(".sequence-builder__remove-action").attributes("title"),
+    ).toBe("Remove Open browser");
   });
 
   it("makes pointer drop persist the requested order", async () => {

@@ -145,9 +145,7 @@ describe("step results detail page", () => {
 
     const wrapper = mountStepResults();
 
-    await vi.waitFor(() =>
-      expect(wrapper.text()).toContain("firefox stable"),
-    );
+    await vi.waitFor(() => expect(wrapper.text()).toContain("firefox stable"));
 
     expect(wrapper.text()).toContain("demo");
     expect(wrapper.text()).toContain("Pixel 8");

@@ -242,7 +242,8 @@ describe("steps wizard Postman import", () => {
                   editingActionTitle: "Azione in modifica",
                   cancelEditAction: "Annulla modifica azione",
                   deleteAction: "Elimina azione",
-                  emptyActionState: "Seleziona un'azione per modificarne i campi.",
+                  emptyActionState:
+                    "Seleziona un'azione per modificarne i campi.",
                   emptyCatalogState: "Nessuna azione disponibile.",
                   emptySequenceState: "La sequenza di esecuzione è vuota.",
                   validationNoteRequired: "La nota dell'azione è obbligatoria",
@@ -476,9 +477,9 @@ describe("steps wizard Postman import", () => {
     };
     await wrapper.vm.$nextTick();
 
-    expect(wrapper.vm.groupedSyntaxSections.map((section) => section.id)).toEqual(
-      ["locator", "wait"],
-    );
+    expect(
+      wrapper.vm.groupedSyntaxSections.map((section) => section.id),
+    ).toEqual(["locator", "wait"]);
     expect(wrapper.text()).toContain("Locator");
     expect(wrapper.text()).toContain("Wait policy");
   });
@@ -577,12 +578,16 @@ describe("steps wizard Postman import", () => {
     await vi.waitFor(() =>
       expect(wrapper.vm.stepTypeSelected.name).toBe("open_browser"),
     );
-    await vi.waitFor(() => expect(wrapper.vm.note).toBe("Open the application"));
-    expect(wrapper.vm.responseTypeSelect[0]).toBe("https://idelium.org/demo/");
-    expect(wrapper.vm.isManagedStepSelected(wrapper.vm.arrayStepTypeToAdd[0])).toBe(
-      true,
+    await vi.waitFor(() =>
+      expect(wrapper.vm.note).toBe("Open the application"),
     );
-    expect(wrapper.vm.managedStepClass(wrapper.vm.arrayStepTypeToAdd[0])).toEqual(
+    expect(wrapper.vm.responseTypeSelect[0]).toBe("https://idelium.org/demo/");
+    expect(
+      wrapper.vm.isManagedStepSelected(wrapper.vm.arrayStepTypeToAdd[0]),
+    ).toBe(true);
+    expect(
+      wrapper.vm.managedStepClass(wrapper.vm.arrayStepTypeToAdd[0]),
+    ).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ "is-selected": true }),
       ]),
@@ -615,7 +620,9 @@ describe("steps wizard Postman import", () => {
     await vi.waitFor(() =>
       expect(wrapper.vm.stepTypeSelected.name).toBe("appium_back"),
     );
-    await vi.waitFor(() => expect(wrapper.vm.note).toBe("Go back on the device"));
+    await vi.waitFor(() =>
+      expect(wrapper.vm.note).toBe("Go back on the device"),
+    );
   });
 
   it("rebuilds JSON when an existing wizard action is edited", async () => {

@@ -141,7 +141,10 @@ describe("tests component", () => {
       .mockResolvedValueOnce({ data: [] });
     useSessionStore(pinia).selectProject(9);
     const wrapper = mountTests({
-      $route: { name: "tests-builder", params: { projectId: "9", testId: "44" } },
+      $route: {
+        name: "tests-builder",
+        params: { projectId: "9", testId: "44" },
+      },
     });
     await vi.waitFor(() => expect(wrapper.vm.testsLoaded).toBe(true));
     const steps = [
@@ -204,9 +207,9 @@ describe("tests component", () => {
     expect(wrapper.findComponent({ name: "SequenceBuilder" }).exists()).toBe(
       true,
     );
-    expect(wrapper.findComponent({ name: "SequenceBuilder" }).props("layout")).toBe(
-      "split",
-    );
+    expect(
+      wrapper.findComponent({ name: "SequenceBuilder" }).props("layout"),
+    ).toBe("split");
     expect(wrapper.findComponent({ name: "draggable" }).exists()).toBe(false);
   });
 
@@ -232,7 +235,9 @@ describe("tests component", () => {
     });
     await wrapper.setData({ testSelected: { id: 44, name: "Regression" } });
     await wrapper.setData({
-      arrayTests: [{ id: 44, name: "Regression", description: "Regression test" }],
+      arrayTests: [
+        { id: 44, name: "Regression", description: "Regression test" },
+      ],
     });
     await wrapper.vm.$nextTick();
 

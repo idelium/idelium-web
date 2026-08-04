@@ -470,7 +470,9 @@ describe("launch asset selection", () => {
     });
 
     await vi.waitFor(() =>
-      expect(wrapper.vm.targetAssets.some((target) => target.id === "platform-22")).toBe(true),
+      expect(
+        wrapper.vm.targetAssets.some((target) => target.id === "platform-22"),
+      ).toBe(true),
     );
 
     wrapper.vm.selectedTargetId = "platform-22";

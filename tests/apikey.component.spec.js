@@ -243,9 +243,9 @@ describe("apikey component", () => {
     await wrapper.vm.$nextTick();
 
     expect(wrapper.vm.activeApikeyTab).toBe("credentials");
-    expect(wrapper.findComponent({ name: "EnterpriseDataTable" }).exists()).toBe(
-      true,
-    );
+    expect(
+      wrapper.findComponent({ name: "EnterpriseDataTable" }).exists(),
+    ).toBe(true);
 
     await selectTab(wrapper, "cli");
 
@@ -389,8 +389,7 @@ describe("apikey component", () => {
     expect(JSON.stringify(wrapper.vm.credentials)).not.toContain(
       "idelium_secret_revealed_once_value",
     );
-    expect(localStorage.setItem).not.toHaveBeenCalled();
-    expect(sessionStorage.setItem).not.toHaveBeenCalled();
+    expect(Storage.prototype.setItem).not.toHaveBeenCalled();
   });
 
   it("requires acknowledgement before copying and downloading the reveal-once secret", async () => {
@@ -435,8 +434,7 @@ describe("apikey component", () => {
     expect(createObjectURL).toHaveBeenCalled();
     expect(click).toHaveBeenCalled();
     expect(revokeObjectURL).toHaveBeenCalledWith("blob:secret-download");
-    expect(localStorage.setItem).not.toHaveBeenCalled();
-    expect(sessionStorage.setItem).not.toHaveBeenCalled();
+    expect(Storage.prototype.setItem).not.toHaveBeenCalled();
   });
 
   it("clears reveal-once material on route changes and page lifecycle cleanup", async () => {

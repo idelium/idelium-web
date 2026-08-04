@@ -53,7 +53,7 @@ function mountWizard(props = {}) {
 }
 
 describe("WizardStepEditor", () => {
-  it("keeps active configuration stable after keyboard-accessible reorder", async () => {
+  it("keeps active configuration stable after accessible reorder", async () => {
     const wrapper = mountWizard();
     const configure = wrapper
       .findAll("button")
@@ -61,10 +61,8 @@ describe("WizardStepEditor", () => {
     await configure.trigger("click");
     expect(wrapper.text()).toContain("Starts a browser session.");
 
-    const moveDown = wrapper
-      .findAll("button")
-      .find((button) => button.text() === "Move down");
-    await moveDown.trigger("click");
+    wrapper.vm.recordChange([actions[1], actions[0]]);
+    await wrapper.vm.$nextTick();
 
     expect(wrapper.vm.activeIdentity).toBe("action:open");
     expect(wrapper.vm.activePosition).toBe(2);
@@ -75,7 +73,10 @@ describe("WizardStepEditor", () => {
     const wrapper = mountWizard();
     const duplicate = wrapper
       .findAll("button")
-      .find((button) => button.text() === "Duplicate Open browser");
+      .find(
+        (button) =>
+          button.attributes("aria-label") === "Duplicate Open browser",
+      );
     await duplicate.trigger("click");
 
     expect(wrapper.vm.draft).toHaveLength(3);

@@ -125,12 +125,10 @@ describe("Postman web integration", () => {
 
     expect(extractPostmanRequestPayload(result)).toBe('{"product":"idelium"}');
     expect(result.hasRequestPayload).toBe(true);
-    expect(formatPostmanRequestPayload(result.requestPayload, result)).toContain(
-      '"product": "idelium"',
-    );
-    expect(formatPostmanResponse(result.response, result)).toContain(
-      '"json"',
-    );
+    expect(
+      formatPostmanRequestPayload(result.requestPayload, result),
+    ).toContain('"product": "idelium"');
+    expect(formatPostmanResponse(result.response, result)).toContain('"json"');
   });
 
   it("distinguishes collections and environments", () => {

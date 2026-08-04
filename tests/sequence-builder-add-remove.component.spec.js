@@ -128,7 +128,9 @@ describe("SequenceBuilder addition and removal", () => {
   });
 
   it("allows the same available step to be added as a distinct occurrence", async () => {
-    const wrapper = mountBuilder([availableItems[0]], { allowDuplicates: true });
+    const wrapper = mountBuilder([availableItems[0]], {
+      allowDuplicates: true,
+    });
     const dataTransfer = {
       getData(type) {
         return type === "application/x-idelium-sequence-item" ? "step:1" : "";
@@ -152,7 +154,9 @@ describe("SequenceBuilder addition and removal", () => {
   });
 
   it("renders duplicate as an accessible icon action", async () => {
-    const wrapper = mountBuilder([availableItems[0]], { allowDuplicates: true });
+    const wrapper = mountBuilder([availableItems[0]], {
+      allowDuplicates: true,
+    });
     const duplicateButton = wrapper.get(".sequence-builder__duplicate-action");
 
     expect(duplicateButton.attributes("aria-label")).toBe(

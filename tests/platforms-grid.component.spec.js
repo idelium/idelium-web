@@ -195,7 +195,8 @@ describe("platform enterprise grids", () => {
   it("initializes add platform defaults and emits a complete create payload", async () => {
     api.get.mockImplementation((url) => {
       if (url.endsWith("/brands")) return Promise.resolve({ data: [] });
-      if (url.endsWith("/os/1")) return Promise.resolve({ data: [{ id: 10, name: "Linux" }] });
+      if (url.endsWith("/os/1"))
+        return Promise.resolve({ data: [{ id: 10, name: "Linux" }] });
       if (url.endsWith("/osversion/10")) {
         return Promise.resolve({ data: [{ id: 11, version: "22.04" }] });
       }

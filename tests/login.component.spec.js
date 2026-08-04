@@ -105,13 +105,21 @@ describe("login component", () => {
   });
 
   it("loads remembered credentials", async () => {
-    window.localStorage.setItem(
-      "idelium.rememberedLogin",
-      JSON.stringify({
-        email: "remembered@example.com",
-        password: "remembered-password",
-      }),
-    );
+    const rememberedLogin = JSON.stringify({
+      email: "remembered@example.com",
+      password: "remembered-password",
+    });
+    Object.defineProperty(window, "localStorage", {
+      configurable: true,
+      value: {
+        clear: vi.fn(),
+        getItem: vi.fn((key) =>
+          key === "idelium.rememberedLogin" ? rememberedLogin : null,
+        ),
+        removeItem: vi.fn(),
+        setItem: vi.fn(),
+      },
+    });
 
     const { wrapper } = mountLogin();
     await wrapper.vm.$nextTick();

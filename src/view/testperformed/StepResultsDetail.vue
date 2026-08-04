@@ -359,7 +359,8 @@ export default {
       return this.getVariant(step?.status);
     },
     getStepStatusLabel(step) {
-      if (this.getStepVariant(step) === "danger") return this.labels.statusFailed;
+      if (this.getStepVariant(step) === "danger")
+        return this.labels.statusFailed;
       return this.getStatusLabel(step?.status);
     },
     showPostmanResponse(result) {
@@ -411,7 +412,9 @@ export default {
         .join(" ");
       return {
         environment:
-          context.environmentName || context.environment || this.labels.notCaptured,
+          context.environmentName ||
+          context.environment ||
+          this.labels.notCaptured,
         browser: browser || this.labels.notCaptured,
         device:
           context.deviceName ||
@@ -453,8 +456,16 @@ export default {
 .step-results-panel,
 .step-results-context-panel {
   background:
-    radial-gradient(circle at top left, rgba(255, 107, 30, 0.18), transparent 32rem),
-    linear-gradient(135deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.025));
+    radial-gradient(
+      circle at top left,
+      rgba(255, 107, 30, 0.18),
+      transparent 32rem
+    ),
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.075),
+      rgba(255, 255, 255, 0.025)
+    );
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 1rem;
   box-shadow: 0 1.5rem 4rem rgba(0, 0, 0, 0.2);
@@ -655,7 +666,11 @@ export default {
 
 .step-results-modal {
   background:
-    radial-gradient(circle at top left, rgba(255, 107, 30, 0.14), transparent 34rem),
+    radial-gradient(
+      circle at top left,
+      rgba(255, 107, 30, 0.14),
+      transparent 34rem
+    ),
     #20232d;
   border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 1rem;
