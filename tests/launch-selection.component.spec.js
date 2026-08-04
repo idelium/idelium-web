@@ -53,9 +53,11 @@ function mountLauncher(overrides = {}) {
         $route: route,
         $router: router,
         config: {
+          ...(overrides.config || {}),
           currentLanguage: "gb",
           serviceBaseUrl: "/api/",
           url: {
+            ...(overrides.config?.url || {}),
             environments: "environments",
             launchPreflight: "launch/preflight",
             launchTargets: "launch/targets",
@@ -399,6 +401,88 @@ describe("launch asset selection", () => {
     expect(wrapper.vm.selectedEnvironmentId).toBe("9");
     expect(router.replace).toHaveBeenCalledWith({
       query: { cycleId: "3", environmentId: "9", targetId: "platform-pool" },
+    });
+  });
+
+  it("adds managed browser platforms as selectable launch targets", async () => {
+    api.get.mockImplementation((url) => {
+      if (url === "/api/cycles/7") {
+        return Promise.resolve({
+          data: {
+            data: [
+              {
+                id: 3,
+                name: "Browser smoke",
+                projectId: 7,
+                runtime: "selenium",
+                status: "active",
+              },
+            ],
+          },
+        });
+      }
+      if (url === "/api/environments/7") {
+        return Promise.resolve({
+          data: {
+            data: [
+              {
+                code: "demo",
+                id: 9,
+                name: "Demo",
+                projectId: 7,
+                runtimeType: "selenium",
+                status: "active",
+              },
+            ],
+          },
+        });
+      }
+      if (url === "/api/launch/targets/7") {
+        return Promise.resolve({ data: { data: [] } });
+      }
+      if (url === "/api/admin/platforms/types") {
+        return Promise.resolve({
+          data: { data: [{ id: 1, name: "desktop" }] },
+        });
+      }
+      if (url === "/api/admin/platforms/manageplatforms/1") {
+        return Promise.resolve({
+          data: {
+            data: [
+              {
+                browserDescription: "Chrome 126",
+                hostname: "https://runner.local:8691",
+                id: 22,
+                location: 4,
+                osDescription: "Linux 22.04",
+                status: 1,
+                updated_at: new Date().toISOString(),
+              },
+            ],
+          },
+        });
+      }
+      return Promise.resolve({ data: { data: [] } });
+    });
+
+    const wrapper = mountLauncher({
+      config: { url: { platforms: "admin/platforms" } },
+    });
+
+    await vi.waitFor(() =>
+      expect(wrapper.vm.targetAssets.some((target) => target.id === "platform-22")).toBe(true),
+    );
+
+    wrapper.vm.selectedTargetId = "platform-22";
+
+    expect(wrapper.vm.selectedTarget.raw).toMatchObject({
+      idPlatform: 22,
+      platformId: 22,
+      type: "platform",
+    });
+    expect(wrapper.vm.launchRequest.body.target).toMatchObject({
+      platformId: "22",
+      type: "platform",
     });
   });
 

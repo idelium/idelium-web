@@ -952,6 +952,28 @@ describe("tests performed component", () => {
     expect(wrapper.text()).toContain("1.20 s");
   });
 
+  it("opens performed test step results in a dedicated route", async () => {
+    api.get.mockResolvedValue({ data: [] });
+    const push = vi.fn();
+    const wrapper = mountTestsPerformed({
+      $route: {
+        name: "testsperformed",
+        query: { testCycleId: "7", runId: "45" },
+      },
+      $router: { push, replace: vi.fn() },
+    });
+    wrapper.vm.testCycleSelected = 7;
+    wrapper.vm.testCycleDateSelected = 45;
+
+    wrapper.vm.openTestStepDetail({ id: 5, name: "login" });
+
+    expect(push).toHaveBeenCalledWith({
+      name: "testsperformed-step-results",
+      params: { projectId: 9, testId: 5 },
+      query: { testCycleId: "7", runId: "45", testName: "login" },
+    });
+  });
+
   it("renders quality analytics and persists analytics filters in the route query", async () => {
     api.get.mockResolvedValue({ data: [] });
     const replace = vi.fn();

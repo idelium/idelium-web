@@ -1138,7 +1138,7 @@
             v-bind:key="test.id"
             type="button"
             :class="{ active: testSelected == test.id }"
-            v-on:click="selectPerformedTest(test)"
+            v-on:click="openTestStepDetail(test)"
             :title="language[config.currentLanguage].TestsPerformed.viewDetails"
           >
             <span :class="['testsperformed-status', getTestVariant(test)]">
@@ -4124,7 +4124,40 @@ export default {
     },
     openSelectedTestDetails() {
       if (this.testSelected == null) return;
-      this.getStep(this.testSelected, this.selectedTestName);
+      this.openTestStepDetail(
+        this.selectedPerformedTest || {
+          id: this.testSelected,
+          name: this.selectedTestName,
+        },
+      );
+    },
+    openTestStepDetail(test) {
+      if (test?.id == null) return;
+      if (!this.$router?.push) {
+        this.selectPerformedTest(test);
+        return;
+      }
+      const query = {
+        ...(this.$route?.query || {}),
+        testName: test.name || this.selectedTestName || "",
+      };
+      if (this.testCycleSelected != null) {
+        query.testCycleId = String(this.testCycleSelected);
+      }
+      if (this.testCycleDateSelected != null) {
+        query.runId = String(this.testCycleDateSelected);
+      }
+      Object.keys(query).forEach((key) => {
+        if (query[key] == null || query[key] === "") delete query[key];
+      });
+      this.$router.push({
+        name: "testsperformed-step-results",
+        params: {
+          projectId: getSelectedProjectId(),
+          testId: test.id,
+        },
+        query,
+      });
     },
     getStepVariant(step) {
       if (this.isPostmanExecution(step)) {

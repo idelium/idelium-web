@@ -190,6 +190,7 @@ export default {
       preflightResult: null,
       preflightRunning: false,
       preflightTimer: null,
+      rawPlatformTargets: [],
       rawTargets: [],
       concurrency: Number.parseInt(this.$route?.query?.concurrency, 10) || 1,
       selectedCycleId: routeSelection.cycleId,
@@ -239,9 +240,17 @@ export default {
       const normalized = normalizeLaunchTargets(this.rawTargets, {
         selectedRuntime: runtime,
       });
-      return normalized.length > 0
-        ? normalized
-        : defaultLaunchTargetsForRuntime(runtime);
+      const platformTargets = normalizeLaunchTargets(this.rawPlatformTargets, {
+        selectedRuntime: runtime,
+      });
+      const targets = [...platformTargets, ...normalized];
+      if (
+        this.selectedTargetId === "platform-pool" &&
+        platformTargets.some((target) => !target.disabledReason)
+      ) {
+        return targets;
+      }
+      return targets.length > 0 ? targets : defaultLaunchTargetsForRuntime(runtime);
     },
     targetDiagnostics() {
       return validateLaunchTargetConfiguration({
@@ -461,11 +470,92 @@ export default {
           this.rawTargets = this.extractRows(response.data);
           this.ensureTargetSelection();
           this.syncDraftRoute();
+          this.getManagedPlatformTargets();
         })
         .catch(() => {
           this.rawTargets = [];
           this.ensureTargetSelection();
+          this.getManagedPlatformTargets();
         });
+    },
+    getManagedPlatformTargets() {
+      if (!this.config.url.platforms) {
+        this.rawPlatformTargets = [];
+        return Promise.resolve([]);
+      }
+      return apiClient
+        .get(this.config.serviceBaseUrl + this.config.url.platforms + "/types", {
+          headers: this.setHeaders(),
+        })
+        .then((response) => {
+          const types = this.extractRows(response.data);
+          return Promise.all(
+            types.map((type) =>
+              apiClient
+                .get(
+                  this.config.serviceBaseUrl +
+                    this.config.url.platforms +
+                    "/manageplatforms/" +
+                    type.id,
+                  {
+                    headers: this.setHeaders(),
+                    params: { page: 1, pageSize: 50 },
+                  },
+                )
+                .then((platformResponse) =>
+                  this.extractRows(platformResponse.data).map((platform) =>
+                    this.platformToLaunchTarget(platform, type),
+                  ),
+                )
+                .catch(() => []),
+            ),
+          );
+        })
+        .then((groups) => {
+          this.rawPlatformTargets = groups.flat();
+          this.ensureTargetSelection();
+          this.syncDraftRoute();
+          return this.rawPlatformTargets;
+        })
+        .catch(() => {
+          this.rawPlatformTargets = [];
+          this.ensureTargetSelection();
+          return [];
+        });
+    },
+    platformToLaunchTarget(platform, type) {
+      const platformId = platform.id;
+      const typeName = String(type?.name || "").toLowerCase();
+      const runtime = typeName.includes("mobile") ? "appium" : "selenium";
+      const isAvailable =
+        platform.status == null ||
+        String(platform.status) === "1" ||
+        String(platform.status).toLowerCase() === "free" ||
+        String(platform.status).toLowerCase() === "healthy";
+      return {
+        browser: platform.browserDescription,
+        capabilities: ["browserOverride"],
+        capacity: {
+          available: isAvailable ? 1 : 0,
+          max: 1,
+          queued: 0,
+        },
+        health: isAvailable ? "healthy" : "disabled",
+        hostname: platform.hostname,
+        id: `platform-${platformId}`,
+        idPlatform: platformId,
+        lastHealthAt: platform.updated_at ?? platform.updatedAt ?? new Date().toISOString(),
+        name:
+          platform.hostname ||
+          [platform.osDescription, platform.browserDescription]
+            .filter(Boolean)
+            .join(" · ") ||
+          `Platform ${platformId}`,
+        platformId,
+        region: platform.locationLabel ?? platform.location ?? "",
+        runtime,
+        type: "platform",
+      };
     },
     extractRows(payload) {
       if (Array.isArray(payload)) return payload;

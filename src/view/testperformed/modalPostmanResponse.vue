@@ -1,7 +1,10 @@
 <template>
   <div>
     <div
-      class="modal fade postman-response-modal"
+      :class="[
+        'modal fade postman-response-modal',
+        { 'postman-response-modal--elevated': elevated },
+      ]"
       ref="mymodal"
       tabindex="-1"
       aria-labelledby="postman-response-title"
@@ -99,6 +102,10 @@
 </template>
 
 <style scoped>
+.postman-response-modal--elevated {
+  z-index: 1125;
+}
+
 .postman-response-modal__content {
   background:
     radial-gradient(
@@ -262,6 +269,12 @@ import {
 
 export default {
   name: "ModalPostmanResponse",
+  props: {
+    elevated: {
+      type: Boolean,
+      default: false,
+    },
+  },
   data() {
     return {
       dataRequestPayload: "",

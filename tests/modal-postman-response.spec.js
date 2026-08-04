@@ -44,4 +44,19 @@ describe("Postman response modal", () => {
     expect(wrapper.text()).toContain('"product": "idelium"');
     expect(wrapper.text()).toContain('"json"');
   });
+
+  it("can be elevated above an already open Postman details modal", () => {
+    const wrapper = shallowMount(ModalPostmanResponse, {
+      props: { elevated: true },
+      global: {
+        stubs: {
+          FontAwesomeIcon: { template: "<i />" },
+        },
+      },
+    });
+
+    expect(wrapper.get(".postman-response-modal").classes()).toContain(
+      "postman-response-modal--elevated",
+    );
+  });
 });

@@ -87,6 +87,17 @@ describe("route smoke checks", () => {
     expect(router.currentRoute.value.params.runId).toBe("run-42");
   });
 
+  it("opens the canonical performed test step results route", async () => {
+    useSessionStore(pinia).establishSession();
+    await router.push(
+      "/projects/7/testsperformed/tests/55/steps?testCycleId=1&runId=9",
+    );
+    expect(router.currentRoute.value.name).toBe("testsperformed-step-results");
+    expect(router.currentRoute.value.params.projectId).toBe("7");
+    expect(router.currentRoute.value.params.testId).toBe("55");
+    expect(router.currentRoute.value.query.runId).toBe("9");
+  });
+
   it("redirects legacy project routes to the selected project URL", async () => {
     const session = useSessionStore(pinia);
     session.establishSession();

@@ -1,4 +1,4 @@
-import { shallowMount } from "@vue/test-utils";
+import { flushPromises, shallowMount } from "@vue/test-utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const api = vi.hoisted(() => ({
@@ -8,9 +8,23 @@ const api = vi.hoisted(() => ({
   put: vi.fn(),
 }));
 
+const bootstrap = vi.hoisted(() => ({
+  hide: vi.fn(),
+  show: vi.fn(),
+}));
+
 vi.mock("@/services/apiClient", () => ({ default: api }));
+vi.mock("bootstrap", () => ({
+  Modal: vi.fn().mockImplementation(function createModalMock() {
+    return {
+      hide: bootstrap.hide,
+      show: bootstrap.show,
+    };
+  }),
+}));
 
 import Brand from "@/view/platforms/brand.vue";
+import ModalAddPlatformForm from "@/view/platforms/addPlatformForm/modalAddPlatformForm.vue";
 import ManagePlatform from "@/view/platforms/managePlatform.vue";
 
 const copy = {
@@ -41,7 +55,30 @@ const copy = {
       colOs: "OS",
       colStatus: "Status",
       confirmationPlatform: "Delete platform?",
-      modalAddPlatform: { lblType: "Type" },
+      modalAddPlatform: {
+        btnSaveNewPlatform: "Save new platform",
+        chooseType: "Select type",
+        lblAddress: "Address",
+        lblBrand: "Brand",
+        lblBrowser: "Browser",
+        lblBrowserVersion: "Browser version",
+        lblLocation: "Location",
+        lblModel: "Model",
+        lblOs: "OS",
+        lblOsVersion: "OS version",
+        lblType: "Type",
+        loadingReferences: "Loading platform references...",
+        modalTitle: "Add platform",
+        placeholderHost: "runner.local",
+        validationAddress: "Enter address.",
+        validationBrowser: "Select browser.",
+        validationBrowserVersion: "Select browser version.",
+        validationLocation: "Select location.",
+        validationModel: "Select model.",
+        validationOs: "Select OS.",
+        validationOsVersion: "Select OS version.",
+        validationType: "Select type.",
+      },
     },
   },
 };
@@ -153,5 +190,54 @@ describe("platform enterprise grids", () => {
       query: { direction: "asc", q: "samsung", sort: "id" },
     });
     vi.useRealTimers();
+  });
+
+  it("initializes add platform defaults and emits a complete create payload", async () => {
+    api.get.mockImplementation((url) => {
+      if (url.endsWith("/brands")) return Promise.resolve({ data: [] });
+      if (url.endsWith("/os/1")) return Promise.resolve({ data: [{ id: 10, name: "Linux" }] });
+      if (url.endsWith("/osversion/10")) {
+        return Promise.resolve({ data: [{ id: 11, version: "22.04" }] });
+      }
+      if (url.endsWith("/browsers/10")) {
+        return Promise.resolve({ data: [{ id: 12, name: "Chrome" }] });
+      }
+      if (url.endsWith("/browserversions/12")) {
+        return Promise.resolve({ data: [{ id: 13, version: "126" }] });
+      }
+      return Promise.resolve({ data: [] });
+    });
+
+    const wrapper = shallowMount(ModalAddPlatformForm, {
+      props: {
+        arrayTypes: [{ id: 1, name: "desktop" }],
+        arrayLocations: [{ id: 2, name: "Milan" }],
+      },
+      global: {
+        mocks: mocks(),
+      },
+    });
+
+    await wrapper.vm.showModal();
+    await flushPromises();
+    await wrapper.setData({ address: "runner.local" });
+
+    wrapper.vm.save();
+
+    expect(bootstrap.show).toHaveBeenCalled();
+    expect(wrapper.emitted("savePlatform")[0][0]).toMatchObject({
+      type: 1,
+      addressname: "runner.local",
+      location: 2,
+      os: 10,
+      osversion: 11,
+      browser: 12,
+      brand: -1,
+      brandDescription: "NA ",
+      osDescription: "Linux 22.04",
+      browserDescription: "Chrome 126",
+      status: 1,
+    });
+    expect(bootstrap.hide).toHaveBeenCalled();
   });
 });
