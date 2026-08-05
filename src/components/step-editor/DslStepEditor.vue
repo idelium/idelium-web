@@ -5,7 +5,12 @@
         <h2>{{ copy.title }}</h2>
         <p>{{ copy.description }}</p>
       </div>
-      <button type="button" :disabled="!canApply" v-on:click="applySource">
+      <button
+        v-if="!liveUpdate"
+        type="button"
+        :disabled="!canApply"
+        v-on:click="applySource"
+      >
         {{ copy.apply }}
       </button>
     </header>
@@ -24,6 +29,7 @@
     />
 
     <section
+      v-if="showCompletions"
       class="dsl-step-editor__completions"
       :aria-label="copy.completions"
     >
@@ -101,8 +107,12 @@ export default {
     authorizedActionIds: { type: Array, default: () => [] },
     catalog: { type: Object, required: true },
     copy: { type: Object, required: true },
+    editorMaxLines: { type: Number, default: 40 },
+    editorMinLines: { type: Number, default: 12 },
+    liveUpdate: { type: Boolean, default: false },
     localizedActions: { type: Object, default: () => ({}) },
     modelValue: { type: String, default: "" },
+    showCompletions: { type: Boolean, default: true },
   },
   data() {
     editorSequence += 1;
@@ -136,11 +146,11 @@ export default {
     },
     editorOptions() {
       return {
-        maxLines: 40,
-        minLines: 12,
         printMargin: false,
         showGutter: true,
         showLineNumbers: true,
+        maxLines: this.editorMaxLines,
+        minLines: this.editorMinLines,
         tabSize: 2,
         useSoftTabs: true,
       };
@@ -159,6 +169,11 @@ export default {
       if (value === this.source) return;
       this.lastValidSource = value;
       this.source = value;
+    },
+    source(value) {
+      if (this.liveUpdate && value !== this.modelValue) {
+        this.$emit("update:modelValue", value);
+      }
     },
   },
   methods: {

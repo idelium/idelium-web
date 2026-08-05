@@ -36,6 +36,24 @@ describe("DSL validation", () => {
     expect(extractDslSource(JSON.stringify(payload))).toContain('test "smoke"');
   });
 
+  it("recognizes imported DSL actions nested in step arrays", () => {
+    const source = 'idelium 1.0\n\ntest "imported" {\n}\n';
+    const payload = JSON.stringify({
+      steps: [
+        {
+          stepType: "dsl",
+          runtime: "dsl",
+          schemaVersion: "dsl.source.v1",
+          languageVersion: "1.0",
+          source,
+        },
+      ],
+    });
+
+    expect(isDslSourcePayload(payload)).toBe(true);
+    expect(extractDslSource(payload)).toBe(source);
+  });
+
   it("returns lint severities, source locations, and remediation", () => {
     const result = validateDslSource(
       'idelium 1.0\n\ntest "smoke" {\n  open "http://example.invalid"\n  wait css "#ready" visible\n}\n',

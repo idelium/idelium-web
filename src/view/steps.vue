@@ -103,9 +103,7 @@
               </p>
               <h2>{{ language[config.currentLanguage].Steps.newStepTitle }}</h2>
               <p class="idelium-step-authoring__description">
-                {{
-                  language[config.currentLanguage].Steps.newStepDescription
-                }}
+                {{ language[config.currentLanguage].Steps.newStepDescription }}
               </p>
             </div>
             <button
@@ -124,7 +122,9 @@
                 class="idelium-action-icon--create"
                 aria-hidden="true"
               />
-              <span>{{ language[config.currentLanguage].Steps.btnSaveStep }}</span>
+              <span>{{
+                language[config.currentLanguage].Steps.btnSaveStep
+              }}</span>
             </button>
           </div>
           <div class="idelium-step-authoring__controls">
@@ -146,7 +146,9 @@
                 </option>
               </select>
             </div>
-            <div class="idelium-step-authoring__field idelium-step-authoring__field--wide">
+            <div
+              class="idelium-step-authoring__field idelium-step-authoring__field--wide"
+            >
               <label for="step-authoring-description">
                 {{
                   language[config.currentLanguage].Steps
@@ -175,71 +177,17 @@
           :json="loadJsonToEdit"
           minheight="30vh"
         />
-        <div
+        <dsl-step-editor
           v-if="modeSelected == 'dsl'"
-          class="idelium-dsl-editor"
-          aria-live="polite"
-        >
-          <label class="form-label" for="step-dsl-source">
-            {{ language[config.currentLanguage].Steps.dsl.sourceLabel }}
-          </label>
-          <textarea
-            id="step-dsl-source"
-            v-model="dslSource"
-            class="form-control idelium-dsl-editor__source"
-            :placeholder="
-              language[config.currentLanguage].Steps.dsl.sourcePlaceholder
-            "
-            aria-describedby="step-dsl-help step-dsl-diagnostics"
-          ></textarea>
-          <div id="step-dsl-help" class="form-text">
-            {{ language[config.currentLanguage].Steps.dsl.sourceHelp }}
-          </div>
-          <section
-            class="idelium-dsl-editor__constructs"
-            :aria-label="
-              language[config.currentLanguage].Steps.dsl.constructsTitle
-            "
-          >
-            <article
-              v-for="construct in localizedDslConstructs"
-              :key="construct.id"
-              class="idelium-dsl-editor__construct-card"
-            >
-              <h6>{{ construct.title }}</h6>
-              <p>{{ construct.description }}</p>
-              <code>{{ construct.statements[0] }}</code>
-            </article>
-          </section>
-          <button
-            type="button"
-            class="btn btn-outline-info btn-sm mt-3 idelium-icon-button"
-            v-on:click="validateDsl('new')"
-            :title="language[config.currentLanguage].Steps.dsl.validate"
-            :aria-label="language[config.currentLanguage].Steps.dsl.validate"
-          >
-            <font-awesome-icon
-              icon="vial"
-              class="idelium-action-icon--test"
-              aria-hidden="true"
-            />
-          </button>
-          <ul
-            v-if="dslDiagnostics.length > 0"
-            id="step-dsl-diagnostics"
-            class="idelium-dsl-editor__diagnostics"
-          >
-            <li v-for="diagnostic in dslDiagnostics" :key="diagnostic.code">
-              <strong>{{ diagnostic.severity }}</strong>
-              {{
-                formatDslDiagnostic(
-                  diagnostic,
-                  language[config.currentLanguage].Steps.dsl,
-                )
-              }}
-            </li>
-          </ul>
-        </div>
+          v-model="dslSource"
+          class="idelium-dsl-editor idelium-dsl-editor--modal"
+          :catalog="dslActionCatalog"
+          :copy="dslEditorCopy"
+          :editor-min-lines="18"
+          :editor-max-lines="48"
+          :live-update="true"
+          :show-completions="false"
+        />
         <wizard
           ref="wizard"
           v-if="modeSelected == 'wizard'"
@@ -328,75 +276,18 @@
               :options="options"
               :json="resumeJson"
             />
-            <div
+            <dsl-step-editor
               v-if="modeEditSelected == 'dsl'"
-              class="idelium-dsl-editor"
-              aria-live="polite"
-            >
-              <label class="form-label" for="step-edit-dsl-source">
-                {{ language[config.currentLanguage].Steps.dsl.sourceLabel }}
-              </label>
-              <textarea
-                id="step-edit-dsl-source"
-                v-model="dslEditSource"
-                class="form-control idelium-dsl-editor__source"
-                :placeholder="
-                  language[config.currentLanguage].Steps.dsl.sourcePlaceholder
-                "
-                aria-describedby="step-edit-dsl-help step-edit-dsl-diagnostics"
-                v-on:input="btnSaveEnable = true"
-              ></textarea>
-              <div id="step-edit-dsl-help" class="form-text">
-                {{ language[config.currentLanguage].Steps.dsl.sourceHelp }}
-              </div>
-              <section
-                class="idelium-dsl-editor__constructs"
-                :aria-label="
-                  language[config.currentLanguage].Steps.dsl.constructsTitle
-                "
-              >
-                <article
-                  v-for="construct in localizedDslConstructs"
-                  :key="construct.id"
-                  class="idelium-dsl-editor__construct-card"
-                >
-                  <h6>{{ construct.title }}</h6>
-                  <p>{{ construct.description }}</p>
-                  <code>{{ construct.statements[0] }}</code>
-                </article>
-              </section>
-              <button
-                type="button"
-                class="btn btn-outline-info btn-sm mt-3 idelium-icon-button"
-                v-on:click="validateDsl('edit')"
-                :title="language[config.currentLanguage].Steps.dsl.validate"
-                :aria-label="language[config.currentLanguage].Steps.dsl.validate"
-              >
-                <font-awesome-icon
-                  icon="vial"
-                  class="idelium-action-icon--test"
-                  aria-hidden="true"
-                />
-              </button>
-              <ul
-                v-if="dslEditDiagnostics.length > 0"
-                id="step-edit-dsl-diagnostics"
-                class="idelium-dsl-editor__diagnostics"
-              >
-                <li
-                  v-for="diagnostic in dslEditDiagnostics"
-                  :key="diagnostic.code"
-                >
-                  <strong>{{ diagnostic.severity }}</strong>
-                  {{
-                    formatDslDiagnostic(
-                      diagnostic,
-                      language[config.currentLanguage].Steps.dsl,
-                    )
-                  }}
-                </li>
-              </ul>
-            </div>
+              v-model="dslEditSource"
+              class="idelium-dsl-editor idelium-dsl-editor--modal"
+              :catalog="dslActionCatalog"
+              :copy="dslEditorCopy"
+              :editor-min-lines="22"
+              :editor-max-lines="56"
+              :live-update="true"
+              :show-completions="false"
+              v-on:update:modelValue="btnSaveEnable = true"
+            />
             <p></p>
             <p></p>
             <div class="footer-modal">
@@ -667,6 +558,33 @@
 .idelium-dsl-editor {
   margin-top: 1.5rem;
 }
+.idelium-dsl-editor--modal {
+  margin-top: 1rem;
+  padding: 1rem;
+  border: 1px solid rgba(255, 97, 34, 0.28);
+  border-radius: 1rem;
+  background: rgba(12, 17, 27, 0.28);
+}
+.idelium-dsl-editor--modal :deep(header) {
+  align-items: flex-start;
+}
+.idelium-dsl-editor--modal :deep(header h2) {
+  font-size: 1rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.idelium-dsl-editor--modal :deep(header p) {
+  color: var(--id-color-text-muted);
+}
+.idelium-dsl-editor--modal :deep(.dsl-step-editor__source) {
+  min-height: min(34rem, 62dvh);
+  border-color: rgba(255, 97, 34, 0.42);
+  box-shadow: 0 1.25rem 3rem rgba(0, 0, 0, 0.18);
+}
+.idelium-dsl-editor--modal :deep(.dsl-step-editor__diagnostics) {
+  max-height: 11rem;
+  overflow: auto;
+}
 .idelium-dsl-editor__source {
   min-height: 46vh;
   resize: vertical;
@@ -721,6 +639,7 @@
 <script>
 import apiClient from "@/services/apiClient";
 import EnterpriseListingGrid from "@/components/grid/EnterpriseListingGrid.vue";
+import DslStepEditor from "@/components/step-editor/DslStepEditor.vue";
 import { getSelectedProjectId } from "@/stores/session";
 import { buildStepPayload } from "@/domain/workflowPayloads";
 import {
@@ -739,9 +658,9 @@ import {
   buildDslSourcePayload,
   extractDslSource,
   isDslSourcePayload,
-  localizeDslConstructs,
   validateDslSource,
 } from "@/domain/dslValidation";
+import { createActionCatalog } from "@/domain/stepCatalog";
 
 let templateJson = {
   name: "<nome step>",
@@ -770,6 +689,7 @@ export default {
   inheritAttrs: false,
   mixins: [routableTabs("order", ["order", "new"])],
   components: {
+    DslStepEditor,
     EnterpriseListingGrid,
     JsonEditor,
     wizard,
@@ -940,10 +860,11 @@ export default {
     isStepOrderTabDisabled() {
       return this.stepsLoaded && this.listSteps.length === 0;
     },
-    localizedDslConstructs() {
-      return localizeDslConstructs(
-        this.language[this.config.currentLanguage].Steps.dsl,
-      );
+    dslActionCatalog() {
+      return createActionCatalog();
+    },
+    dslEditorCopy() {
+      return this.language[this.config.currentLanguage].StepEditor.dsl;
     },
     modeEditOptions() {
       if (this.editStepIsDsl) {

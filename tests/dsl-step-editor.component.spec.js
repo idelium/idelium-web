@@ -64,6 +64,27 @@ describe("DSL step editing", () => {
     expect(wrapper.emitted("update:modelValue")[0][0]).toBe(source);
   });
 
+  it("supports live source updates for modal editing", async () => {
+    const source = 'idelium 1.0\n\ntest "modal" {\n}\n';
+    const wrapper = mountEditor({
+      editorMaxLines: 56,
+      editorMinLines: 22,
+      liveUpdate: true,
+      showCompletions: false,
+    });
+
+    await wrapper.get("textarea").setValue(source);
+
+    expect(wrapper.emitted("update:modelValue")[0][0]).toBe(source);
+    expect(wrapper.find(".dsl-step-editor__completions").exists()).toBe(false);
+    expect(wrapper.find("button").exists()).toBe(false);
+    expect(wrapper.getComponent(AceStub).props("options")).toMatchObject({
+      maxLines: 56,
+      minLines: 22,
+      showLineNumbers: true,
+    });
+  });
+
   it("bounds completion to authorized catalog actions without environment data", () => {
     const catalog = createActionCatalog();
     const authorized = catalog.actions.find(

@@ -75,6 +75,7 @@ function diagnostic(
 
 export function buildDslSourcePayload(source) {
   return {
+    stepType: "dsl",
     runtime: "dsl",
     schemaVersion: DSL_SOURCE_SCHEMA_VERSION,
     languageVersion: DSL_LANGUAGE_VERSION,
@@ -82,22 +83,45 @@ export function buildDslSourcePayload(source) {
   };
 }
 
+function findDslSourcePayload(config) {
+  if (!config) return null;
+  if (Array.isArray(config)) {
+    for (const item of config) {
+      const payload = findDslSourcePayload(item);
+      if (payload) return payload;
+    }
+    return null;
+  }
+  if (typeof config !== "object") return null;
+
+  if (
+    (config.runtime === "dsl" || config.stepType === "dsl") &&
+    config.schemaVersion === DSL_SOURCE_SCHEMA_VERSION &&
+    typeof config.source === "string"
+  ) {
+    return config;
+  }
+
+  return findDslSourcePayload(config.steps);
+}
+
 export function isDslSourcePayload(rawConfig) {
   try {
     const config = parseJsonConfig(rawConfig);
-    return (
-      config?.runtime === "dsl" &&
-      config?.schemaVersion === DSL_SOURCE_SCHEMA_VERSION &&
-      typeof config?.source === "string"
-    );
+    return Boolean(findDslSourcePayload(config));
   } catch {
     return false;
   }
 }
 
 export function extractDslSource(rawConfig) {
-  const config = parseJsonConfig(rawConfig);
-  return typeof config?.source === "string" ? config.source : "";
+  try {
+    const config = parseJsonConfig(rawConfig);
+    const payload = findDslSourcePayload(config);
+    return typeof payload?.source === "string" ? payload.source : "";
+  } catch {
+    return "";
+  }
 }
 
 export function validateDslSource(source) {

@@ -14,6 +14,7 @@ vi.mock("bootstrap", () => ({
 import Steps from "@/view/steps.vue";
 import { pinia } from "@/stores/pinia";
 import { useSessionStore } from "@/stores/session";
+import english from "@/languages/english";
 
 describe("steps component", () => {
   beforeEach(() => {
@@ -139,6 +140,9 @@ describe("steps component", () => {
                     modalTitle: "Edit Step",
                   },
                 },
+              },
+              StepEditor: {
+                dsl: english.StepEditor.dsl,
               },
             },
           },
@@ -445,6 +449,7 @@ describe("steps component", () => {
         idProject: "3",
         name: "dsl_smoke",
         config: JSON.stringify({
+          stepType: "dsl",
           runtime: "dsl",
           schemaVersion: "dsl.source.v1",
           languageVersion: "1.0",
@@ -506,7 +511,47 @@ describe("steps component", () => {
     expect(modal.show).toHaveBeenCalled();
   });
 
-  it("renders localized DSL construct guidance for enterprise authoring", async () => {
+  it("opens DSL source content when editing an imported nested DSL action", async () => {
+    const source = 'idelium 1.0\n\ntest "imported checkout" {\n}\n';
+    api.get.mockResolvedValue({
+      data: {
+        name: "checkout_imported_dsl",
+        description: "Imported checkout DSL",
+        config: JSON.stringify({
+          steps: [
+            {
+              stepType: "dsl",
+              runtime: "dsl",
+              schemaVersion: "dsl.source.v1",
+              languageVersion: "1.0",
+              source,
+            },
+          ],
+        }),
+      },
+    });
+    useSessionStore(pinia).selectProject(3);
+
+    const wrapper = mountSteps({
+      $route: {
+        name: "steps",
+        params: { projectId: "3", tab: "order" },
+        query: {},
+      },
+    });
+
+    await wrapper.vm.getJson(18);
+
+    expect(wrapper.vm.modeEditSelected).toBe("dsl");
+    expect(wrapper.vm.modeEditOptions).toEqual([{ text: "DSL", value: "dsl" }]);
+    expect(wrapper.vm.dslEditSource).toBe(source);
+    expect(wrapper.vm.resumeJson).toBeNull();
+    expect(wrapper.vm.jsonEditSteps).toBeNull();
+    expect(wrapper.vm.jsonResumeSteps).toBeNull();
+    expect(modal.show).toHaveBeenCalled();
+  });
+
+  it("renders the compact syntax-checking DSL editor for enterprise authoring", async () => {
     api.get.mockResolvedValue({ data: [] });
     useSessionStore(pinia).selectProject(3);
 
@@ -520,10 +565,10 @@ describe("steps component", () => {
     wrapper.vm.modeSelected = "dsl";
     await wrapper.vm.$nextTick();
 
-    expect(wrapper.text()).toContain("Variables and secrets");
-    expect(wrapper.text()).toContain("Reusable steps");
-    expect(wrapper.find("[aria-label='DSL v1 authoring guide']").exists()).toBe(
-      true,
-    );
+    const editor = wrapper.findComponent({ name: "DslStepEditor" });
+    expect(editor.exists()).toBe(true);
+    expect(editor.props("liveUpdate")).toBe(true);
+    expect(editor.props("showCompletions")).toBe(false);
+    expect(editor.props("editorMinLines")).toBe(18);
   });
 });
