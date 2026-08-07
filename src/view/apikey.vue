@@ -104,7 +104,10 @@
         </div>
       </article>
 
-      <aside v-if="activeApikeyTab === 'cli'" class="apikey-card apikey-cli-card">
+      <aside
+        v-if="activeApikeyTab === 'cli'"
+        class="apikey-card apikey-cli-card"
+      >
         <p class="apikey-eyebrow">
           {{ language[config.currentLanguage].Apikey.packageEyebrow }}
         </p>
@@ -128,9 +131,7 @@
                 type="button"
                 class="btn btn-outline-success apikey-secondary-action"
                 v-on:click="copyUsageSnippet(snippet)"
-                :aria-label="
-                  `${language[config.currentLanguage].Apikey.copySnippet}: ${snippet.title}`
-                "
+                :aria-label="`${language[config.currentLanguage].Apikey.copySnippet}: ${snippet.title}`"
               >
                 <font-awesome-icon
                   icon="copy"
@@ -297,7 +298,9 @@
       <dl class="apikey-rotation-metadata">
         <div>
           <dt>{{ language[config.currentLanguage].Apikey.colFingerprint }}</dt>
-          <dd>{{ rotationTarget.fingerprint || rotationTarget.prefix || "—" }}</dd>
+          <dd>
+            {{ rotationTarget.fingerprint || rotationTarget.prefix || "—" }}
+          </dd>
         </div>
         <div>
           <dt>{{ language[config.currentLanguage].Apikey.colScopes }}</dt>
@@ -313,7 +316,9 @@
         </div>
       </dl>
       <label class="apikey-rotation-policy">
-        <span>{{ language[config.currentLanguage].Apikey.rotationPolicy }}</span>
+        <span>{{
+          language[config.currentLanguage].Apikey.rotationPolicy
+        }}</span>
         <select v-model="rotationPolicy" class="form-control apikey-filter">
           <option value="immediate">
             {{ language[config.currentLanguage].Apikey.rotationImmediate }}
@@ -326,7 +331,10 @@
           </option>
         </select>
       </label>
-      <p v-if="rotationErrors.length > 0" class="apikey-alert alert alert-danger">
+      <p
+        v-if="rotationErrors.length > 0"
+        class="apikey-alert alert alert-danger"
+      >
         {{ rotationErrors.join(", ") }}
       </p>
       <button
@@ -379,7 +387,9 @@
           <dd>{{ revocationTarget.lastUsedAt || "—" }}</dd>
         </div>
         <div>
-          <dt>{{ language[config.currentLanguage].Apikey.revocationImpact }}</dt>
+          <dt>
+            {{ language[config.currentLanguage].Apikey.revocationImpact }}
+          </dt>
           <dd>
             {{ language[config.currentLanguage].Apikey.revocationImpactHelp }}
           </dd>
@@ -405,7 +415,9 @@
           />
         </label>
         <label>
-          <span>{{ language[config.currentLanguage].Apikey.revocationReason }}</span>
+          <span>{{
+            language[config.currentLanguage].Apikey.revocationReason
+          }}</span>
           <textarea
             v-model="revocationForm.reason"
             class="form-control apikey-filter"
@@ -612,17 +624,17 @@
   background:
     radial-gradient(
       circle at 0% 0%,
-      rgba(255, 122, 24, 0.2),
+      color-mix(in srgb, var(--id-color-primary) 20%, transparent),
       transparent 18rem
     ),
     linear-gradient(
       135deg,
-      rgba(255, 255, 255, 0.06),
-      rgba(255, 255, 255, 0.025)
+      var(--id-color-surface),
+      var(--id-color-surface-raised)
     );
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--id-color-border);
   border-radius: 1.1rem;
-  box-shadow: 0 1.25rem 3.4rem rgba(0, 0, 0, 0.24);
+  box-shadow: var(--id-shadow-raised);
   display: flex;
   gap: 1rem;
   padding: 1.5rem;
@@ -630,10 +642,15 @@
 
 .apikey-hero-icon {
   align-items: center;
-  background: linear-gradient(135deg, #ff8a00, #ff5a2e);
+  background: linear-gradient(
+    135deg,
+    var(--id-color-primary),
+    var(--id-color-primary-strong)
+  );
   border-radius: 1.2rem;
-  box-shadow: 0 1rem 2.6rem rgba(255, 122, 24, 0.22);
-  color: #111318;
+  box-shadow: 0 1rem 2.6rem
+    color-mix(in srgb, var(--id-color-primary) 22%, transparent);
+  color: var(--id-color-on-primary);
   display: inline-flex;
   flex: 0 0 4.75rem;
   font-size: 2.25rem;
@@ -643,7 +660,7 @@
 }
 
 .apikey-eyebrow {
-  color: rgba(244, 244, 245, 0.58);
+  color: var(--id-color-text-subtle);
   font-size: 0.65rem;
   font-weight: 850;
   letter-spacing: 0.16rem;
@@ -652,7 +669,7 @@
 }
 
 .apikey-title {
-  color: #ffffff;
+  color: var(--id-color-text);
   font-size: clamp(1.6rem, 2vw, 2.15rem);
   font-weight: 850;
   letter-spacing: 0.03rem;
@@ -661,7 +678,7 @@
 
 .apikey-subtitle,
 .apikey-cli-copy {
-  color: rgba(244, 244, 245, 0.68);
+  color: var(--id-color-text-muted);
   font-size: 0.95rem;
   line-height: 1.6;
   margin: 0.35rem 0 0;
@@ -679,9 +696,13 @@
 
 .apikey-tabs {
   background:
-    linear-gradient(135deg, rgba(255, 122, 24, 0.09), transparent),
-    rgba(35, 38, 50, 0.78);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--id-color-primary) 9%, transparent),
+      transparent
+    ),
+    var(--id-color-surface);
+  border: 1px solid var(--id-color-border);
   border-radius: 1.1rem;
   display: grid;
   gap: 0.65rem;
@@ -690,10 +711,10 @@
 }
 
 .apikey-tab {
-  background: rgba(255, 255, 255, 0.035);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--id-color-surface-raised);
+  border: 1px solid var(--id-color-border);
   border-radius: 0.95rem;
-  color: rgba(244, 244, 245, 0.72);
+  color: var(--id-color-text-muted);
   display: grid;
   gap: 0.35rem;
   min-height: 4.25rem;
@@ -715,37 +736,50 @@
 }
 
 .apikey-tab small {
-  color: rgba(244, 244, 245, 0.52);
+  color: var(--id-color-text-subtle);
   font-size: 0.68rem;
   line-height: 1.35;
 }
 
 .apikey-tab:hover,
 .apikey-tab:focus-visible {
-  border-color: rgba(255, 122, 24, 0.52);
-  color: #ffffff;
+  border-color: color-mix(
+    in srgb,
+    var(--id-color-primary) 52%,
+    var(--id-color-border)
+  );
+  color: var(--id-color-text);
   outline: none;
   transform: translateY(-1px);
 }
 
 .apikey-tab--active {
-  background: linear-gradient(135deg, #ff8a00, #ff5a2e);
-  border-color: rgba(255, 122, 24, 0.88);
-  box-shadow: 0 0.9rem 2.3rem rgba(255, 105, 34, 0.24);
-  color: #111318;
+  background: linear-gradient(
+    135deg,
+    var(--id-color-primary),
+    var(--id-color-primary-strong)
+  );
+  border-color: var(--id-color-primary-strong);
+  box-shadow: 0 0.9rem 2.3rem
+    color-mix(in srgb, var(--id-color-primary) 24%, transparent);
+  color: var(--id-color-on-primary);
 }
 
 .apikey-tab--active small {
-  color: rgba(17, 19, 24, 0.72);
+  color: color-mix(in srgb, var(--id-color-on-primary) 74%, transparent);
 }
 
 .apikey-card {
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.035), transparent),
-    rgba(35, 38, 50, 0.92);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--id-color-text) 3%, transparent),
+      transparent
+    ),
+    var(--id-color-surface);
+  border: 1px solid var(--id-color-border);
   border-radius: 1.1rem;
-  box-shadow: 0 1.25rem 3.4rem rgba(0, 0, 0, 0.2);
+  box-shadow: var(--id-shadow-raised);
   min-width: 0;
   padding: 1.25rem;
 }
@@ -759,17 +793,22 @@
 }
 
 .apikey-card-title {
-  color: #ffffff;
+  color: var(--id-color-text);
   font-size: 1.05rem;
   font-weight: 850;
   margin: 0;
 }
 
 .apikey-status {
-  background: rgba(32, 201, 151, 0.14);
-  border: 1px solid rgba(32, 201, 151, 0.3);
+  background: color-mix(
+    in srgb,
+    var(--id-color-success) 14%,
+    var(--id-color-surface)
+  );
+  border: 1px solid
+    color-mix(in srgb, var(--id-color-success) 38%, var(--id-color-border));
   border-radius: 999px;
-  color: #79f2c9;
+  color: var(--id-color-success);
   font-size: 0.65rem;
   font-weight: 850;
   letter-spacing: 0.1rem;
@@ -784,9 +823,13 @@
 
 .apikey-value-panel {
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent),
-    rgba(12, 14, 22, 0.68);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--id-color-text) 3%, transparent),
+      transparent
+    ),
+    var(--id-color-surface-muted);
+  border: 1px solid var(--id-color-border);
   border-radius: 1rem;
   min-height: 12rem;
   padding: 1.15rem;
@@ -794,7 +837,7 @@
 
 .apikey-value {
   background: transparent;
-  color: #f8fafc;
+  color: var(--id-color-text);
   display: block;
   font-family:
     ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
@@ -832,10 +875,10 @@
 }
 
 .apikey-command {
-  background: rgba(12, 14, 22, 0.78);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--id-color-canvas-subtle);
+  border: 1px solid var(--id-color-border);
   border-radius: 0.8rem;
-  color: #f8fafc;
+  color: var(--id-color-text);
   font-family:
     ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
     monospace;
@@ -851,14 +894,14 @@
 }
 
 .apikey-snippet {
-  background: rgba(12, 14, 22, 0.45);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--id-color-surface-raised);
+  border: 1px solid var(--id-color-border);
   border-radius: 0.9rem;
   padding: 0.85rem;
 }
 
 .apikey-snippet-title {
-  color: #ffffff;
+  color: var(--id-color-text);
   font-size: 0.82rem;
   font-weight: 850;
   letter-spacing: 0.1rem;
@@ -867,9 +910,9 @@
 }
 
 .apikey-snippet pre {
-  background: rgba(0, 0, 0, 0.22);
+  background: var(--id-color-canvas-subtle);
   border-radius: 0.75rem;
-  color: #f8fafc;
+  color: var(--id-color-text);
   font-size: 0.73rem;
   line-height: 1.55;
   margin: 0.75rem 0 0;
@@ -902,7 +945,7 @@
 }
 
 .apikey-inventory-toolbar label {
-  color: rgba(244, 244, 245, 0.7);
+  color: var(--id-color-text-muted);
   display: grid;
   font-size: 0.68rem;
   font-weight: 850;
@@ -912,17 +955,22 @@
 }
 
 .apikey-filter {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  color: #ffffff;
+  background: var(--id-color-surface);
+  border: 1px solid var(--id-color-border-strong);
+  color: var(--id-color-text);
   min-height: 2.5rem;
 }
 
 .apikey-security-note {
-  background: rgba(32, 201, 151, 0.1);
-  border: 1px solid rgba(32, 201, 151, 0.26);
+  background: color-mix(
+    in srgb,
+    var(--id-color-success) 10%,
+    var(--id-color-surface)
+  );
+  border: 1px solid
+    color-mix(in srgb, var(--id-color-success) 34%, var(--id-color-border));
   border-radius: 0.9rem;
-  color: #a8f7da;
+  color: var(--id-color-success);
   font-weight: 700;
   margin: 0;
   padding: 0.85rem;
@@ -948,15 +996,15 @@
 }
 
 .apikey-rotation-metadata div {
-  background: rgba(12, 14, 22, 0.34);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--id-color-surface-raised);
+  border: 1px solid var(--id-color-border);
   border-radius: 0.85rem;
   padding: 0.85rem;
 }
 
 .apikey-rotation-metadata dt,
 .apikey-rotation-policy span {
-  color: rgba(244, 244, 245, 0.58);
+  color: var(--id-color-text-subtle);
   font-size: 0.65rem;
   font-weight: 850;
   letter-spacing: 0.12rem;
@@ -964,7 +1012,7 @@
 }
 
 .apikey-rotation-metadata dd {
-  color: #ffffff;
+  color: var(--id-color-text);
   font-weight: 800;
   margin: 0.35rem 0 0;
   overflow-wrap: anywhere;
@@ -982,7 +1030,7 @@
 }
 
 .apikey-revocation-form label {
-  color: rgba(244, 244, 245, 0.72);
+  color: var(--id-color-text-muted);
   display: grid;
   font-size: 0.72rem;
   font-weight: 850;
@@ -997,7 +1045,7 @@
 }
 
 .apikey-create-form label {
-  color: rgba(244, 244, 245, 0.72);
+  color: var(--id-color-text-muted);
   display: grid;
   font-size: 0.72rem;
   font-weight: 850;
@@ -1007,7 +1055,7 @@
 }
 
 .apikey-scope-fieldset {
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  border: 1px solid var(--id-color-border-strong);
   border-radius: 0.9rem;
   display: grid;
   gap: 0.75rem;
@@ -1015,7 +1063,7 @@
 }
 
 .apikey-scope-fieldset legend {
-  color: #ffffff;
+  color: var(--id-color-text);
   font-size: 0.75rem;
   font-weight: 850;
   letter-spacing: 0.12rem;
@@ -1032,15 +1080,20 @@
 }
 
 .apikey-scope-option strong {
-  color: #ffffff;
+  color: var(--id-color-text);
   display: block;
 }
 
 .apikey-reveal-panel {
-  background: rgba(255, 193, 7, 0.12);
-  border: 1px solid rgba(255, 193, 7, 0.3);
+  background: color-mix(
+    in srgb,
+    var(--id-color-warning) 12%,
+    var(--id-color-surface)
+  );
+  border: 1px solid
+    color-mix(in srgb, var(--id-color-warning) 38%, var(--id-color-border));
   border-radius: 0.9rem;
-  color: #ffe0a3;
+  color: var(--id-color-warning);
   display: grid;
   gap: 0.65rem;
   padding: 1rem;
@@ -1048,7 +1101,7 @@
 
 .apikey-reveal-help,
 .apikey-reveal-feedback {
-  color: rgba(255, 224, 163, 0.82);
+  color: color-mix(in srgb, var(--id-color-warning) 76%, var(--id-color-text));
   margin: 0.35rem 0 0;
 }
 
@@ -1062,7 +1115,7 @@
 }
 
 .apikey-reveal-panel code {
-  color: #ffffff;
+  color: var(--id-color-text);
   overflow-wrap: anywhere;
 }
 
@@ -1506,9 +1559,12 @@ export default {
       this.revealFeedback =
         this.language[this.config.currentLanguage].Apikey.revealOnceReady;
       this.selectApiKeyTab("create");
-      this.revealTimeoutId = window.setTimeout(() => {
-        this.clearRevealOnceSecret("timeout");
-      }, 10 * 60 * 1000);
+      this.revealTimeoutId = window.setTimeout(
+        () => {
+          this.clearRevealOnceSecret("timeout");
+        },
+        10 * 60 * 1000,
+      );
     },
     clearRevealOnceSecret(reason) {
       if (this.revealTimeoutId) {
@@ -1568,8 +1624,9 @@ export default {
       });
       if (!payload.allowed) {
         this.revealFeedback =
-          this.language[this.config.currentLanguage].Apikey
-            .acknowledgementRequired;
+          this.language[
+            this.config.currentLanguage
+          ].Apikey.acknowledgementRequired;
         return;
       }
       const blob = new Blob([payload.text], { type: payload.mimeType });
@@ -1584,7 +1641,9 @@ export default {
       document.body.removeChild(element);
       window.URL.revokeObjectURL(objectUrl);
       this.revealFeedback =
-        this.language[this.config.currentLanguage].Apikey.downloadSecretFeedback;
+        this.language[
+          this.config.currentLanguage
+        ].Apikey.downloadSecretFeedback;
       this.makeToast(this.revealFeedback);
     },
     credentialEndpoint() {
@@ -1648,7 +1707,8 @@ export default {
         ? {
             ...target,
             expiresAt: target.expiresAt || null,
-            fingerprint: target.fingerprint || target.keyPrefix || target.prefix,
+            fingerprint:
+              target.fingerprint || target.keyPrefix || target.prefix,
             id: target.id ?? target.credentialId ?? target.keyId,
             lastUsedAt: target.lastUsedAt || null,
             scopes: Array.isArray(target.scopes)
@@ -1710,13 +1770,18 @@ export default {
       }
       this.revocationErrors = [];
       return apiClient
-        .post(this.credentialRevocationEndpoint(this.revocationTarget.id), request.body, {
-          headers: { ...this.setHeaders(), ...request.headers },
-        })
+        .post(
+          this.credentialRevocationEndpoint(this.revocationTarget.id),
+          request.body,
+          {
+            headers: { ...this.setHeaders(), ...request.headers },
+          },
+        )
         .then((response) => {
           const durableStatus = response.data?.status ?? "revoked";
           this.credentials = this.credentials.map((credential) => {
-            const id = credential.id ?? credential.credentialId ?? credential.keyId;
+            const id =
+              credential.id ?? credential.credentialId ?? credential.keyId;
             if (id !== this.revocationTarget.id) return credential;
             return {
               ...credential,
@@ -1743,7 +1808,8 @@ export default {
         ? {
             ...target,
             expiresAt: target.expiresAt || null,
-            fingerprint: target.fingerprint || target.keyPrefix || target.prefix,
+            fingerprint:
+              target.fingerprint || target.keyPrefix || target.prefix,
             id: target.id ?? target.credentialId ?? target.keyId,
             lastUsedAt: target.lastUsedAt || null,
             scopes: Array.isArray(target.scopes)
@@ -1772,9 +1838,13 @@ export default {
       }
       this.rotationErrors = [];
       return apiClient
-        .post(this.credentialRotationEndpoint(this.rotationTarget.id), request.body, {
-          headers: { ...this.setHeaders(), ...request.headers },
-        })
+        .post(
+          this.credentialRotationEndpoint(this.rotationTarget.id),
+          request.body,
+          {
+            headers: { ...this.setHeaders(), ...request.headers },
+          },
+        )
         .then((response) => {
           const replacement = response.data?.credential ?? response.data;
           this.openRevealOnceSession(replacement);

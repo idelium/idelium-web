@@ -382,13 +382,13 @@
   background:
     linear-gradient(
       135deg,
-      rgba(255, 108, 32, 0.08),
-      rgba(34, 40, 56, 0.82) 22rem
+      color-mix(in srgb, var(--id-color-primary) 10%, transparent),
+      transparent 22rem
     ),
-    rgba(30, 34, 46, 0.78);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+    var(--id-color-surface);
+  border: 1px solid var(--id-color-border);
   border-radius: 1.15rem;
-  box-shadow: 0 1.25rem 3rem rgba(0, 0, 0, 0.24);
+  box-shadow: var(--id-shadow-raised);
   padding: 0.85rem;
 }
 
@@ -406,7 +406,7 @@
 }
 
 .idelium-steps-order-grid .enterprise-listing-grid__search span {
-  color: rgba(255, 255, 255, 0.62);
+  color: var(--id-color-text-muted);
   font-size: 0.66rem;
   font-weight: 800;
   letter-spacing: 0.18em;
@@ -418,9 +418,10 @@
 }
 
 .idelium-steps-order-grid .enterprise-data-table__viewport {
-  border-color: rgba(255, 255, 255, 0.1);
+  border-color: var(--id-color-border);
   border-radius: 0.95rem;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  box-shadow: inset 0 1px 0
+    color-mix(in srgb, var(--id-color-text) 6%, transparent);
 }
 
 .idelium-steps-order-grid table {
@@ -429,8 +430,12 @@
 
 .idelium-steps-order-grid th {
   background:
-    linear-gradient(180deg, rgba(255, 108, 32, 0.1), transparent),
-    rgba(43, 48, 63, 0.96);
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--id-color-primary) 10%, transparent),
+      transparent
+    ),
+    var(--id-color-surface-raised);
   font-size: 0.66rem;
   letter-spacing: 0.16em;
 }
@@ -499,13 +504,13 @@
   background:
     linear-gradient(
       135deg,
-      rgba(255, 108, 32, 0.1),
-      rgba(34, 40, 56, 0.86) 20rem
+      color-mix(in srgb, var(--id-color-primary) 12%, transparent),
+      transparent 20rem
     ),
-    rgba(30, 34, 46, 0.82);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+    var(--id-color-surface);
+  border: 1px solid var(--id-color-border);
   border-radius: 1.15rem;
-  box-shadow: 0 1.25rem 3rem rgba(0, 0, 0, 0.22);
+  box-shadow: var(--id-shadow-raised);
   display: grid;
   gap: 1rem;
   margin: 0 auto 1rem;
@@ -520,7 +525,7 @@
 }
 .idelium-step-authoring__eyebrow,
 .idelium-step-authoring__field label {
-  color: var(--idelium-text-muted, #b9bdc8);
+  color: var(--id-color-text-muted);
   font-size: 0.66rem;
   font-weight: 900;
   letter-spacing: 0.16em;
@@ -528,12 +533,12 @@
   text-transform: uppercase;
 }
 .idelium-step-authoring__header h2 {
-  color: var(--idelium-text, #f8fafc);
+  color: var(--id-color-text);
   font-size: 1.25rem;
   margin: 0.15rem 0 0;
 }
 .idelium-step-authoring__description {
-  color: var(--idelium-text-muted, #b9bdc8);
+  color: var(--id-color-text-muted);
   font-size: 0.8rem;
   margin: 0.2rem 0 0;
 }
@@ -553,7 +558,11 @@
 }
 .ghost {
   opacity: 0.5;
-  background: #c8ebfb;
+  background: color-mix(
+    in srgb,
+    var(--id-color-info) 18%,
+    var(--id-color-surface)
+  );
 }
 .idelium-dsl-editor {
   margin-top: 1.5rem;
@@ -561,9 +570,14 @@
 .idelium-dsl-editor--modal {
   margin-top: 1rem;
   padding: 1rem;
-  border: 1px solid rgba(255, 97, 34, 0.28);
+  border: 1px solid
+    color-mix(in srgb, var(--id-color-primary) 38%, var(--id-color-border));
   border-radius: 1rem;
-  background: rgba(12, 17, 27, 0.28);
+  background: color-mix(
+    in srgb,
+    var(--id-color-primary) 4%,
+    var(--id-color-surface-raised)
+  );
 }
 .idelium-dsl-editor--modal :deep(header) {
   align-items: flex-start;
@@ -578,8 +592,12 @@
 }
 .idelium-dsl-editor--modal :deep(.dsl-step-editor__source) {
   min-height: min(34rem, 62dvh);
-  border-color: rgba(255, 97, 34, 0.42);
-  box-shadow: 0 1.25rem 3rem rgba(0, 0, 0, 0.18);
+  border-color: color-mix(
+    in srgb,
+    var(--id-color-primary) 50%,
+    var(--id-color-border)
+  );
+  box-shadow: var(--id-shadow-raised);
 }
 .idelium-dsl-editor--modal :deep(.dsl-step-editor__diagnostics) {
   max-height: 11rem;
@@ -595,10 +613,15 @@
 .idelium-dsl-editor__diagnostics {
   margin-top: 1rem;
   padding: 1rem 1.25rem;
-  border: 1px solid rgba(255, 97, 34, 0.55);
+  border: 1px solid
+    color-mix(in srgb, var(--id-color-danger) 55%, var(--id-color-border));
   border-radius: 0.75rem;
-  color: #ffd8cc;
-  background: rgba(255, 97, 34, 0.08);
+  color: var(--id-color-danger);
+  background: color-mix(
+    in srgb,
+    var(--id-color-danger) 9%,
+    var(--id-color-surface)
+  );
 }
 .idelium-dsl-editor__constructs {
   display: grid;
@@ -608,9 +631,14 @@
 }
 .idelium-dsl-editor__construct-card {
   padding: 0.875rem;
-  border: 1px solid rgba(83, 117, 255, 0.28);
+  border: 1px solid
+    color-mix(in srgb, var(--id-color-info) 34%, var(--id-color-border));
   border-radius: 0.75rem;
-  background: rgba(17, 24, 39, 0.05);
+  background: color-mix(
+    in srgb,
+    var(--id-color-info) 5%,
+    var(--id-color-surface-raised)
+  );
 }
 .idelium-dsl-editor__construct-card h6 {
   margin: 0 0 0.375rem;

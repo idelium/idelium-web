@@ -74,6 +74,22 @@ describe("shared tab styling", () => {
     expect(styles).toContain(".idelium-steps-grid__link");
   });
 
+  it("keeps the Steps workspace surfaces theme-aware", () => {
+    const styles = readFileSync(
+      join(process.cwd(), "src/view/steps.vue"),
+      "utf8",
+    );
+
+    expect(styles).toContain(".idelium-steps-order-grid");
+    expect(styles).toContain("var(--id-color-surface)");
+    expect(styles).toContain("var(--id-color-surface-raised)");
+    expect(styles).toContain("var(--id-color-text-muted)");
+    expect(styles).toContain("var(--id-shadow-raised)");
+    expect(styles).not.toContain("rgba(30, 34, 46");
+    expect(styles).not.toContain("rgba(43, 48, 63");
+    expect(styles).not.toContain("var(--idelium-text");
+  });
+
   it("renders the environment creation form with enterprise panel styling", () => {
     const styles = readFileSync(
       join(process.cwd(), "src/view/environments.vue"),
