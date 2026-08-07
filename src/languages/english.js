@@ -340,13 +340,11 @@ export default {
         },
         advanced: {
           title: "Advanced settings",
-          description:
-            "Configure additional runtime options for this action.",
+          description: "Configure additional runtime options for this action.",
         },
         assertion: {
           title: "Assertions",
-          description:
-            "Describe the expected outcome that must be validated.",
+          description: "Describe the expected outcome that must be validated.",
         },
         locator: {
           title: "Locator",
@@ -445,7 +443,8 @@ export default {
         },
         appium_send_keys: {
           label: "Send keys",
-          description: "Types text or key data into a mobile element located by XPath.",
+          description:
+            "Types text or key data into a mobile element located by XPath.",
         },
         appium_send_keys_xpath: {
           label: "Send keys by XPath",
@@ -458,7 +457,8 @@ export default {
         },
         appium_click_xpath: {
           label: "Tap by XPath",
-          description: "Taps the mobile element matched by the configured XPath.",
+          description:
+            "Taps the mobile element matched by the configured XPath.",
         },
         appium_switch_context: {
           label: "Switch context",
@@ -477,7 +477,8 @@ export default {
         },
         appium_back: {
           label: "Back navigation",
-          description: "Sends the mobile back command to the active device or emulator.",
+          description:
+            "Sends the mobile back command to the active device or emulator.",
         },
         appium_page_source: {
           label: "Read page source",
@@ -501,7 +502,8 @@ export default {
         },
         appium_orientation: {
           label: "Set orientation",
-          description: "Changes the device orientation to portrait or landscape.",
+          description:
+            "Changes the device orientation to portrait or landscape.",
         },
         appium_location: {
           label: "Set device location",
@@ -510,7 +512,8 @@ export default {
         },
         appium_log_types: {
           label: "List log types",
-          description: "Lists the log streams exposed by the connected Appium driver.",
+          description:
+            "Lists the log streams exposed by the connected Appium driver.",
         },
         appium_get_log: {
           label: "Read device log",
@@ -518,11 +521,13 @@ export default {
         },
         appium_update_settings: {
           label: "Update Appium settings",
-          description: "Applies runtime Appium driver settings from a JSON payload.",
+          description:
+            "Applies runtime Appium driver settings from a JSON payload.",
         },
         appium_get_settings: {
           label: "Read Appium settings",
-          description: "Returns the current runtime settings from the Appium driver.",
+          description:
+            "Returns the current runtime settings from the Appium driver.",
         },
         appium_start_start_activity: {
           label: "Start Android activity",
@@ -602,15 +607,18 @@ export default {
         },
         appium_push_file: {
           label: "Push file",
-          description: "Uploads a file payload to the configured path on the device.",
+          description:
+            "Uploads a file payload to the configured path on the device.",
         },
         appium_pull_file: {
           label: "Pull file",
-          description: "Downloads a file from the configured path on the device.",
+          description:
+            "Downloads a file from the configured path on the device.",
         },
         appium_pull_folder: {
           label: "Pull folder",
-          description: "Downloads a folder from the configured path on the device.",
+          description:
+            "Downloads a folder from the configured path on the device.",
         },
         appium_shake: {
           label: "Shake device",
@@ -655,7 +663,8 @@ export default {
         },
         appium_send_sms: {
           label: "Send SMS",
-          description: "Simulates an incoming SMS with phone number and message text.",
+          description:
+            "Simulates an incoming SMS with phone number and message text.",
         },
         appium_make_gsm_call: {
           label: "Make GSM call",
@@ -671,7 +680,8 @@ export default {
         },
         appium_set_network_speed: {
           label: "Set network speed",
-          description: "Changes emulator network speed for connectivity testing.",
+          description:
+            "Changes emulator network speed for connectivity testing.",
         },
         appium_get_performance_data: {
           label: "Read performance data",
@@ -2475,9 +2485,19 @@ export default {
       noCompletions: "No compatible DSL actions are available.",
       documentation: "Documentation",
       diagnostics: "DSL diagnostics",
+      diagnosticsDescription:
+        "Code-level issues detected while parsing the current DSL source.",
       location: "Line {line}, column {column}",
       readyToApply: "Valid DSL changes are ready to apply.",
       valid: "The DSL source is valid and matches the current model.",
+      validationStatus: {
+        valid: "DSL syntax valid",
+        warnings: "{count} DSL warning(s)",
+        errors: "{count} DSL error(s)",
+        ready: "The document is being validated as you type.",
+        reviewWarnings: "Review warnings before saving shared automation.",
+        fixErrors: "Fix blocking errors before saving the step.",
+      },
       validation: {
         default: "The DSL source is invalid.",
         DSL_SOURCE_EMPTY: "The DSL source cannot be empty.",
@@ -2490,6 +2510,7 @@ export default {
         DSL_BRACE_UNEXPECTED: "A closing brace has no matching opening brace.",
         DSL_BRACE_MISSING: "A block is missing its closing brace.",
         DSL_SOURCE_TOO_LARGE: "The DSL source exceeds the supported size.",
+        DSL_STATEMENT_UNKNOWN: "The DSL statement is not recognized.",
         DSL_ACTION_UNSUPPORTED:
           "The action is unavailable in the authorized DSL catalog.",
         DSL_ACTION_RUNTIME_INCOMPATIBLE:
@@ -2509,6 +2530,8 @@ export default {
         DSL_BRACE_UNEXPECTED: "Remove the extra brace or open the block.",
         DSL_BRACE_MISSING: "Close every open block.",
         DSL_SOURCE_TOO_LARGE: "Reduce the source below 500,000 bytes.",
+        DSL_STATEMENT_UNKNOWN:
+          "Use a supported DSL v1 statement such as open, click, write, wait, assert, if, repeat, step, use, screenshot, back, or forward.",
         DSL_ACTION_UNSUPPORTED: "Choose an action from the completion catalog.",
         DSL_ACTION_RUNTIME_INCOMPATIBLE:
           "Switch runtime or choose a compatible action.",

@@ -6,6 +6,10 @@ const MAX_DSL_COMPLETIONS = 200;
 
 const SENSITIVE_PATTERN =
   /\b(api[-_\s]?key|authorization|cookie|password|refresh[-_\s]?token|secret|session|token)\s*[:=]\s*([^&\s,;]+)/gi;
+const DSL_IDENTIFIER_PATTERN = "[A-Za-z_][A-Za-z0-9_-]*";
+const DSL_STRING_PATTERN = `(?:"(?:\\\\.|[^"\\\\])*"|'(?:\\\\.|[^'\\\\])*')`;
+const DSL_LOCATOR_PATTERN = `(css|xpath)\\s+${DSL_STRING_PATTERN}`;
+const DSL_DURATION_PATTERN = "[1-9][0-9]*(ms|s|m)";
 const DSL_CONSTRUCTS = [
   {
     id: "variables",
@@ -71,6 +75,100 @@ function diagnostic(
     message: redactSensitiveText(message),
     remediation: redactSensitiveText(remediation),
   };
+}
+
+function isRecognizedDslStatement(trimmed) {
+  if (trimmed === "" || trimmed.startsWith("#")) return true;
+  if (/^}\s*;?$/.test(trimmed)) return true;
+  if (new RegExp(`^idelium\\s+\\S+$`).test(trimmed)) return true;
+  if (/^test\s+["'][^"']+["']\s*\{(?:.*\})?$/.test(trimmed)) return true;
+  if (
+    new RegExp(
+      `^step\\s+${DSL_IDENTIFIER_PATTERN}(?:\\([^)]*\\))?\\s*\\{(?:.*\\})?$`,
+    ).test(trimmed)
+  ) {
+    return true;
+  }
+  if (
+    new RegExp(
+      `^if\\s+(visible|hidden)\\s+${DSL_LOCATOR_PATTERN}\\s*\\{(?:.*\\})?$`,
+    ).test(trimmed)
+  ) {
+    return true;
+  }
+  if (/^repeat\s+[1-9][0-9]*\s+times\s*\{(?:.*\})?$/.test(trimmed)) {
+    return true;
+  }
+  if (
+    new RegExp(
+      `^(let|secret)\\s+${DSL_IDENTIFIER_PATTERN}\\s*=\\s*${DSL_STRING_PATTERN}\\s*;?$`,
+    ).test(trimmed)
+  ) {
+    return true;
+  }
+  if (new RegExp(`^open\\s+${DSL_STRING_PATTERN}\\s*;?$`).test(trimmed)) {
+    return true;
+  }
+  if (new RegExp(`^click\\s+${DSL_LOCATOR_PATTERN}\\s*;?$`).test(trimmed)) {
+    return true;
+  }
+  if (
+    new RegExp(
+      `^write\\s+${DSL_LOCATOR_PATTERN}\\s+value\\s+${DSL_STRING_PATTERN}\\s*;?$`,
+    ).test(trimmed)
+  ) {
+    return true;
+  }
+  if (
+    new RegExp(
+      `^wait\\s+${DSL_LOCATOR_PATTERN}\\s+(present|visible|hidden|clickable)(?:\\s+timeout\\s+${DSL_DURATION_PATTERN})?\\s*;?$`,
+    ).test(trimmed)
+  ) {
+    return true;
+  }
+  if (
+    new RegExp(
+      `^assert\\s+(visible|hidden)\\s+${DSL_LOCATOR_PATTERN}\\s*;?$`,
+    ).test(trimmed)
+  ) {
+    return true;
+  }
+  if (
+    new RegExp(
+      `^assert\\s+(text|value)\\s+${DSL_LOCATOR_PATTERN}\\s+(equals|contains)\\s+${DSL_STRING_PATTERN}\\s*;?$`,
+    ).test(trimmed)
+  ) {
+    return true;
+  }
+  if (
+    new RegExp(
+      `^assert\\s+count\\s+${DSL_LOCATOR_PATTERN}\\s+(equals|greater_than|less_than|at_least|at_most)\\s+[0-9]+\\s*;?$`,
+    ).test(trimmed)
+  ) {
+    return true;
+  }
+  if (
+    new RegExp(
+      `^assert\\s+(url|title)\\s+(equals|contains)\\s+${DSL_STRING_PATTERN}\\s*;?$`,
+    ).test(trimmed)
+  ) {
+    return true;
+  }
+  if (new RegExp(`^screenshot\\s+${DSL_STRING_PATTERN}\\s*;?$`).test(trimmed)) {
+    return true;
+  }
+  if (/^(back|forward)\s*;?$/.test(trimmed)) return true;
+  if (
+    new RegExp(`^use\\s+${DSL_IDENTIFIER_PATTERN}\\([^)]*\\)\\s*;?$`).test(
+      trimmed,
+    )
+  ) {
+    return true;
+  }
+  if (new RegExp(`^action\\s+[A-Za-z0-9_.:-]+\\s*;?$`).test(trimmed)) {
+    return true;
+  }
+  return false;
 }
 
 export function buildDslSourcePayload(source) {
@@ -203,6 +301,18 @@ export function validateDslSource(source) {
   lines.forEach((line, index) => {
     const trimmed = line.trim();
     if (trimmed === "" || trimmed.startsWith("#")) return;
+    if (!isRecognizedDslStatement(trimmed)) {
+      diagnostics.push(
+        diagnostic(
+          index + 1,
+          Math.max(line.search(/\S/) + 1, 1),
+          "DSL_STATEMENT_UNKNOWN",
+          `DSL statement is not recognized: ${trimmed}.`,
+          "Use a supported DSL v1 statement such as open, click, write, wait, assert, if, repeat, step, use, screenshot, back, or forward.",
+        ),
+      );
+      return;
+    }
     if (/^open\s+["']http:\/\//.test(trimmed)) {
       diagnostics.push(
         diagnostic(

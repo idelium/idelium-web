@@ -47,7 +47,33 @@ describe("DSL step editing", () => {
       "The DSL language version is unsupported.",
     );
     expect(wrapper.text()).toContain("DSL_VERSION_UNSUPPORTED");
+    expect(
+      wrapper
+        .get(".dsl-step-editor__validation-status")
+        .classes()
+        .includes("dsl-step-editor__validation-status--error"),
+    ).toBe(true);
+    expect(wrapper.text()).toContain("1 DSL error(s)");
     expect(wrapper.emitted("update:modelValue")).toBeUndefined();
+  });
+
+  it("shows live validation state while source changes", async () => {
+    const wrapper = mountEditor();
+
+    expect(wrapper.text()).toContain("DSL syntax valid");
+    expect(wrapper.text()).toContain(
+      "The document is being validated as you type.",
+    );
+
+    await wrapper.get("textarea").setValue('idelium 1.0\n\ntest "smoke" {\n');
+
+    expect(
+      wrapper
+        .get(".dsl-step-editor__validation-status")
+        .classes()
+        .includes("dsl-step-editor__validation-status--error"),
+    ).toBe(true);
+    expect(wrapper.text()).toContain("1 DSL error(s)");
   });
 
   it("preserves source formatting and requires explicit apply", async () => {
@@ -135,6 +161,32 @@ describe("DSL step editing", () => {
     expect(legacy).toContain('test "legacy"');
   });
 
+  it("rejects unknown text typed outside supported DSL statements", async () => {
+    const wrapper = mountEditor();
+    await wrapper
+      .get("textarea")
+      .setValue(`${validSource}random words that are not DSL\n`);
+
+    expect(wrapper.vm.diagnostics[0].code).toBe("DSL_STATEMENT_UNKNOWN");
+    expect(wrapper.text()).toContain("The DSL statement is not recognized.");
+    expect(wrapper.text()).toContain("1 DSL error(s)");
+  });
+
+  it("accepts CSS selectors containing single quotes inside double-quoted locators", () => {
+    const source =
+      'idelium 1.0\n\ntest "selectors" {\n' +
+      "    click css \"[data-testid='network-success']\"\n" +
+      "    wait css \"[data-testid='network-result']\" visible timeout 10s\n" +
+      "    assert visible css \"[data-testid='network-result']\"\n" +
+      "}\n";
+
+    expect(
+      validateDslSource(source).diagnostics.filter(
+        (diagnostic) => diagnostic.code === "DSL_STATEMENT_UNKNOWN",
+      ),
+    ).toEqual([]);
+  });
+
   it("uses line-numbered bounded editing and complete English/Italian copy", () => {
     const wrapper = mountEditor();
     const ace = wrapper.getComponent(AceStub);
@@ -149,6 +201,7 @@ describe("DSL step editing", () => {
     for (const code of [
       "DSL_VERSION_UNSUPPORTED",
       "DSL_SOURCE_TOO_LARGE",
+      "DSL_STATEMENT_UNKNOWN",
       "DSL_ACTION_UNSUPPORTED",
       "DSL_ACTION_RUNTIME_INCOMPATIBLE",
     ]) {

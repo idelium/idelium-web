@@ -347,8 +347,7 @@ export default {
         },
         assertion: {
           title: "Assertion",
-          description:
-            "Descrivi il risultato atteso che deve essere validato.",
+          description: "Descrivi il risultato atteso che deve essere validato.",
         },
         locator: {
           title: "Locator",
@@ -447,7 +446,8 @@ export default {
         },
         appium_send_keys: {
           label: "Invia testo",
-          description: "Digita testo o dati tastiera in un elemento mobile via XPath.",
+          description:
+            "Digita testo o dati tastiera in un elemento mobile via XPath.",
         },
         appium_send_keys_xpath: {
           label: "Invia testo via XPath",
@@ -503,7 +503,8 @@ export default {
         },
         appium_orientation: {
           label: "Imposta orientamento",
-          description: "Cambia l'orientamento del device in portrait o landscape.",
+          description:
+            "Cambia l'orientamento del device in portrait o landscape.",
         },
         appium_location: {
           label: "Imposta posizione",
@@ -604,7 +605,8 @@ export default {
         },
         appium_push_file: {
           label: "Carica file",
-          description: "Carica un payload file nel percorso configurato sul device.",
+          description:
+            "Carica un payload file nel percorso configurato sul device.",
         },
         appium_pull_file: {
           label: "Scarica file",
@@ -612,7 +614,8 @@ export default {
         },
         appium_pull_folder: {
           label: "Scarica cartella",
-          description: "Scarica una cartella dal percorso configurato sul device.",
+          description:
+            "Scarica una cartella dal percorso configurato sul device.",
         },
         appium_shake: {
           label: "Shake device",
@@ -717,7 +720,8 @@ export default {
         },
         appium_get_system_time: {
           label: "Leggi ora sistema",
-          description: "Legge l'ora di sistema del device nel formato richiesto.",
+          description:
+            "Legge l'ora di sistema del device nel formato richiesto.",
         },
         appium_get_device_density: {
           label: "Leggi densità device",
@@ -2502,9 +2506,20 @@ export default {
       noCompletions: "Nessuna azione DSL compatibile è disponibile.",
       documentation: "Documentazione",
       diagnostics: "Diagnostica DSL",
+      diagnosticsDescription:
+        "Problemi di codice rilevati durante il parsing del sorgente DSL corrente.",
       location: "Riga {line}, colonna {column}",
       readyToApply: "Le modifiche DSL valide sono pronte per essere applicate.",
       valid: "Il sorgente DSL è valido e corrisponde al modello corrente.",
+      validationStatus: {
+        valid: "Sintassi DSL valida",
+        warnings: "{count} warning DSL",
+        errors: "{count} errori DSL",
+        ready: "Il documento viene validato mentre scrivi.",
+        reviewWarnings:
+          "Controlla i warning prima di salvare automazioni condivise.",
+        fixErrors: "Correggi gli errori bloccanti prima di salvare lo step.",
+      },
       validation: {
         default: "Il sorgente DSL non è valido.",
         DSL_SOURCE_EMPTY: "Il sorgente DSL non può essere vuoto.",
@@ -2520,6 +2535,7 @@ export default {
         DSL_BRACE_MISSING: "Manca la chiusura di un blocco.",
         DSL_SOURCE_TOO_LARGE:
           "Il sorgente DSL supera la dimensione supportata.",
+        DSL_STATEMENT_UNKNOWN: "L'istruzione DSL non è riconosciuta.",
         DSL_ACTION_UNSUPPORTED:
           "L'azione non è disponibile nel catalogo DSL autorizzato.",
         DSL_ACTION_RUNTIME_INCOMPATIBLE:
@@ -2541,6 +2557,8 @@ export default {
           "Rimuovi la parentesi in eccesso o apri il blocco.",
         DSL_BRACE_MISSING: "Chiudi ogni blocco aperto.",
         DSL_SOURCE_TOO_LARGE: "Riduci il sorgente sotto 500.000 byte.",
+        DSL_STATEMENT_UNKNOWN:
+          "Usa un'istruzione DSL v1 supportata come open, click, write, wait, assert, if, repeat, step, use, screenshot, back o forward.",
         DSL_ACTION_UNSUPPORTED:
           "Scegli un'azione dal catalogo di completamento.",
         DSL_ACTION_RUNTIME_INCOMPATIBLE:
